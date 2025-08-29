@@ -1,0 +1,247 @@
+package com.example.demo.service;
+
+import com.example.demo.dto.LoginRequest;
+import com.example.demo.dto.LoginResponse;
+import com.example.demo.dto.UsuarioResponse;
+import com.example.demo.model.LoginAttempt;
+import com.example.demo.model.Role;
+import com.example.demo.model.Usuario;
+import com.example.demo.repository.LoginAttemptRepository;
+import com.example.demo.repository.UsuarioRepository;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+
+@Service
+@RequiredArgsConstructor
+public class AuthService {
+    
+    private final UsuarioRepository usuarioRepository;
+    private final LoginAttemptRepository loginAttemptRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
+    private final UsuarioService usuarioService;
+    
+    private static final int MAX_ATTEMPTS_BEFORE_TEMP_LOCK = 5;
+    private static final int MAX_ATTEMPTS_BEFORE_PERMANENT_LOCK = 10;
+    private static final int TEMP_LOCK_MINUTES = 30;
+    private static final int PERMANENT_LOCK_HOURS = 48;
+    
+    public LoginResponse login(LoginRequest request, HttpServletRequest httpRequest) {
+        String usernameOrEmail = request.getUsuario();
+        String ipAddress = getClientIpAddress(httpRequest);
+        
+        try {
+            // Verificar si está temporalmente bloqueado
+            if (isTemporarilyLocked(usernameOrEmail)) {
+                recordFailedAttempt(usernameOrEmail, ipAddress, null, "Cuenta temporalmente bloqueada");
+                return new LoginResponse("Tu cuenta está temporalmente bloqueada. Intenta en 30 minutos.");
+            }
+            
+            // Buscar usuario por username o email
+            Usuario usuario = findUserByUsernameOrEmail(usernameOrEmail);
+            if (usuario == null) {
+                recordFailedAttempt(usernameOrEmail, ipAddress, null, "Usuario no encontrado");
+                return new LoginResponse("Credenciales inválidas");
+            }
+            
+            // Verificar si la cuenta está deshabilitada o bloqueada
+            if (!usuario.isAccountEnabled()) {
+                recordFailedAttempt(usernameOrEmail, ipAddress, usuario, "Cuenta deshabilitada");
+                return new LoginResponse("Tu cuenta está deshabilitada. Contacta al administrador.");
+            }
+            
+            if (usuario.isAccountLocked()) {
+                recordFailedAttempt(usernameOrEmail, ipAddress, usuario, "Cuenta bloqueada");
+                return new LoginResponse("Tu cuenta está bloqueada. Contacta al administrador.");
+            }
+            
+            // Verificar contraseña
+            if (!passwordEncoder.matches(request.getPassword(), usuario.getClave())) {
+                handleFailedLogin(usernameOrEmail, ipAddress, usuario);
+                return new LoginResponse("Credenciales inválidas");
+            }
+            
+            // Verificar si debe cambiar contraseña
+            if (usuario.isMustChangePassword() || usuarioService.isPasswordExpired(usuario.getId())) {
+                recordSuccessfulAttempt(usernameOrEmail, ipAddress, usuario);
+                return new LoginResponse("Debes cambiar tu contraseña antes de continuar");
+            }
+            
+            // Login exitoso
+            recordSuccessfulAttempt(usernameOrEmail, ipAddress, usuario);
+            
+            String token = jwtService.generateToken(
+                usuario.getUsuario(), 
+                usuario.getRole().getName(), 
+                usuario.getId()
+            );
+            
+            String refreshToken = jwtService.generateRefreshToken(
+                usuario.getUsuario(),
+                usuario.getId()
+            );
+            
+            String redirectUrl = getRoleBasedRedirectUrl(usuario.getRole());
+            UsuarioResponse usuarioResponse = convertToResponse(usuario);
+            
+            return new LoginResponse(token, refreshToken, redirectUrl, usuario.getRole().getName(), usuarioResponse);
+            
+        } catch (Exception e) {
+            recordFailedAttempt(usernameOrEmail, ipAddress, null, "Error del sistema: " + e.getMessage());
+            return new LoginResponse("Error interno del sistema");
+        }
+    }
+    
+    private Usuario findUserByUsernameOrEmail(String usernameOrEmail) {
+        return usuarioRepository.findByUsuario(usernameOrEmail)
+                .orElse(usuarioRepository.findByCorreo(usernameOrEmail).orElse(null));
+    }
+    
+    private boolean isTemporarilyLocked(String usernameOrEmail) {
+        LocalDateTime tempLockTime = LocalDateTime.now().minusMinutes(TEMP_LOCK_MINUTES);
+        long recentFailedAttempts = loginAttemptRepository
+                .countFailedAttemptsByUsername(usernameOrEmail, tempLockTime);
+        
+        return recentFailedAttempts >= MAX_ATTEMPTS_BEFORE_TEMP_LOCK;
+    }
+    
+    private void handleFailedLogin(String usernameOrEmail, String ipAddress, Usuario usuario) {
+        recordFailedAttempt(usernameOrEmail, ipAddress, usuario, "Contraseña incorrecta");
+        
+        // Contar intentos fallidos recientes
+        LocalDateTime oneDayAgo = LocalDateTime.now().minusDays(1);
+        long totalFailedAttempts = loginAttemptRepository
+                .countFailedAttemptsByUsername(usernameOrEmail, oneDayAgo);
+        
+        // Si supera el límite máximo, bloquear permanentemente la cuenta
+        if (totalFailedAttempts >= MAX_ATTEMPTS_BEFORE_PERMANENT_LOCK && usuario != null) {
+            usuario.setAccountLocked(true);
+            usuarioRepository.save(usuario);
+            
+            // Enviar notificación de bloqueo
+            try {
+                usuarioService.lockAccount(usuario.getId(), 
+                    "Cuenta bloqueada automáticamente por exceso de intentos fallidos de login");
+            } catch (Exception e) {
+                // Log error but don't fail the process
+            }
+        }
+    }
+    
+    private void recordFailedAttempt(String usernameOrEmail, String ipAddress, Usuario usuario, String reason) {
+        LoginAttempt attempt = new LoginAttempt();
+        attempt.setUsernameOrEmail(usernameOrEmail);
+        attempt.setIpAddress(ipAddress);
+        attempt.setSuccess(false);
+        attempt.setFailureReason(reason);
+        attempt.setUsuario(usuario);
+        loginAttemptRepository.save(attempt);
+    }
+    
+    private void recordSuccessfulAttempt(String usernameOrEmail, String ipAddress, Usuario usuario) {
+        LoginAttempt attempt = new LoginAttempt();
+        attempt.setUsernameOrEmail(usernameOrEmail);
+        attempt.setIpAddress(ipAddress);
+        attempt.setSuccess(true);
+        attempt.setUsuario(usuario);
+        loginAttemptRepository.save(attempt);
+    }
+    
+    public LoginResponse refreshToken(String refreshToken) {
+        try {
+            // Extraer username del refresh token
+            String username = jwtService.extractUsername(refreshToken);
+            
+            if (username == null || !jwtService.validateToken(refreshToken, username)) {
+                return new LoginResponse("Token de refresco inválido o expirado");
+            }
+            
+            // Buscar usuario
+            Usuario usuario = usuarioRepository.findByUsuario(username)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+            
+            // Verificar estado de la cuenta
+            if (!usuario.isAccountEnabled()) {
+                return new LoginResponse("Cuenta deshabilitada");
+            }
+            
+            if (usuario.isAccountLocked()) {
+                return new LoginResponse("Cuenta bloqueada");
+            }
+            
+            // Generar nuevos tokens
+            String newAccessToken = jwtService.generateToken(
+                usuario.getUsuario(),
+                usuario.getRole().getName(),
+                usuario.getId()
+            );
+            
+            String newRefreshToken = jwtService.generateRefreshToken(
+                usuario.getUsuario(),
+                usuario.getId()
+            );
+            
+            String redirectUrl = getRoleBasedRedirectUrl(usuario.getRole());
+            UsuarioResponse usuarioResponse = convertToResponse(usuario);
+            
+            return new LoginResponse(newAccessToken, newRefreshToken, redirectUrl, 
+                usuario.getRole().getName(), usuarioResponse);
+                
+        } catch (Exception e) {
+            return new LoginResponse("Error al refrescar token: " + e.getMessage());
+        }
+    }
+    
+    private String getRoleBasedRedirectUrl(Role role) {
+        Map<String, String> roleRoutes = new HashMap<>();
+        roleRoutes.put("ADMIN", "/admin/dashboard");
+        roleRoutes.put("USUARIO", "/usuario/dashboard");
+        roleRoutes.put("ALUMNO", "/alumno/dashboard");
+        roleRoutes.put("EXTERNO", "/externo/dashboard");
+        roleRoutes.put("ADMINISTRATIVO", "/administrativo/dashboard");
+        
+        return roleRoutes.getOrDefault(role.getName(), "/dashboard");
+    }
+    
+    private String getClientIpAddress(HttpServletRequest request) {
+        String xForwardedFor = request.getHeader("X-Forwarded-For");
+        if (xForwardedFor != null && !xForwardedFor.isEmpty() && !"unknown".equalsIgnoreCase(xForwardedFor)) {
+            return xForwardedFor.split(",")[0].trim();
+        }
+        
+        String xRealIp = request.getHeader("X-Real-IP");
+        if (xRealIp != null && !xRealIp.isEmpty() && !"unknown".equalsIgnoreCase(xRealIp)) {
+            return xRealIp;
+        }
+        
+        return request.getRemoteAddr();
+    }
+    
+    private UsuarioResponse convertToResponse(Usuario usuario) {
+        UsuarioResponse.RoleResponse roleResponse = new UsuarioResponse.RoleResponse(
+                usuario.getRole().getId(),
+                usuario.getRole().getName(),
+                usuario.getRole().getDescription()
+        );
+        
+        return new UsuarioResponse(
+                usuario.getId(),
+                usuario.getNombre(),
+                usuario.getApellidos(),
+                usuario.getCorreo(),
+                usuario.getTipoDocumento(),
+                usuario.getNumDocumento(),
+                usuario.getUsuario(),
+                usuario.getDireccion(),
+                usuario.getCelular(),
+                usuario.getFoto(),
+                roleResponse
+        );
+    }
+}
