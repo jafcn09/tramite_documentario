@@ -1,5 +1,20 @@
 package com.example.demo.service;
 
+import java.security.SecureRandom;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import org.springframework.data.domain.PageRequest;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import com.example.demo.dto.AdminResetPasswordRequest;
 import com.example.demo.dto.ChangePasswordRequest;
 import com.example.demo.dto.CreateUsuarioRequest;
 import com.example.demo.dto.UpdateUsuarioRequest;
@@ -7,22 +22,13 @@ import com.example.demo.dto.UsuarioResponse;
 import com.example.demo.model.PasswordHistory;
 import com.example.demo.model.Role;
 import com.example.demo.model.Usuario;
+import com.example.demo.repository.AreaRepository;
 import com.example.demo.repository.PasswordHistoryRepository;
 import com.example.demo.repository.RoleRepository;
 import com.example.demo.repository.UsuarioRepository;
+
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-
-import java.security.SecureRandom;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -31,6 +37,7 @@ public class UsuarioService {
     private final UsuarioRepository usuarioRepository;
     private final RoleRepository roleRepository;
     private final PasswordHistoryRepository passwordHistoryRepository;
+    private final AreaRepository areaRepository;
     private final PasswordEncoder passwordEncoder;
     private final JavaMailSender mailSender;
     
@@ -74,8 +81,23 @@ public class UsuarioService {
         usuario.setCelular(request.getCelular());
         usuario.setFoto(request.getFoto());
         usuario.setRole(role);
-        usuario.setPasswordExpiry(LocalDateTime.now().plusDays(1)); // 24 horas
-        usuario.setMustChangePassword(true);
+        
+        // Handle area assignment if provided
+        if (request.getAreaId() != null) {
+            com.example.demo.entity.Area area = areaRepository.findById(request.getAreaId())
+                    .orElseThrow(() -> new EntityNotFoundException("Área no encontrada con id: " + request.getAreaId()));
+            usuario.setArea(area);
+        }
+        
+        // Set password change requirement based on request, default to false for smooth login
+        boolean mustChangePassword = request.getMustChangePassword() != null ? request.getMustChangePassword() : false;
+        usuario.setMustChangePassword(mustChangePassword);
+        
+        // Only set password expiry if mustChangePassword is true
+        if (mustChangePassword) {
+            usuario.setPasswordExpiry(LocalDateTime.now().plusDays(2)); // 48 horas
+        }
+        
         usuario.setAccountEnabled(true);
         usuario.setAccountLocked(false);
         
@@ -110,6 +132,11 @@ public class UsuarioService {
         }
         if (request.getFoto() != null) {
             usuario.setFoto(request.getFoto());
+        }
+        if (request.getAreaId() != null) {
+            com.example.demo.entity.Area area = areaRepository.findById(request.getAreaId())
+                    .orElseThrow(() -> new EntityNotFoundException("Área no encontrada con id: " + request.getAreaId()));
+            usuario.setArea(area);
         }
         
         Usuario savedUsuario = usuarioRepository.save(usuario);
@@ -390,24 +417,233 @@ public class UsuarioService {
     }
     
     private UsuarioResponse convertToResponse(Usuario usuario) {
-        UsuarioResponse.RoleResponse roleResponse = new UsuarioResponse.RoleResponse(
-                usuario.getRole().getId(),
-                usuario.getRole().getName().toString(),
-                usuario.getRole().getDescription()
-        );
+        UsuarioResponse.RoleResponse roleResponse = null;
+        if (usuario.getRole() != null) {
+            roleResponse = new UsuarioResponse.RoleResponse(
+                    usuario.getRole().getId(),
+                    usuario.getRole().getName().toString(),
+                    usuario.getRole().getDescription()
+            );
+        }
         
-        return new UsuarioResponse(
-                usuario.getId(),
+        UsuarioResponse.AreaInfo areaInfo = null;
+        if (usuario.getArea() != null) {
+            areaInfo = new UsuarioResponse.AreaInfo(
+                    usuario.getArea().getId(),
+                    usuario.getArea().getNombre(),
+                    usuario.getArea().getDescripcion(),
+                    usuario.getArea().getActiva()
+            );
+        }
+        
+        UsuarioResponse response = new UsuarioResponse();
+        response.setId(usuario.getId());
+        response.setNombre(usuario.getNombre());
+        response.setApellidos(usuario.getApellidos());
+        response.setCorreo(usuario.getCorreo());
+        response.setTipoDocumento(usuario.getTipoDocumento());
+        response.setNumDocumento(usuario.getNumDocumento());
+        response.setUsuario(usuario.getUsuario());
+        response.setDireccion(usuario.getDireccion());
+        response.setCelular(usuario.getCelular());
+        response.setFoto(usuario.getFoto());
+        response.setRole(roleResponse);
+        response.setArea(areaInfo);
+        response.setAccountEnabled(usuario.isAccountEnabled());
+        response.setAccountLocked(usuario.isAccountLocked());
+        response.setMustChangePassword(usuario.isMustChangePassword());
+        
+        return response;
+    }
+    
+    public Map<String, Object> getUserStats() {
+        Map<String, Object> stats = new HashMap<>();
+        long totalUsers = usuarioRepository.count();
+        stats.put("totalUsers", totalUsers);
+        return stats;
+    }
+    
+    public List<UsuarioResponse> getRecentUsers(int limit) {
+        List<Usuario> recentUsers = usuarioRepository.findTop5ByOrderByFechaCreacionDesc();
+        return recentUsers.stream()
+                .limit(limit)
+                .map(this::convertToResponse)
+                .collect(Collectors.toList());
+    }
+    
+    public void extendPasswordExpiryForAllUsers() {
+        List<Usuario> usersWithExpiredOrSoonToExpirePasswords = usuarioRepository.findAll().stream()
+                .filter(usuario -> usuario.getPasswordExpiry() != null && 
+                        usuario.getPasswordExpiry().isBefore(LocalDateTime.now().plusDays(2)))
+                .collect(Collectors.toList());
+        
+        usersWithExpiredOrSoonToExpirePasswords.forEach(usuario -> {
+            usuario.setPasswordExpiry(LocalDateTime.now().plusDays(2));
+            usuario.setMustChangePassword(false); // Permitir que usen la contraseña temporal por 48 horas
+            usuarioRepository.save(usuario);
+            System.out.println("Extendiendo credenciales expiradas para usuario: " + usuario.getUsuario() + " to " + usuario.getPasswordExpiry() + " and set mustChangePassword to false");
+        });
+    }
+    
+    // New methods for user management
+    public UsuarioResponse toggleUserStatus(Long id) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado con id: " + id));
+        
+        usuario.setAccountEnabled(!usuario.isAccountEnabled());
+        Usuario savedUsuario = usuarioRepository.save(usuario);
+        return convertToResponse(savedUsuario);
+    }
+    
+    public UsuarioResponse toggleUserLock(Long id) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado con id: " + id));
+        
+        usuario.setAccountLocked(!usuario.isAccountLocked());
+        Usuario savedUsuario = usuarioRepository.save(usuario);
+        return convertToResponse(savedUsuario);
+    }
+    
+    public UsuarioResponse assignArea(Long userId, Long areaId) {
+        Usuario usuario = usuarioRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado con id: " + userId));
+        
+        com.example.demo.entity.Area area = null;
+        if (areaId != null) {
+            area = areaRepository.findById(areaId)
+                    .orElseThrow(() -> new EntityNotFoundException("Área no encontrada con id: " + areaId));
+        }
+        
+        usuario.setArea(area);
+        Usuario savedUsuario = usuarioRepository.save(usuario);
+        return convertToResponse(savedUsuario);
+    }
+    
+    public List<UsuarioResponse> getUsersByArea(Long areaId) {
+        System.out.println("Getting users for area ID: " + areaId);
+        List<Usuario> users = usuarioRepository.findAll().stream()
+                .filter(user -> user.getArea() != null && user.getArea().getId().equals(areaId))
+                .collect(Collectors.toList());
+        System.out.println("Found " + users.size() + " users for area " + areaId);
+        return users.stream()
+                .map(this::convertToResponse)
+                .collect(Collectors.toList());
+    }
+    
+    public List<UsuarioResponse> getUsersWithoutArea() {
+        return usuarioRepository.findAll().stream()
+                .filter(user -> user.getArea() == null)
+                .map(this::convertToResponse)
+                .collect(Collectors.toList());
+    }
+    
+    public UsuarioResponse adminResetPassword(Long userId, AdminResetPasswordRequest request) {
+        Usuario usuario = usuarioRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado con id: " + userId));
+        
+        String newPassword;
+        if (request.getNewPassword() != null && !request.getNewPassword().trim().isEmpty()) {
+            // Use provided password
+            newPassword = request.getNewPassword().trim();
+            
+            // Validar que la nueva contraseña no sea igual a la actual
+            if (passwordEncoder.matches(newPassword, usuario.getClave())) {
+                throw new IllegalArgumentException("La nueva contraseña no puede ser igual a la contraseña actual");
+            }
+            
+            // Validar que no esté en las últimas 10 contraseñas del historial
+            if (isPasswordInHistory(usuario, newPassword)) {
+                throw new IllegalArgumentException("No se puede usar una contraseña que ya fue utilizada anteriormente. Elige una contraseña diferente.");
+            }
+            
+            // Validar que no sea una contraseña de otro usuario del sistema
+            if (isPasswordUsedByOtherUser(newPassword, userId)) {
+                throw new IllegalArgumentException("Esta contraseña está siendo utilizada por otro usuario del sistema. Elige una contraseña diferente.");
+            }
+        } else {
+            // Generate random password - guaranteed to be unique
+            newPassword = generateRandomPassword();
+            
+            // Extra validation to ensure generated password is not used by anyone
+            int attempts = 0;
+            while (isPasswordUsedByAnyUser(newPassword) && attempts < 10) {
+                newPassword = generateRandomPassword();
+                attempts++;
+            }
+            
+            if (attempts >= 10) {
+                throw new RuntimeException("No se pudo generar una contraseña única después de varios intentos");
+            }
+        }
+        
+        // Guardar contraseña actual en el historial antes de cambiarla
+        if (usuario.getClave() != null && !usuario.getClave().isEmpty()) {
+            savePasswordHistory(usuario, usuario.getClave());
+        }
+        
+        // Update password
+        String encodedPassword = passwordEncoder.encode(newPassword);
+        usuario.setClave(encodedPassword);
+        
+        // Set password change requirement
+        usuario.setMustChangePassword(request.getMustChangePassword() != null ? request.getMustChangePassword() : false);
+        
+        // Set password expiry if mustChangePassword is true
+        if (usuario.isMustChangePassword()) {
+            usuario.setPasswordExpiry(LocalDateTime.now().plusDays(2)); // 48 horas
+        } else {
+            usuario.setPasswordExpiry(null);
+        }
+        
+        Usuario savedUsuario = usuarioRepository.save(usuario);
+        
+        // Send notification email
+        sendPasswordResetNotification(savedUsuario, newPassword, request.getReason());
+        
+        return convertToResponse(savedUsuario);
+    }
+    
+    private void sendPasswordResetNotification(Usuario usuario, String newPassword, String reason) {
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(usuario.getCorreo());
+            message.setSubject("Contraseña Restablecida por Administrador");
+            message.setText(String.format(
+                "Hola %s %s,\n\n" +
+                "Tu contraseña ha sido restablecida por un administrador del sistema.\n\n" +
+                "Tu nueva contraseña es: %s\n\n" +
+                "%s\n\n" +
+                "Motivo: %s\n\n" +
+                "Fecha: %s\n\n" +
+                "Por favor, cambia esta contraseña después de iniciar sesión.\n\n" +
+                "Saludos,\n" +
+                "El equipo del sistema",
                 usuario.getNombre(),
                 usuario.getApellidos(),
-                usuario.getCorreo(),
-                usuario.getTipoDocumento(),
-                usuario.getNumDocumento(),
-                usuario.getUsuario(),
-                usuario.getDireccion(),
-                usuario.getCelular(),
-                usuario.getFoto(),
-                roleResponse
-        );
+                newPassword,
+                usuario.isMustChangePassword() ? 
+                    "IMPORTANTE: Debes cambiar esta contraseña en tu próximo inicio de sesión." : 
+                    "Puedes usar esta contraseña para iniciar sesión normalmente.",
+                reason != null ? reason : "No especificado",
+                LocalDateTime.now().toString()
+            ));
+            
+            mailSender.send(message);
+        } catch (Exception e) {
+            System.err.println("Failed to send password reset notification: " + e.getMessage());
+        }
+    }
+    
+    private boolean isPasswordUsedByOtherUser(String plainPassword, Long excludeUserId) {
+        List<Usuario> allUsers = usuarioRepository.findAll();
+        return allUsers.stream()
+                .filter(user -> !user.getId().equals(excludeUserId))
+                .anyMatch(user -> passwordEncoder.matches(plainPassword, user.getClave()));
+    }
+    
+    private boolean isPasswordUsedByAnyUser(String plainPassword) {
+        List<Usuario> allUsers = usuarioRepository.findAll();
+        return allUsers.stream()
+                .anyMatch(user -> passwordEncoder.matches(plainPassword, user.getClave()));
     }
 }

@@ -20,6 +20,10 @@ public class UsuarioResponse {
     private String celular;
     private String foto;
     private RoleResponse role;
+    private AreaInfo area;
+    private boolean accountEnabled;
+    private boolean accountLocked;
+    private boolean mustChangePassword;
     
     @Data
     @NoArgsConstructor
@@ -28,5 +32,15 @@ public class UsuarioResponse {
         private Long id;
         private String name;
         private String description;
+    }
+    
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class AreaInfo {
+        private Long id;
+        private String nombre;
+        private String descripcion;
+        private Boolean activa;
     }
 }

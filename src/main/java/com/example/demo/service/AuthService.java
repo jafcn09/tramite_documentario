@@ -210,6 +210,10 @@ public class AuthService {
     }
     
     private String getClientIpAddress(HttpServletRequest request) {
+        if (request == null) {
+            return "127.0.0.1"; // Default IP for local/init requests
+        }
+        
         String xForwardedFor = request.getHeader("X-Forwarded-For");
         if (xForwardedFor != null && !xForwardedFor.isEmpty() && !"unknown".equalsIgnoreCase(xForwardedFor)) {
             return xForwardedFor.split(",")[0].trim();
@@ -230,18 +234,33 @@ public class AuthService {
                 usuario.getRole().getDescription()
         );
         
-        return new UsuarioResponse(
-                usuario.getId(),
-                usuario.getNombre(),
-                usuario.getApellidos(),
-                usuario.getCorreo(),
-                usuario.getTipoDocumento(),
-                usuario.getNumDocumento(),
-                usuario.getUsuario(),
-                usuario.getDireccion(),
-                usuario.getCelular(),
-                usuario.getFoto(),
-                roleResponse
-        );
+        UsuarioResponse.AreaInfo areaInfo = null;
+        if (usuario.getArea() != null) {
+            areaInfo = new UsuarioResponse.AreaInfo(
+                    usuario.getArea().getId(),
+                    usuario.getArea().getNombre(),
+                    usuario.getArea().getDescripcion(),
+                    usuario.getArea().getActiva()
+            );
+        }
+        
+        UsuarioResponse response = new UsuarioResponse();
+        response.setId(usuario.getId());
+        response.setNombre(usuario.getNombre());
+        response.setApellidos(usuario.getApellidos());
+        response.setCorreo(usuario.getCorreo());
+        response.setTipoDocumento(usuario.getTipoDocumento());
+        response.setNumDocumento(usuario.getNumDocumento());
+        response.setUsuario(usuario.getUsuario());
+        response.setDireccion(usuario.getDireccion());
+        response.setCelular(usuario.getCelular());
+        response.setFoto(usuario.getFoto());
+        response.setRole(roleResponse);
+        response.setArea(areaInfo);
+        response.setAccountEnabled(usuario.isAccountEnabled());
+        response.setAccountLocked(usuario.isAccountLocked());
+        response.setMustChangePassword(usuario.isMustChangePassword());
+        
+        return response;
     }
 }

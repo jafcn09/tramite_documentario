@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
+import com.example.demo.dto.RoleWithCountResponse;
 import com.example.demo.model.Role;
 import com.example.demo.repository.RoleRepository;
 
@@ -19,6 +20,10 @@ public class RoleService {
     
     public List<Role> getAllRoles() {
         return roleRepository.findAll();
+    }
+    
+    public List<RoleWithCountResponse> getAllRolesWithUserCount() {
+        return roleRepository.findAllRolesWithUserCount();
     }
     
     public Optional<Role> getRoleById(Long id) {

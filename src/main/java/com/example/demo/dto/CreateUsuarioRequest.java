@@ -33,13 +33,12 @@ public class CreateUsuarioRequest {
     @Size(max = 20, message = "El número de documento no puede tener más de 20 caracteres")
     private String numDocumento;
     
-    @NotBlank(message = "La clave es obligatoria")
-    @Size(min = 6, message = "La clave debe tener al menos 6 caracteres")
-    private String clave;
-    
-    @NotBlank(message = "El usuario es obligatorio")
+    // Usuario y clave son generados automáticamente por el sistema
     @Size(max = 50, message = "El usuario no puede tener más de 50 caracteres")
     private String usuario;
+    
+    @Size(min = 6, message = "La clave debe tener al menos 6 caracteres")
+    private String clave;
     
     @Size(max = 200, message = "La dirección no puede tener más de 200 caracteres")
     private String direccion;
@@ -52,4 +51,8 @@ public class CreateUsuarioRequest {
     
     @NotNull(message = "El role ID es obligatorio")
     private Long roleId;
+    
+    private Long areaId;
+    
+    private Boolean mustChangePassword;
 }

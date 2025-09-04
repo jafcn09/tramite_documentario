@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.dto.CreateRoleRequest;
+import com.example.demo.dto.RoleWithCountResponse;
 import com.example.demo.dto.UpdateRoleRequest;
 import com.example.demo.model.Role;
 import com.example.demo.service.RoleService;
@@ -33,8 +34,13 @@ public class RoleController {
     private final RoleService roleService;
     
     @GetMapping
-    public ResponseEntity<List<Role>> getAllRoles() {
-        List<Role> roles = roleService.getAllRoles();
+    public ResponseEntity<List<RoleWithCountResponse>> getAllRoles() {
+        log.info("Getting all roles with user count");
+        List<RoleWithCountResponse> roles = roleService.getAllRolesWithUserCount();
+        log.info("Found {} roles with counts", roles.size());
+        for (RoleWithCountResponse role : roles) {
+            log.info("Role: {} has {} users", role.getName(), role.getUserCount());
+        }
         return ResponseEntity.ok(roles);
     }
     

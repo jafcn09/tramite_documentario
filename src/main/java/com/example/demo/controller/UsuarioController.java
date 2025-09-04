@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import com.example.demo.dto.AdminResetPasswordRequest;
 import com.example.demo.dto.ChangePasswordRequest;
 import com.example.demo.dto.CreateUsuarioRequest;
 import com.example.demo.dto.UpdateUsuarioRequest;
@@ -199,6 +200,120 @@ public class UsuarioController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "Error al verificar expiración: " + e.getMessage()));
+        }
+    }
+    
+    @GetMapping("/stats")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('ADMINISTRATIVO')")
+    public ResponseEntity<?> getUserStats() {
+        try {
+            Map<String, Object> stats = usuarioService.getUserStats();
+            return ResponseEntity.ok(stats);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Error al obtener estadísticas: " + e.getMessage()));
+        }
+    }
+    
+    @GetMapping("/recent")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('ADMINISTRATIVO')")
+    public ResponseEntity<?> getRecentUsers(@RequestParam(defaultValue = "5") int limit) {
+        try {
+            List<UsuarioResponse> recentUsers = usuarioService.getRecentUsers(limit);
+            return ResponseEntity.ok(recentUsers);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Error al obtener usuarios recientes: " + e.getMessage()));
+        }
+    }
+    
+    @PutMapping("/{id}/toggle-status")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('ADMINISTRATIVO')")
+    public ResponseEntity<?> toggleUserStatus(@PathVariable Long id) {
+        try {
+            UsuarioResponse usuario = usuarioService.toggleUserStatus(id);
+            return ResponseEntity.ok(usuario);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Error al cambiar estado del usuario: " + e.getMessage()));
+        }
+    }
+    
+    @PutMapping("/{id}/toggle-lock")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('ADMINISTRATIVO')")
+    public ResponseEntity<?> toggleUserLock(@PathVariable Long id) {
+        try {
+            UsuarioResponse usuario = usuarioService.toggleUserLock(id);
+            return ResponseEntity.ok(usuario);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Error al cambiar bloqueo del usuario: " + e.getMessage()));
+        }
+    }
+    
+    @PutMapping("/{userId}/assign-area/{areaId}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('ADMINISTRATIVO')")
+    public ResponseEntity<?> assignArea(@PathVariable Long userId, @PathVariable Long areaId) {
+        try {
+            UsuarioResponse usuario = usuarioService.assignArea(userId, areaId);
+            return ResponseEntity.ok(usuario);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Error al asignar área: " + e.getMessage()));
+        }
+    }
+    
+    @DeleteMapping("/{userId}/remove-area")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('ADMINISTRATIVO')")
+    public ResponseEntity<?> removeArea(@PathVariable Long userId) {
+        try {
+            UsuarioResponse usuario = usuarioService.assignArea(userId, null);
+            return ResponseEntity.ok(usuario);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Error al remover área: " + e.getMessage()));
+        }
+    }
+    
+    @PutMapping("/{userId}/admin-reset-password")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> adminResetPassword(
+            @PathVariable Long userId,
+            @Valid @RequestBody AdminResetPasswordRequest request) {
+        try {
+            UsuarioResponse usuario = usuarioService.adminResetPassword(userId, request);
+            return ResponseEntity.ok(Map.of(
+                "message", "Contraseña restablecida exitosamente",
+                "usuario", usuario
+            ));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Error al restablecer contraseña: " + e.getMessage()));
+        }
+    }
+    
+    @GetMapping("/by-area/{areaId}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('ADMINISTRATIVO')")
+    public ResponseEntity<List<UsuarioResponse>> getUsersByArea(@PathVariable Long areaId) {
+        try {
+            List<UsuarioResponse> usuarios = usuarioService.getUsersByArea(areaId);
+            return ResponseEntity.ok(usuarios);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    
+    @GetMapping("/without-area")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('ADMINISTRATIVO')")
+    public ResponseEntity<List<UsuarioResponse>> getUsersWithoutArea() {
+        try {
+            List<UsuarioResponse> usuarios = usuarioService.getUsersWithoutArea();
+            return ResponseEntity.ok(usuarios);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
     

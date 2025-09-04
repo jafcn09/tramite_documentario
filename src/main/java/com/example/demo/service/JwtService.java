@@ -1,9 +1,13 @@
 package com.example.demo.service;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.Base64;
+import javax.crypto.SecretKey;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,42 +23,44 @@ public class JwtService {
     @Value("${jwt.refresh.expiration:604800000}") // 7 días en milisegundos  
     private long refreshExpiration;
     
-    // Simplified token generation for now
     public String generateToken(String username, String role, Long userId) {
-        // Create a simple token with base64 encoding
-        // In a production environment, you'd use proper JWT libraries
-        Map<String, Object> payload = new HashMap<>();
-        payload.put("username", username);
-        payload.put("role", role);
-        payload.put("userId", userId);
-        payload.put("exp", System.currentTimeMillis() + jwtExpiration);
-        payload.put("type", "access");
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("role", role);
+        claims.put("userId", userId);
+        claims.put("type", "access");
         
-        String payloadJson = mapToJson(payload);
-        return Base64.getEncoder().encodeToString(payloadJson.getBytes());
+        return Jwts.builder()
+                .claims(claims)
+                .subject(username)
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(new Date(System.currentTimeMillis() + jwtExpiration))
+                .signWith(getSigningKey())
+                .compact();
     }
     
-    // Generate refresh token
     public String generateRefreshToken(String username, Long userId) {
-        Map<String, Object> payload = new HashMap<>();
-        payload.put("username", username);
-        payload.put("userId", userId);
-        payload.put("exp", System.currentTimeMillis() + refreshExpiration);
-        payload.put("type", "refresh");
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("userId", userId);
+        claims.put("type", "refresh");
         
-        String payloadJson = mapToJson(payload);
-        return Base64.getEncoder().encodeToString(payloadJson.getBytes());
+        return Jwts.builder()
+                .claims(claims)
+                .subject(username)
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(new Date(System.currentTimeMillis() + refreshExpiration))
+                .signWith(getSigningKey())
+                .compact();
     }
     
     public Boolean validateToken(String token, String username) {
         try {
-            Map<String, Object> payload = parseToken(token);
-            String tokenUsername = (String) payload.get("username");
-            Long exp = (Long) payload.get("exp");
+            Claims claims = extractAllClaims(token);
+            String tokenUsername = claims.getSubject();
+            Date expiration = claims.getExpiration();
             
             return username.equals(tokenUsername) && 
-                   exp != null && 
-                   System.currentTimeMillis() < exp;
+                   expiration != null && 
+                   !expiration.before(new Date());
         } catch (Exception e) {
             return false;
         }
@@ -62,8 +68,7 @@ public class JwtService {
     
     public String extractUsername(String token) {
         try {
-            Map<String, Object> payload = parseToken(token);
-            return (String) payload.get("username");
+            return extractAllClaims(token).getSubject();
         } catch (Exception e) {
             return null;
         }
@@ -71,8 +76,7 @@ public class JwtService {
     
     public String extractRole(String token) {
         try {
-            Map<String, Object> payload = parseToken(token);
-            return (String) payload.get("role");
+            return extractAllClaims(token).get("role", String.class);
         } catch (Exception e) {
             return null;
         }
@@ -80,8 +84,8 @@ public class JwtService {
     
     public Long extractUserId(String token) {
         try {
-            Map<String, Object> payload = parseToken(token);
-            Object userId = payload.get("userId");
+            Claims claims = extractAllClaims(token);
+            Object userId = claims.get("userId");
             if (userId instanceof Integer) {
                 return ((Integer) userId).longValue();
             }
@@ -91,52 +95,15 @@ public class JwtService {
         }
     }
     
-    private Map<String, Object> parseToken(String token) {
-        try {
-            String payloadJson = new String(Base64.getDecoder().decode(token));
-            return jsonToMap(payloadJson);
-        } catch (Exception e) {
-            throw new RuntimeException("Invalid token", e);
-        }
+    private Claims extractAllClaims(String token) {
+        return Jwts.parser()
+                .verifyWith(getSigningKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
     }
     
-    private String mapToJson(Map<String, Object> map) {
-        StringBuilder json = new StringBuilder("{");
-        boolean first = true;
-        for (Map.Entry<String, Object> entry : map.entrySet()) {
-            if (!first) json.append(",");
-            json.append("\"").append(entry.getKey()).append("\":\"")
-                .append(entry.getValue()).append("\"");
-            first = false;
-        }
-        json.append("}");
-        return json.toString();
-    }
-    
-    private Map<String, Object> jsonToMap(String json) {
-        Map<String, Object> result = new HashMap<>();
-        // Simple JSON parsing - in production use Jackson or similar
-        json = json.trim().substring(1, json.length() - 1); // Remove { }
-        String[] pairs = json.split(",");
-        
-        for (String pair : pairs) {
-            String[] keyValue = pair.split(":");
-            if (keyValue.length == 2) {
-                String key = keyValue[0].trim().replaceAll("\"", "");
-                String value = keyValue[1].trim().replaceAll("\"", "");
-                
-                // Try to parse numbers
-                if (key.equals("userId") || key.equals("exp")) {
-                    try {
-                        result.put(key, Long.parseLong(value));
-                    } catch (NumberFormatException e) {
-                        result.put(key, value);
-                    }
-                } else {
-                    result.put(key, value);
-                }
-            }
-        }
-        return result;
+    private SecretKey getSigningKey() {
+        return Keys.hmacShaKeyFor(secretKey.getBytes());
     }
 }

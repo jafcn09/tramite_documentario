@@ -20,24 +20,41 @@ public class PhoneValidator implements ConstraintValidator<ValidPhone, String> {
     
     @Override
     public boolean isValid(String phone, ConstraintValidatorContext context) {
+        System.out.println("=== PhoneValidator Debug ===");
+        System.out.println("Input phone: " + phone);
+        
         if (phone == null || phone.trim().isEmpty()) {
+            System.out.println("Phone is null/empty - returning true");
             return true; // Allow null/empty for optional fields
         }
         
         // Remove spaces and special characters for pattern validation
         String cleanPhone = phone.replaceAll("[^0-9]", "");
+        System.out.println("Clean phone: " + cleanPhone);
         
         // Check basic format
-        if (!VALID_PHONE_PATTERN.matcher(phone).matches()) {
+        boolean matchesPattern = VALID_PHONE_PATTERN.matcher(phone).matches();
+        System.out.println("Matches VALID_PHONE_PATTERN: " + matchesPattern);
+        if (!matchesPattern) {
+            System.out.println("Failed basic format check");
             return false;
         }
         
         // Check length of digits only
-        if (cleanPhone.length() < 9 || cleanPhone.length() > 15) {
+        boolean lengthValid = cleanPhone.length() >= 9 && cleanPhone.length() <= 15;
+        System.out.println("Length valid (" + cleanPhone.length() + "): " + lengthValid);
+        if (!lengthValid) {
+            System.out.println("Failed length check");
             return false;
         }
         
         // Check for invalid patterns (all same digits, sequential, etc.)
-        return !INVALID_PATTERNS.matcher(cleanPhone).matches();
+        boolean matchesInvalidPattern = INVALID_PATTERNS.matcher(cleanPhone).matches();
+        System.out.println("Matches INVALID_PATTERNS: " + matchesInvalidPattern);
+        boolean isValid = !matchesInvalidPattern;
+        System.out.println("Final result: " + isValid);
+        System.out.println("=== End PhoneValidator Debug ===");
+        
+        return isValid;
     }
 }
