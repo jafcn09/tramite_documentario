@@ -215,6 +215,18 @@ public class UsuarioController {
         }
     }
     
+    @GetMapping("/count")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('ADMINISTRATIVO')")
+    public ResponseEntity<?> getUserCount() {
+        try {
+            long count = usuarioService.getTotalUserCount();
+            return ResponseEntity.ok(Map.of("totalUsers", count));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Error al obtener total de usuarios: " + e.getMessage()));
+        }
+    }
+    
     @GetMapping("/recent")
     @PreAuthorize("hasRole('ADMIN') or hasRole('ADMINISTRATIVO')")
     public ResponseEntity<?> getRecentUsers(@RequestParam(defaultValue = "5") int limit) {

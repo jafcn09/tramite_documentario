@@ -37,9 +37,19 @@ public class SecurityConfig {
                 .requestMatchers("/error").permitAll()
                 .requestMatchers("/").permitAll()
                 
+                // Public trámite endpoints (no token required)
+                .requestMatchers("/api/tramites/public/**").permitAll()
+                
+                // WebSocket endpoints
+                .requestMatchers("/ws/**").permitAll()
+                .requestMatchers("/topic/**").permitAll()
+                .requestMatchers("/queue/**").permitAll()
+                
                 // Protected endpoints requiring authentication
                 .requestMatchers("/api/roles/**").authenticated()
                 .requestMatchers("/api/usuarios/**").authenticated()
+                .requestMatchers("/api/tramites/**").authenticated()
+                .requestMatchers("/api/notificaciones/**").authenticated()
                 
                 // All other routes require authentication
                 .anyRequest().authenticated()

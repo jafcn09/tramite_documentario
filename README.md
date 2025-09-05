@@ -519,7 +519,7 @@ src/main/resources/
 ├── application-prod.properties      # Configuración producción
 └── data.sql                        # Datos iniciales (opcional)
 ```
-
+n
 
 ### Relaciones de Entidades
 
@@ -540,6 +540,13 @@ src/main/resources/
 # Ejecutar pruebas con reporte de cobertura
 ./gradlew jacocoTestReport
 
+
+implementa, {
+kahalj. try: (q){
+return("cambia")  
+}catch{
+  se espera , esto debe : function always motion ,!if
+}
 # Ejecutar pruebas específicas
 ./gradlew test --tests AuthControllerTest
 

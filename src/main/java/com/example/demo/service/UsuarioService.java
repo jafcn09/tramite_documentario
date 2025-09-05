@@ -456,6 +456,10 @@ public class UsuarioService {
         return response;
     }
     
+    public long getTotalUserCount() {
+        return usuarioRepository.count();
+    }
+    
     public Map<String, Object> getUserStats() {
         Map<String, Object> stats = new HashMap<>();
         long totalUsers = usuarioRepository.count();
@@ -645,5 +649,43 @@ public class UsuarioService {
         List<Usuario> allUsers = usuarioRepository.findAll();
         return allUsers.stream()
                 .anyMatch(user -> passwordEncoder.matches(plainPassword, user.getClave()));
+    }
+    
+    // Métodos auxiliares para TramiteService
+    public List<Long> obtenerTrabajadoresDeArea(Long areaId) {
+        return usuarioRepository.findAll().stream()
+                .filter(user -> user.getArea() != null && user.getArea().getId().equals(areaId))
+                .filter(user -> user.getRole() != null && 
+                       ("ADMINISTRATIVO".equals(user.getRole().getName().toString()) || 
+                        "ADMIN".equals(user.getRole().getName().toString())))
+                .map(Usuario::getId)
+                .collect(Collectors.toList());
+    }
+    
+    public String obtenerNombreCompleto(Long usuarioId) {
+        return usuarioRepository.findById(usuarioId)
+                .map(u -> u.getNombre() + " " + u.getApellidos())
+                .orElse("Usuario desconocido");
+    }
+    
+    public Usuario findByUsuario(String usuario) {
+        return usuarioRepository.findByUsuario(usuario).orElse(null);
+    }
+    
+    // Métodos para notificaciones masivas
+    public List<Long> obtenerTodosLosUsuariosActivos() {
+        return usuarioRepository.findAll().stream()
+                .filter(usuario -> usuario.isAccountEnabled() && !usuario.isAccountLocked())
+                .map(Usuario::getId)
+                .collect(Collectors.toList());
+    }
+    
+    public List<Long> obtenerUsuariosPorRol(String roleName) {
+        return usuarioRepository.findAll().stream()
+                .filter(usuario -> usuario.isAccountEnabled() && !usuario.isAccountLocked())
+                .filter(usuario -> usuario.getRole() != null && 
+                       roleName.equals(usuario.getRole().getName().toString()))
+                .map(Usuario::getId)
+                .collect(Collectors.toList());
     }
 }
