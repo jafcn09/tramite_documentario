@@ -103,4 +103,16 @@ public interface TramiteRepository extends JpaRepository<Tramite, Long> {
     
     // Contar por tipo
     Long countByTipo(Tramite.TipoTramite tipo);
+    
+    // Contar trámites por usuario solicitante
+    Long countByUsuarioSolicitanteId(Long usuarioSolicitanteId);
+    
+    // Contar trámites por usuario solicitante y estado
+    Long countByUsuarioSolicitanteIdAndEstado(Long usuarioSolicitanteId, Tramite.EstadoTramite estado);
+    
+    // Contar trámites por usuario solicitante y tipo
+    Long countByUsuarioSolicitanteIdAndTipo(Long usuarioSolicitanteId, Tramite.TipoTramite tipo);
+    
+    // Contar trámites por usuario asignado
+    Long countByUsuarioAsignadoId(Long usuarioAsignadoId);
 }

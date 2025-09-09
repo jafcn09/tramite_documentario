@@ -304,6 +304,18 @@ public class NotificacionService {
         log.info("Notificación {} eliminada por admin", id);
     }
     
+    public void eliminarNotificacionUsuario(Long id, Long usuarioId) {
+        Notificacion notificacion = notificacionRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Notificación no encontrada"));
+        
+        if (!notificacion.getUsuarioDestinatarioId().equals(usuarioId)) {
+            throw new RuntimeException("No tiene permisos para eliminar esta notificación");
+        }
+        
+        notificacionRepository.deleteById(id);
+        log.info("Notificación {} eliminada por usuario {}", id, usuarioId);
+    }
+    
     // Obtener notificaciones de un usuario
     @Transactional(readOnly = true)
     public Page<NotificacionResponse> obtenerNotificacionesUsuario(Long usuarioId, Pageable pageable) {
@@ -311,6 +323,20 @@ public class NotificacionService {
             .findByUsuarioDestinatarioIdOrderByFechaCreacionDesc(usuarioId, pageable);
         
         return notificaciones.map(this::convertirAResponse);
+    }
+    
+    // Obtener una notificación por ID
+    @Transactional(readOnly = true)
+    public NotificacionResponse obtenerNotificacionPorId(Long id, Long usuarioId) {
+        Notificacion notificacion = notificacionRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Notificación no encontrada"));
+        
+        // Verificar que la notificación pertenece al usuario
+        if (!notificacion.getUsuarioDestinatarioId().equals(usuarioId)) {
+            throw new RuntimeException("No tiene permisos para ver esta notificación");
+        }
+        
+        return convertirAResponse(notificacion);
     }
     
     // Obtener notificaciones no leídas

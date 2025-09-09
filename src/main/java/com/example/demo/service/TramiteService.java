@@ -310,13 +310,13 @@ public class TramiteService {
         Page<Tramite> tramites;
         
         if ("USUARIO".equals(rol)) {
-            // Remitente ve solo sus trámites
+            // Usuario ve solo sus trámites creados
             tramites = tramiteRepository.findByUsuarioSolicitanteId(usuarioId, pageable);
-        } else if ("ADMINISTRATIVO".equals(rol)) {
-            // Trabajador ve trámites asignados
-            tramites = tramiteRepository.findByUsuarioAsignadoId(usuarioId, pageable);
+        } else if ("ADMINISTRATIVO".equals(rol) || "ADMIN".equals(rol)) {
+            // Administrativo y Admin ven todos los trámites para gestionar
+            tramites = tramiteRepository.findAll(pageable);
         } else {
-            // Admin ve todos
+            // Cualquier otro rol ve todos (por compatibilidad)
             tramites = tramiteRepository.findAll(pageable);
         }
         
@@ -448,6 +448,37 @@ public class TramiteService {
         }
         
         estadisticas.put("total", tramiteRepository.count());
+        
+        return estadisticas;
+    }
+    
+    @Transactional(readOnly = true)
+    public Object obtenerEstadisticasUsuario(Long usuarioId, String rol) {
+        java.util.Map<String, Object> estadisticas = new java.util.HashMap<>();
+        
+        if ("USUARIO".equals(rol)) {
+            // Estadísticas para usuario remitente - solo sus trámites
+            estadisticas.put("total", tramiteRepository.countByUsuarioSolicitanteId(usuarioId));
+            
+            // Contar por estado para sus trámites
+            for (Tramite.EstadoTramite estado : Tramite.EstadoTramite.values()) {
+                Long count = tramiteRepository.countByUsuarioSolicitanteIdAndEstado(usuarioId, estado);
+                estadisticas.put("estado_" + estado.name(), count);
+            }
+            
+            // Contar por tipo para sus trámites
+            for (Tramite.TipoTramite tipo : Tramite.TipoTramite.values()) {
+                Long count = tramiteRepository.countByUsuarioSolicitanteIdAndTipo(usuarioId, tipo);
+                estadisticas.put("tipo_" + tipo.name(), count);
+            }
+            
+        } else if ("ADMINISTRATIVO".equals(rol) || "ADMIN".equals(rol)) {
+            // Administrativo y Admin ven estadísticas generales de todos los trámites
+            return obtenerEstadisticas();
+        } else {
+            // Cualquier otro rol ve estadísticas generales
+            return obtenerEstadisticas();
+        }
         
         return estadisticas;
     }

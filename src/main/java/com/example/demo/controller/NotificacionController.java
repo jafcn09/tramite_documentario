@@ -84,6 +84,18 @@ public class NotificacionController {
     
     // ENDPOINTS PARA USUARIOS
     
+    // Obtener notificación por ID
+    @GetMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<NotificacionResponse> obtenerNotificacionPorId(
+            @PathVariable Long id,
+            Principal principal) {
+        
+        Long usuarioId = getUserId(principal);
+        NotificacionResponse notificacion = notificacionService.obtenerNotificacionPorId(id, usuarioId);
+        return ResponseEntity.ok(notificacion);
+    }
+    
     // Obtener mis notificaciones
     @GetMapping
     @PreAuthorize("isAuthenticated()")
@@ -196,6 +208,18 @@ public class NotificacionController {
         
         Integer eliminadas = notificacionService.limpiarNotificacionesAntiguas(diasAntiguedad);
         return ResponseEntity.ok(eliminadas);
+    }
+    
+    // Eliminar notificación (usuario)
+    @DeleteMapping("/{id}/eliminar")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> eliminarNotificacionUsuario(
+            @PathVariable Long id,
+            Principal principal) {
+        
+        Long usuarioId = getUserId(principal);
+        notificacionService.eliminarNotificacionUsuario(id, usuarioId);
+        return ResponseEntity.noContent().build();
     }
     
     // Reenviar notificación por email
