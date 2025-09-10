@@ -1,6 +1,10 @@
+
 package com.example.demo.repository;
 
-import com.example.demo.model.Tramite;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -8,9 +12,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
+import com.example.demo.model.Tramite;
 
 @Repository
 public interface TramiteRepository extends JpaRepository<Tramite, Long> {
@@ -18,17 +20,24 @@ public interface TramiteRepository extends JpaRepository<Tramite, Long> {
     // Buscar por código único
     Optional<Tramite> findByCodigo(String codigo);
     
+    // Buscar por código con paginación (para búsquedas públicas)
+    Page<Tramite> findByCodigoContaining(String codigo, Pageable pageable);
+    
     // Buscar por usuario solicitante
-    Page<Tramite> findByUsuarioSolicitanteId(Long usuarioSolicitanteId, Pageable pageable);
+    @Query("SELECT t FROM Tramite t WHERE t.usuarioSolicitanteId = :usuarioSolicitanteId")
+    Page<Tramite> findByUsuarioSolicitanteId(@Param("usuarioSolicitanteId") Long usuarioSolicitanteId, Pageable pageable);
     
     // Buscar por usuario asignado
-    Page<Tramite> findByUsuarioAsignadoId(Long usuarioAsignadoId, Pageable pageable);
+    @Query("SELECT t FROM Tramite t WHERE t.usuarioAsignadoId = :usuarioAsignadoId")
+    Page<Tramite> findByUsuarioAsignadoId(@Param("usuarioAsignadoId") Long usuarioAsignadoId, Pageable pageable);
     
     // Buscar por área actual
-    Page<Tramite> findByAreaActualId(Long areaActualId, Pageable pageable);
+    @Query("SELECT t FROM Tramite t WHERE t.areaActualId = :areaActualId")
+    Page<Tramite> findByAreaActualId(@Param("areaActualId") Long areaActualId, Pageable pageable);
     
     // Buscar por área origen
-    Page<Tramite> findByAreaOrigenId(Long areaOrigenId, Pageable pageable);
+    @Query("SELECT t FROM Tramite t WHERE t.areaOrigenId = :areaOrigenId")
+    Page<Tramite> findByAreaOrigenId(@Param("areaOrigenId") Long areaOrigenId, Pageable pageable);
     
     // Buscar por estado
     Page<Tramite> findByEstado(Tramite.EstadoTramite estado, Pageable pageable);
@@ -105,14 +114,18 @@ public interface TramiteRepository extends JpaRepository<Tramite, Long> {
     Long countByTipo(Tramite.TipoTramite tipo);
     
     // Contar trámites por usuario solicitante
-    Long countByUsuarioSolicitanteId(Long usuarioSolicitanteId);
+    @Query("SELECT COUNT(t) FROM Tramite t WHERE t.usuarioSolicitanteId = :usuarioSolicitanteId")
+    Long countByUsuarioSolicitanteId(@Param("usuarioSolicitanteId") Long usuarioSolicitanteId);
     
     // Contar trámites por usuario solicitante y estado
-    Long countByUsuarioSolicitanteIdAndEstado(Long usuarioSolicitanteId, Tramite.EstadoTramite estado);
+    @Query("SELECT COUNT(t) FROM Tramite t WHERE t.usuarioSolicitanteId = :usuarioSolicitanteId AND t.estado = :estado")
+    Long countByUsuarioSolicitanteIdAndEstado(@Param("usuarioSolicitanteId") Long usuarioSolicitanteId, @Param("estado") Tramite.EstadoTramite estado);
     
     // Contar trámites por usuario solicitante y tipo
-    Long countByUsuarioSolicitanteIdAndTipo(Long usuarioSolicitanteId, Tramite.TipoTramite tipo);
+    @Query("SELECT COUNT(t) FROM Tramite t WHERE t.usuarioSolicitanteId = :usuarioSolicitanteId AND t.tipo = :tipo")
+    Long countByUsuarioSolicitanteIdAndTipo(@Param("usuarioSolicitanteId") Long usuarioSolicitanteId, @Param("tipo") Tramite.TipoTramite tipo);
     
     // Contar trámites por usuario asignado
-    Long countByUsuarioAsignadoId(Long usuarioAsignadoId);
+    @Query("SELECT COUNT(t) FROM Tramite t WHERE t.usuarioAsignadoId = :usuarioAsignadoId")
+    Long countByUsuarioAsignadoId(@Param("usuarioAsignadoId") Long usuarioAsignadoId);
 }

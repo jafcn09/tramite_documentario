@@ -72,6 +72,7 @@ public class TramiteHistorial {
         MODIFICADO,
         COMENTARIO_AGREGADO,
         DOCUMENTO_ADJUNTO,
-        CALIFICADO
+        CALIFICADO,
+        RESPONDIDO
     }
 }

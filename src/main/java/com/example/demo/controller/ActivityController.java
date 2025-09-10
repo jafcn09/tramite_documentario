@@ -17,7 +17,7 @@ public class ActivityController {
     private final ActivityService activityService;
     
     @GetMapping("/recent")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('ADMINISTRATIVO')")
     public ResponseEntity<List<ActivityResponse>> getRecentActivities(
             @RequestParam(defaultValue = "5") int limit,
             @RequestParam(defaultValue = "0") int offset) {

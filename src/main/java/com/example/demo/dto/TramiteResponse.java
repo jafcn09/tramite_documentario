@@ -38,6 +38,16 @@ public class TramiteResponse {
     // Información del área origen
     private AreaBasicInfo areaOrigen;
     
+    // Información de respuesta
+    private String respuesta;
+    private LocalDateTime fechaRespuesta;
+    private UsuarioBasicInfo usuarioRespondio;
+    private List<DocumentoAdjunto> archivosRespuesta;
+    
+    // Contadores
+    private Integer contadorProcesados;
+    private Integer contadorPorProcesar;
+    
     // Fechas
     private LocalDateTime fechaCreacion;
     private LocalDateTime fechaActualizacion;

@@ -2,6 +2,8 @@ package com.example.demo.controller;
 
 import com.example.demo.dto.TramiteRequest;
 import com.example.demo.dto.TramiteResponse;
+import com.example.demo.dto.AprobarTramiteRequest;
+import com.example.demo.dto.AprobarTramiteResponse;
 import com.example.demo.service.TramiteService;
 import com.example.demo.service.JwtService;
 import lombok.RequiredArgsConstructor;
@@ -101,7 +103,7 @@ public class TramiteController {
         
         // Use the existing advanced search method
         Page<TramiteResponse> tramites = tramiteService.buscarTramitesAvanzado(
-            null, null, null, estado, tipo, prioridad, pageable
+            usuarioId, rol, null, estado, tipo, prioridad, pageable
         );
         return ResponseEntity.ok(tramites);
     }
@@ -221,6 +223,50 @@ public class TramiteController {
         }
         TramiteResponse tramite = tramiteService.derivarTramite(id, trabajadorActualId, trabajadorNuevoId, motivo);
         return ResponseEntity.ok(tramite);
+    }
+    
+    // Aprobar trámite (ADMINISTRATIVO/ADMIN)
+    @PostMapping("/{id}/aprobar")
+    @PreAuthorize("hasRole('ADMINISTRATIVO') or hasRole('ADMIN')")
+    public ResponseEntity<AprobarTramiteResponse> aprobarTramite(
+            @PathVariable Long id,
+            @RequestBody AprobarTramiteRequest request,
+            Principal principal,
+            HttpServletRequest httpRequest) {
+        
+        Long administrativoId = getUserIdFromToken(httpRequest);
+        if (administrativoId == null) {
+            throw new RuntimeException("No se pudo obtener el ID del usuario del token");
+        }
+        AprobarTramiteResponse response = tramiteService.aprobarTramite(id, request, administrativoId);
+        return ResponseEntity.ok(response);
+    }
+    
+    // Responder trámite (ADMINISTRATIVO/ADMIN) - Nuevo endpoint
+    @PostMapping("/{id}/responder")
+    @PreAuthorize("hasRole('ADMINISTRATIVO') or hasRole('ADMIN')")
+    public ResponseEntity<com.example.demo.dto.ResponderTramiteResponse> responderTramite(
+            @PathVariable Long id,
+            @RequestParam("respuesta") String respuesta,
+            @RequestParam(value = "observaciones", required = false) String observaciones,
+            @RequestParam(value = "asunto", required = false) String asunto,
+            @RequestParam(value = "archivos", required = false) List<MultipartFile> archivos,
+            Principal principal,
+            HttpServletRequest httpRequest) {
+        
+        Long administrativoId = getUserIdFromToken(httpRequest);
+        if (administrativoId == null) {
+            throw new RuntimeException("No se pudo obtener el ID del usuario del token");
+        }
+        
+        com.example.demo.dto.ResponderTramiteRequest request = new com.example.demo.dto.ResponderTramiteRequest();
+        request.setRespuesta(respuesta);
+        request.setObservaciones(observaciones);
+        request.setAsunto(asunto);
+        request.setArchivosRespuesta(archivos);
+        
+        com.example.demo.dto.ResponderTramiteResponse response = tramiteService.responderTramite(id, request, administrativoId);
+        return ResponseEntity.ok(response);
     }
     
     // Cambiar estado (ADMINISTRATIVO/ADMIN)

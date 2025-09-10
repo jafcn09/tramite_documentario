@@ -36,6 +36,98 @@ public class EmailService {
     
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
     
+    // Enviar correo de respuesta de trámite con template HTML mejorado
+    @Async
+    public void enviarCorreoRespuestaTramite(Long solicitanteId, Long tramiteId, Map<String, Object> datos) {
+        usuarioRepository.findById(solicitanteId).ifPresent(solicitante -> {
+            tramiteRepository.findById(tramiteId).ifPresent(tramite -> {
+                try {
+                    MimeMessage message = mailSender.createMimeMessage();
+                    MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+                    
+                    helper.setFrom(fromEmail);
+                    helper.setTo(solicitante.getCorreo());
+                    helper.setSubject(datos.get("asunto").toString());
+                    
+                    // Template HTML mejorado
+                    String htmlContent = construirTemplateRespuesta(solicitante, tramite, datos);
+                    helper.setText(htmlContent, true);
+                    
+                    mailSender.send(message);
+                    log.info("Email de respuesta enviado a {} para trámite {}", solicitante.getCorreo(), tramite.getCodigo());
+                } catch (MessagingException e) {
+                    log.error("Error al enviar email de respuesta: ", e);
+                }
+            });
+        });
+    }
+    
+    private String construirTemplateRespuesta(com.example.demo.model.Usuario solicitante, Tramite tramite, Map<String, Object> datos) {
+        return "<!DOCTYPE html>" +
+            "<html lang='es'>" +
+            "<head>" +
+            "    <meta charset='UTF-8'>" +
+            "    <meta name='viewport' content='width=device-width, initial-scale=1.0'>" +
+            "    <style>" +
+            "        body { font-family: 'Arial', sans-serif; line-height: 1.6; color: #333; background: #f4f4f4; margin: 0; padding: 0; }" +
+            "        .container { max-width: 600px; margin: 20px auto; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 0 20px rgba(0,0,0,0.1); }" +
+            "        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; }" +
+            "        .header h1 { margin: 0; font-size: 28px; }" +
+            "        .content { padding: 30px; }" +
+            "        .info-box { background: #f8f9fa; border-left: 4px solid #667eea; padding: 15px; margin: 20px 0; border-radius: 5px; }" +
+            "        .response-box { background: #e8f5e9; border: 1px solid #4caf50; padding: 20px; margin: 20px 0; border-radius: 8px; }" +
+            "        .response-box h3 { color: #2e7d32; margin-top: 0; }" +
+            "        .button { display: inline-block; padding: 12px 30px; background: #667eea; color: white; text-decoration: none; border-radius: 25px; margin: 20px 0; }" +
+            "        .footer { background: #f8f9fa; padding: 20px; text-align: center; color: #666; font-size: 12px; }" +
+            "        .badge { display: inline-block; padding: 5px 10px; background: #667eea; color: white; border-radius: 15px; font-size: 12px; }" +
+            "    </style>" +
+            "</head>" +
+            "<body>" +
+            "    <div class='container'>" +
+            "        <div class='header'>" +
+            "            <h1>✅ Trámite Respondido</h1>" +
+            "            <p style='margin: 10px 0 0 0; opacity: 0.9;'>Su solicitud ha sido procesada</p>" +
+            "        </div>" +
+            "        <div class='content'>" +
+            "            <p>Estimado/a <strong>" + solicitante.getNombre() + " " + solicitante.getApellidos() + "</strong>,</p>" +
+            "            <p>Nos complace informarle que su trámite ha sido <strong>respondido y procesado</strong> exitosamente.</p>" +
+            "            " +
+            "            <div class='info-box'>" +
+            "                <strong>📋 Detalles del Trámite:</strong><br>" +
+            "                <table style='margin-top: 10px; width: 100%;'>" +
+            "                    <tr><td style='padding: 5px 0;'><strong>Código:</strong></td><td>" + tramite.getCodigo() + "</td></tr>" +
+            "                    <tr><td style='padding: 5px 0;'><strong>Título:</strong></td><td>" + tramite.getTitulo() + "</td></tr>" +
+            "                    <tr><td style='padding: 5px 0;'><strong>Tipo:</strong></td><td>" + tramite.getTipo() + "</td></tr>" +
+            "                    <tr><td style='padding: 5px 0;'><strong>Estado:</strong></td><td><span class='badge'>FINALIZADO</span></td></tr>" +
+            "                    <tr><td style='padding: 5px 0;'><strong>Respondido por:</strong></td><td>" + datos.get("administrativoNombre") + "</td></tr>" +
+            "                    <tr><td style='padding: 5px 0;'><strong>Fecha de respuesta:</strong></td><td>" + datos.get("fechaRespuesta") + "</td></tr>" +
+            "                </table>" +
+            "            </div>" +
+            "            " +
+            "            <div class='response-box'>" +
+            "                <h3>📝 Respuesta del Administrativo:</h3>" +
+            "                <p>" + datos.get("respuesta") + "</p>" +
+            "            </div>" +
+            "            " +
+            "            <p>Para ver más detalles y descargar documentos adjuntos, puede acceder al sistema:</p>" +
+            "            <center>" +
+            "                <a href='" + appUrl + "/tramites/" + tramite.getId() + "' class='button'>Ver Trámite Completo</a>" +
+            "            </center>" +
+            "            " +
+            "            <p style='margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;'>" +
+            "                Si tiene alguna consulta adicional, no dude en contactarnos a través del sistema." +
+            "            </p>" +
+            "        </div>" +
+            "        <div class='footer'>" +
+            "            <p>Este es un correo automático del Sistema de Trámite Documentario</p>" +
+            "            <p>Por favor, no responda a este correo</p>" +
+            "            <p>© 2024 Sistema de Trámites - Todos los derechos reservados</p>" +
+            "        </div>" +
+            "    </div>" +
+            "</body>" +
+            "</html>";
+    }
+    
     // Notificar nuevo trámite a trabajador
     @Async
     public void notificarNuevoTramiteATrabajador(Long trabajadorId, Long tramiteId) {

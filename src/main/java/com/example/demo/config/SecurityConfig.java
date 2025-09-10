@@ -32,12 +32,12 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authz -> authz
-                // Public authentication endpoints
+                // Public endpoints first (order matters!)
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/error").permitAll()
                 .requestMatchers("/").permitAll()
                 
-                // Public trámite endpoints (no token required)
+                // Public trámite endpoints (no token required) - MUST come before protected tramites
                 .requestMatchers("/api/tramites/public/**").permitAll()
                 
                 // WebSocket endpoints
@@ -45,11 +45,13 @@ public class SecurityConfig {
                 .requestMatchers("/topic/**").permitAll()
                 .requestMatchers("/queue/**").permitAll()
                 
-                // Protected endpoints requiring authentication
+                // Protected endpoints requiring authentication (after public ones)
                 .requestMatchers("/api/roles/**").authenticated()
                 .requestMatchers("/api/usuarios/**").authenticated()
                 .requestMatchers("/api/tramites/**").authenticated()
                 .requestMatchers("/api/notificaciones/**").authenticated()
+                .requestMatchers("/api/bandeja-tramites/**").authenticated()
+                .requestMatchers("/api/activities/**").authenticated()
                 
                 // All other routes require authentication
                 .anyRequest().authenticated()

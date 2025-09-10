@@ -1,23 +1,25 @@
 package com.example.demo.service;
 
-import com.example.demo.dto.TramiteRequest;
-import com.example.demo.dto.TramiteResponse;
-import com.example.demo.model.Tramite;
-import com.example.demo.model.TramiteHistorial;
-import com.example.demo.repository.TramiteRepository;
-import com.example.demo.repository.TramiteHistorialRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.time.LocalDateTime;
+import java.time.Year;
+import java.util.Arrays;
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.time.Year;
-import java.util.Arrays;
-import java.util.List;
+import com.example.demo.dto.TramiteRequest;
+import com.example.demo.dto.TramiteResponse;
+import com.example.demo.model.Tramite;
+import com.example.demo.model.TramiteHistorial;
+import com.example.demo.repository.TramiteHistorialRepository;
+import com.example.demo.repository.TramiteRepository;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +31,7 @@ public class TramiteService {
     private final TramiteHistorialRepository historialRepository;
     private final NotificacionService notificacionService;
     private final UsuarioService usuarioService;
+    private final AreaService areaService;
     
     private static final int MAX_TRAMITES_POR_TRABAJADOR = 20;
     private static final int DIAS_PROCESAMIENTO = 3;
@@ -326,7 +329,7 @@ public class TramiteService {
     // Métodos públicos (sin autenticación)
     @Transactional(readOnly = true)
     public Page<TramiteResponse> buscarPorCodigo(String codigo, Pageable pageable) {
-        return tramiteRepository.findByTituloOrDescripcionContaining(codigo, pageable)
+        return tramiteRepository.findByCodigoContaining(codigo, pageable)
             .map(this::convertirAResponse);
     }
     
@@ -578,7 +581,7 @@ public class TramiteService {
     }
     
     private TramiteResponse convertirAResponse(Tramite tramite) {
-        return TramiteResponse.builder()
+        TramiteResponse.TramiteResponseBuilder builder = TramiteResponse.builder()
             .id(tramite.getId())
             .codigo(tramite.getCodigo())
             .titulo(tramite.getTitulo())
@@ -588,10 +591,276 @@ public class TramiteService {
             .prioridad(tramite.getPrioridad().name())
             .numeroExpediente(tramite.getNumeroExpediente())
             .observaciones(tramite.getObservaciones())
+            .calificacion(tramite.getCalificacion())
+            .comentarioCalificacion(tramite.getComentarioCalificacion())
             .fechaCreacion(tramite.getFechaCreacion())
             .fechaActualizacion(tramite.getFechaActualizacion())
             .fechaVencimiento(tramite.getFechaVencimiento())
-            .fechaCompletado(tramite.getFechaCompletado())
+            .fechaCompletado(tramite.getFechaCompletado());
+            
+        // Mapear usuario solicitante usando ID
+        if (tramite.getUsuarioSolicitanteId() != null) {
+            usuarioService.getUsuarioById(tramite.getUsuarioSolicitanteId()).ifPresent(usuario -> 
+                builder.usuarioSolicitante(TramiteResponse.UsuarioBasicInfo.builder()
+                    .id(usuario.getId())
+                    .nombre(usuario.getNombre())
+                    .apellidos(usuario.getApellidos())
+                    .correo(usuario.getCorreo())
+                    .rol(usuario.getRole() != null ? usuario.getRole().getName() : null)
+                    .build()));
+        }
+        
+        // Mapear usuario asignado usando ID
+        if (tramite.getUsuarioAsignadoId() != null) {
+            usuarioService.getUsuarioById(tramite.getUsuarioAsignadoId()).ifPresent(usuario -> 
+                builder.usuarioAsignado(TramiteResponse.UsuarioBasicInfo.builder()
+                    .id(usuario.getId())
+                    .nombre(usuario.getNombre())
+                    .apellidos(usuario.getApellidos())
+                    .correo(usuario.getCorreo())
+                    .rol(usuario.getRole() != null ? usuario.getRole().getName() : null)
+                    .build()));
+        }
+        
+        // Mapear área actual usando ID
+        if (tramite.getAreaActualId() != null) {
+            areaService.getAreaById(tramite.getAreaActualId()).ifPresent(area -> 
+                builder.areaActual(TramiteResponse.AreaBasicInfo.builder()
+                    .id(area.getId())
+                    .nombre(area.getNombre())
+                    .descripcion(area.getDescripcion())
+                    .build()));
+        }
+        
+        // Mapear área origen usando ID
+        if (tramite.getAreaOrigenId() != null) {
+            areaService.getAreaById(tramite.getAreaOrigenId()).ifPresent(area -> 
+                builder.areaOrigen(TramiteResponse.AreaBasicInfo.builder()
+                    .id(area.getId())
+                    .nombre(area.getNombre())
+                    .descripcion(area.getDescripcion())
+                    .build()));
+        }
+        
+        // Mapear información de respuesta
+        if (tramite.getRespuesta() != null) {
+            builder.respuesta(tramite.getRespuesta());
+        }
+        if (tramite.getFechaRespuesta() != null) {
+            builder.fechaRespuesta(tramite.getFechaRespuesta());
+        }
+        
+        // Mapear usuario que respondió
+        if (tramite.getUsuarioRespondioId() != null) {
+            usuarioService.getUsuarioById(tramite.getUsuarioRespondioId()).ifPresent(usuario -> 
+                builder.usuarioRespondio(TramiteResponse.UsuarioBasicInfo.builder()
+                    .id(usuario.getId())
+                    .nombre(usuario.getNombre())
+                    .apellidos(usuario.getApellidos())
+                    .correo(usuario.getCorreo())
+                    .rol(usuario.getRole() != null ? usuario.getRole().getName() : null)
+                    .build()));
+        }
+        
+        // Mapear contadores
+        builder.contadorProcesados(tramite.getContadorProcesados() != null ? tramite.getContadorProcesados() : 0);
+        builder.contadorPorProcesar(tramite.getContadorPorProcesar() != null ? tramite.getContadorPorProcesar() : 0);
+        
+        return builder.build();
+    }
+    
+    // Responder trámite con notificación obligatoria
+    public com.example.demo.dto.ResponderTramiteResponse responderTramite(Long tramiteId, com.example.demo.dto.ResponderTramiteRequest request, Long administrativoId) {
+        Tramite tramite = tramiteRepository.findById(tramiteId)
+            .orElseThrow(() -> new RuntimeException("Trámite no encontrado"));
+        
+        // Verificar estado válido
+        if (tramite.getEstado() == Tramite.EstadoTramite.FINALIZADO || 
+            tramite.getEstado() == Tramite.EstadoTramite.ARCHIVADO ||
+            tramite.getEstado() == Tramite.EstadoTramite.CANCELADO) {
+            throw new RuntimeException("No se puede responder un trámite en estado: " + tramite.getEstado());
+        }
+        
+        String estadoAnterior = tramite.getEstado().name();
+        
+        // Actualizar trámite con respuesta
+        tramite.setRespuesta(request.getRespuesta());
+        tramite.setFechaRespuesta(LocalDateTime.now());
+        tramite.setUsuarioRespondioId(administrativoId);
+        tramite.setEstado(Tramite.EstadoTramite.FINALIZADO);
+        tramite.setFechaCompletado(LocalDateTime.now());
+        
+        // Actualizar contadores
+        // Incrementar contador de procesados
+        if (tramite.getContadorProcesados() == null) {
+            tramite.setContadorProcesados(0);
+        }
+        tramite.setContadorProcesados(tramite.getContadorProcesados() + 1);
+        
+        // Decrementar contador "Por Procesar" ya que se está respondiendo
+        if (tramite.getContadorPorProcesar() != null && tramite.getContadorPorProcesar() > 0) {
+            tramite.setContadorPorProcesar(tramite.getContadorPorProcesar() - 1);
+        }
+        
+        // Manejar archivos de respuesta
+        if (request.getArchivosRespuesta() != null && !request.getArchivosRespuesta().isEmpty()) {
+            List<String> urlsArchivos = new java.util.ArrayList<>();
+            for (org.springframework.web.multipart.MultipartFile archivo : request.getArchivosRespuesta()) {
+                String url = guardarArchivoRespuesta(archivo);
+                urlsArchivos.add(url);
+            }
+            tramite.setArchivosRespuesta(String.join(",", urlsArchivos));
+        }
+        
+        if (request.getObservaciones() != null) {
+            tramite.setObservaciones(request.getObservaciones());
+        }
+        
+        tramite = tramiteRepository.save(tramite);
+        
+        // Registrar en historial
+        registrarHistorial(tramiteId, administrativoId,
+                         TramiteHistorial.TipoAccion.RESPONDIDO,
+                         estadoAnterior, "FINALIZADO",
+                         "Trámite respondido y finalizado");
+        
+        // Obtener información del responsable
+        com.example.demo.dto.ResponderTramiteResponse.ResponsableInfo.ResponsableInfoBuilder responsableBuilder = 
+            com.example.demo.dto.ResponderTramiteResponse.ResponsableInfo.builder();
+        
+        usuarioService.getUsuarioById(administrativoId).ifPresent(usuario -> {
+            responsableBuilder
+                .id(usuario.getId())
+                .nombre(usuario.getNombre())
+                .apellidos(usuario.getApellidos())
+                .correo(usuario.getCorreo());
+            
+            if (usuario.getArea() != null && usuario.getArea().getId() != null) {
+                responsableBuilder.area(usuario.getArea().getNombre());
+            }
+        });
+        
+        com.example.demo.dto.ResponderTramiteResponse.ResponsableInfo responsableInfo = responsableBuilder.build();
+        
+        // NOTIFICACIÓN OBLIGATORIA POR EMAIL
+        boolean emailEnviado = notificacionService.notificarRespuestaTramite(
+            tramiteId, 
+            tramite.getUsuarioSolicitanteId(),
+            administrativoId,
+            request.getRespuesta(),
+            request.getAsunto() != null ? request.getAsunto() : "Respuesta a su trámite " + tramite.getCodigo()
+        );
+        
+        log.info("Trámite {} respondido por administrativo {}", tramite.getCodigo(), administrativoId);
+        
+        return com.example.demo.dto.ResponderTramiteResponse.builder()
+            .success(true)
+            .mensaje("Trámite respondido exitosamente y notificación enviada")
+            .tramiteId(tramite.getId())
+            .codigoTramite(tramite.getCodigo())
+            .estadoActual(tramite.getEstado().name())
+            .responsable(responsableInfo)
+            .fechaRespuesta(tramite.getFechaRespuesta())
+            .emailEnviado(emailEnviado)
             .build();
+    }
+    
+    // Aprobar trámite (solo ADMINISTRATIVO)
+    public com.example.demo.dto.AprobarTramiteResponse aprobarTramite(Long tramiteId, com.example.demo.dto.AprobarTramiteRequest request, Long administrativoId) {
+        // Verificar que el trámite existe
+        Tramite tramite = tramiteRepository.findById(tramiteId)
+            .orElseThrow(() -> new RuntimeException("Trámite no encontrado"));
+        
+        // Verificar que el estado actual permite la aprobación
+        if (!tramite.getEstado().equals(Tramite.EstadoTramite.ENVIADO) && 
+            !tramite.getEstado().equals(Tramite.EstadoTramite.EN_REVISION)) {
+            throw new RuntimeException("El trámite no se puede aprobar en su estado actual: " + tramite.getEstado());
+        }
+        
+        // Cambiar estado a APROBADO
+        Tramite.EstadoTramite estadoAnterior = tramite.getEstado();
+        tramite.setEstado(Tramite.EstadoTramite.APROBADO);
+        tramite.setFechaActualizacion(LocalDateTime.now());
+        
+        // Incrementar contador "Por Procesar" cuando se aprueba (indica que necesita ser respondido)
+        tramite.setContadorPorProcesar((tramite.getContadorPorProcesar() != null ? tramite.getContadorPorProcesar() : 0) + 1);
+        
+        // Asignar trabajador si no tiene uno
+        if (tramite.getUsuarioAsignadoId() == null) {
+            // Asignar al administrativo que aprueba
+            tramite.setUsuarioAsignadoId(administrativoId);
+        }
+        
+        // Guardar cambios
+        tramite = tramiteRepository.save(tramite);
+        
+        // Crear registro en historial
+        TramiteHistorial historial = new TramiteHistorial();
+        historial.setTramiteId(tramite.getId());
+        historial.setEstadoAnterior(estadoAnterior.toString());
+        historial.setEstadoNuevo(Tramite.EstadoTramite.APROBADO.toString());
+        historial.setUsuarioId(administrativoId);
+        historial.setFechaAccion(LocalDateTime.now());
+        historial.setAccion(TramiteHistorial.TipoAccion.APROBADO);
+        historial.setObservaciones(request.getObservaciones());
+        historialRepository.save(historial);
+        
+        // Crear respuesta con información del responsable
+        com.example.demo.dto.AprobarTramiteResponse response = new com.example.demo.dto.AprobarTramiteResponse();
+        response.setSuccess(true);
+        response.setMensaje("Trámite aprobado exitosamente");
+        
+        // Información del responsable asignado
+        com.example.demo.dto.AprobarTramiteResponse.ResponsableAsignado responsableAsignado = 
+            new com.example.demo.dto.AprobarTramiteResponse.ResponsableAsignado();
+        
+        // Por ahora usar valores por defecto, luego se puede mejorar
+        responsableAsignado.setId(administrativoId);
+        responsableAsignado.setNombre("Administrativo");
+        responsableAsignado.setApellidos("Asignado");
+        responsableAsignado.setArea("Secretaría General");
+        
+        response.setResponsableAsignado(responsableAsignado);
+        response.setTramiteActualizado(convertirAResponse(tramite));
+        
+       
+        
+        
+        return response;
+    }
+    
+    // Método para actualizar contadores de trámites existentes
+    @org.springframework.transaction.annotation.Transactional
+    public void actualizarContadoresTramitesExistentes() {
+        // Usar query nativa para obtener trámites por estado sin paginación
+        java.util.List<Tramite> tramitesAprobados = tramiteRepository.findAll().stream()
+                .filter(t -> t.getEstado() == Tramite.EstadoTramite.APROBADO)
+                .collect(java.util.stream.Collectors.toList());
+        
+        for (Tramite tramite : tramitesAprobados) {
+            // Si no tiene respuesta, debe estar "por procesar"
+            if (tramite.getRespuesta() == null || tramite.getRespuesta().isEmpty()) {
+                if (tramite.getContadorPorProcesar() == null || tramite.getContadorPorProcesar() == 0) {
+                    tramite.setContadorPorProcesar(1);
+                    tramiteRepository.save(tramite);
+                }
+            }
+        }
+        
+        // Actualizar trámites FINALIZADOS que fueron respondidos pero no tienen contadores actualizados  
+        java.util.List<Tramite> tramitesFinalizados = tramiteRepository.findAll().stream()
+                .filter(t -> t.getEstado() == Tramite.EstadoTramite.FINALIZADO)
+                .collect(java.util.stream.Collectors.toList());
+        
+        for (Tramite tramite : tramitesFinalizados) {
+            // Si tiene respuesta pero no tiene contador de procesados, actualizar
+            if (tramite.getRespuesta() != null && !tramite.getRespuesta().isEmpty()) {
+                if (tramite.getContadorProcesados() == null || tramite.getContadorProcesados() == 0) {
+                    tramite.setContadorProcesados(1);
+                    tramite.setContadorPorProcesar(0); // Ya fue procesado
+                    tramiteRepository.save(tramite);
+                }
+            }
+        }
     }
 }

@@ -95,6 +95,55 @@ public class NotificacionService {
         });
     }
     
+    // Notificar respuesta de trámite con email obligatorio
+    @Async
+    public boolean notificarRespuestaTramite(Long tramiteId, Long solicitanteId, Long administrativoId, 
+                                            String respuesta, String asunto) {
+        try {
+            tramiteRepository.findById(tramiteId).ifPresent(tramite -> {
+                // Crear notificación en el sistema
+                Notificacion notificacion = new Notificacion();
+                notificacion.setUsuarioDestinatarioId(solicitanteId);
+                notificacion.setTitulo("Su trámite ha sido respondido");
+                notificacion.setMensaje(String.format(
+                    "El trámite %s ha sido respondido por el administrativo.", 
+                    tramite.getCodigo()
+                ));
+                notificacion.setTipo(Notificacion.TipoNotificacion.TRAMITE_FINALIZADO);
+                notificacion.setPrioridad(Notificacion.PrioridadNotificacion.ALTA);
+                notificacion.setTramiteRelacionadoId(tramiteId);
+                notificacion.setUsuarioEmisorId(administrativoId);
+                notificacion.setRutaDestino("/tramites/" + tramiteId);
+                
+                Notificacion saved = notificacionRepository.save(notificacion);
+                
+                // WebSocket
+                enviarNotificacionWebSocket(saved, solicitanteId);
+                
+                // Email con template HTML mejorado - OBLIGATORIO
+                Map<String, Object> datos = new HashMap<>();
+                datos.put("tramiteCodigo", tramite.getCodigo());
+                datos.put("tramiteTitulo", tramite.getTitulo());
+                datos.put("respuesta", respuesta);
+                datos.put("asunto", asunto);
+                datos.put("fechaRespuesta", LocalDateTime.now());
+                
+                // Obtener nombre del administrativo
+                String nombreAdministrativo = usuarioService.obtenerNombreCompleto(administrativoId);
+                datos.put("administrativoNombre", nombreAdministrativo);
+                
+                // Enviar email con template HTML
+                emailService.enviarCorreoRespuestaTramite(solicitanteId, tramiteId, datos);
+            });
+            
+            log.info("Notificación de respuesta enviada para trámite {} al solicitante {}", tramiteId, solicitanteId);
+            return true;
+        } catch (Exception e) {
+            log.error("Error al enviar notificación de respuesta: ", e);
+            return false;
+        }
+    }
+    
     // Notificar derivación de trámite
     @Async
     public void notificarDerivacionTramite(Long tramiteId, Long trabajadorAnterior, 

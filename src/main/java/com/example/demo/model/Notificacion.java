@@ -72,6 +72,7 @@ public class Notificacion {
         TRAMITE_OBSERVADO,
         TRAMITE_APROBADO,
         TRAMITE_RECHAZADO,
+        TRAMITE_FINALIZADO,
         TRAMITE_VENCIDO,
         TRAMITE_POR_VENCER,
         COMENTARIO_AGREGADO,

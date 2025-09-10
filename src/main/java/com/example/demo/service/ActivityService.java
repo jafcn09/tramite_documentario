@@ -5,6 +5,8 @@ import com.example.demo.model.Usuario;
 import com.example.demo.repository.UsuarioRepository;
 import com.example.demo.entity.Area;
 import com.example.demo.repository.AreaRepository;
+import com.example.demo.model.Tramite;
+import com.example.demo.repository.TramiteRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +22,7 @@ public class ActivityService {
     
     private final UsuarioRepository usuarioRepository;
     private final AreaRepository areaRepository;
+    private final TramiteRepository tramiteRepository;
     
     public List<ActivityResponse> getRecentActivities(int limit, int offset) {
         List<ActivityResponse> activities = new ArrayList<>();
@@ -58,31 +61,27 @@ public class ActivityService {
                     .build());
         }
         
-        // Agregar algunas actividades del sistema (simuladas por ahora)
-        activities.add(ActivityResponse.builder()
-                .type("system")
-                .icon("fas fa-shield-alt")
-                .description("Sistema de seguridad actualizado")
-                .timestamp(LocalDateTime.now().minusHours(2))
-                .action("updated")
-                .build());
+        // Obtener actividades reales de trámites
+        List<Tramite> recentTramites = tramiteRepository.findAll().stream()
+                .sorted(Comparator.comparing(Tramite::getFechaActualizacion).reversed())
+                .limit(5)
+                .collect(Collectors.toList());
         
-        activities.add(ActivityResponse.builder()
-                .type("tramite")
-                .icon("fas fa-file-alt")
-                .description("10 nuevos trámites procesados hoy")
-                .timestamp(LocalDateTime.now().minusHours(1))
-                .status("completed")
-                .action("processed")
-                .build());
-        
-        activities.add(ActivityResponse.builder()
-                .type("login")
-                .icon("fas fa-sign-in-alt")
-                .description("Múltiples inicios de sesión detectados")
-                .timestamp(LocalDateTime.now().minusMinutes(30))
-                .action("login")
-                .build());
+        for (Tramite tramite : recentTramites) {
+            String icon = getIconForEstado(tramite.getEstado().name());
+            String description = getDescriptionForTramite(tramite);
+            String status = getStatusForEstado(tramite.getEstado().name());
+            
+            activities.add(ActivityResponse.builder()
+                    .type("tramite")
+                    .icon(icon)
+                    .description(description)
+                    .timestamp(tramite.getFechaActualizacion())
+                    .userRole("USUARIO") // Se puede mejorar obteniendo el rol del usuario solicitante
+                    .status(status)
+                    .action("updated")
+                    .build());
+        }
         
         // Ordenar todas las actividades por timestamp descendente
         activities.sort(Comparator.comparing(ActivityResponse::getTimestamp).reversed());
@@ -92,5 +91,44 @@ public class ActivityService {
                 .skip(offset)
                 .limit(limit)
                 .collect(Collectors.toList());
+    }
+    
+    private String getIconForEstado(String estado) {
+        return switch (estado) {
+            case "ENVIADO" -> "fas fa-paper-plane";
+            case "EN_REVISION" -> "fas fa-search";
+            case "APROBADO" -> "fas fa-check-circle";
+            case "FINALIZADO" -> "fas fa-flag-checkered";
+            case "RECHAZADO" -> "fas fa-times-circle";
+            case "OBSERVADO" -> "fas fa-exclamation-triangle";
+            case "DERIVADO" -> "fas fa-share";
+            case "EN_PROCESO" -> "fas fa-cog";
+            default -> "fas fa-file-alt";
+        };
+    }
+    
+    private String getStatusForEstado(String estado) {
+        return switch (estado) {
+            case "FINALIZADO" -> "completed";
+            case "APROBADO", "EN_PROCESO" -> "pending";
+            case "RECHAZADO", "OBSERVADO" -> "failed";
+            default -> "pending";
+        };
+    }
+    
+    private String getDescriptionForTramite(Tramite tramite) {
+        String estadoTexto = switch (tramite.getEstado().name()) {
+            case "ENVIADO" -> "enviado";
+            case "EN_REVISION" -> "en revisión";
+            case "APROBADO" -> "aprobado";
+            case "FINALIZADO" -> "finalizado";
+            case "RECHAZADO" -> "rechazado";
+            case "OBSERVADO" -> "observado";
+            case "DERIVADO" -> "derivado";
+            case "EN_PROCESO" -> "en proceso";
+            default -> "actualizado";
+        };
+        
+        return String.format("Trámite %s %s", tramite.getCodigo(), estadoTexto);
     }
 }

@@ -75,6 +75,24 @@ public class Tramite {
     @Column(name = "comentario_calificacion", columnDefinition = "TEXT")
     private String comentarioCalificacion;
     
+    @Column(name = "respuesta", columnDefinition = "TEXT")
+    private String respuesta;
+    
+    @Column(name = "archivos_respuesta", columnDefinition = "JSON")
+    private String archivosRespuesta;
+    
+    @Column(name = "fecha_respuesta")
+    private LocalDateTime fechaRespuesta;
+    
+    @Column(name = "usuario_respondio_id")
+    private Long usuarioRespondioId;
+    
+    @Column(name = "contador_procesados")
+    private Integer contadorProcesados = 0;
+    
+    @Column(name = "contador_por_procesar")
+    private Integer contadorPorProcesar = 0;
+    
     @CreationTimestamp
     @Column(name = "fecha_creacion", nullable = false, updatable = false)
     private LocalDateTime fechaCreacion;
