@@ -68,6 +68,12 @@ public class TramiteController {
         return tramiteService.descargarArchivoPublico(codigo, nombreArchivo);
     }
     
+    // Descargar todos los documentos públicamente (sin token)
+    @GetMapping("/public/{codigo}/documentos/descargar-todos")
+    public ResponseEntity<byte[]> descargarTodosDocumentosPublico(@PathVariable String codigo) {
+        return tramiteService.descargarTodosDocumentosPublico(codigo);
+    }
+    
     // Previsualizar trámite sin token
     @GetMapping("/public/preview/{codigo}")
     public ResponseEntity<TramiteResponse> previsualizarTramite(@PathVariable String codigo) {
@@ -93,7 +99,10 @@ public class TramiteController {
         
         Sort.Direction direction = sortDir.equalsIgnoreCase("desc") ? 
             Sort.Direction.DESC : Sort.Direction.ASC;
-        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+        
+        // Optimización: usar ID en lugar de fechaCreacion para mejor rendimiento MySQL
+        String sortField = "fechaCreacion".equals(sortBy) ? "id" : sortBy;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortField));
         
         Long usuarioId = getUserIdFromToken(httpRequest);
         if (usuarioId == null) {
@@ -108,9 +117,9 @@ public class TramiteController {
         return ResponseEntity.ok(tramites);
     }
     
-    // Crear trámite (solo USUARIO)
+    // Crear trámite (USUARIO y ADMIN)
     @PostMapping(consumes = {"multipart/form-data"})
-    @PreAuthorize("hasRole('USUARIO')")
+    @PreAuthorize("hasRole('USUARIO') or hasRole('ADMIN')")
     public ResponseEntity<TramiteResponse> crearTramite(
             @RequestParam("tipoTramiteId") Long tipoTramiteId,
             @RequestParam("asunto") String asunto,
@@ -164,11 +173,16 @@ public class TramiteController {
         // Handle file uploads if any
         if (documentos != null && !documentos.isEmpty()) {
             try {
+                System.out.println("Subiendo " + documentos.size() + " archivos para el trámite " + tramite.getCodigo());
                 tramiteService.subirArchivosMultiples(tramite.getId(), documentos, usuarioId);
+                System.out.println("Archivos subidos exitosamente para el trámite " + tramite.getCodigo());
             } catch (Exception e) {
                 // Log error but don't fail the trámite creation
                 System.err.println("Error uploading files: " + e.getMessage());
+                e.printStackTrace();
             }
+        } else {
+            System.out.println("No se recibieron archivos para el trámite " + (tramite != null ? tramite.getCodigo() : "null"));
         }
         return ResponseEntity.ok(tramite);
     }
@@ -412,6 +426,28 @@ public class TramiteController {
         return ResponseEntity.ok(urlsArchivos);
     }
     
+    // Subir documentos múltiples (alias para compatibilidad con frontend)
+    @PostMapping("/{id}/documentos")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<String>> subirDocumentos(
+            @PathVariable Long id,
+            @RequestParam(value = "documentos", required = false) List<MultipartFile> documentos,
+            Principal principal,
+            HttpServletRequest httpRequest) {
+        
+        Long usuarioId = getUserIdFromToken(httpRequest);
+        if (usuarioId == null) {
+            throw new RuntimeException("No se pudo obtener el ID del usuario del token");
+        }
+        
+        if (documentos == null || documentos.isEmpty()) {
+            return ResponseEntity.ok(new java.util.ArrayList<>());
+        }
+        
+        List<String> urlsDocumentos = tramiteService.subirArchivosMultiples(id, documentos, usuarioId);
+        return ResponseEntity.ok(urlsDocumentos);
+    }
+    
     // Descargar archivo (autenticado)
     @GetMapping("/{id}/archivos/{nombreArchivo}")
     @PreAuthorize("isAuthenticated()")
@@ -427,6 +463,22 @@ public class TramiteController {
         }
         String rol = getRole(principal);
         return tramiteService.descargarArchivo(id, nombreArchivo, usuarioId, rol);
+    }
+    
+    // Descargar todos los documentos como ZIP
+    @GetMapping("/{id}/documentos/descargar-todos")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<byte[]> descargarTodosDocumentos(
+            @PathVariable Long id,
+            Principal principal,
+            HttpServletRequest httpRequest) {
+        
+        Long usuarioId = getUserIdFromToken(httpRequest);
+        if (usuarioId == null) {
+            throw new RuntimeException("No se pudo obtener el ID del usuario del token");
+        }
+        String rol = getRole(principal);
+        return tramiteService.descargarTodosDocumentos(id, usuarioId, rol);
     }
     
     // Estadísticas generales (ADMIN)

@@ -329,6 +329,17 @@ public class UsuarioController {
         }
     }
     
+    @GetMapping("/administrativos-disponibles")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('ADMINISTRATIVO')")
+    public ResponseEntity<List<Map<String, Object>>> getAdministrativosDisponibles() {
+        try {
+            List<Map<String, Object>> usuarios = usuarioService.getAdministrativosConWorkload();
+            return ResponseEntity.ok(usuarios);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    
     // Helper methods
     public boolean isOwnerOrAdmin(Long userId, org.springframework.security.core.Authentication authentication) {
         if (authentication == null || authentication.getPrincipal() == null) {

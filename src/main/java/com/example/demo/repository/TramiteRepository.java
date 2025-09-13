@@ -84,7 +84,7 @@ public interface TramiteRepository extends JpaRepository<Tramite, Long> {
     @Query("SELECT COUNT(t) FROM Tramite t WHERE t.areaActualId = :areaId AND t.estado = :estado")
     Long countByAreaActualIdAndEstado(@Param("areaId") Long areaId, @Param("estado") Tramite.EstadoTramite estado);
     
-    // Buscar trámites con filtros múltiples
+    // Buscar trámites con filtros múltiples (sin ordenamiento para permitir Pageable)
     @Query("SELECT t FROM Tramite t WHERE " +
            "(:usuarioSolicitanteId IS NULL OR t.usuarioSolicitanteId = :usuarioSolicitanteId) AND " +
            "(:usuarioAsignadoId IS NULL OR t.usuarioAsignadoId = :usuarioAsignadoId) AND " +
@@ -128,4 +128,30 @@ public interface TramiteRepository extends JpaRepository<Tramite, Long> {
     // Contar trámites por usuario asignado
     @Query("SELECT COUNT(t) FROM Tramite t WHERE t.usuarioAsignadoId = :usuarioAsignadoId")
     Long countByUsuarioAsignadoId(@Param("usuarioAsignadoId") Long usuarioAsignadoId);
+    
+    // Obtener trámites ordenados por ID (más eficiente que por fecha con archivos grandes)
+    @Query("SELECT t FROM Tramite t ORDER BY t.id DESC")
+    Page<Tramite> findAllOrderById(Pageable pageable);
+    
+    // Obtener trámites por usuario solicitante ordenados por ID
+    @Query("SELECT t FROM Tramite t WHERE t.usuarioSolicitanteId = :usuarioSolicitanteId ORDER BY t.id DESC")
+    Page<Tramite> findByUsuarioSolicitanteIdOrderById(@Param("usuarioSolicitanteId") Long usuarioSolicitanteId, Pageable pageable);
+    
+    // Métodos adicionales para la bandeja (excluir archivados)
+    
+    // Usuario: trámites excluyendo archivados
+    @Query("SELECT t FROM Tramite t WHERE t.usuarioSolicitanteId = :usuarioSolicitanteId AND t.estado != :estado ORDER BY t.id DESC")
+    Page<Tramite> findByUsuarioSolicitanteIdAndEstadoNotOrderById(@Param("usuarioSolicitanteId") Long usuarioSolicitanteId, @Param("estado") Tramite.EstadoTramite estado, Pageable pageable);
+    
+    // Usuario: trámites por estado específico
+    @Query("SELECT t FROM Tramite t WHERE t.usuarioSolicitanteId = :usuarioSolicitanteId AND t.estado = :estado ORDER BY t.id DESC")
+    Page<Tramite> findByUsuarioSolicitanteIdAndEstadoOrderById(@Param("usuarioSolicitanteId") Long usuarioSolicitanteId, @Param("estado") Tramite.EstadoTramite estado, Pageable pageable);
+    
+    // Administrativos: todos los trámites excluyendo un estado
+    @Query("SELECT t FROM Tramite t WHERE t.estado != :estado ORDER BY t.id DESC")
+    Page<Tramite> findByEstadoNotOrderByIdDesc(@Param("estado") Tramite.EstadoTramite estado, Pageable pageable);
+    
+    // Administrativos: trámites por estado específico
+    @Query("SELECT t FROM Tramite t WHERE t.estado = :estado ORDER BY t.id DESC")
+    Page<Tramite> findByEstadoOrderByIdDesc(@Param("estado") Tramite.EstadoTramite estado, Pageable pageable);
 }

@@ -5,6 +5,7 @@ import com.example.demo.dto.NotificacionResponse;
 import com.example.demo.model.Notificacion;
 import com.example.demo.repository.NotificacionRepository;
 import com.example.demo.repository.TramiteRepository;
+import com.example.demo.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -27,6 +28,7 @@ public class NotificacionService {
     
     private final NotificacionRepository notificacionRepository;
     private final TramiteRepository tramiteRepository;
+    private final UsuarioRepository usuarioRepository;
     private final SimpMessagingTemplate messagingTemplate;
     private final EmailService emailService;
     private final UsuarioService usuarioService;
@@ -101,13 +103,19 @@ public class NotificacionService {
                                             String respuesta, String asunto) {
         try {
             tramiteRepository.findById(tramiteId).ifPresent(tramite -> {
+                // Obtener información del administrativo que respondió
+                String nombreResponsable = usuarioRepository.findById(administrativoId)
+                    .map(admin -> admin.getNombre() + " " + admin.getApellidos())
+                    .orElse("el administrativo");
+                
                 // Crear notificación en el sistema
                 Notificacion notificacion = new Notificacion();
                 notificacion.setUsuarioDestinatarioId(solicitanteId);
                 notificacion.setTitulo("Su trámite ha sido respondido");
                 notificacion.setMensaje(String.format(
-                    "El trámite %s ha sido respondido por el administrativo.", 
-                    tramite.getCodigo()
+                    "Su trámite %s ha sido respondido por %s.", 
+                    tramite.getCodigo(),
+                    nombreResponsable
                 ));
                 notificacion.setTipo(Notificacion.TipoNotificacion.TRAMITE_FINALIZADO);
                 notificacion.setPrioridad(Notificacion.PrioridadNotificacion.ALTA);

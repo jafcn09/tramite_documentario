@@ -25,6 +25,7 @@ import com.example.demo.model.Usuario;
 import com.example.demo.repository.AreaRepository;
 import com.example.demo.repository.PasswordHistoryRepository;
 import com.example.demo.repository.RoleRepository;
+import com.example.demo.repository.TramiteRepository;
 import com.example.demo.repository.UsuarioRepository;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -38,6 +39,7 @@ public class UsuarioService {
     private final RoleRepository roleRepository;
     private final PasswordHistoryRepository passwordHistoryRepository;
     private final AreaRepository areaRepository;
+    private final TramiteRepository tramiteRepository;
     private final PasswordEncoder passwordEncoder;
     private final JavaMailSender mailSender;
     
@@ -686,6 +688,41 @@ public class UsuarioService {
                 .filter(usuario -> usuario.getRole() != null && 
                        roleName.equals(usuario.getRole().getName().toString()))
                 .map(Usuario::getId)
+                .collect(Collectors.toList());
+    }
+    
+    public List<UsuarioResponse> getAdministrativosDisponibles() {
+        return usuarioRepository.findAll().stream()
+                .filter(user -> user.isAccountEnabled() && !user.isAccountLocked())
+                .filter(user -> user.getRole() != null && "ADMINISTRATIVO".equals(user.getRole().getName().toString()))
+                .map(this::convertToResponse)
+                .collect(Collectors.toList());
+    }
+    
+    public List<Map<String, Object>> getAdministrativosConWorkload() {
+        return usuarioRepository.findAll().stream()
+                .filter(user -> user.isAccountEnabled() && !user.isAccountLocked())
+                .filter(user -> user.getRole() != null && "ADMINISTRATIVO".equals(user.getRole().getName().toString()))
+                .map(user -> {
+                    Map<String, Object> userWithWorkload = new HashMap<>();
+                    UsuarioResponse userResponse = convertToResponse(user);
+                    
+                    // Add user data
+                    userWithWorkload.put("id", userResponse.getId());
+                    userWithWorkload.put("nombre", userResponse.getNombre());
+                    userWithWorkload.put("apellidos", userResponse.getApellidos());
+                    userWithWorkload.put("correo", userResponse.getCorreo());
+                    userWithWorkload.put("usuario", userResponse.getUsuario());
+                    userWithWorkload.put("role", userResponse.getRole());
+                    userWithWorkload.put("area", userResponse.getArea());
+                    userWithWorkload.put("foto", userResponse.getFoto());
+                    
+                    // Add workload count
+                    Long workloadCount = tramiteRepository.countByUsuarioAsignadoId(user.getId());
+                    userWithWorkload.put("workloadCount", workloadCount != null ? workloadCount : 0);
+                    
+                    return userWithWorkload;
+                })
                 .collect(Collectors.toList());
     }
 }
