@@ -99,8 +99,8 @@ public class NotificacionService {
     
     // Notificar respuesta de trámite con email obligatorio
     @Async
-    public boolean notificarRespuestaTramite(Long tramiteId, Long solicitanteId, Long administrativoId, 
-                                            String respuesta, String asunto) {
+    public boolean notificarRespuestaTramite(Long tramiteId, Long solicitanteId, Long administrativoId,
+                                            String respuesta, String asunto, Integer cantidadDocumentos) {
         try {
             tramiteRepository.findById(tramiteId).ifPresent(tramite -> {
                 // Obtener información del administrativo que respondió
@@ -112,11 +112,21 @@ public class NotificacionService {
                 Notificacion notificacion = new Notificacion();
                 notificacion.setUsuarioDestinatarioId(solicitanteId);
                 notificacion.setTitulo("Su trámite ha sido respondido");
-                notificacion.setMensaje(String.format(
-                    "Su trámite %s ha sido respondido por %s.", 
+                // Crear mensaje con información de documentos adjuntos
+                String mensajeBase = String.format(
+                    "Su trámite %s ha sido respondido por %s.",
                     tramite.getCodigo(),
                     nombreResponsable
-                ));
+                );
+
+                if (cantidadDocumentos != null && cantidadDocumentos > 0) {
+                    String mensajeDocumentos = cantidadDocumentos == 1
+                        ? " Se ha adjuntado 1 documento en la respuesta."
+                        : String.format(" Se han adjuntado %d documentos en la respuesta.", cantidadDocumentos);
+                    mensajeBase += mensajeDocumentos;
+                }
+
+                notificacion.setMensaje(mensajeBase);
                 notificacion.setTipo(Notificacion.TipoNotificacion.TRAMITE_FINALIZADO);
                 notificacion.setPrioridad(Notificacion.PrioridadNotificacion.ALTA);
                 notificacion.setTramiteRelacionadoId(tramiteId);
@@ -139,6 +149,9 @@ public class NotificacionService {
                 // Obtener nombre del administrativo
                 String nombreAdministrativo = usuarioService.obtenerNombreCompleto(administrativoId);
                 datos.put("administrativoNombre", nombreAdministrativo);
+
+                // Agregar información de documentos adjuntos
+                datos.put("cantidadDocumentos", cantidadDocumentos != null ? cantidadDocumentos : 0);
                 
                 // Enviar email con template HTML
                 emailService.enviarCorreoRespuestaTramite(solicitanteId, tramiteId, datos);
@@ -371,6 +384,20 @@ public class NotificacionService {
         
         notificacionRepository.deleteById(id);
         log.info("Notificación {} eliminada por usuario {}", id, usuarioId);
+    }
+
+    public void eliminarTodasNotificacionesUsuario(Long usuarioId) {
+        // Obtener todas las notificaciones del usuario sin paginación
+        List<Notificacion> notificaciones = notificacionRepository
+            .findByUsuarioDestinatarioIdOrderByFechaCreacionDesc(usuarioId,
+                org.springframework.data.domain.Pageable.unpaged()).getContent();
+
+        if (!notificaciones.isEmpty()) {
+            notificacionRepository.deleteAll(notificaciones);
+            log.info("Eliminadas {} notificaciones del usuario {}", notificaciones.size(), usuarioId);
+        } else {
+            log.info("No hay notificaciones para eliminar del usuario {}", usuarioId);
+        }
     }
     
     // Obtener notificaciones de un usuario

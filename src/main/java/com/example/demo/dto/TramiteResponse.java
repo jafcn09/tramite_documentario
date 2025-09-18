@@ -1,5 +1,6 @@
 package com.example.demo.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -55,6 +56,7 @@ public class TramiteResponse {
     private LocalDateTime fechaCompletado;
     
     // Documentos adjuntos
+    @JsonProperty("documentos")
     private List<DocumentoAdjunto> documentosAdjuntos;
     
     // Historial (opcional, solo cuando se solicite explícitamente)
@@ -93,7 +95,10 @@ public class TramiteResponse {
         private String nombre;
         private String url;
         private String tipo;
+        @JsonProperty("tamano")
         private Long tamanio;
         private LocalDateTime fechaSubida;
+        private String contenido;
+        private String descripcion;
     }
 }

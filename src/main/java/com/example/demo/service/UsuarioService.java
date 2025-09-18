@@ -731,6 +731,6 @@ public class UsuarioService {
         Usuario usuario = usuarioRepository.findById(usuarioId)
             .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        return convertirAResponse(usuario);
+        return convertToResponse(usuario);
     }
 }

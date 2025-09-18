@@ -1163,7 +1163,45 @@ public class TramiteService {
         // Mapear contadores
         builder.contadorProcesados(tramite.getContadorProcesados() != null ? tramite.getContadorProcesados() : 0);
         builder.contadorPorProcesar(tramite.getContadorPorProcesar() != null ? tramite.getContadorPorProcesar() : 0);
-        
+
+        // Mapear documentos adjuntos
+        if (tramite.getDocumentosAdjuntos() != null && !tramite.getDocumentosAdjuntos().isEmpty()) {
+            try {
+                com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                mapper.registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
+                mapper.disable(com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+                java.util.List<TramiteResponse.DocumentoAdjunto> documentosList = mapper.readValue(tramite.getDocumentosAdjuntos(),
+                    mapper.getTypeFactory().constructCollectionType(java.util.List.class,
+                        TramiteResponse.DocumentoAdjunto.class));
+                builder.documentosAdjuntos(documentosList);
+                log.info("Documentos adjuntos mapeados: {} documentos", documentosList.size());
+            } catch (Exception e) {
+                log.error("Error al parsear documentos adjuntos: {}", e.getMessage());
+                builder.documentosAdjuntos(new java.util.ArrayList<>());
+            }
+        } else {
+            builder.documentosAdjuntos(new java.util.ArrayList<>());
+        }
+
+        // Mapear archivos de respuesta
+        if (tramite.getArchivosRespuesta() != null && !tramite.getArchivosRespuesta().isEmpty()) {
+            try {
+                com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                mapper.registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
+                mapper.disable(com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+                java.util.List<TramiteResponse.DocumentoAdjunto> archivosList = mapper.readValue(tramite.getArchivosRespuesta(),
+                    mapper.getTypeFactory().constructCollectionType(java.util.List.class,
+                        TramiteResponse.DocumentoAdjunto.class));
+                builder.archivosRespuesta(archivosList);
+                log.info("Archivos de respuesta mapeados: {} archivos", archivosList.size());
+            } catch (Exception e) {
+                log.error("Error al parsear archivos de respuesta: {}", e.getMessage());
+                builder.archivosRespuesta(new java.util.ArrayList<>());
+            }
+        } else {
+            builder.archivosRespuesta(new java.util.ArrayList<>());
+        }
+
         return builder.build();
     }
     
@@ -1242,12 +1280,19 @@ public class TramiteService {
         com.example.demo.dto.ResponderTramiteResponse.ResponsableInfo responsableInfo = responsableBuilder.build();
         
         // NOTIFICACICN OBLIGATORIA POR EMAIL
+        // Calcular cantidad de documentos adjuntos en la respuesta
+        Integer cantidadDocumentosRespuesta = 0;
+        if (request.getArchivosRespuesta() != null) {
+            cantidadDocumentosRespuesta = request.getArchivosRespuesta().size();
+        }
+
         boolean emailEnviado = notificacionService.notificarRespuestaTramite(
-            tramiteId, 
+            tramiteId,
             tramite.getUsuarioSolicitanteId(),
             administrativoId,
             request.getRespuesta(),
-            request.getAsunto() != null ? request.getAsunto() : "Respuesta a su trC!mite " + tramite.getCodigo()
+            request.getAsunto() != null ? request.getAsunto() : "Respuesta a su trC!mite " + tramite.getCodigo(),
+            cantidadDocumentosRespuesta
         );
         
         log.info("TrC!mite {} respondido por administrativo {}", tramite.getCodigo(), administrativoId);

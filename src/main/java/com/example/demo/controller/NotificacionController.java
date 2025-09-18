@@ -172,6 +172,15 @@ public class NotificacionController {
         return ResponseEntity.ok().build();
     }
 
+    // Eliminar todas las notificaciones del usuario
+    @DeleteMapping("/eliminar-todas")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> eliminarTodasMisNotificaciones(Principal principal) {
+        Long usuarioId = getUserId(principal);
+        notificacionService.eliminarTodasNotificacionesUsuario(usuarioId);
+        return ResponseEntity.noContent().build();
+    }
+
     // Eliminar notificación (usuario propietario)
     @DeleteMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
