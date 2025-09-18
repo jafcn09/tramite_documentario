@@ -36,7 +36,12 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/error").permitAll()
                 .requestMatchers("/").permitAll()
-                
+
+                // Public endpoints for demo/testing
+                .requestMatchers("/api/notificaciones/public/**").permitAll()
+                .requestMatchers("/api/activities/public/**").permitAll()
+                .requestMatchers("/api/usuarios/public/**").permitAll()
+
                 // Public trámite endpoints (no token required) - MUST come before protected tramites
                 .requestMatchers("/api/tramites/public/**").permitAll()
                 

@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import java.io.File;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
@@ -466,6 +467,102 @@ public class EmailService {
             } catch (Exception e) {
                 log.error("Error reenviando notificación por email: {}", e.getMessage());
             }
+        });
+    }
+
+    // Enviar correo de rechazo de trámite
+    @Async
+    public void enviarCorreoRechazoTramite(Long solicitanteId, Long tramiteId, String motivoRechazo, String observaciones, String rechazadoPor) {
+        usuarioRepository.findById(solicitanteId).ifPresent(solicitante -> {
+            tramiteRepository.findById(tramiteId).ifPresent(tramite -> {
+                try {
+                    MimeMessage message = mailSender.createMimeMessage();
+                    MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+                    helper.setFrom(fromEmail);
+                    helper.setTo(solicitante.getCorreo());
+                    helper.setSubject("Trámite Rechazado - Código: " + tramite.getCodigo());
+
+                    String htmlContent = String.format("""
+                        <!DOCTYPE html>
+                        <html>
+                        <head>
+                            <style>
+                                body { font-family: Arial, sans-serif; line-height: 1.6; }
+                                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                                .header { background: #dc3545; color: white; padding: 20px; border-radius: 5px 5px 0 0; }
+                                .content { background: #f9f9f9; padding: 20px; border: 1px solid #ddd; }
+                                .rejection-box { background: #fff5f5; border-left: 4px solid #dc3545; padding: 15px; margin: 20px 0; }
+                                .footer { background: #333; color: white; padding: 15px; text-align: center; border-radius: 0 0 5px 5px; }
+                                .button { background: #dc3545; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; }
+                                .info { background: #f0f0f0; padding: 10px; margin: 10px 0; border-radius: 5px; }
+                            </style>
+                        </head>
+                        <body>
+                            <div class="container">
+                                <div class="header">
+                                    <h2>🚫 Trámite Rechazado</h2>
+                                </div>
+                                <div class="content">
+                                    <p>Estimado(a) <strong>%s %s</strong>,</p>
+
+                                    <p>Lamentamos informarle que su trámite ha sido <strong style="color: #dc3545;">RECHAZADO</strong>.</p>
+
+                                    <div class="info">
+                                        <p><strong>📋 Código del Trámite:</strong> %s</p>
+                                        <p><strong>📝 Asunto:</strong> %s</p>
+                                        <p><strong>📅 Fecha de Rechazo:</strong> %s</p>
+                                        <p><strong>👤 Rechazado por:</strong> %s</p>
+                                    </div>
+
+                                    <div class="rejection-box">
+                                        <h3>❌ Motivo del Rechazo:</h3>
+                                        <p><strong>%s</strong></p>
+                                        %s
+                                    </div>
+
+                                    <p><strong>¿Qué puede hacer ahora?</strong></p>
+                                    <ul>
+                                        <li>Revisar el motivo del rechazo y las observaciones</li>
+                                        <li>Corregir los problemas identificados</li>
+                                        <li>Presentar un nuevo trámite con las correcciones necesarias</li>
+                                        <li>Contactar con la oficina de Secretaría General si tiene dudas</li>
+                                    </ul>
+
+                                    <p>Para más detalles, puede consultar el estado de su trámite en el sistema:</p>
+                                    <center>
+                                        <a href="%s/buscar?codigo=%s" class="button">Ver Trámite en el Sistema</a>
+                                    </center>
+                                </div>
+                                <div class="footer">
+                                    <p>Sistema de Trámite Documentario</p>
+                                    <p style="font-size: 12px;">Este es un correo automático, por favor no responda a este mensaje.</p>
+                                </div>
+                            </div>
+                        </body>
+                        </html>
+                        """,
+                        solicitante.getNombre(),
+                        solicitante.getApellidos(),
+                        tramite.getCodigo(),
+                        tramite.getAsunto(),
+                        LocalDateTime.now().format(DATE_FORMATTER),
+                        rechazadoPor,
+                        motivoRechazo,
+                        observaciones != null && !observaciones.isEmpty() ?
+                            "<p><strong>📌 Observaciones adicionales:</strong></p><p>" + observaciones + "</p>" : "",
+                        appUrl,
+                        tramite.getCodigo()
+                    );
+
+                    helper.setText(htmlContent, true);
+                    mailSender.send(message);
+
+                    log.info("Correo de rechazo enviado a {} para trámite {}", solicitante.getCorreo(), tramite.getCodigo());
+                } catch (Exception e) {
+                    log.error("Error enviando correo de rechazo: {}", e.getMessage(), e);
+                }
+            });
         });
     }
 }

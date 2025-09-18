@@ -14,6 +14,10 @@ java {
 	}
 }
 
+tasks.withType(JavaCompile) {
+	options.compilerArgs += '-parameters'
+}
+
 repositories {
 	mavenCentral()
 }
@@ -42,6 +46,7 @@ dependencies {
 	
 	// Environment variables
 	implementation 'me.paulschwarz:spring-dotenv:4.0.0'
+	implementation 'io.github.cdimascio:dotenv-java:3.0.0'
 	
 	// Docker/Testcontainers
 	testImplementation 'org.springframework.boot:spring-boot-docker-compose'

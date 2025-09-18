@@ -26,16 +26,16 @@ public class BandejaTramitesController {
     @GetMapping
     @PreAuthorize("hasRole('ADMINISTRATIVO') or hasRole('ADMIN') or hasRole('USUARIO')")
     public ResponseEntity<Object> obtenerTramitesBandeja(
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "15") int limit,
-            @RequestParam(defaultValue = "fecha") String ordenarPor,
-            @RequestParam(defaultValue = "false") boolean ordenAscendente,
-            @RequestParam(required = false) String estado,
-            @RequestParam(required = false) String prioridad,
-            @RequestParam(required = false) String tipo,
-            @RequestParam(required = false) String asignadoA,
-            @RequestParam(required = false) String fechaDesde,
-            @RequestParam(required = false) String fechaHasta,
+            @RequestParam(name = "page", defaultValue = "1") int page,
+            @RequestParam(name = "limit", defaultValue = "15") int limit,
+            @RequestParam(name = "ordenarPor", defaultValue = "fecha") String ordenarPor,
+            @RequestParam(name = "ordenAscendente", defaultValue = "false") boolean ordenAscendente,
+            @RequestParam(name = "estado", required = false) String estado,
+            @RequestParam(name = "prioridad", required = false) String prioridad,
+            @RequestParam(name = "tipo", required = false) String tipo,
+            @RequestParam(name = "asignadoA", required = false) String asignadoA,
+            @RequestParam(name = "fechaDesde", required = false) String fechaDesde,
+            @RequestParam(name = "fechaHasta", required = false) String fechaHasta,
             Principal principal,
             HttpServletRequest httpRequest) {
         
@@ -173,7 +173,7 @@ public class BandejaTramitesController {
     @GetMapping("/exportar")
     @PreAuthorize("hasRole('ADMINISTRATIVO') or hasRole('ADMIN')")
     public ResponseEntity<byte[]> exportarTramites(
-            @RequestParam String tramiteIds,
+            @RequestParam(name = "tramiteIds") String tramiteIds,
             Principal principal,
             HttpServletRequest httpRequest) {
         

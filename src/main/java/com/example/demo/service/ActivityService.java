@@ -7,6 +7,8 @@ import com.example.demo.entity.Area;
 import com.example.demo.repository.AreaRepository;
 import com.example.demo.model.Tramite;
 import com.example.demo.repository.TramiteRepository;
+import com.example.demo.model.Notificacion;
+import com.example.demo.repository.NotificacionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -23,14 +25,16 @@ public class ActivityService {
     private final UsuarioRepository usuarioRepository;
     private final AreaRepository areaRepository;
     private final TramiteRepository tramiteRepository;
+    private final NotificacionRepository notificacionRepository;
     
     public List<ActivityResponse> getRecentActivities(int limit, int offset) {
         List<ActivityResponse> activities = new ArrayList<>();
-        
-        // Obtener últimos usuarios registrados
+
+        // 1. Obtener últimos 5 usuarios registrados
         List<Usuario> recentUsers = usuarioRepository.findAll().stream()
+                .filter(u -> u.getFechaCreacion() != null)
                 .sorted(Comparator.comparing(Usuario::getFechaCreacion).reversed())
-                .limit(3)
+                .limit(5)
                 .collect(Collectors.toList());
         
         for (Usuario user : recentUsers) {
@@ -44,42 +48,87 @@ public class ActivityService {
                     .build());
         }
         
-        // Obtener últimas áreas creadas
+        // 2. Obtener trámites pendientes de revisión o aprobación
+        List<Tramite> pendingTramites = tramiteRepository.findAll().stream()
+                .filter(t -> t.getEstado() != null &&
+                        (t.getEstado().name().equals("EN_REVISION") ||
+                         t.getEstado().name().equals("ENVIADO") ||
+                         t.getEstado().name().equals("EN_PROCESO")))
+                .sorted(Comparator.comparing(Tramite::getFechaActualizacion).reversed())
+                .limit(5)
+                .collect(Collectors.toList());
+
+        for (Tramite tramite : pendingTramites) {
+            String icon = getIconForEstado(tramite.getEstado().name());
+            String description = String.format("Trámite %s pendiente de %s",
+                    tramite.getCodigo(),
+                    tramite.getEstado().name().equals("EN_REVISION") ? "revisión" : "aprobación");
+
+            activities.add(ActivityResponse.builder()
+                    .type("tramite")
+                    .icon(icon)
+                    .description(description)
+                    .timestamp(tramite.getFechaActualizacion())
+                    .userRole("USUARIO")
+                    .status("pending")
+                    .action("pending_review")
+                    .build());
+        }
+        
+        // 3. Obtener notificaciones recientes del sistema
+        List<Notificacion> recentNotifications = notificacionRepository.findAll().stream()
+                .filter(n -> n.getFechaCreacion() != null)
+                .sorted(Comparator.comparing(Notificacion::getFechaCreacion).reversed())
+                .limit(3)
+                .collect(Collectors.toList());
+
+        for (Notificacion notif : recentNotifications) {
+            activities.add(ActivityResponse.builder()
+                    .type("notification")
+                    .icon(notif.getEsLeida() ? "fas fa-envelope-open" : "fas fa-bell")
+                    .description(notif.getMensaje())
+                    .timestamp(notif.getFechaCreacion())
+                    .userRole("SISTEMA")
+                    .status(notif.getEsLeida() ? "read" : "unread")
+                    .action("notification")
+                    .build());
+        }
+
+        // 4. Obtener trámites finalizados recientemente
+        List<Tramite> completedTramites = tramiteRepository.findAll().stream()
+                .filter(t -> t.getEstado() != null && t.getEstado().name().equals("FINALIZADO"))
+                .sorted(Comparator.comparing(Tramite::getFechaActualizacion).reversed())
+                .limit(3)
+                .collect(Collectors.toList());
+
+        for (Tramite tramite : completedTramites) {
+            activities.add(ActivityResponse.builder()
+                    .type("tramite")
+                    .icon("fas fa-check-circle")
+                    .description(String.format("Trámite %s finalizado exitosamente", tramite.getCodigo()))
+                    .timestamp(tramite.getFechaActualizacion())
+                    .userRole("USUARIO")
+                    .status("completed")
+                    .action("completed")
+                    .build());
+        }
+
+        // 5. Obtener áreas creadas recientemente (como información adicional)
         List<Area> recentAreas = areaRepository.findAll().stream()
                 .filter(area -> area.getCreatedAt() != null)
                 .sorted(Comparator.comparing(Area::getCreatedAt).reversed())
                 .limit(2)
                 .collect(Collectors.toList());
-        
+
         for (Area area : recentAreas) {
             activities.add(ActivityResponse.builder()
                     .type("area")
                     .icon("fas fa-building")
                     .description("Nueva área creada: " + area.getNombre())
                     .timestamp(area.getCreatedAt())
+                    .userRole("ADMIN")
+                    .status("completed")
                     .action("created")
-                    .build());
-        }
-        
-        // Obtener actividades reales de trámites
-        List<Tramite> recentTramites = tramiteRepository.findAll().stream()
-                .sorted(Comparator.comparing(Tramite::getFechaActualizacion).reversed())
-                .limit(5)
-                .collect(Collectors.toList());
-        
-        for (Tramite tramite : recentTramites) {
-            String icon = getIconForEstado(tramite.getEstado().name());
-            String description = getDescriptionForTramite(tramite);
-            String status = getStatusForEstado(tramite.getEstado().name());
-            
-            activities.add(ActivityResponse.builder()
-                    .type("tramite")
-                    .icon(icon)
-                    .description(description)
-                    .timestamp(tramite.getFechaActualizacion())
-                    .userRole("USUARIO") // Se puede mejorar obteniendo el rol del usuario solicitante
-                    .status(status)
-                    .action("updated")
                     .build());
         }
         

@@ -645,4 +645,28 @@ public class NotificacionService {
         
         return destinatarios;
     }
+
+    // Crear notificación para rechazo de trámite
+    public void crearNotificacionRechazoTramite(Long usuarioId, Long tramiteId, String codigoTramite, String asuntoTramite, String motivoRechazo) {
+        try {
+            Notificacion notificacion = new Notificacion();
+            notificacion.setUsuarioDestinatarioId(usuarioId);
+            notificacion.setTipo(Notificacion.TipoNotificacion.TRAMITE_RECHAZADO);
+            notificacion.setPrioridad(Notificacion.PrioridadNotificacion.ALTA);
+            notificacion.setTitulo("Trámite Rechazado - " + codigoTramite);
+            notificacion.setMensaje(String.format("Su trámite '%s' (Código: %s) ha sido rechazado. Motivo: %s",
+                asuntoTramite, codigoTramite, motivoRechazo));
+            notificacion.setEsLeida(false);
+            notificacion.setFechaCreacion(LocalDateTime.now());
+            notificacion.setRutaDestino("/usuario/mis-tramites?codigo=" + codigoTramite);
+            notificacion.setMetadatos("{\"tramiteId\": " + tramiteId + ", \"accion\": \"RECHAZADO\"}");
+            notificacion.setTramiteRelacionadoId(tramiteId);
+
+            notificacionRepository.save(notificacion);
+
+            log.info("Notificación de rechazo creada para usuario {} - trámite {}", usuarioId, codigoTramite);
+        } catch (Exception e) {
+            log.error("Error creando notificación de rechazo para trámite {}: {}", tramiteId, e.getMessage());
+        }
+    }
 }

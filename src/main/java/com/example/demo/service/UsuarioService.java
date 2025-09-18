@@ -87,7 +87,7 @@ public class UsuarioService {
         // Handle area assignment if provided
         if (request.getAreaId() != null) {
             com.example.demo.entity.Area area = areaRepository.findById(request.getAreaId())
-                    .orElseThrow(() -> new EntityNotFoundException("Área no encontrada con id: " + request.getAreaId()));
+                    .orElseThrow(() -> new EntityNotFoundException("Crea no encontrada con id: " + request.getAreaId()));
             usuario.setArea(area);
         }
         
@@ -137,7 +137,7 @@ public class UsuarioService {
         }
         if (request.getAreaId() != null) {
             com.example.demo.entity.Area area = areaRepository.findById(request.getAreaId())
-                    .orElseThrow(() -> new EntityNotFoundException("Área no encontrada con id: " + request.getAreaId()));
+                    .orElseThrow(() -> new EntityNotFoundException("Crea no encontrada con id: " + request.getAreaId()));
             usuario.setArea(area);
         }
         
@@ -161,33 +161,33 @@ public class UsuarioService {
     }
     
     public void changePassword(Long userId, ChangePasswordRequest request) {
-        // Validar que las contraseñas coincidan
+        // Validar que las contraseC1as coincidan
         if (!request.getNewPassword().equals(request.getConfirmPassword())) {
-            throw new IllegalArgumentException("Las contraseñas no coinciden");
+            throw new IllegalArgumentException("Las contraseC1as no coinciden");
         }
         
         Usuario usuario = usuarioRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado con ese id: " + userId));
         
-        // Validar contraseña actual
+        // Validar contraseC1a actual
         if (!passwordEncoder.matches(request.getCurrentPassword(), usuario.getClave())) {
-            throw new IllegalArgumentException("La contraseña actual es incorrecta");
+            throw new IllegalArgumentException("La contraseC1a actual es incorrecta");
         }
         
-        // Validar que la nueva contraseña no sea igual a la actual
+        // Validar que la nueva contraseC1a no sea igual a la actual
         if (passwordEncoder.matches(request.getNewPassword(), usuario.getClave())) {
-            throw new IllegalArgumentException("La nueva contraseña debe ser diferente a la actual");
+            throw new IllegalArgumentException("La nueva contraseC1a debe ser diferente a la actual");
         }
         
-        // Validar que no esté en las últimas 10 contraseñas
+        // Validar que no estC) en las C:ltimas 10 contraseC1as
         if (isPasswordInHistory(usuario, request.getNewPassword())) {
-            throw new IllegalArgumentException("No puedes usar una de las últimas 10 contraseñas utilizadas");
+            throw new IllegalArgumentException("No puedes usar una de las C:ltimas 10 contraseC1as utilizadas");
         }
         
-        // Guardar contraseña actual en el historial
+        // Guardar contraseC1a actual en el historial
         savePasswordHistory(usuario, usuario.getClave());
         
-        // Actualizar contraseña
+        // Actualizar contraseC1a
         String encodedNewPassword = passwordEncoder.encode(request.getNewPassword());
         usuario.setClave(encodedNewPassword);
         usuario.setMustChangePassword(false);
@@ -195,7 +195,7 @@ public class UsuarioService {
         
         usuarioRepository.save(usuario);
         
-        // Enviar notificación por email
+        // Enviar notificaciC3n por email
         sendPasswordChangeNotification(usuario);
     }
     
@@ -204,7 +204,7 @@ public class UsuarioService {
                 .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado con ese id: " + userId));
         
         if (usuario.isAccountEnabled()) {
-            throw new IllegalArgumentException("La cuenta ya está habilitada");
+            throw new IllegalArgumentException("La cuenta ya estC! habilitada");
         }
         
         usuario.setAccountEnabled(true);
@@ -219,7 +219,7 @@ public class UsuarioService {
                 .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado con ese id: " + userId));
         
         if (!usuario.isAccountEnabled()) {
-            throw new IllegalArgumentException("La cuenta ya está deshabilitada");
+            throw new IllegalArgumentException("La cuenta ya estC! deshabilitada");
         }
         
         usuario.setAccountEnabled(false);
@@ -267,11 +267,11 @@ public class UsuarioService {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
             message.setTo(usuario.getCorreo());
-            message.setSubject("Contraseña Cambiada Exitosamente");
+            message.setSubject("ContraseC1a Cambiada Exitosamente");
             message.setText(String.format(
                 "Hola %s %s,\n\n" +
-                "Tu contraseña ha sido cambiada exitosamente en nuestro sistema.\n\n" +
-                "Si no fuiste tú quien realizó este cambio, por favor contacta inmediatamente " +
+                "Tu contraseC1a ha sido cambiada exitosamente en nuestro sistema.\n\n" +
+                "Si no fuiste tC: quien realizC3 este cambio, por favor contacta inmediatamente " +
                 "al administrador del sistema.\n\n" +
                 "Fecha del cambio: %s\n\n" +
                 "Saludos,\n" +
@@ -312,7 +312,7 @@ public class UsuarioService {
                 reason != null ? reason : "No especificado",
                 LocalDateTime.now().toString(),
                 enabled ? "Ya puedes acceder al sistema normalmente." : 
-                         "No podrás acceder al sistema hasta que tu cuenta sea habilitada nuevamente."
+                         "No podrC!s acceder al sistema hasta que tu cuenta sea habilitada nuevamente."
             ));
             
             mailSender.send(message);
@@ -344,7 +344,7 @@ public class UsuarioService {
                 status,
                 reason != null ? reason : "No especificado",
                 LocalDateTime.now().toString(),
-                locked ? "Tu cuenta permanecerá bloqueada hasta nuevo aviso." : 
+                locked ? "Tu cuenta permanecerC! bloqueada hasta nuevo aviso." : 
                         "Ya puedes acceder al sistema normalmente."
             ));
             
@@ -400,9 +400,9 @@ public class UsuarioService {
                 "Tu cuenta ha sido creada exitosamente en nuestro sistema.\n\n" +
                 "Tus credenciales de acceso son:\n" +
                 "Usuario: %s\n" +
-                "Contraseña: %s\n\n" +
-                "IMPORTANTE: Debes cambiar tu contraseña dentro de las próximas 24 horas.\n" +
-                "Después de ese tiempo, tendrás que solicitar una nueva contraseña.\n\n" +
+                "ContraseC1a: %s\n\n" +
+                "IMPORTANTE: Debes cambiar tu contraseC1a dentro de las prC3ximas 24 horas.\n" +
+                "DespuC)s de ese tiempo, tendrC!s que solicitar una nueva contraseC1a.\n\n" +
                 "Saludos,\n" +
                 "El equipo del sistema",
                 usuario.getNombre(), 
@@ -485,7 +485,7 @@ public class UsuarioService {
         
         usersWithExpiredOrSoonToExpirePasswords.forEach(usuario -> {
             usuario.setPasswordExpiry(LocalDateTime.now().plusDays(2));
-            usuario.setMustChangePassword(false); // Permitir que usen la contraseña temporal por 48 horas
+            usuario.setMustChangePassword(false); // Permitir que usen la contraseC1a temporal por 48 horas
             usuarioRepository.save(usuario);
             System.out.println("Extendiendo credenciales expiradas para usuario: " + usuario.getUsuario() + " to " + usuario.getPasswordExpiry() + " and set mustChangePassword to false");
         });
@@ -517,7 +517,7 @@ public class UsuarioService {
         com.example.demo.entity.Area area = null;
         if (areaId != null) {
             area = areaRepository.findById(areaId)
-                    .orElseThrow(() -> new EntityNotFoundException("Área no encontrada con id: " + areaId));
+                    .orElseThrow(() -> new EntityNotFoundException("Crea no encontrada con id: " + areaId));
         }
         
         usuario.setArea(area);
@@ -552,19 +552,19 @@ public class UsuarioService {
             // Use provided password
             newPassword = request.getNewPassword().trim();
             
-            // Validar que la nueva contraseña no sea igual a la actual
+            // Validar que la nueva contraseC1a no sea igual a la actual
             if (passwordEncoder.matches(newPassword, usuario.getClave())) {
-                throw new IllegalArgumentException("La nueva contraseña no puede ser igual a la contraseña actual");
+                throw new IllegalArgumentException("La nueva contraseC1a no puede ser igual a la contraseC1a actual");
             }
             
-            // Validar que no esté en las últimas 10 contraseñas del historial
+            // Validar que no estC) en las C:ltimas 10 contraseC1as del historial
             if (isPasswordInHistory(usuario, newPassword)) {
-                throw new IllegalArgumentException("No se puede usar una contraseña que ya fue utilizada anteriormente. Elige una contraseña diferente.");
+                throw new IllegalArgumentException("No se puede usar una contraseC1a que ya fue utilizada anteriormente. Elige una contraseC1a diferente.");
             }
             
-            // Validar que no sea una contraseña de otro usuario del sistema
+            // Validar que no sea una contraseC1a de otro usuario del sistema
             if (isPasswordUsedByOtherUser(newPassword, userId)) {
-                throw new IllegalArgumentException("Esta contraseña está siendo utilizada por otro usuario del sistema. Elige una contraseña diferente.");
+                throw new IllegalArgumentException("Esta contraseC1a estC! siendo utilizada por otro usuario del sistema. Elige una contraseC1a diferente.");
             }
         } else {
             // Generate random password - guaranteed to be unique
@@ -578,11 +578,11 @@ public class UsuarioService {
             }
             
             if (attempts >= 10) {
-                throw new RuntimeException("No se pudo generar una contraseña única después de varios intentos");
+                throw new RuntimeException("No se pudo generar una contraseC1a C:nica despuC)s de varios intentos");
             }
         }
         
-        // Guardar contraseña actual en el historial antes de cambiarla
+        // Guardar contraseC1a actual en el historial antes de cambiarla
         if (usuario.getClave() != null && !usuario.getClave().isEmpty()) {
             savePasswordHistory(usuario, usuario.getClave());
         }
@@ -613,23 +613,23 @@ public class UsuarioService {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
             message.setTo(usuario.getCorreo());
-            message.setSubject("Contraseña Restablecida por Administrador");
+            message.setSubject("ContraseC1a Restablecida por Administrador");
             message.setText(String.format(
                 "Hola %s %s,\n\n" +
-                "Tu contraseña ha sido restablecida por un administrador del sistema.\n\n" +
-                "Tu nueva contraseña es: %s\n\n" +
+                "Tu contraseC1a ha sido restablecida por un administrador del sistema.\n\n" +
+                "Tu nueva contraseC1a es: %s\n\n" +
                 "%s\n\n" +
                 "Motivo: %s\n\n" +
                 "Fecha: %s\n\n" +
-                "Por favor, cambia esta contraseña después de iniciar sesión.\n\n" +
+                "Por favor, cambia esta contraseC1a despuC)s de iniciar sesiC3n.\n\n" +
                 "Saludos,\n" +
                 "El equipo del sistema",
                 usuario.getNombre(),
                 usuario.getApellidos(),
                 newPassword,
                 usuario.isMustChangePassword() ? 
-                    "IMPORTANTE: Debes cambiar esta contraseña en tu próximo inicio de sesión." : 
-                    "Puedes usar esta contraseña para iniciar sesión normalmente.",
+                    "IMPORTANTE: Debes cambiar esta contraseC1a en tu prC3ximo inicio de sesiC3n." : 
+                    "Puedes usar esta contraseC1a para iniciar sesiC3n normalmente.",
                 reason != null ? reason : "No especificado",
                 LocalDateTime.now().toString()
             ));
@@ -653,7 +653,7 @@ public class UsuarioService {
                 .anyMatch(user -> passwordEncoder.matches(plainPassword, user.getClave()));
     }
     
-    // Métodos auxiliares para TramiteService
+    // MC)todos auxiliares para TramiteService
     public List<Long> obtenerTrabajadoresDeArea(Long areaId) {
         return usuarioRepository.findAll().stream()
                 .filter(user -> user.getArea() != null && user.getArea().getId().equals(areaId))
@@ -674,7 +674,7 @@ public class UsuarioService {
         return usuarioRepository.findByUsuario(usuario).orElse(null);
     }
     
-    // Métodos para notificaciones masivas
+    // MC)todos para notificaciones masivas
     public List<Long> obtenerTodosLosUsuariosActivos() {
         return usuarioRepository.findAll().stream()
                 .filter(usuario -> usuario.isAccountEnabled() && !usuario.isAccountLocked())
@@ -724,5 +724,13 @@ public class UsuarioService {
                     return userWithWorkload;
                 })
                 .collect(Collectors.toList());
+    }
+
+    // Obtener usuario por ID como UsuarioResponse
+    public UsuarioResponse obtenerUsuarioPorId(Long usuarioId) {
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        return convertirAResponse(usuario);
     }
 }

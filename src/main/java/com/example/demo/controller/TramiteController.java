@@ -4,6 +4,8 @@ import com.example.demo.dto.TramiteRequest;
 import com.example.demo.dto.TramiteResponse;
 import com.example.demo.dto.AprobarTramiteRequest;
 import com.example.demo.dto.AprobarTramiteResponse;
+import com.example.demo.dto.TramiteConArchivosRequest;
+import com.example.demo.dto.ActualizarTramiteConArchivosRequest;
 import com.example.demo.service.TramiteService;
 import com.example.demo.service.JwtService;
 import lombok.RequiredArgsConstructor;
@@ -36,12 +38,12 @@ public class TramiteController {
     // Búsqueda pública de trámites por código
     @GetMapping("/public/buscar")
     public ResponseEntity<Page<TramiteResponse>> buscarTramitesPublico(
-            @RequestParam(required = false) String codigo,
-            @RequestParam(required = false) String texto,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "fechaCreacion") String sortBy,
-            @RequestParam(defaultValue = "desc") String sortDir) {
+            @RequestParam(name = "codigo", required = false) String codigo,
+            @RequestParam(name = "texto", required = false) String texto,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size,
+            @RequestParam(name = "sortBy", defaultValue = "fechaCreacion") String sortBy,
+            @RequestParam(name = "sortDir", defaultValue = "desc") String sortDir) {
         
         Sort.Direction direction = sortDir.equalsIgnoreCase("desc") ? 
             Sort.Direction.DESC : Sort.Direction.ASC;
@@ -87,13 +89,13 @@ public class TramiteController {
     @GetMapping
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Page<TramiteResponse>> obtenerTramites(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "fechaCreacion") String sortBy,
-            @RequestParam(defaultValue = "desc") String sortDir,
-            @RequestParam(required = false) String estado,
-            @RequestParam(required = false) String tipo,
-            @RequestParam(required = false) String prioridad,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size,
+            @RequestParam(name = "sortBy", defaultValue = "fechaCreacion") String sortBy,
+            @RequestParam(name = "sortDir", defaultValue = "desc") String sortDir,
+            @RequestParam(name = "estado", required = false) String estado,
+            @RequestParam(name = "tipo", required = false) String tipo,
+            @RequestParam(name = "prioridad", required = false) String prioridad,
             Principal principal,
             HttpServletRequest httpRequest) {
         
@@ -191,7 +193,7 @@ public class TramiteController {
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('USUARIO') or hasRole('ADMIN')")
     public ResponseEntity<TramiteResponse> editarTramite(
-            @PathVariable Long id,
+            @PathVariable(name = "id") Long id,
             @RequestBody TramiteRequest request,
             Principal principal,
             HttpServletRequest httpRequest) {
@@ -209,7 +211,7 @@ public class TramiteController {
     @PostMapping("/{id}/recepcionar")
     @PreAuthorize("hasRole('ADMINISTRATIVO') or hasRole('ADMIN')")
     public ResponseEntity<TramiteResponse> recepcionarTramite(
-            @PathVariable Long id,
+            @PathVariable(name = "id") Long id,
             Principal principal,
             HttpServletRequest httpRequest) {
         
@@ -225,32 +227,51 @@ public class TramiteController {
     @PostMapping("/{id}/derivar")
     @PreAuthorize("hasRole('ADMINISTRATIVO') or hasRole('ADMIN')")
     public ResponseEntity<TramiteResponse> derivarTramite(
-            @PathVariable Long id,
-            @RequestParam Long trabajadorNuevoId,
-            @RequestParam String motivo,
+            @PathVariable(name = "id") Long id,
+            @RequestParam(name = "trabajadorNuevoId") Long trabajadorNuevoId,
+            @RequestParam(name = "motivo") String motivo,
             Principal principal,
             HttpServletRequest httpRequest) {
-        
+
+        System.out.println("🔍 Derivar trámite - ID: " + id);
+        System.out.println("🔍 Trabajador nuevo ID: " + trabajadorNuevoId);
+        System.out.println("🔍 Motivo: " + motivo);
+
         Long trabajadorActualId = getUserIdFromToken(httpRequest);
+        System.out.println("🔍 Trabajador actual ID (del token): " + trabajadorActualId);
+
         if (trabajadorActualId == null) {
+            System.err.println("❌ Error: No se pudo obtener el ID del usuario del token");
             throw new RuntimeException("No se pudo obtener el ID del usuario del token");
         }
-        TramiteResponse tramite = tramiteService.derivarTramite(id, trabajadorActualId, trabajadorNuevoId, motivo);
-        return ResponseEntity.ok(tramite);
+
+        try {
+            TramiteResponse tramite = tramiteService.derivarTramite(id, trabajadorActualId, trabajadorNuevoId, motivo);
+            System.out.println("✅ Trámite derivado exitosamente");
+            return ResponseEntity.ok(tramite);
+        } catch (Exception e) {
+            System.err.println("❌ Error al derivar trámite: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
     }
     
     // Aprobar trámite (ADMINISTRATIVO/ADMIN)
     @PostMapping("/{id}/aprobar")
     @PreAuthorize("hasRole('ADMINISTRATIVO') or hasRole('ADMIN')")
     public ResponseEntity<AprobarTramiteResponse> aprobarTramite(
-            @PathVariable Long id,
+            @PathVariable(name = "id") Long id,
             @RequestBody AprobarTramiteRequest request,
             Principal principal,
             HttpServletRequest httpRequest) {
-        
+
         Long administrativoId = getUserIdFromToken(httpRequest);
         if (administrativoId == null) {
-            throw new RuntimeException("No se pudo obtener el ID del usuario del token");
+            System.err.println("❌ Error en aprobarTramite: No se pudo obtener el ID del usuario del token");
+            System.err.println("❌ Authorization header: " + httpRequest.getHeader("Authorization"));
+            System.err.println("❌ Principal: " + principal);
+            System.err.println("❌ Principal name: " + (principal != null ? principal.getName() : "null"));
+            throw new RuntimeException("Token inválido o expirado. No se pudo obtener el ID del usuario del token");
         }
         AprobarTramiteResponse response = tramiteService.aprobarTramite(id, request, administrativoId);
         return ResponseEntity.ok(response);
@@ -260,7 +281,7 @@ public class TramiteController {
     @PostMapping("/{id}/responder")
     @PreAuthorize("hasRole('ADMINISTRATIVO') or hasRole('ADMIN')")
     public ResponseEntity<com.example.demo.dto.ResponderTramiteResponse> responderTramite(
-            @PathVariable Long id,
+            @PathVariable(name = "id") Long id,
             @RequestParam("respuesta") String respuesta,
             @RequestParam(value = "observaciones", required = false) String observaciones,
             @RequestParam(value = "asunto", required = false) String asunto,
@@ -287,9 +308,9 @@ public class TramiteController {
     @PutMapping("/{id}/estado")
     @PreAuthorize("hasRole('ADMINISTRATIVO') or hasRole('ADMIN')")
     public ResponseEntity<TramiteResponse> cambiarEstado(
-            @PathVariable Long id,
-            @RequestParam String nuevoEstado,
-            @RequestParam(required = false) String observaciones,
+            @PathVariable(name = "id") Long id,
+            @RequestParam(name = "nuevoEstado") String nuevoEstado,
+            @RequestParam(name = "observaciones", required = false) String observaciones,
             Principal principal,
             HttpServletRequest httpRequest) {
         
@@ -305,8 +326,8 @@ public class TramiteController {
     @PostMapping("/{id}/finalizar")
     @PreAuthorize("hasRole('ADMINISTRATIVO') or hasRole('ADMIN')")
     public ResponseEntity<TramiteResponse> finalizarConArchivo(
-            @PathVariable Long id,
-            @RequestParam MultipartFile archivo,
+            @PathVariable(name = "id") Long id,
+            @RequestParam(name = "archivo") MultipartFile archivo,
             Principal principal,
             HttpServletRequest httpRequest) {
         
@@ -323,7 +344,7 @@ public class TramiteController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> eliminarTramite(
-            @PathVariable Long id,
+            @PathVariable(name = "id") Long id,
             Principal principal,
             HttpServletRequest httpRequest) {
         
@@ -340,10 +361,10 @@ public class TramiteController {
     @GetMapping("/mis-tramites")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Page<TramiteResponse>> obtenerMisTramites(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "fechaCreacion") String sortBy,
-            @RequestParam(defaultValue = "desc") String sortDir,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size,
+            @RequestParam(name = "sortBy", defaultValue = "fechaCreacion") String sortBy,
+            @RequestParam(name = "sortDir", defaultValue = "desc") String sortDir,
             Principal principal,
             HttpServletRequest httpRequest) {
         
@@ -365,7 +386,7 @@ public class TramiteController {
     @GetMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<TramiteResponse> obtenerTramite(
-            @PathVariable Long id,
+            @PathVariable(name = "id") Long id,
             Principal principal,
             HttpServletRequest httpRequest) {
         
@@ -382,14 +403,14 @@ public class TramiteController {
     @GetMapping("/buscar")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Page<TramiteResponse>> buscarTramites(
-            @RequestParam(required = false) String texto,
-            @RequestParam(required = false) String estado,
-            @RequestParam(required = false) String tipo,
-            @RequestParam(required = false) String prioridad,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "fechaCreacion") String sortBy,
-            @RequestParam(defaultValue = "desc") String sortDir,
+            @RequestParam(name = "texto", required = false) String texto,
+            @RequestParam(name = "estado", required = false) String estado,
+            @RequestParam(name = "tipo", required = false) String tipo,
+            @RequestParam(name = "prioridad", required = false) String prioridad,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size,
+            @RequestParam(name = "sortBy", defaultValue = "fechaCreacion") String sortBy,
+            @RequestParam(name = "sortDir", defaultValue = "desc") String sortDir,
             Principal principal,
             HttpServletRequest httpRequest) {
         
@@ -413,7 +434,7 @@ public class TramiteController {
     @PostMapping("/{id}/archivos")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<String>> subirArchivos(
-            @PathVariable Long id,
+            @PathVariable(name = "id") Long id,
             @RequestParam("archivos") List<MultipartFile> archivos,
             Principal principal,
             HttpServletRequest httpRequest) {
@@ -430,7 +451,7 @@ public class TramiteController {
     @PostMapping("/{id}/documentos")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<String>> subirDocumentos(
-            @PathVariable Long id,
+            @PathVariable(name = "id") Long id,
             @RequestParam(value = "documentos", required = false) List<MultipartFile> documentos,
             Principal principal,
             HttpServletRequest httpRequest) {
@@ -447,12 +468,51 @@ public class TramiteController {
         List<String> urlsDocumentos = tramiteService.subirArchivosMultiples(id, documentos, usuarioId);
         return ResponseEntity.ok(urlsDocumentos);
     }
-    
+
+    // NUEVOS ENDPOINTS PARA ARCHIVOS EN BASE64
+
+    // Crear trámite con archivos en base64
+    @PostMapping("/con-archivos")
+    @PreAuthorize("hasRole('USUARIO') or hasRole('ADMIN')")
+    public ResponseEntity<TramiteResponse> crearTramiteConArchivos(
+            @RequestBody TramiteConArchivosRequest request,
+            Principal principal,
+            HttpServletRequest httpRequest) {
+
+        Long usuarioId = getUserIdFromToken(httpRequest);
+        if (usuarioId == null) {
+            throw new RuntimeException("No se pudo obtener el ID del usuario del token");
+        }
+        String rol = getRole(principal);
+
+        TramiteResponse tramiteCreado = tramiteService.crearTramiteConArchivos(request, usuarioId, rol);
+        return ResponseEntity.ok(tramiteCreado);
+    }
+
+    // Actualizar trámite con archivos en base64
+    @PutMapping("/{id}/con-archivos")
+    @PreAuthorize("hasRole('USUARIO') or hasRole('ADMIN')")
+    public ResponseEntity<TramiteResponse> actualizarTramiteConArchivos(
+            @PathVariable("id") Long id,
+            @RequestBody ActualizarTramiteConArchivosRequest request,
+            Principal principal,
+            HttpServletRequest httpRequest) {
+
+        Long usuarioId = getUserIdFromToken(httpRequest);
+        if (usuarioId == null) {
+            throw new RuntimeException("No se pudo obtener el ID del usuario del token");
+        }
+        String rol = getRole(principal);
+
+        TramiteResponse tramiteActualizado = tramiteService.actualizarTramiteConArchivos(id, request, usuarioId, rol);
+        return ResponseEntity.ok(tramiteActualizado);
+    }
+
     // Descargar archivo (autenticado)
     @GetMapping("/{id}/archivos/{nombreArchivo}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<byte[]> descargarArchivo(
-            @PathVariable Long id,
+            @PathVariable(name = "id") Long id,
             @PathVariable String nombreArchivo,
             Principal principal,
             HttpServletRequest httpRequest) {
@@ -469,7 +529,7 @@ public class TramiteController {
     @GetMapping("/{id}/documentos/descargar-todos")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<byte[]> descargarTodosDocumentos(
-            @PathVariable Long id,
+            @PathVariable(name = "id") Long id,
             Principal principal,
             HttpServletRequest httpRequest) {
         
@@ -495,7 +555,7 @@ public class TramiteController {
     public ResponseEntity<Object> obtenerMisEstadisticas(
             Principal principal,
             HttpServletRequest httpRequest) {
-        
+
         Long usuarioId = getUserIdFromToken(httpRequest);
         if (usuarioId == null) {
             throw new RuntimeException("No se pudo obtener el ID del usuario del token");
@@ -503,6 +563,24 @@ public class TramiteController {
         String rol = getRole(principal);
         Object estadisticas = tramiteService.obtenerEstadisticasUsuario(usuarioId, rol);
         return ResponseEntity.ok(estadisticas);
+    }
+
+    // Verificar permisos de acciones para un trámite (considerando vencimiento)
+    @GetMapping("/{id}/permisos")
+    @PreAuthorize("hasRole('ADMINISTRATIVO') or hasRole('ADMIN')")
+    public ResponseEntity<java.util.Map<String, Boolean>> verificarPermisosAcciones(
+            @PathVariable(name = "id") Long id,
+            Principal principal,
+            HttpServletRequest httpRequest) {
+
+        Long usuarioId = getUserIdFromToken(httpRequest);
+        if (usuarioId == null) {
+            throw new RuntimeException("No se pudo obtener el ID del usuario del token");
+        }
+        String rol = getRole(principal);
+
+        java.util.Map<String, Boolean> permisos = tramiteService.verificarPermisosAcciones(id, usuarioId, rol);
+        return ResponseEntity.ok(permisos);
     }
     
     // Obtener tipos de trámite disponibles
@@ -652,5 +730,32 @@ public class TramiteController {
             case "URGENTE" -> "fas fa-exclamation";
             default -> "fas fa-minus";
         };
+    }
+
+    // Rechazar trámite - SOLO administrativos
+    @PutMapping("/{id}/rechazar")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('ADMINISTRATIVO')")
+    public ResponseEntity<com.example.demo.dto.RechazarTramiteResponse> rechazarTramite(
+            @PathVariable Long id,
+            @RequestBody com.example.demo.dto.RechazarTramiteRequest request,
+            Authentication authentication) {
+
+        try {
+            Long administrativoId = jwtService.extractUserId(
+                authentication.getCredentials().toString());
+
+            // Validar que el trámite ID coincida
+            if (!id.equals(request.getTramiteId())) {
+                throw new RuntimeException("El ID del trámite no coincide");
+            }
+
+            com.example.demo.dto.RechazarTramiteResponse response =
+                tramiteService.rechazarTramite(id, request, administrativoId);
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error al rechazar el trámite: " + e.getMessage());
+        }
     }
 }

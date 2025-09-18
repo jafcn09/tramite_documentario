@@ -13,14 +13,23 @@ import java.util.List;
 @RequestMapping("/api/activities")
 @RequiredArgsConstructor
 public class ActivityController {
-    
+
     private final ActivityService activityService;
-    
+
+    // Public endpoint for demo/testing
+    @GetMapping("/public/recent")
+    public ResponseEntity<List<ActivityResponse>> getRecentActivitiesPublic(
+            @RequestParam(name = "limit", defaultValue = "5") int limit,
+            @RequestParam(name = "offset", defaultValue = "0") int offset) {
+        // Return empty list for public access
+        return ResponseEntity.ok(List.of());
+    }
+
     @GetMapping("/recent")
     @PreAuthorize("hasRole('ADMIN') or hasRole('ADMINISTRATIVO')")
     public ResponseEntity<List<ActivityResponse>> getRecentActivities(
-            @RequestParam(defaultValue = "5") int limit,
-            @RequestParam(defaultValue = "0") int offset) {
+            @RequestParam(name = "limit", defaultValue = "5") int limit,
+            @RequestParam(name = "offset", defaultValue = "0") int offset) {
         List<ActivityResponse> activities = activityService.getRecentActivities(limit, offset);
         return ResponseEntity.ok(activities);
     }

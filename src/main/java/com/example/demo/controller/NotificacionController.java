@@ -20,10 +20,10 @@ import com.example.demo.service.UsuarioService;
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*")
 public class NotificacionController {
-    
+
     private final NotificacionService notificacionService;
     private final UsuarioService usuarioService;
-    
+
     // Helper method to get user ID from principal
     private Long getUserId(Principal principal) {
         try {
@@ -35,26 +35,45 @@ public class NotificacionController {
             return usuario != null ? usuario.getId() : null;
         }
     }
-    
+
+    // Public endpoint for demo/testing
+    @GetMapping("/public")
+    public ResponseEntity<Page<NotificacionResponse>> obtenerNotificacionesPublic(
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size,
+            @RequestParam(name = "sortBy", defaultValue = "fechaCreacion") String sortBy,
+            @RequestParam(name = "sortDir", defaultValue = "desc") String sortDir) {
+
+        // Return empty page for public access
+        return ResponseEntity.ok(Page.empty());
+    }
+
+    // Public endpoint for notification count
+    @GetMapping("/public/no-leidas/count")
+    public ResponseEntity<Long> contarNotificacionesNoLeidasPublic() {
+        // Return 0 for public access
+        return ResponseEntity.ok(0L);
+    }
+
     // CRUD para ADMIN
-    
+
     // Obtener todas las notificaciones (solo ADMIN)
     @GetMapping("/admin/todas")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Page<NotificacionResponse>> obtenerTodasNotificaciones(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "fechaCreacion") String sortBy,
-            @RequestParam(defaultValue = "desc") String sortDir) {
-        
-        Sort.Direction direction = sortDir.equalsIgnoreCase("desc") ? 
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size,
+            @RequestParam(name = "sortBy", defaultValue = "fechaCreacion") String sortBy,
+            @RequestParam(name = "sortDir", defaultValue = "desc") String sortDir) {
+
+        Sort.Direction direction = sortDir.equalsIgnoreCase("desc") ?
             Sort.Direction.DESC : Sort.Direction.ASC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
-        
+
         Page<NotificacionResponse> notificaciones = notificacionService.obtenerTodasNotificaciones(pageable);
         return ResponseEntity.ok(notificaciones);
     }
-    
+
     // Crear notificación (solo ADMIN)
     @PostMapping("/admin")
     @PreAuthorize("hasRole('ADMIN')")
@@ -62,18 +81,18 @@ public class NotificacionController {
         NotificacionResponse notificacion = notificacionService.crearNotificacion(request);
         return ResponseEntity.ok(notificacion);
     }
-    
+
     // Actualizar notificación (solo ADMIN)
     @PutMapping("/admin/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<NotificacionResponse> actualizarNotificacion(
-            @PathVariable Long id,
+            @PathVariable(name = "id") Long id,
             @RequestBody NotificacionRequest request) {
-        
+
         NotificacionResponse notificacion = notificacionService.actualizarNotificacion(id, request);
         return ResponseEntity.ok(notificacion);
     }
-    
+
     // Eliminar notificación (solo ADMIN)
     @DeleteMapping("/admin/{id}")
     @PreAuthorize("hasRole('ADMIN')")
@@ -81,48 +100,48 @@ public class NotificacionController {
         notificacionService.eliminarNotificacion(id);
         return ResponseEntity.noContent().build();
     }
-    
+
     // ENDPOINTS PARA USUARIOS
-    
+
     // Obtener notificación por ID
     @GetMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<NotificacionResponse> obtenerNotificacionPorId(
-            @PathVariable Long id,
+            @PathVariable(name = "id") Long id,
             Principal principal) {
-        
+
         Long usuarioId = getUserId(principal);
         NotificacionResponse notificacion = notificacionService.obtenerNotificacionPorId(id, usuarioId);
         return ResponseEntity.ok(notificacion);
     }
-    
+
     // Obtener mis notificaciones
     @GetMapping
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Page<NotificacionResponse>> obtenerMisNotificaciones(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "fechaCreacion") String sortBy,
-            @RequestParam(defaultValue = "desc") String sortDir,
-            @RequestParam(required = false) Boolean soloNoLeidas,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size,
+            @RequestParam(name = "sortBy", defaultValue = "fechaCreacion") String sortBy,
+            @RequestParam(name = "sortDir", defaultValue = "desc") String sortDir,
+            @RequestParam(name = "soloNoLeidas", required = false) Boolean soloNoLeidas,
             Principal principal) {
-        
-        Sort.Direction direction = sortDir.equalsIgnoreCase("desc") ? 
+
+        Sort.Direction direction = sortDir.equalsIgnoreCase("desc") ?
             Sort.Direction.DESC : Sort.Direction.ASC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
-        
+
         Long usuarioId = getUserId(principal);
-        
+
         Page<NotificacionResponse> notificaciones;
         if (Boolean.TRUE.equals(soloNoLeidas)) {
             notificaciones = notificacionService.obtenerNotificacionesNoLeidas(usuarioId, pageable);
         } else {
             notificaciones = notificacionService.obtenerNotificacionesUsuario(usuarioId, pageable);
         }
-        
+
         return ResponseEntity.ok(notificaciones);
     }
-    
+
     // Contar notificaciones no leídas
     @GetMapping("/no-leidas/count")
     @PreAuthorize("isAuthenticated()")
@@ -131,19 +150,19 @@ public class NotificacionController {
         Long count = notificacionService.contarNotificacionesNoLeidas(usuarioId);
         return ResponseEntity.ok(count);
     }
-    
+
     // Marcar notificación como leída
     @PutMapping("/{id}/marcar-leida")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> marcarComoLeida(
-            @PathVariable Long id,
+            @PathVariable(name = "id") Long id,
             Principal principal) {
-        
+
         Long usuarioId = getUserId(principal);
         notificacionService.marcarComoLeida(id, usuarioId);
         return ResponseEntity.ok().build();
     }
-    
+
     // Marcar todas las notificaciones como leídas
     @PutMapping("/marcar-todas-leidas")
     @PreAuthorize("isAuthenticated()")
@@ -152,114 +171,16 @@ public class NotificacionController {
         notificacionService.marcarTodasComoLeidas(usuarioId);
         return ResponseEntity.ok().build();
     }
-    
-    // Obtener notificaciones filtradas
-    @GetMapping("/filtradas")
+
+    // Eliminar notificación (usuario propietario)
+    @DeleteMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Page<NotificacionResponse>> obtenerNotificacionesFiltradas(
-            @RequestParam(required = false) String tipo,
-            @RequestParam(required = false) String prioridad,
-            @RequestParam(required = false) Boolean esLeida,
-            @RequestParam(required = false) Long tramiteId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "fechaCreacion") String sortBy,
-            @RequestParam(defaultValue = "desc") String sortDir,
+    public ResponseEntity<Void> eliminarMiNotificacion(
+            @PathVariable(name = "id") Long id,
             Principal principal) {
-        
-        Sort.Direction direction = sortDir.equalsIgnoreCase("desc") ? 
-            Sort.Direction.DESC : Sort.Direction.ASC;
-        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
-        
-        Long usuarioId = getUserId(principal);
-        
-        // Construir filtros
-        Page<NotificacionResponse> notificaciones = notificacionService.obtenerNotificacionesFiltradas(
-            usuarioId, tipo, prioridad, esLeida, tramiteId, pageable
-        );
-        
-        return ResponseEntity.ok(notificaciones);
-    }
-    
-    // Obtener notificaciones por trámite específico
-    @GetMapping("/tramite/{tramiteId}")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Page<NotificacionResponse>> obtenerNotificacionesPorTramite(
-            @PathVariable Long tramiteId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            Principal principal) {
-        
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "fechaCreacion"));
-        Long usuarioId = getUserId(principal);
-        
-        Page<NotificacionResponse> notificaciones = notificacionService.obtenerNotificacionesPorTramite(
-            usuarioId, tramiteId, pageable
-        );
-        
-        return ResponseEntity.ok(notificaciones);
-    }
-    
-    // Eliminar notificaciones antiguas (tarea de limpieza)
-    @DeleteMapping("/limpiar-antiguas")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Integer> limpiarNotificacionesAntiguas(
-            @RequestParam(defaultValue = "30") int diasAntiguedad) {
-        
-        Integer eliminadas = notificacionService.limpiarNotificacionesAntiguas(diasAntiguedad);
-        return ResponseEntity.ok(eliminadas);
-    }
-    
-    // Eliminar notificación (usuario)
-    @DeleteMapping("/{id}/eliminar")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Void> eliminarNotificacionUsuario(
-            @PathVariable Long id,
-            Principal principal) {
-        
+
         Long usuarioId = getUserId(principal);
         notificacionService.eliminarNotificacionUsuario(id, usuarioId);
         return ResponseEntity.noContent().build();
-    }
-    
-    // Reenviar notificación por email
-    @PostMapping("/{id}/reenviar-email")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Void> reenviarPorEmail(
-            @PathVariable Long id,
-            Principal principal) {
-        
-        Long usuarioId = getUserId(principal);
-        notificacionService.reenviarNotificacionPorEmail(id, usuarioId);
-        return ResponseEntity.ok().build();
-    }
-    
-    // Estadísticas de notificaciones (ADMIN)
-    @GetMapping("/admin/estadisticas")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Object> obtenerEstadisticasNotificaciones() {
-        Object estadisticas = notificacionService.obtenerEstadisticasNotificaciones();
-        return ResponseEntity.ok(estadisticas);
-    }
-    
-    // Obtener configuración de notificaciones del usuario
-    @GetMapping("/configuracion")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Object> obtenerConfiguracionNotificaciones(Principal principal) {
-        Long usuarioId = getUserId(principal);
-        Object configuracion = notificacionService.obtenerConfiguracionUsuario(usuarioId);
-        return ResponseEntity.ok(configuracion);
-    }
-    
-    // Actualizar configuración de notificaciones del usuario
-    @PutMapping("/configuracion")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Void> actualizarConfiguracionNotificaciones(
-            @RequestBody Object configuracion,
-            Principal principal) {
-        
-        Long usuarioId = getUserId(principal);
-        notificacionService.actualizarConfiguracionUsuario(usuarioId, configuracion);
-        return ResponseEntity.ok().build();
     }
 }

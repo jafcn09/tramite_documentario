@@ -92,13 +92,7 @@ public class Tramite {
     
     @Column(name = "contador_por_procesar")
     private Integer contadorPorProcesar = 0;
-
-    @Column(name = "contador_rechazados")
-    private Integer contadorRechazados = 0;
-
-    @Column(name = "asunto", length = 255, nullable = false)
-    private String asunto;
-
+    
     @CreationTimestamp
     @Column(name = "fecha_creacion", nullable = false, updatable = false)
     private LocalDateTime fechaCreacion;

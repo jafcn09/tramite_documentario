@@ -227,9 +227,16 @@ public class UsuarioController {
         }
     }
     
+    // Public endpoint for demo/testing
+    @GetMapping("/public/recent")
+    public ResponseEntity<?> getRecentUsersPublic(@RequestParam(name = "limit", defaultValue = "5") int limit) {
+        // Return empty list for public access
+        return ResponseEntity.ok(List.of());
+    }
+
     @GetMapping("/recent")
     @PreAuthorize("hasRole('ADMIN') or hasRole('ADMINISTRATIVO')")
-    public ResponseEntity<?> getRecentUsers(@RequestParam(defaultValue = "5") int limit) {
+    public ResponseEntity<?> getRecentUsers(@RequestParam(name = "limit", defaultValue = "5") int limit) {
         try {
             List<UsuarioResponse> recentUsers = usuarioService.getRecentUsers(limit);
             return ResponseEntity.ok(recentUsers);
