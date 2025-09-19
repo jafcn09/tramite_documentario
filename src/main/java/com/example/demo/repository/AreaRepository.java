@@ -22,4 +22,17 @@ public interface AreaRepository extends JpaRepository<Area, Long> {
     
     @Query("SELECT a FROM Area a WHERE a.activa = true ORDER BY a.nombre ASC")
     List<Area> findActiveAreasOrderByNombre();
+
+    List<Area> findByAreaPadreIsNullOrderByNivelJerarquicoAscNombreAsc();
+
+    List<Area> findByAreaPadreOrderByNivelJerarquicoAscNombreAsc(Area areaPadre);
+
+    @Query("SELECT a FROM Area a WHERE a.areaPadre IS NULL AND a.activa = true ORDER BY a.nivelJerarquico ASC, a.nombre ASC")
+    List<Area> findAreasRaizActivas();
+
+    @Query("SELECT a FROM Area a WHERE a.areaPadre = :areaPadre AND a.activa = true ORDER BY a.nivelJerarquico ASC, a.nombre ASC")
+    List<Area> findSubAreasActivas(Area areaPadre);
+
+    @Query("SELECT a FROM Area a WHERE a.codigoOrganigrama = :codigo")
+    Optional<Area> findByCodigoOrganigrama(String codigo);
 }

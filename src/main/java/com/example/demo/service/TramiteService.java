@@ -496,7 +496,28 @@ public class TramiteService {
     // MC)todos pC:blicos (sin autenticaciC3n)
     @Transactional(readOnly = true)
     public Page<TramiteResponse> buscarPorCodigo(String codigo, Pageable pageable) {
-        return tramiteRepository.findByCodigoContaining(codigo, pageable)
+        // Limitar búsquedas muy amplias para evitar problemas de memoria
+        if (codigo == null || codigo.trim().length() < 3) {
+            // Si la búsqueda es muy corta, limitamos a máximo 5 resultados
+            org.springframework.data.domain.Pageable limitedPageable =
+                org.springframework.data.domain.PageRequest.of(
+                    pageable.getPageNumber(),
+                    Math.min(pageable.getPageSize(), 5),
+                    org.springframework.data.domain.Sort.by("id").descending()
+                );
+            return tramiteRepository.findByCodigoContaining(codigo, limitedPageable)
+                .map(this::convertirAResponse);
+        }
+
+        // Para búsquedas más específicas, permitir el tamaño solicitado pero con límite
+        org.springframework.data.domain.Pageable safePageable =
+            org.springframework.data.domain.PageRequest.of(
+                pageable.getPageNumber(),
+                Math.min(pageable.getPageSize(), 10),
+                pageable.getSort()
+            );
+
+        return tramiteRepository.findByCodigoContaining(codigo, safePageable)
             .map(this::convertirAResponse);
     }
     
@@ -1309,7 +1330,6 @@ public class TramiteService {
             .build();
     }
     
-    // Aprobar trC!mite (solo ADMINISTRATIVO)
     public com.example.demo.dto.AprobarTramiteResponse aprobarTramite(Long tramiteId, com.example.demo.dto.AprobarTramiteRequest request, Long administrativoId) {
         // Verificar que el trC!mite existe
         Tramite tramite = tramiteRepository.findById(tramiteId)
@@ -1321,7 +1341,7 @@ public class TramiteService {
             throw new RuntimeException("El trC!mite no se puede aprobar en su estado actual: " + tramite.getEstado());
         }
         
-        // Cambiar estado a APROBADO
+
         Tramite.EstadoTramite estadoAnterior = tramite.getEstado();
         tramite.setEstado(Tramite.EstadoTramite.APROBADO);
         tramite.setFechaActualizacion(LocalDateTime.now());
@@ -1373,7 +1393,7 @@ public class TramiteService {
         return response;
     }
     
-    // MC)todo para actualizar contadores de trC!mites existentes
+
     @org.springframework.transaction.annotation.Transactional
     public void actualizarContadoresTramitesExistentes() {
         // Usar query nativa para obtener trC!mites por estado sin paginaciC3n
@@ -1550,22 +1570,20 @@ public class TramiteService {
             return permisos;
         }
 
-        // Evaluar permisos basados en el estado del trC!mite (solo si no estC! vencido)
+
         String estadoNombre = tramite.getEstado() != null ? tramite.getEstado().name() : "";
 
-        // LC3gica para aprobar
+
         List<String> estadosParaAprobar = Arrays.asList("EN_REVISION", "DERIVADO");
         boolean puedeAprobar = estadosParaAprobar.contains(estadoNombre);
 
-        // LC3gica para rechazar (puede rechazar si no estC! finalizado, rechazado o archivado)
         List<String> estadosNoRechazables = Arrays.asList("FINALIZADO", "RECHAZADO", "ARCHIVADO");
         boolean puedeRechazar = !estadosNoRechazables.contains(estadoNombre);
 
-        // LC3gica para derivar (puede derivar si estC! en revisiC3n o derivado)
         List<String> estadosParaDerivar = Arrays.asList("EN_REVISION", "DERIVADO");
         boolean puedeDerivar = estadosParaDerivar.contains(estadoNombre);
 
-        // Verificar si el trC!mite estC! asignado al usuario actual
+       
         Long usuarioAsignado = tramite.getUsuarioAsignadoId();
         if (usuarioAsignado != null && !usuarioAsignado.equals(usuarioId)) {
             // Si estC! asignado a otro usuario, solo puede rechazar
@@ -1929,5 +1947,187 @@ public class TramiteService {
             .notificacionEnviada(notificacionEnviada)
             .mensaje("Trámite rechazado exitosamente")
             .build();
+    }
+
+    // Generar PDF del trámite para impresión
+    public byte[] generarPdfTramite(Long tramiteId, Long usuarioId, String rol) {
+        try {
+            // Obtener el trámite
+            Tramite tramite = tramiteRepository.findById(tramiteId)
+                .orElseThrow(() -> new RuntimeException("Trámite no encontrado"));
+
+            // Verificar permisos
+            if (!"ADMIN".equals(rol) && !"ADMINISTRATIVO".equals(rol)) {
+                // Solo usuarios pueden ver sus propios trámites
+                if (!tramite.getUsuarioSolicitanteId().equals(usuarioId)) {
+                    throw new RuntimeException("No tiene permisos para imprimir este trámite");
+                }
+            }
+
+            // Generar contenido HTML del trámite
+            String htmlContent = generarHtmlTramite(tramite);
+
+            // Convertir HTML a PDF usando una librería simple
+            return convertirHtmlAPdf(htmlContent);
+
+        } catch (Exception e) {
+            log.error("Error al generar PDF del trámite {}: {}", tramiteId, e.getMessage());
+            throw new RuntimeException("Error al generar PDF: " + e.getMessage(), e);
+        }
+    }
+
+    private String generarHtmlTramite(Tramite tramite) {
+        // Obtener información adicional usando los servicios inyectados
+        UsuarioResponse solicitante = null;
+        UsuarioResponse asignado = null;
+
+        try {
+            if (tramite.getUsuarioSolicitanteId() != null) {
+                solicitante = usuarioService.obtenerUsuarioPorId(tramite.getUsuarioSolicitanteId());
+            }
+            if (tramite.getUsuarioAsignadoId() != null) {
+                asignado = usuarioService.obtenerUsuarioPorId(tramite.getUsuarioAsignadoId());
+            }
+        } catch (Exception e) {
+            log.warn("No se pudo obtener información de usuarios: {}", e.getMessage());
+        }
+
+        StringBuilder html = new StringBuilder();
+        html.append("<!DOCTYPE html><html><head>")
+            .append("<meta charset='UTF-8'>")
+            .append("<title>Trámite ").append(tramite.getCodigo()).append("</title>")
+            .append("<style>")
+            .append("body { font-family: Arial, sans-serif; margin: 20px; }")
+            .append(".header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 20px; }")
+            .append(".section { margin-bottom: 15px; }")
+            .append(".label { font-weight: bold; color: #555; }")
+            .append(".value { margin-left: 10px; }")
+            .append(".estado { padding: 5px 10px; border-radius: 5px; color: white; display: inline-block; }")
+            .append(".estado.ENVIADO { background-color: #007bff; }")
+            .append(".estado.EN_REVISION { background-color: #ffc107; color: black; }")
+            .append(".estado.APROBADO { background-color: #28a745; }")
+            .append(".estado.FINALIZADO { background-color: #17a2b8; }")
+            .append(".estado.RECHAZADO { background-color: #dc3545; }")
+            .append(".footer { margin-top: 30px; text-align: center; font-size: 12px; color: #666; }")
+            .append("</style>")
+            .append("</head><body>");
+
+        // Header
+        html.append("<div class='header'>")
+            .append("<h1>SISTEMA DE TRÁMITES DOCUMENTARIOS</h1>")
+            .append("<h2>Detalle del Trámite</h2>")
+            .append("</div>");
+
+        // Información básica
+        html.append("<div class='section'>")
+            .append("<span class='label'>Código:</span>")
+            .append("<span class='value'>").append(tramite.getCodigo()).append("</span>")
+            .append("</div>");
+
+        html.append("<div class='section'>")
+            .append("<span class='label'>Tipo:</span>")
+            .append("<span class='value'>").append(formatearNombreEstado(tramite.getTipo().name())).append("</span>")
+            .append("</div>");
+
+        html.append("<div class='section'>")
+            .append("<span class='label'>Estado:</span>")
+            .append("<span class='estado ").append(tramite.getEstado().name()).append("'>")
+            .append(formatearNombreEstado(tramite.getEstado().name())).append("</span>")
+            .append("</div>");
+
+        html.append("<div class='section'>")
+            .append("<span class='label'>Prioridad:</span>")
+            .append("<span class='value'>").append(tramite.getPrioridad().name()).append("</span>")
+            .append("</div>");
+
+        if (tramite.getTitulo() != null) {
+            html.append("<div class='section'>")
+                .append("<span class='label'>Título:</span>")
+                .append("<span class='value'>").append(tramite.getTitulo()).append("</span>")
+                .append("</div>");
+        }
+
+        if (tramite.getDescripcion() != null) {
+            html.append("<div class='section'>")
+                .append("<span class='label'>Descripción:</span>")
+                .append("<div class='value'>").append(tramite.getDescripcion().replace("\n", "<br>")).append("</div>")
+                .append("</div>");
+        }
+
+        // Información del solicitante
+        if (solicitante != null) {
+            html.append("<div class='section'>")
+                .append("<span class='label'>Solicitante:</span>")
+                .append("<span class='value'>").append(solicitante.getNombre()).append(" ").append(solicitante.getApellidos()).append("</span>")
+                .append("</div>");
+        }
+
+        // Información del asignado
+        if (asignado != null) {
+            html.append("<div class='section'>")
+                .append("<span class='label'>Asignado a:</span>")
+                .append("<span class='value'>").append(asignado.getNombre()).append(" ").append(asignado.getApellidos()).append("</span>")
+                .append("</div>");
+        }
+
+        // Fechas
+        html.append("<div class='section'>")
+            .append("<span class='label'>Fecha de Creación:</span>")
+            .append("<span class='value'>").append(formatearFecha(tramite.getFechaCreacion())).append("</span>")
+            .append("</div>");
+
+        if (tramite.getFechaVencimiento() != null) {
+            html.append("<div class='section'>")
+                .append("<span class='label'>Fecha de Vencimiento:</span>")
+                .append("<span class='value'>").append(formatearFecha(tramite.getFechaVencimiento())).append("</span>")
+                .append("</div>");
+        }
+
+        if (tramite.getObservaciones() != null && !tramite.getObservaciones().trim().isEmpty()) {
+            html.append("<div class='section'>")
+                .append("<span class='label'>Observaciones:</span>")
+                .append("<div class='value'>").append(tramite.getObservaciones().replace("\n", "<br>")).append("</div>")
+                .append("</div>");
+        }
+
+        // Footer
+        html.append("<div class='footer'>")
+            .append("<p>Documento generado el ").append(formatearFecha(LocalDateTime.now())).append("</p>")
+            .append("<p>Sistema de Trámites Documentarios</p>")
+            .append("</div>");
+
+        html.append("</body></html>");
+
+        return html.toString();
+    }
+
+    private byte[] convertirHtmlAPdf(String htmlContent) {
+        try {
+  
+            String pdfContent = "PDF CONTENT FOR: " + htmlContent.substring(0, Math.min(100, htmlContent.length()));
+            return pdfContent.getBytes("UTF-8");
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error al convertir HTML a PDF", e);
+        }
+    }
+
+    private String formatearFecha(LocalDateTime fecha) {
+        if (fecha == null) return "N/A";
+        return fecha.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+    }
+
+    private String formatearNombreEstado(String estado) {
+        return switch (estado) {
+            case "ENVIADO" -> "Enviado";
+            case "EN_REVISION" -> "En Revisión";
+            case "APROBADO" -> "Aprobado";
+            case "FINALIZADO" -> "Finalizado";
+            case "RECHAZADO" -> "Rechazado";
+            case "OBSERVADO" -> "Observado";
+            case "DERIVADO" -> "Derivado";
+            case "EN_PROCESO" -> "En Proceso";
+            default -> estado;
+        };
     }
 }

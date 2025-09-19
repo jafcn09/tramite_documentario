@@ -30,7 +30,23 @@ public class Area {
     
     @Column(nullable = false)
     private Boolean activa = true;
-    
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "area_padre_id")
+    private Area areaPadre;
+
+    @OneToMany(mappedBy = "areaPadre", fetch = FetchType.LAZY)
+    private List<Area> subAreas;
+
+    @Column(name = "nivel_jerarquico")
+    private Integer nivelJerarquico = 1;
+
+    @Column(name = "codigo_organigrama", length = 50)
+    private String codigoOrganigrama;
+
+    @Column(name = "ruta_jerarquica", length = 1000)
+    private String rutaJerarquica;
+
     @OneToMany(mappedBy = "area", fetch = FetchType.LAZY)
     private List<Usuario> usuarios;
     

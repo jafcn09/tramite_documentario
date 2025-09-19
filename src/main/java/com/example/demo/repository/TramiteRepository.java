@@ -20,8 +20,9 @@ public interface TramiteRepository extends JpaRepository<Tramite, Long> {
     // Buscar por código único
     Optional<Tramite> findByCodigo(String codigo);
     
-    // Buscar por código con paginación (para búsquedas públicas)
-    Page<Tramite> findByCodigoContaining(String codigo, Pageable pageable);
+    // Buscar por código con paginación (para búsquedas públicas) - Optimizada
+    @Query("SELECT t FROM Tramite t WHERE t.codigo LIKE CONCAT('%', :codigo, '%') ORDER BY t.id DESC")
+    Page<Tramite> findByCodigoContaining(@Param("codigo") String codigo, Pageable pageable);
     
     // Buscar por usuario solicitante
     @Query("SELECT t FROM Tramite t WHERE t.usuarioSolicitanteId = :usuarioSolicitanteId")

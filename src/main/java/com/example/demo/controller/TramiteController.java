@@ -41,13 +41,19 @@ public class TramiteController {
             @RequestParam(name = "codigo", required = false) String codigo,
             @RequestParam(name = "texto", required = false) String texto,
             @RequestParam(name = "page", defaultValue = "0") int page,
-            @RequestParam(name = "size", defaultValue = "10") int size,
+            @RequestParam(name = "size", defaultValue = "5") int size,
             @RequestParam(name = "sortBy", defaultValue = "fechaCreacion") String sortBy,
             @RequestParam(name = "sortDir", defaultValue = "desc") String sortDir) {
-        
-        Sort.Direction direction = sortDir.equalsIgnoreCase("desc") ? 
+
+        // Limitar tamaño máximo para búsquedas públicas para prevenir sobrecarga
+        int limitedSize = Math.min(size, 10);
+
+        Sort.Direction direction = sortDir.equalsIgnoreCase("desc") ?
             Sort.Direction.DESC : Sort.Direction.ASC;
-        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+
+        // Usar ID para ordenamiento más eficiente
+        String sortField = "fechaCreacion".equals(sortBy) ? "id" : sortBy;
+        Pageable pageable = PageRequest.of(page, limitedSize, Sort.by(direction, sortField));
         
         Page<TramiteResponse> tramites;
         if (codigo != null && !codigo.trim().isEmpty()) {
@@ -524,8 +530,7 @@ public class TramiteController {
         String rol = getRole(principal);
         return tramiteService.descargarArchivo(id, nombreArchivo, usuarioId, rol);
     }
-    
-    // Descargar todos los documentos como ZIP
+
     @GetMapping("/{id}/documentos/descargar-todos")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<byte[]> descargarTodosDocumentos(
@@ -592,7 +597,7 @@ public class TramiteController {
         for (int i = 0; i < enumValues.length; i++) {
             com.example.demo.model.Tramite.TipoTramite tipo = enumValues[i];
             java.util.Map<String, Object> tipoMap = new java.util.HashMap<>();
-            tipoMap.put("id", i + 1); // Use 1-based numeric IDs
+            tipoMap.put("id", i + 1); 
             tipoMap.put("nombre", formatearNombreTipo(tipo.name()));
             tipoMap.put("descripcion", obtenerDescripcionTipo(tipo.name()));
             tipos.add(tipoMap);

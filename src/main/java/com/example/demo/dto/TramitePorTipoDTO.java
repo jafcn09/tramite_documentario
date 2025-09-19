@@ -9,11 +9,9 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class DocumentoBase64Request {
-
-    private String nombre;
+public class TramitePorTipoDTO {
     private String tipo;
-    private Long tamano;
-    private String contenido; // Base64 encoded content
-    private String descripcion;
+    private Long cantidad;
+    private Long completados;
+    private Long pendientes;
 }

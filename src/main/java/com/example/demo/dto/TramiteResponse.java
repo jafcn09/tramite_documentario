@@ -48,6 +48,9 @@ public class TramiteResponse {
     // Contadores
     private Integer contadorProcesados;
     private Integer contadorPorProcesar;
+
+    // Permisos y estados
+    private Boolean puedeEditar;
     
     // Fechas
     private LocalDateTime fechaCreacion;
