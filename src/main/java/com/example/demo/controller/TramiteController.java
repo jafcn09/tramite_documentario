@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.example.demo.dto.ActualizarTramiteConArchivosRequest;
+// import com.example.demo.dto.ActualizarTramiteConArchivosRequest; // Unused - edit functionality disabled
 import com.example.demo.dto.AprobarTramiteRequest;
 import com.example.demo.dto.AprobarTramiteResponse;
 import com.example.demo.dto.TramiteConArchivosRequest;
@@ -202,6 +202,8 @@ public class TramiteController {
         return ResponseEntity.ok(tramite);
     }
     
+    // ENDPOINT DE EDICIÓN DESHABILITADO TEMPORALMENTE - USUARIOS NO PUEDEN EDITAR TRÁMITES
+    /*
     // Editar trámite (USUARIO solo sus trámites, ADMIN todos)
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('USUARIO') or hasRole('ADMIN')")
@@ -210,7 +212,7 @@ public class TramiteController {
             @RequestBody TramiteRequest request,
             Principal principal,
             HttpServletRequest httpRequest) {
-        
+
         Long usuarioId = getUserIdFromToken(httpRequest);
         if (usuarioId == null) {
             throw new RuntimeException("No se pudo obtener el ID del usuario del token");
@@ -219,6 +221,7 @@ public class TramiteController {
         TramiteResponse tramite = tramiteService.editarTramite(id, request, usuarioId, rol);
         return ResponseEntity.ok(tramite);
     }
+    */
     
     // Recepcionar trámite (ADMINISTRATIVO)
     @PostMapping("/{id}/recepcionar")
@@ -502,26 +505,7 @@ public class TramiteController {
         return ResponseEntity.ok(tramiteCreado);
     }
 
-    // Actualizar trámite con archivos en base64
-    @PutMapping("/{id}/con-archivos")
-    @PreAuthorize("hasRole('USUARIO') or hasRole('ADMIN')")
-    public ResponseEntity<TramiteResponse> actualizarTramiteConArchivos(
-            @PathVariable("id") Long id,
-            @RequestBody ActualizarTramiteConArchivosRequest request,
-            Principal principal,
-            HttpServletRequest httpRequest) {
 
-        Long usuarioId = getUserIdFromToken(httpRequest);
-        if (usuarioId == null) {
-            throw new RuntimeException("No se pudo obtener el ID del usuario del token");
-        }
-        String rol = getRole(principal);
-
-        TramiteResponse tramiteActualizado = tramiteService.actualizarTramiteConArchivos(id, request, usuarioId, rol);
-        return ResponseEntity.ok(tramiteActualizado);
-    }
-
-    // Descargar archivo (autenticado)
     @GetMapping("/{id}/archivos/{nombreArchivo}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<byte[]> descargarArchivo(

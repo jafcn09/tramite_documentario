@@ -1366,8 +1366,6 @@ public class TramiteService {
         tramite.setEstado(Tramite.EstadoTramite.FINALIZADO);
         tramite.setFechaCompletado(LocalDateTime.now());
         
-        // Actualizar contadores
-        // Incrementar contador de procesados
         if (tramite.getContadorProcesados() == null) {
             tramite.setContadorProcesados(0);
         }
@@ -1774,14 +1772,16 @@ public class TramiteService {
 
             Tramite tramite = tramiteExistente.get();
 
-            // Actualizar campos básicos
-            // El frontend envía 'asunto' que se mapea a 'titulo' en la entidad
+
+
             if (request.getAsunto() != null) {
+              
                 tramite.setTitulo(request.getAsunto());
             } else if (request.getTitulo() != null) {
                 tramite.setTitulo(request.getTitulo());
             }
             if (request.getDescripcion() != null) {
+               
                 tramite.setDescripcion(request.getDescripcion());
             }
             if (request.getObservaciones() != null) {
@@ -1791,8 +1791,15 @@ public class TramiteService {
                 tramite.setFechaVencimiento(request.getFechaVencimiento());
             }
 
-            // Actualizar tipo de trámite si se envía
-            if (request.getTipo() != null) {
+
+            if (request.getTipoId() != null) {
+
+                Tramite.TipoTramite tipoEnum = mapearTipoTramiteDesdeId(request.getTipoId());
+                if (tipoEnum != null) {
+                    System.out.println("✅ BACKEND DEBUG: Actualizando tipo de trámite a: " + tipoEnum);
+                    tramite.setTipo(tipoEnum);
+                }
+            } else if (request.getTipo() != null) {
                 try {
                     Tramite.TipoTramite tipoEnum = Tramite.TipoTramite.valueOf(request.getTipo().toUpperCase());
                     tramite.setTipo(tipoEnum);
@@ -1801,8 +1808,15 @@ public class TramiteService {
                 }
             }
 
-            // Actualizar prioridad si se envía
-            if (request.getPrioridad() != null) {
+
+            if (request.getPrioridadId() != null) {
+    
+                Tramite.PrioridadTramite prioridadEnum = mapearPrioridadDesdeId(request.getPrioridadId());
+                if (prioridadEnum != null) {
+           
+                    tramite.setPrioridad(prioridadEnum);
+                }
+            } else if (request.getPrioridad() != null) {
                 try {
                     Tramite.PrioridadTramite prioridadEnum = Tramite.PrioridadTramite.valueOf(request.getPrioridad().toUpperCase());
                     tramite.setPrioridad(prioridadEnum);
@@ -1855,12 +1869,12 @@ public class TramiteService {
 
         for (DocumentoBase64Request documento : documentos) {
             try {
-                // Validar que el documento tenga contenido
+
                 if (documento.getContenido() == null || documento.getContenido().isEmpty()) {
                     continue; // Saltar documentos sin contenido
                 }
 
-                // Crear objeto JSON con el documento en base64
+
                 String archivoJson = String.format(
                     "{\"nombre\":\"%s\",\"tipo\":\"%s\",\"tamano\":%d,\"contenido\":\"%s\",\"descripcion\":\"%s\",\"fechaSubida\":\"%s\"}",
                     documento.getNombre() != null ? documento.getNombre() : "documento.pdf",
@@ -1873,12 +1887,10 @@ public class TramiteService {
 
                 archivosJsonList.add(archivoJson);
 
-                // Log para debug
-                System.out.println("📁 Documento procesado: " + documento.getNombre());
+
 
             } catch (Exception e) {
-                System.err.println("❌ Error al procesar documento " + documento.getNombre() + ": " + e.getMessage());
-                // No lanzar excepción para que no falle todo el proceso por un archivo
+          
             }
         }
 
@@ -1915,8 +1927,7 @@ public class TramiteService {
 
         for (Long documentoId : documentoIds) {
             try {
-                // Log para debug
-                System.out.println("🗑️ Solicitado eliminar documento ID: " + documentoId + " del trámite: " + tramiteId);
+        
 
             } catch (Exception e) {
                 System.err.println("❌ Error al eliminar documento " + documentoId + ": " + e.getMessage());
@@ -1932,7 +1943,7 @@ public class TramiteService {
 
     private String guardarArchivo(byte[] contenido, String nombreArchivo, Long tramiteId) {
         try {
-            // Crear directorio para el trámite si no existe
+
             java.nio.file.Path directorioTramite = java.nio.file.Paths.get("uploads", "tramites", tramiteId.toString());
             java.nio.file.Files.createDirectories(directorioTramite);
 
@@ -2506,5 +2517,40 @@ public class TramiteService {
         };
     }
 
+    // Métodos auxiliares para mapear IDs a enums
+    private Tramite.TipoTramite mapearTipoTramiteDesdeId(Long tipoId) {
+        // Mapeo basado en los IDs conocidos del frontend (pueden variar según tu BD)
+        return switch (tipoId.intValue()) {
+            case 1 -> Tramite.TipoTramite.TRAMITE_ADMINISTRATIVO;
+            case 2 -> Tramite.TipoTramite.TRAMITE_ACADEMICO;
+            case 3 -> Tramite.TipoTramite.SOLICITUD_CERTIFICADO;
+            case 4 -> Tramite.TipoTramite.SOLICITUD_CONSTANCIA;
+            case 5 -> Tramite.TipoTramite.SOLICITUD_PERMISO;
+            case 6 -> Tramite.TipoTramite.LICENCIA;
+            case 7 -> Tramite.TipoTramite.AUTORIZACION;
+            case 8 -> Tramite.TipoTramite.RECLAMO;
+            case 9 -> Tramite.TipoTramite.CONSULTA;
+            case 10 -> Tramite.TipoTramite.SUGERENCIA;
+            case 11 -> Tramite.TipoTramite.REVISION_EXPEDIENTE;
+            case 12 -> Tramite.TipoTramite.OTRO;
+            default -> {
+           
+                yield null;
+            }
+        };
+    }
+
+    private Tramite.PrioridadTramite mapearPrioridadDesdeId(Long prioridadId) {
+        // Mapeo basado en los IDs conocidos del frontend (pueden variar según tu BD)
+        return switch (prioridadId.intValue()) {
+            case 1 -> Tramite.PrioridadTramite.BAJA;
+            case 2 -> Tramite.PrioridadTramite.NORMAL;
+            case 3 -> Tramite.PrioridadTramite.ALTA;
+            case 4 -> Tramite.PrioridadTramite.URGENTE;
+            default -> {
+                yield null;
+            }
+        };
+    }
 
 }
