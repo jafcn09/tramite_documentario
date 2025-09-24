@@ -1,0 +1,647 @@
+<div class="lista-tramites-container">
+  <!-- Header de la página -->
+  <div class="page-header">
+    <div class="header-content">
+      <div class="title-section">
+        <h1>Gestión de Trámites</h1>
+        <p>Administra y supervisa todos los trámites documentarios</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-primary" (click)="abrirModalNuevo()">
+          <i class="fas fa-plus"></i>
+          Nuevo Trámite
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Estadísticas -->
+  <div class="stats-cards">
+    <div class="stat-card total">
+      <div class="stat-icon">
+        <i class="fas fa-file-alt"></i>
+      </div>
+      <div class="stat-info">
+        <div class="stat-number">{{ estadisticas.total }}</div>
+        <div class="stat-label">Total de Trámites</div>
+      </div>
+    </div>
+
+    <div class="stat-card revision">
+      <div class="stat-icon">
+        <i class="fas fa-clock"></i>
+      </div>
+      <div class="stat-info">
+        <div class="stat-number">{{ estadisticas.enRevision }}</div>
+        <div class="stat-label">En Revisión</div>
+      </div>
+    </div>
+
+    <div class="stat-card finalizado">
+      <div class="stat-icon">
+        <i class="fas fa-check-circle"></i>
+      </div>
+      <div class="stat-info">
+        <div class="stat-number">{{ estadisticas.aprobados }}</div>
+        <div class="stat-label">Aprobados</div>
+      </div>
+    </div>
+
+    <div class="stat-card rating">
+      <div class="stat-icon">
+        <i class="fas fa-flag-checkered"></i>
+      </div>
+      <div class="stat-info">
+        <div class="stat-number">{{ estadisticas.finalizados }}</div>
+        <div class="stat-label">Finalizados</div>
+        <div *ngIf="getTramitesVencidos() > 0" class="stat-note">
+          (incluye {{ getTramitesVencidos() }} vencidos)
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Barra de herramientas -->
+  <div class="toolbar">
+    <div class="search-section">
+      <div class="search-box" [class.has-dropdown]="searchTerm && searchTerm.trim()">
+        <i class="fas fa-search" [class.searching]="isSearching"></i>
+        <input 
+          type="text" 
+          placeholder="Buscar por código, asunto o solicitante..." 
+          [(ngModel)]="searchTerm"
+          (input)="onSearch(searchTerm)"
+          (focus)="onSearchInputFocus()"
+          (blur)="onSearchInputBlur()"
+          (keydown)="onSearchKeyDown($event)"
+          class="search-input"
+          autocomplete="off"
+        >
+       
+        
+   
+      </div>
+    </div>
+
+    <div class="toolbar-actions">
+      <!-- Filtros -->
+      <button 
+        class="btn btn-outline" 
+        (click)="toggleFilters()"
+        [class.active]="showFilters"
+      >
+        <i class="fas fa-filter"></i>
+        <span>Filtros</span>
+        <span *ngIf="activeFiltersCount > 0" class="filter-count">
+          {{ activeFiltersCount }}
+        </span>
+      </button>
+
+      <!-- Cambiar vista -->
+      <button 
+        class="btn btn-outline" 
+        (click)="toggleVista()"
+        [title]="vistaActual === 'tabla' ? 'Ver tarjetas' : 'Ver tabla'"
+      >
+        <i [class]="vistaActual === 'tabla' ? 'fas fa-th-large' : 'fas fa-table'"></i>
+        <span class="btn-text">{{ vistaActual === 'tabla' ? 'Tarjetas' : 'Tabla' }}</span>
+      </button>
+
+      <!-- Vista archivados -->
+      <button 
+        class="btn" 
+        [class.btn-warning]="mostrarArchivados"
+        [class.btn-outline]="!mostrarArchivados"
+        (click)="toggleVistaArchivados()"
+        [title]="mostrarArchivados ? 'Ver trámites activos' : 'Ver trámites archivados'"
+      >
+        <i class="fas fa-archive"></i>
+        <span class="btn-text">{{ mostrarArchivados ? 'Activos' : 'Archivados' }}</span>
+      </button>
+
+      <!-- Acciones múltiples -->
+      <div class="bulk-actions" *ngIf="selectedTramites.length > 0">
+        <span class="selected-count">
+          <i class="fas fa-check-square"></i>
+          {{ selectedTramites.length }} seleccionados
+        </span>
+        <div class="bulk-action-buttons">
+          <button class="btn btn-sm btn-bulk-export" (click)="exportarSeleccionados()">
+            <i class="fas fa-download"></i>
+            Exportar
+          </button>
+          <!-- Mostrar archivar solo en vista activa -->
+          <button *ngIf="!mostrarArchivados" class="btn btn-sm btn-bulk-delete" (click)="archivarSeleccionados()">
+            <i class="fas fa-archive"></i>
+            Archivar
+          </button>
+          <!-- Mostrar desarchivar solo en vista archivada -->
+          <button *ngIf="mostrarArchivados" class="btn btn-sm btn-bulk-unarchive" (click)="desarchivarSeleccionados()">
+            <i class="fas fa-box-open"></i>
+            Desarchivar
+          </button>
+        </div>
+      </div>
+
+      <!-- Botón de desarchivar todos cuando está en vista de archivados -->
+      <div class="archived-actions" *ngIf="mostrarArchivados && tramites.length > 0 && selectedTramites.length === 0">
+        <button class="btn btn-sm btn-warning" (click)="desarchivarTodos()">
+          <i class="fas fa-box-open"></i>
+          Desarchivar Todos ({{ tramites.length }})
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel de filtros -->
+  <div class="filters-panel" *ngIf="showFilters">
+    <div class="filters-header">
+      <div class="filters-title">
+        <i class="fas fa-filter"></i>
+        Filtros Avanzados
+      </div>
+    </div>
+    <div class="filters-content">
+      <div class="filter-group">
+        <label>Tipo de Trámite</label>
+        <select [(ngModel)]="filtros.tipoTramite" (change)="updateActiveFiltersCount()">
+          <option value="">Todos los tipos</option>
+          <option *ngFor="let tipo of tiposTramite" [value]="tipo.id">
+            {{ tipo.nombre }}
+          </option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Estado</label>
+        <select [(ngModel)]="filtros.estado" (change)="updateActiveFiltersCount()">
+          <option value="">Todos los estados</option>
+          <option *ngFor="let estado of estadosTramite" [value]="estado.id">
+            {{ estado.nombre }}
+          </option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Prioridad</label>
+        <select [(ngModel)]="filtros.prioridad" (change)="updateActiveFiltersCount()">
+          <option value="">Todas las prioridades</option>
+          <option *ngFor="let prioridad of prioridadesTramite" [value]="prioridad.id">
+            {{ prioridad.nombre }}
+          </option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Fecha Desde</label>
+        <input type="date" [(ngModel)]="filtros.fechaDesde" (change)="updateActiveFiltersCount()">
+      </div>
+
+      <div class="filter-group">
+        <label>Fecha Hasta</label>
+        <input type="date" [(ngModel)]="filtros.fechaHasta" (change)="updateActiveFiltersCount()">
+      </div>
+    </div>
+    <div class="filter-actions">
+      <button class="btn btn-apply-filters" (click)="aplicarFiltros()">
+        <i class="fas fa-search"></i>
+        Aplicar Filtros
+      </button>
+      <button class="btn btn-clear-filters" (click)="limpiarFiltros()">
+        <i class="fas fa-times"></i>
+        Limpiar
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-container" *ngIf="loading$ | async">
+    <div class="loading-spinner">
+      <i class="fas fa-spinner fa-spin"></i>
+      <span>Cargando trámites...</span>
+    </div>
+  </div>
+
+  <!-- Vista de tabla -->
+  <div class="table-container" *ngIf="vistaActual === 'tabla' && !(loading$ | async)">
+    <table class="tramites-table">
+      <thead>
+        <tr>
+          <th class="select-column">
+            <input 
+              type="checkbox" 
+              (change)="selectAllTramites()"
+              [checked]="tramites && selectedTramites.length === tramites.length && tramites.length > 0"
+            >
+          </th>
+          <th class="sortable" (click)="toggleOrden('codigo')">
+            Código
+            <i class="fas fa-sort" *ngIf="ordenarPor !== 'codigo'"></i>
+            <i class="fas fa-sort-up" *ngIf="ordenarPor === 'codigo' && ordenAscendente"></i>
+            <i class="fas fa-sort-down" *ngIf="ordenarPor === 'codigo' && !ordenAscendente"></i>
+          </th>
+          <th>Tipo</th>
+          <th>Asunto</th>
+          <th class="sortable" (click)="toggleOrden('estado')">
+            Estado
+            <i class="fas fa-sort" *ngIf="ordenarPor !== 'estado'"></i>
+            <i class="fas fa-sort-up" *ngIf="ordenarPor === 'estado' && ordenAscendente"></i>
+            <i class="fas fa-sort-down" *ngIf="ordenarPor === 'estado' && !ordenAscendente"></i>
+          </th>
+          <th class="sortable" (click)="toggleOrden('prioridad')">
+            Prioridad
+            <i class="fas fa-sort" *ngIf="ordenarPor !== 'prioridad'"></i>
+            <i class="fas fa-sort-up" *ngIf="ordenarPor === 'prioridad' && ordenAscendente"></i>
+            <i class="fas fa-sort-down" *ngIf="ordenarPor === 'prioridad' && !ordenAscendente"></i>
+          </th>
+          <th>Solicitante</th>
+          <th class="sortable" (click)="toggleOrden('fecha')">
+            Fecha
+            <i class="fas fa-sort" *ngIf="ordenarPor !== 'fecha'"></i>
+            <i class="fas fa-sort-up" *ngIf="ordenarPor === 'fecha' && ordenAscendente"></i>
+            <i class="fas fa-sort-down" *ngIf="ordenarPor === 'fecha' && !ordenAscendente"></i>
+          </th>
+          <th class="actions-column">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let tramite of getTramitesParaMostrar(); trackBy: trackByTramiteId" 
+            class="tramite-row" 
+            [id]="'tramite-' + tramite.id">
+          <td class="select-column" data-label="">
+            <input 
+              type="checkbox" 
+              [checked]="isSelected(tramite.id!)"
+              (change)="toggleSelectTramite(tramite.id!)"
+            >
+          </td>
+          <td class="codigo-column" data-label="Código">
+            <span class="codigo">{{ tramite.codigo }}</span>
+          </td>
+          <td data-label="Tipo">
+            <span class="tipo-tramite">{{ tramite.tipoTramite?.nombre || tramite.tipo || 'Sin tipo' }}</span>
+          </td>
+          <td class="asunto-column" data-label="Asunto">
+            <div class="asunto-text" [title]="tramite.titulo">
+              {{ tramite.titulo || 'Sin asunto' }}
+            </div>
+          </td>
+          <td data-label="Estado">
+            <span class="estado-badge" [ngClass]="getEstadoClase(tramite.estado)">
+              <i class="fas fa-circle"></i>
+              {{ tramite.estado || 'Sin estado' }}
+            </span>
+          </td>
+          <td data-label="Prioridad">
+            <span class="prioridad-badge" [ngClass]="getPrioridadClase(tramite.prioridad)">
+              <i class="fas fa-flag"></i>
+              {{ tramite.prioridad || 'Sin prioridad' }}
+            </span>
+          </td>
+          <td class="solicitante-column" data-label="Solicitante">
+            <div class="solicitante-info">
+              <div class="nombre">{{ tramite.usuarioSolicitante?.nombre || 'Sin nombre' }} {{ tramite.usuarioSolicitante?.apellidos || '' }}</div>
+              <div class="area">{{ tramite.areaOrigen?.nombre || 'Sin área' }}</div>
+            </div>
+          </td>
+          <td class="fecha-column" data-label="Fecha">
+            {{ formatearFecha(tramite.fechaCreacion) }}
+          </td>
+          <td class="actions-column" data-label="">
+            <div class="action-buttons">
+              <button 
+                class="btn-icon" 
+                (click)="verDetalle(tramite)" 
+                title="Ver detalle"
+              >
+                <i class="fas fa-eye"></i>
+              </button>
+              <button 
+                class="btn-icon" 
+                (click)="editarTramite(tramite)" 
+                [disabled]="!puedeEditarTramite(tramite)"
+                title="Editar"
+              >
+                <i class="fas fa-edit"></i>
+              </button>
+              <button 
+                class="btn-icon" 
+                (click)="cambiarEstado(tramite)" 
+                title="Cambiar estado"
+              >
+                <i class="fas fa-exchange-alt"></i>
+              </button>
+              <button 
+                class="btn-icon" 
+                (click)="imprimirTramite(tramite)" 
+                title="Imprimir"
+              >
+                <i class="fas fa-print"></i>
+              </button>
+              <button 
+                class="btn-icon btn-delete" 
+                (click)="eliminarTramite(tramite)" 
+                title="Eliminar trámite"
+              >
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Mensaje cuando no hay trámites -->
+    <div class="empty-state" *ngIf="getTramitesParaMostrar().length === 0">
+      <div class="empty-icon">
+        <i class="fas fa-file-alt"></i>
+      </div>
+      <h3 *ngIf="!searchTerm">No hay trámites</h3>
+      <h3 *ngIf="searchTerm">No se encontraron resultados</h3>
+      <p *ngIf="!searchTerm">No se encontraron trámites que coincidan con los criterios de búsqueda.</p>
+      <p *ngIf="searchTerm">No hay trámites que coincidan con "{{ searchTerm }}"</p>
+      <div class="empty-actions">
+        <button class="btn btn-outline" *ngIf="searchTerm" (click)="clearSearch()">
+          <i class="fas fa-times"></i>
+          Limpiar búsqueda
+        </button>
+        <button class="btn btn-primary" (click)="abrirModalNuevo()">
+          <i class="fas fa-plus"></i>
+          Crear Nuevo Trámite
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vista de tarjetas -->
+  <div class="cards-container" *ngIf="vistaActual === 'tarjetas' && !(loading$ | async)">
+    <div class="tramite-card" 
+         *ngFor="let tramite of getTramitesParaMostrar(); trackBy: trackByTramiteId"
+         [id]="'tramite-card-' + tramite.id">
+      <div class="card-header">
+        <div class="card-title">
+          <input 
+            type="checkbox" 
+            [checked]="isSelected(tramite.id!)"
+            (change)="toggleSelectTramite(tramite.id!)"
+            class="card-checkbox"
+          >
+          <span class="codigo">{{ tramite.codigo }}</span>
+        </div>
+        <div class="card-badges">
+          <span class="estado-badge" [ngClass]="getEstadoClase(tramite.estado)">
+            <i class="fas fa-circle"></i>
+            {{ tramite.estado || 'Sin estado' }}
+          </span>
+          <span class="prioridad-badge" [ngClass]="getPrioridadClase(tramite.prioridad)">
+            <i class="fas fa-flag"></i>
+            {{ tramite.prioridad || 'Sin prioridad' }}
+          </span>
+        </div>
+      </div>
+
+      <div class="card-content">
+        <h4 class="asunto">{{ tramite.titulo || 'Sin asunto' }}</h4>
+        <div class="card-details">
+          <div class="detail-item">
+            <i class="fas fa-tag"></i>
+            <span>{{ tramite.tipo || 'Sin tipo' }}</span>
+          </div>
+          <div class="detail-item">
+            <i class="fas fa-user"></i>
+            <span>{{ tramite.usuarioSolicitante?.nombre || 'Sin nombre' }} {{ tramite.usuarioSolicitante?.apellidos || '' }}</span>
+          </div>
+          <div class="detail-item">
+            <i class="fas fa-building"></i>
+            <span>{{ tramite.areaOrigen?.nombre || 'Sin área' }}</span>
+          </div>
+          <div class="detail-item">
+            <i class="fas fa-calendar"></i>
+            <span>{{ formatearFecha(tramite.fechaCreacion) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-footer">
+        <div class="card-actions">
+          <button class="btn-icon" (click)="verDetalle(tramite)" title="Ver detalle">
+            <i class="fas fa-eye"></i>
+          </button>
+          <button 
+            class="btn-icon" 
+            (click)="editarTramite(tramite)" 
+            [disabled]="!puedeEditarTramite(tramite)"
+            title="Editar"
+          >
+            <i class="fas fa-edit"></i>
+          </button>
+          <button class="btn-icon" (click)="cambiarEstado(tramite)" title="Cambiar estado">
+            <i class="fas fa-exchange-alt"></i>
+          </button>
+          <button class="btn-icon" (click)="imprimirTramite(tramite)" title="Imprimir">
+            <i class="fas fa-print"></i>
+          </button>
+          <button class="btn-icon btn-delete" (click)="eliminarTramite(tramite)" title="Eliminar trámite">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+      
+      </div>
+    </div>
+
+    <!-- Mensaje cuando no hay trámites en vista tarjetas -->
+    <div class="empty-state" *ngIf="getTramitesParaMostrar().length === 0">
+      <div class="empty-icon">
+        <i class="fas fa-file-alt"></i>
+      </div>
+      <h3 *ngIf="!searchTerm">No hay trámites</h3>
+      <h3 *ngIf="searchTerm">No se encontraron resultados</h3>
+      <p *ngIf="!searchTerm">No se encontraron trámites que coincidan con los criterios de búsqueda.</p>
+      <p *ngIf="searchTerm">No hay trámites que coincidan con "{{ searchTerm }}"</p>
+      <div class="empty-actions">
+        <button class="btn btn-outline" *ngIf="searchTerm" (click)="clearSearch()">
+          <i class="fas fa-times"></i>
+          Limpiar búsqueda
+        </button>
+        <button class="btn btn-primary" (click)="abrirModalNuevo()">
+          <i class="fas fa-plus"></i>
+          Crear Nuevo Trámite
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Paginación -->
+  <div class="pagination-container" *ngIf="totalPages > 1">
+    <div class="pagination-info">
+      Mostrando {{ (currentPage - 1) * pageSize + 1 }} - {{ Math.min(currentPage * pageSize, totalItems) }} 
+      de {{ totalItems }} trámites
+    </div>
+    
+    <div class="pagination-controls">
+      <button 
+        class="btn btn-outline" 
+        [disabled]="currentPage === 1"
+        (click)="cambiarPagina(currentPage - 1)"
+      >
+        <i class="fas fa-chevron-left"></i>
+        Anterior
+      </button>
+      
+      <div class="page-numbers">
+        <button 
+          *ngFor="let page of getPageNumbers()" 
+          class="page-btn"
+          [class.active]="currentPage === page"
+          (click)="cambiarPagina(page)"
+        >
+          {{ page }}
+        </button>
+      </div>
+      
+      <button 
+        class="btn btn-outline" 
+        [disabled]="currentPage === totalPages"
+        (click)="cambiarPagina(currentPage + 1)"
+      >
+        Siguiente
+        <i class="fas fa-chevron-right"></i>
+      </button>
+    </div>
+    
+    <div class="page-size-selector">
+      <label>Mostrar:</label>
+      <select [(ngModel)]="pageSize" (change)="cambiarTamanioPagina(pageSize)">
+        <option value="10">10</option>
+        <option value="20">20</option>
+        <option value="50">50</option>
+        <option value="100">100</option>
+      </select>
+      <span>por página</span>
+    </div>
+  </div>
+</div>
+
+<!-- Modales -->
+<app-nuevo-tramite-modal 
+  [show]="showNuevoTramiteModal"
+  (close)="cerrarModalNuevo()"
+  (tramiteCreado)="onTramiteCreado($event)">
+</app-nuevo-tramite-modal>
+
+<app-detalle-tramite-modal 
+  [show]="showDetalleTramiteModal"
+  [tramite]="tramiteSeleccionado"
+  (close)="cerrarModalDetalle()">
+</app-detalle-tramite-modal>
+
+<app-editar-tramite-modal 
+  [show]="showEditarTramiteModal"
+  [tramite]="tramiteSeleccionado"
+  (close)="cerrarModalEditar()"
+  (tramiteActualizado)="onTramiteActualizado($event)">
+</app-editar-tramite-modal>
+
+<!-- Modal Cambiar Estado Mejorado -->
+<div class="modal-overlay change-state-modal" [class.show]="showCambiarEstadoModal" (click)="cerrarModalCambiarEstado()">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-icon">
+        <i class="fas fa-exchange-alt"></i>
+      </div>
+      <h3 class="modal-title">Cambiar Estado del Trámite</h3>
+      <button class="btn-close" (click)="cerrarModalCambiarEstado()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <!-- Información del Trámite -->
+      <div class="current-tramite-card" *ngIf="tramiteSeleccionado">
+        <div class="tramite-header">
+          <span class="tramite-code">
+            <i class="fas fa-file-alt"></i>
+            {{ tramiteSeleccionado.codigo }}
+          </span>
+          <span class="current-state-badge" [ngClass]="getEstadoClase(tramiteSeleccionado.estado)">
+            {{ getEstadoNombre(tramiteSeleccionado.estado) }}
+          </span>
+        </div>
+        <div class="tramite-title" *ngIf="tramiteSeleccionado.titulo">
+          {{ tramiteSeleccionado.titulo }}
+        </div>
+      </div>
+
+      <!-- Selector de Estados -->
+      <div class="state-selection-section">
+        <label class="section-label">
+          <i class="fas fa-arrow-right"></i>
+          Seleccionar nuevo estado
+        </label>
+        
+        <div class="states-grid" *ngIf="estadosDisponibles.length > 0">
+          <div 
+            class="state-option" 
+            *ngFor="let estado of estadosDisponibles" 
+            [class.selected]="nuevoEstadoSeleccionado === estado"
+            (click)="seleccionarEstado(estado)">
+            <div class="state-icon" [ngClass]="getEstadoClase(estado)">
+              <i [class]="getEstadoIcon(estado)"></i>
+            </div>
+            <div class="state-info">
+              <span class="state-name">{{ getEstadoNombre(estado) }}</span>
+              <small class="state-description">{{ getEstadoDescripcion(estado) }}</small>
+            </div>
+            <div class="state-selector">
+              <i class="fas fa-check"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="empty-states" *ngIf="estadosDisponibles.length === 0">
+          <i class="fas fa-info-circle"></i>
+          <p>No hay estados disponibles para cambiar desde <strong>{{ getEstadoNombre(tramiteSeleccionado?.estado) }}</strong></p>
+        </div>
+      </div>
+
+      <!-- Observaciones -->
+      <div class="observations-section">
+        <label class="section-label">
+          <i class="fas fa-comment-alt"></i>
+          Observaciones <span class="optional">(opcional)</span>
+        </label>
+        <div class="textarea-container">
+          <textarea 
+            [(ngModel)]="observacionesCambioEstado" 
+            class="form-textarea" 
+            rows="3"
+            placeholder="Ingrese observaciones sobre el cambio de estado...">
+          </textarea>
+          <div class="char-counter" *ngIf="observacionesCambioEstado">
+            {{ observacionesCambioEstado.length }} caracteres
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-cancel" (click)="cerrarModalCambiarEstado()">
+        <i class="fas fa-times"></i>
+        <span class="btn-text">Cancelar</span>
+      </button>
+      <button 
+        class="btn btn-confirm" 
+        (click)="confirmarCambioEstado()"
+        [disabled]="!nuevoEstadoSeleccionado"
+        [class.loading]="procesandoCambioEstado">
+        <i class="fas fa-spinner fa-spin" *ngIf="procesandoCambioEstado; else confirmIcon"></i>
+        <ng-template #confirmIcon>
+          <i class="fas fa-check"></i>
+        </ng-template>
+        <span class="btn-text">
+          {{ procesandoCambioEstado ? 'Procesando...' : 'Cambiar Estado' }}
+        </span>
+      </button>
+    </div>
+  </div>
+</div>

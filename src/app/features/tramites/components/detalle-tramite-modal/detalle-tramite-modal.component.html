@@ -1,0 +1,326 @@
+<app-modal-base 
+  [show]="show"
+  [title]="'Detalle del Trámite ' + (tramite?.codigo || '')"
+  size="xl"
+  [loading]="loading"
+  [showFooter]="false"
+  (close)="onClose()">
+  
+  <div class="modal-content" *ngIf="tramite">
+    <!-- Header con información básica -->
+    <div class="tramite-header">
+      <div class="header-main">
+        <div class="tramite-info">
+          <h2 class="tramite-titulo">{{ tramite.asunto }}</h2>
+          <div class="tramite-meta">
+            <span class="codigo">{{ tramite.codigo }}</span>
+            <span class="fecha">{{ formatearFecha(tramite.fechaCreacion!) }}</span>
+          </div>
+        </div>
+        <div class="tramite-estado">
+          <span class="estado-badge" [class]="getEstadoClase(tramite.estado?.nombre || '')">
+            {{ tramite.estado?.nombre }}
+          </span>
+          <span class="prioridad-badge" [class]="getPrioridadClase(tramite.prioridad?.nombre || '')">
+            {{ tramite.prioridad?.nombre }}
+          </span>
+        </div>
+      </div>
+      
+      <div class="header-actions">
+        <button class="btn btn-outline-secondary" (click)="imprimirTramite()">
+          <i class="fas fa-print"></i>
+          Imprimir
+        </button>
+      </div>
+    </div>
+
+    <!-- Tabs de navegación -->
+    <div class="tabs-container">
+      <div class="tabs-nav">
+        <button 
+          class="tab-button"
+          [class.active]="activeTab === 'info'"
+          (click)="cambiarTab('info')">
+          <i class="fas fa-info-circle"></i>
+          Información
+        </button>
+        <button 
+          class="tab-button"
+          [class.active]="activeTab === 'documentos'"
+          (click)="cambiarTab('documentos')">
+          <i class="fas fa-paperclip"></i>
+          Documentos
+          <span class="badge" *ngIf="documentos.length > 0">{{ documentos.length }}</span>
+        </button>
+        <button 
+          class="tab-button"
+          [class.active]="activeTab === 'historial'"
+          (click)="cambiarTab('historial')">
+          <i class="fas fa-history"></i>
+          Historial
+          <span class="badge" *ngIf="historial.length > 0">{{ historial.length }}</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Contenido de tabs -->
+    <div class="tab-content">
+      <!-- Tab de Información -->
+      <div class="tab-pane" [class.active]="activeTab === 'info'" *ngIf="activeTab === 'info'">
+        <div class="info-grid">
+          <div class="info-section">
+            <h3 class="section-title">Información General</h3>
+            <div class="info-list">
+              <div class="info-item">
+                <label>Tipo de Trámite:</label>
+                <span>{{ tramite.tipoTramite?.nombre }}</span>
+              </div>
+              <div class="info-item">
+                <label>Solicitante:</label>
+                <span>{{ tramiteCompleto?.usuarioSolicitante?.nombre || 'jhafet martin' }} {{ tramiteCompleto?.usuarioSolicitante?.apellidos || 'Canepa' }}</span>
+              </div>
+              <div class="info-item">
+                <label>Área de Destino:</label>
+                <span>{{ tramite.areaDestino?.nombre || 'No asignada' }}</span>
+              </div>
+              <div class="info-item">
+                <label>Responsable:</label>
+                <span>{{ tramite.trabajadorAsignado?.nombre || 'Sin asignar' }} {{ tramite.trabajadorAsignado?.apellidos || '' }}</span>
+              </div>
+              <div class="info-item">
+                <label>Fecha de Creación:</label>
+                <span>{{ formatearFecha(tramite.fechaCreacion!) }}</span>
+              </div>
+              <div class="info-item" *ngIf="tramite.fechaVencimiento">
+                <label>Fecha de Vencimiento:</label>
+                <span>{{ formatearFecha(tramite.fechaVencimiento) }}</span>
+                <span class="dias-vencimiento" [class.vence-pronto]="(getDiasVencimiento(tramite.fechaVencimiento) || 0) <= 3">
+                  ({{ getDiasVencimiento(tramite.fechaVencimiento) }} días)
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="info-section">
+            <h3 class="section-title">Descripción</h3>
+            <div class="descripcion-content">
+              <p>{{ tramite.descripcion }}</p>
+            </div>
+          </div>
+
+          <div class="info-section" *ngIf="tramite.observaciones">
+            <h3 class="section-title">Observaciones</h3>
+            <div class="observaciones-content">
+              <p>{{ tramite.observaciones }}</p>
+            </div>
+          </div>
+
+          <!-- Usuario Solicitante -->
+          <div class="info-section" *ngIf="tramiteCompleto?.usuarioSolicitante">
+            <h3 class="section-title">👤 Usuario Solicitante</h3>
+            <div class="usuario-info">
+              <p><strong>Nombre:</strong> {{ tramiteCompleto?.usuarioSolicitante?.nombre }} {{ tramiteCompleto?.usuarioSolicitante?.apellidos }}</p>
+              <p><strong>Email:</strong> {{ tramiteCompleto?.usuarioSolicitante?.correo }}</p>
+              <p><strong>Área de Origen:</strong> {{ tramiteCompleto?.areaDestino?.nombre || 'Secretaria General' }}</p>
+            </div>
+          </div>
+
+          <!-- Usuario Responsable/Asignado -->
+          <div class="info-section" *ngIf="tramiteCompleto?.trabajadorAsignado">
+            <h3 class="section-title">👨‍💼 Usuario Responsable</h3>
+            <div class="usuario-info">
+              <p><strong>Nombre:</strong> {{ tramiteCompleto?.trabajadorAsignado?.nombre }} {{ tramiteCompleto?.trabajadorAsignado?.apellidos }}</p>
+              <p><strong>Área:</strong> {{ tramiteCompleto?.areaDestino?.nombre || 'No disponible' }}</p>
+            </div>
+          </div>
+
+          <!-- Respuesta del Administrativo (solo si el trámite está finalizado) -->
+          <div class="info-section" *ngIf="tramiteCompleto?.respuesta && tramiteCompleto?.estado?.nombre === 'FINALIZADO'">
+            <h3 class="section-title">📝 Respuesta del Administrativo</h3>
+            <div class="respuesta-content">
+              <p>{{ tramiteCompleto?.respuesta }}</p>
+              <div class="respuesta-meta">
+                <div class="respuesta-info">
+                  <span class="respondido-por" *ngIf="tramiteCompleto?.usuarioRespondio">
+                    <i class="fas fa-user-tie"></i>
+                    Respondido por: {{ tramiteCompleto?.usuarioRespondio?.nombre }} {{ tramiteCompleto?.usuarioRespondio?.apellidos }}
+                  </span>
+                  <span class="fecha-respuesta" *ngIf="tramiteCompleto?.fechaRespuesta">
+                    <i class="fas fa-calendar-check"></i>
+                    Fecha de respuesta: {{ tramiteCompleto && tramiteCompleto.fechaRespuesta ? formatearFecha(tramiteCompleto.fechaRespuesta) : 'No disponible' }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab de Documentos -->
+      <div class="tab-pane" [class.active]="activeTab === 'documentos'" *ngIf="activeTab === 'documentos'">
+        <div class="documentos-container">
+          <div class="documentos-header">
+            <h3>Documentos Adjuntos</h3>
+            <span class="documentos-count">{{ documentos.length }} documento(s)</span>
+          </div>
+
+          <div class="documentos-list" *ngIf="documentos.length > 0; else noDocumentos">
+            <div *ngFor="let documento of documentos" class="documento-item">
+              <div class="documento-info">
+                <div class="documento-icon">
+                  <i [class]="getIconoTipoArchivo(documento.tipo!)" 
+                     [style.color]="getColorIconoArchivo(documento.tipo!)"></i>
+                </div>
+                <div class="documento-details">
+                  <h4 class="documento-nombre">{{ documento.nombre }}</h4>
+                  <div class="documento-meta">
+                    <span class="tamanio">{{ formatearTamanioArchivo(documento.tamano) }}</span>
+                    <span class="fecha">{{ formatearFecha(documento.fechaSubida!) }}</span>
+                  </div>
+                  <p class="documento-descripcion" *ngIf="documento.descripcion">
+                    {{ documento.descripcion }}
+                  </p>
+                </div>
+              </div>
+              <div class="documento-actions">
+                <button
+                  class="btn btn-sm btn-outline-info me-2"
+                  (click)="previsualizarDocumento(documento)"
+                  title="Ver documento">
+                  <i class="fas fa-eye"></i>
+                  Ver
+                </button>
+                <button
+                  class="btn btn-sm btn-outline-primary"
+                  (click)="descargarDocumento(documento)">
+                  <i class="fas fa-download"></i>
+                  Descargar
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <ng-template #noDocumentos>
+            <div class="empty-state">
+              <i class="fas fa-folder-open"></i>
+              <h4>Sin documentos</h4>
+              <p>Este trámite no tiene documentos adjuntos.</p>
+            </div>
+          </ng-template>
+        </div>
+      </div>
+
+      <!-- Tab de Historial -->
+      <div class="tab-pane" [class.active]="activeTab === 'historial'" *ngIf="activeTab === 'historial'">
+        <div class="historial-container">
+          <div class="historial-header">
+            <h3>Historial del Trámite</h3>
+            <span class="tiempo-transcurrido">
+              {{ getDiasTranscurridos(tramite.fechaCreacion!) }} días desde la creación
+            </span>
+          </div>
+
+          <div class="historial-timeline" *ngIf="historial.length > 0; else noHistorial">
+            <div *ngFor="let evento of historial; let i = index" class="timeline-item">
+              <div class="timeline-marker" [class]="getEstadoClase(evento.estadoAnterior || '')">
+                <i class="fas fa-circle"></i>
+              </div>
+              <div class="timeline-content">
+                <div class="evento-header">
+                  <h4 class="evento-accion">{{ evento.descripcion }}</h4>
+                  <span class="evento-fecha">{{ formatearFecha(evento.fecha!) }}</span>
+                </div>
+                <div class="evento-detalles">
+                  <p class="evento-descripcion" *ngIf="evento.observaciones">
+                    {{ evento.observaciones }}
+                  </p>
+                  <div class="evento-meta">
+                    <span class="usuario">
+                      <i class="fas fa-user"></i>
+                      {{ evento.usuario }}
+                    </span>
+                    <span class="area" *ngIf="evento.area">
+                      <i class="fas fa-building"></i>
+                      {{ evento.area }}
+                    </span>
+                  </div>
+                  <div class="cambio-estado" *ngIf="evento.estadoAnterior && evento.estadoNuevo">
+                    <span class="estado-anterior" [class]="getEstadoClase(evento.estadoAnterior)">
+                      {{ evento.estadoAnterior }}
+                    </span>
+                    <i class="fas fa-arrow-right"></i>
+                    <span class="estado-nuevo" [class]="getEstadoClase(evento.estadoNuevo)">
+                      {{ evento.estadoNuevo }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <ng-template #noHistorial>
+            <div class="empty-state">
+              <i class="fas fa-clock"></i>
+              <h4>Sin historial</h4>
+              <p>No hay eventos registrados para este trámite.</p>
+            </div>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+
+  
+    <div class="modal-footer-custom">
+      <button type="button" class="btn btn-secondary" (click)="onClose()">
+        <i class="fas fa-times"></i>
+        Cerrar
+      </button>
+    </div>
+  </div>
+</app-modal-base>
+
+<!-- Modal de previsualización de documentos -->
+<div class="document-preview-modal" *ngIf="showDocumentPreview">
+  <div class="modal-backdrop-custom" (click)="cerrarPreview()"></div>
+  <div class="modal-dialog-custom">
+    <div class="modal-content-custom">
+      <div class="modal-header-custom">
+        <h5 class="modal-title-custom">
+          <i class="fas fa-file-alt me-2"></i>
+          {{ documentoPreview?.nombre }}
+        </h5>
+        <button type="button" class="btn-close-custom" (click)="cerrarPreview()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body-custom">
+        <!-- Vista previa para PDFs -->
+        <iframe
+          *ngIf="documentoPreview && isPDF(documentoPreview.tipo!)"
+          [src]="previewUrl"
+          class="document-preview-iframe">
+        </iframe>
+
+        <!-- Vista previa para imágenes -->
+        <img
+          *ngIf="documentoPreview && isImage(documentoPreview.tipo!)"
+          [src]="previewUrl"
+          class="document-preview-image"
+          [alt]="documentoPreview.nombre">
+
+        <!-- Mensaje para archivos Word/Excel -->
+        <div *ngIf="documentoPreview && isOfficeDocument(documentoPreview.tipo!)" class="preview-message">
+          <i class="fas fa-file-word fa-5x mb-3 text-primary"></i>
+          <h4>Documento de Office</h4>
+          <p>La vista previa no está disponible para este tipo de archivo.</p>
+          <p>Por favor, descarga el documento para visualizarlo.</p>
+          <button class="btn btn-primary mt-3" (click)="descargarDesdePreview()">
+            <i class="fas fa-download me-2"></i>
+            Descargar documento
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

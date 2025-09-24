@@ -1,0 +1,666 @@
+/* ESTILOS MINIMALISTAS MEJORADOS */
+
+* {
+  box-sizing: border-box;
+}
+
+.reportes-container {
+  padding: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+  background: #f8f9fa;
+  min-height: 100vh;
+  font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+/* Encabezado elegante */
+.encabezado {
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.encabezado h1 {
+  font-size: 32px;
+  color: #2c3e50;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.encabezado h1 i {
+  color: #3498db;
+}
+
+.botones {
+  display: flex;
+  gap: 15px;
+}
+
+.btn {
+  padding: 12px 25px;
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+
+.btn-excel {
+  background: #28a745;
+  color: white;
+}
+
+.btn-excel:hover {
+  background: #218838;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(40,167,69,0.3);
+}
+
+.btn-imprimir {
+  background: #6c757d;
+  color: white;
+}
+
+.btn-imprimir:hover {
+  background: #5a6268;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(108,117,125,0.3);
+}
+
+/* Secciones */
+.seccion {
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  margin-bottom: 30px;
+}
+
+.seccion h2 {
+  font-size: 22px;
+  color: #2c3e50;
+  margin: 0 0 25px 0;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #e9ecef;
+  font-weight: 600;
+}
+
+/* Tarjetas de resumen */
+.tarjetas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.tarjeta {
+  padding: 25px;
+  border-radius: 10px;
+  text-align: center;
+  transition: transform 0.3s ease;
+}
+
+.tarjeta:hover {
+  transform: translateY(-5px);
+}
+
+.tarjeta .numero {
+  font-size: 48px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.tarjeta .texto {
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  opacity: 0.8;
+}
+
+/* Colores de tarjetas */
+.tarjeta.total {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.tarjeta.completado {
+  background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
+  color: white;
+}
+
+.tarjeta.proceso {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: white;
+}
+
+.tarjeta.vencido {
+  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+  color: white;
+}
+
+/* Tabla mejorada */
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 16px;
+  margin-top: 20px;
+}
+
+.tabla thead {
+  background: #f8f9fa;
+}
+
+.tabla th {
+  padding: 15px;
+  text-align: left;
+  font-weight: 600;
+  color: #495057;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.tabla td {
+  padding: 15px;
+  border-bottom: 1px solid #e9ecef;
+  color: #495057;
+}
+
+.tabla tbody tr:hover {
+  background: #f8f9fa;
+}
+
+.centro {
+  text-align: center !important;
+}
+
+.numero {
+  font-weight: 600;
+  font-size: 18px;
+}
+
+/* Puntos de color para tipos */
+.punto {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+.punto.azul { background: #3498db; }
+.punto.verde { background: #28a745; }
+.punto.morado { background: #9b59b6; }
+.punto.gris { background: #95a5a6; }
+
+/* Colores de texto */
+.verde { color: #28a745; }
+.naranja { color: #ff9800; }
+.rojo { color: #dc3545; }
+
+/* Fila de totales */
+.total-fila {
+  background: #f1f3f5;
+  font-weight: bold;
+}
+
+.total-fila td {
+  padding: 18px 15px;
+  border-top: 2px solid #dee2e6;
+  font-size: 18px;
+}
+
+/* Sección de alerta */
+.seccion.alerta {
+  background: #fff3cd;
+  border-left: 5px solid #ffc107;
+}
+
+.seccion.alerta h2 {
+  color: #856404;
+  border-bottom-color: #ffc107;
+}
+
+.seccion.alerta h2 i {
+  color: #ff6b6b;
+  margin-right: 10px;
+}
+
+/* Tabla urgente */
+.tabla-urgente thead {
+  background: #ffc107;
+}
+
+.tabla-urgente th {
+  color: #000;
+  font-weight: 700;
+}
+
+.codigo {
+  font-family: 'Courier New', monospace;
+  font-weight: 600;
+  color: #0056b3;
+}
+
+/* Estados */
+.estado {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  display: inline-block;
+}
+
+.estado.vencido {
+  background: #dc3545;
+  color: white;
+}
+
+.estado.hoy {
+  background: #ff9800;
+  color: white;
+}
+
+.estado.pronto {
+  background: #ffc107;
+  color: #000;
+}
+
+/* Filas de alerta */
+.fila-vencida {
+  background: #ffebee;
+}
+
+.fila-hoy {
+  background: #fff3e0;
+}
+
+.fila-pronto {
+  background: #fffbf0;
+}
+
+/* Pie */
+.pie {
+  margin-top: 50px;
+  text-align: center;
+  color: #6c757d;
+}
+
+.pie .linea {
+  height: 2px;
+  background: #dee2e6;
+  margin-bottom: 20px;
+}
+
+.pie p {
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.pie strong {
+  color: #2c3e50;
+  font-size: 16px;
+}
+
+/* Impresión */
+@media print {
+  @page {
+    margin: 0.5in;
+  }
+  
+  * {
+    -webkit-print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+  
+  body {
+    margin: 0;
+    padding: 0;
+    font-size: 12pt;
+    background: white;
+  }
+  
+  /* Ocultar sidebar y elementos de navegación */
+  .sidebar,
+  .navbar,
+  .main-nav,
+  .navigation,
+  .menu,
+  app-sidebar,
+  mat-sidenav,
+  .mat-sidenav-container,
+  .mat-sidenav-backdrop {
+    display: none !important;
+  }
+  
+  /* Ocultar botones de acción */
+  .botones,
+  .btn,
+  button {
+    display: none !important;
+  }
+  
+  /* Solo mostrar el contenido del reporte */
+  .reportes-container {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+    position: relative !important;
+  }
+  
+  .encabezado {
+    background: white !important;
+    box-shadow: none !important;
+    border: 1px solid #000 !important;
+    margin-bottom: 15px !important;
+    padding: 15px !important;
+    page-break-inside: avoid;
+  }
+  
+  .encabezado h1 {
+    color: #000 !important;
+    font-size: 18pt !important;
+    text-align: center !important;
+  }
+  
+  .encabezado h1 i {
+    display: none !important;
+  }
+  
+  .seccion {
+    background: white !important;
+    box-shadow: none !important;
+    border: 1px solid #000 !important;
+    margin-bottom: 15px !important;
+    padding: 10px !important;
+    page-break-inside: avoid;
+  }
+  
+  .seccion h2 {
+    color: #000 !important;
+    font-size: 14pt !important;
+    border-bottom: 1px solid #000 !important;
+    margin-bottom: 10px !important;
+  }
+  
+  .tarjetas {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 10px !important;
+  }
+  
+  .tarjeta {
+    background: white !important;
+    border: 1px solid #000 !important;
+    color: #000 !important;
+    padding: 10px !important;
+    text-align: center !important;
+  }
+  
+  .tarjeta .numero {
+    color: #000 !important;
+    font-size: 16pt !important;
+    font-weight: bold !important;
+  }
+  
+  .tarjeta .texto {
+    color: #000 !important;
+    font-size: 10pt !important;
+  }
+  
+  .tabla {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    font-size: 10pt !important;
+    margin-top: 10px !important;
+  }
+  
+  .tabla th,
+  .tabla td {
+    border: 1px solid #000 !important;
+    padding: 5px !important;
+    color: #000 !important;
+    background: white !important;
+  }
+  
+  .tabla th {
+    background: #f0f0f0 !important;
+    font-weight: bold !important;
+  }
+  
+  .punto {
+    display: none !important;
+  }
+  
+  .estado {
+    border: 1px solid #000 !important;
+    background: white !important;
+    color: #000 !important;
+    padding: 2px 4px !important;
+  }
+  
+  .pie {
+    margin-top: 20px !important;
+    text-align: center !important;
+    border-top: 1px solid #000 !important;
+    padding-top: 10px !important;
+  }
+  
+  .pie p {
+    color: #000 !important;
+    font-size: 10pt !important;
+  }
+}
+
+/* Responsive para tablets */
+@media (max-width: 1024px) {
+  .reportes-container {
+    padding: 20px;
+  }
+  
+  .tarjetas {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Responsive para móviles */
+@media (max-width: 768px) {
+  .reportes-container {
+    padding: 10px;
+    max-width: 100%;
+    margin: 0;
+  }
+  
+  .encabezado {
+    flex-direction: column;
+    text-align: center;
+    gap: 15px;
+    padding: 15px;
+  }
+  
+  .encabezado h1 {
+    font-size: 20px;
+    gap: 8px;
+  }
+  
+  .encabezado h1 i {
+    font-size: 18px;
+  }
+  
+  .botones {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .btn {
+    width: 100%;
+    padding: 12px 20px;
+    font-size: 14px;
+    justify-content: center;
+  }
+  
+  .tarjetas {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .tarjeta {
+    padding: 15px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    text-align: left;
+  }
+  
+  .tarjeta .numero {
+    font-size: 24px;
+    margin: 0;
+  }
+  
+  .tarjeta .texto {
+    font-size: 11px;
+    margin: 0;
+  }
+  
+  .seccion {
+    padding: 15px;
+    margin-bottom: 15px;
+  }
+  
+  .seccion h2 {
+    font-size: 16px;
+    margin-bottom: 15px;
+  }
+  
+  /* Simplificar tabla para móvil */
+  .tabla-responsive {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+  
+  .tabla {
+    font-size: 11px;
+    min-width: 500px;
+  }
+  
+  .tabla th,
+  .tabla td {
+    padding: 6px 4px;
+    font-size: 10px;
+  }
+  
+  .tabla th {
+    font-size: 9px;
+  }
+  
+  .codigo {
+    font-size: 9px;
+  }
+  
+  .estado {
+    padding: 3px 6px;
+    font-size: 8px;
+  }
+}
+
+/* Responsive para móviles pequeños */
+@media (max-width: 480px) {
+  .reportes-container {
+    padding: 8px;
+    font-size: 12px;
+  }
+  
+  .encabezado {
+    padding: 12px;
+  }
+  
+  .encabezado h1 {
+    font-size: 18px;
+  }
+  
+  .botones {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .btn {
+    width: 100%;
+    padding: 10px;
+    font-size: 12px;
+  }
+  
+  .tarjetas {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .tarjeta {
+    padding: 12px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .tarjeta .numero {
+    font-size: 20px;
+  }
+  
+  .tarjeta .texto {
+    font-size: 10px;
+  }
+  
+  .seccion {
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+  
+  .seccion h2 {
+    font-size: 14px;
+  }
+  
+  .tabla {
+    font-size: 9px;
+    width: 100%;
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+  
+  .tabla th,
+  .tabla td {
+    padding: 4px 2px;
+    font-size: 8px;
+  }
+  
+  .codigo {
+    font-size: 7px;
+  }
+  
+  .estado {
+    padding: 2px 4px;
+    font-size: 7px;
+  }
+}

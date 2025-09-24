@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Sistema de Secretaria General - UNTUMBES</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/png" href="assets/logo.png">
+  <!-- FontAwesome CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <!-- WebSocket libraries for real-time notifications -->
+  <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.6.1/dist/sockjs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0/bundles/stomp.umd.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'university': {
+              50: '#f0f4f8',
+              100: '#dce7f0',
+              200: '#c1d6e8',
+              300: '#9bb9db',
+              400: '#6f95ca',
+              500: '#4f73ba',
+              600: '#3c5ba0',
+              700: '#2d4682',
+              800: '#233764',
+              900: '#1a2847'
+            },
+            'institutional': {
+              50: '#fafafa',
+              100: '#f4f4f5',
+              200: '#e4e4e7',
+              300: '#d4d4d8',
+              400: '#a1a1aa',
+              500: '#71717a',
+              600: '#52525b',
+              700: '#3f3f46',
+              800: '#27272a',
+              900: '#18181b'
+            }
+          },
+          animation: {
+            'fade-in': 'fadeIn 0.6s ease-out',
+            'slide-up': 'slideUp 0.6s ease-out',
+            'rotate': 'rotate 2s linear infinite'
+          },
+          keyframes: {
+            fadeIn: {
+              '0%': { opacity: '0' },
+              '100%': { opacity: '1' }
+            },
+            slideUp: {
+              '0%': { transform: 'translateY(20px)', opacity: '0' },
+              '100%': { transform: 'translateY(0)', opacity: '1' }
+            },
+            rotate: {
+              from: { transform: 'rotate(0deg)' },
+              to: { transform: 'rotate(360deg)' }
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    
+    * {
+      font-family: 'Inter', sans-serif;
+    }
+    
+    .university-gradient {
+      background: linear-gradient(135deg, #2d4682 0%, #4f73ba 100%);
+    }
+    
+    .institutional-card {
+      background: white;
+      border: 1px solid #e4e4e7;
+      transition: all 0.3s ease;
+    }
+    
+    .institutional-card:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      border-color: #4f73ba;
+    }
+    
+    .btn-university {
+      background: #4f73ba;
+      color: white;
+      transition: background 0.3s ease;
+    }
+    
+    .btn-university:hover {
+      background: #3c5ba0;
+    }
+    
+    .btn-outline-university {
+      border: 2px solid #4f73ba;
+      color: #4f73ba;
+      background: white;
+      transition: all 0.3s ease;
+    }
+    
+    .btn-outline-university:hover {
+      background: #4f73ba;
+      color: white;
+    }
+    
+    .text-university {
+      color: #2d4682;
+    }
+    
+    .delay-100 {
+      animation-delay: 100ms;
+    }
+    
+    .delay-200 {
+      animation-delay: 200ms;
+    }
+    
+    .delay-300 {
+      animation-delay: 300ms;
+    }
+  </style>
+</head>
+<body class="antialiased">
+  <app-root></app-root>
+</body>
+</html>

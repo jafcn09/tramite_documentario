@@ -1,0 +1,49 @@
+<div class="toast-container">
+  <div 
+    *ngFor="let toast of toasts; trackBy: trackByToastId"
+    class="toast"
+    [class]="'toast-' + toast.type"
+    [@toastAnimation]
+    (click)="removeToast(toast.id!)"
+  >
+    <!-- Icono del toast -->
+    <div class="toast-icon">
+      <i [class]="getToastIcon(toast.type)"></i>
+    </div>
+
+    <!-- Contenido del toast -->
+    <div class="toast-content">
+      <div class="toast-title">{{ toast.title }}</div>
+      <div class="toast-message">{{ toast.message }}</div>
+      
+      <!-- Acciones del toast -->
+      <div class="toast-actions" *ngIf="toast.actions && toast.actions.length > 0">
+        <button 
+          *ngFor="let action of toast.actions"
+          class="toast-action-btn"
+          [class.primary]="action.style === 'primary'"
+          [class.secondary]="action.style === 'secondary'"
+          (click)="executeAction(action.action, toast.id!); $event.stopPropagation()"
+        >
+          {{ action.label }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Botón de cerrar -->
+    <button 
+      *ngIf="toast.showCloseButton"
+      class="toast-close"
+      (click)="removeToast(toast.id!); $event.stopPropagation()"
+    >
+      <i class="fas fa-times"></i>
+    </button>
+
+    <!-- Barra de progreso -->
+    <div 
+      *ngIf="toast.duration && toast.duration > 0"
+      class="toast-progress"
+      [style.animation-duration.ms]="toast.duration"
+    ></div>
+  </div>
+</div>

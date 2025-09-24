@@ -1,0 +1,756 @@
+<div class="bandeja-tramites-container">
+  <!-- Header con estadísticas y notificaciones -->
+  <div class="header-section">
+    <div class="title-area">
+      <h1>
+        <i class="fas fa-inbox"></i>
+        Bandeja de Trámites
+      </h1>
+      <p>Procesa y gestiona las solicitudes asignadas</p>
+    </div>
+    
+    <div class="header-actions">
+      <button 
+        class="btn-notifications" 
+        (click)="showNotificacionesModal = true"
+        [class.has-notifications]="notificacionesNoLeidas > 0"
+      >
+        <i class="fas fa-bell"></i>
+        <span *ngIf="notificacionesNoLeidas > 0" class="notification-badge">
+          {{ notificacionesNoLeidas }}
+        </span>
+      </button>
+      
+      <div class="view-toggles">
+        <button 
+          class="view-btn"
+          [class.active]="vistaActual === 'lista'"
+          (click)="toggleVista('lista')"
+          title="Vista de lista"
+        >
+          <i class="fas fa-list"></i>
+        </button>
+        <button 
+          class="view-btn"
+          [class.active]="vistaActual === 'kanban'"
+          (click)="toggleVista('kanban')"
+          title="Vista kanban"
+        >
+          <i class="fas fa-columns"></i>
+        </button>
+        <button 
+          class="view-btn"
+          [class.active]="vistaActual === 'calendario'"
+          (click)="toggleVista('calendario')"
+          title="Vista calendario"
+        >
+          <i class="fas fa-calendar"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Estadísticas de la bandeja -->
+  <div class="stats-dashboard" *ngIf="estadisticas">
+    <div class="stat-card asignados">
+      <div class="stat-icon">
+        <i class="fas fa-user-check"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-number">{{ estadisticas.totalAsignados }}</div>
+        <div class="stat-label">Asignados</div>
+      </div>
+    </div>
+    
+    <div class="stat-card revision">
+      <div class="stat-icon">
+        <i class="fas fa-eye"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-number">{{ estadisticas.pendientesRevision }}</div>
+        <div class="stat-label">En Revisión</div>
+      </div>
+    </div>
+    
+    <div class="stat-card proceso">
+      <div class="stat-icon">
+        <i class="fas fa-cogs"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-number">{{ estadisticas.enProceso }}</div>
+        <div class="stat-label">En Proceso</div>
+      </div>
+    </div>
+    
+    <div class="stat-card completados">
+      <div class="stat-icon">
+        <i class="fas fa-check-circle"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-number">{{ estadisticas.finalizadosHoy }}</div>
+        <div class="stat-label">Finalizados Hoy</div>
+      </div>
+    </div>
+    
+    <div class="stat-card vencidos" *ngIf="estadisticas.vencidos > 0">
+      <div class="stat-icon">
+        <i class="fas fa-exclamation-triangle"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-number">{{ estadisticas.vencidos }}</div>
+        <div class="stat-label">Vencidos</div>
+      </div>
+    </div>
+    
+    <div class="stat-card rating">
+      <div class="stat-icon">
+        <i class="fas fa-star"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-number">{{ estadisticas.calificacionPromedio | number:'1.1-1' }}</div>
+        <div class="stat-label">Calificación</div>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="toolbar">
+    <div class="search-section">
+      <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input 
+          type="text" 
+          placeholder="Buscar por código, asunto o solicitante..." 
+          [(ngModel)]="searchTerm"
+          (input)="onSearch(searchTerm)"
+          class="search-input"
+        >
+        <button 
+          *ngIf="searchTerm" 
+          class="clear-search"
+          (click)="onSearch('')"
+        >
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="toolbar-actions">
+      <!-- Filtros rápidos -->
+      <div class="quick-filters">
+        <button 
+          class="filter-chip"
+          [class.active]="filtros.soloVencidos"
+          (click)="filtros.soloVencidos = !filtros.soloVencidos; aplicarFiltros()"
+        >
+          <i class="fas fa-exclamation-triangle"></i>
+          Vencidos
+        </button>
+        <button 
+          class="filter-chip"
+          [class.active]="filtros.soloUrgentes"
+          (click)="filtros.soloUrgentes = !filtros.soloUrgentes; aplicarFiltros()"
+        >
+          <i class="fas fa-bolt"></i>
+          Urgentes
+        </button>
+        <button 
+          class="filter-chip"
+          [class.active]="filtros.soloSinAsignar"
+          (click)="filtros.soloSinAsignar = !filtros.soloSinAsignar; aplicarFiltros()"
+        >
+          <i class="fas fa-user-slash"></i>
+          Sin Asignar
+        </button>
+      </div>
+
+      <button 
+        class="btn-filter" 
+        (click)="toggleFilters()"
+        [class.active]="showFilters"
+      >
+        <i class="fas fa-sliders-h"></i>
+        Más Filtros
+      </button>
+    </div>
+  </div>
+
+  <!-- Panel de filtros avanzados -->
+  <div class="filters-panel" [class.active]="showFilters">
+    <div class="filters-content">
+      <div class="filter-group">
+        <label>Estado</label>
+        <select [(ngModel)]="filtros.estado">
+          <option value="">Todos los estados</option>
+          <option *ngFor="let estado of estadosDisponibles" [value]="estado.id">
+            {{ estado.nombre }}
+          </option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Área de Origen</label>
+        <select [(ngModel)]="filtros.areaOrigen">
+          <option value="">Todas las áreas</option>
+          <option *ngFor="let area of areasDisponibles" [value]="area.id">
+            {{ area.nombre }}
+          </option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Prioridad</label>
+        <select [(ngModel)]="filtros.prioridad">
+          <option value="">Todas las prioridades</option>
+          <option value="1">Baja</option>
+          <option value="2">Normal</option>
+          <option value="3">Alta</option>
+          <option value="4">Urgente</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Asignado a</label>
+        <select [(ngModel)]="filtros.asignadoA">
+          <option value="">Cualquier trabajador</option>
+          <option *ngFor="let trabajador of trabajadoresDisponibles" [value]="trabajador.id">
+            {{ trabajador.nombre }} {{ trabajador.apellidos }}
+          </option>
+        </select>
+      </div>
+
+      <div class="filter-actions">
+        <button class="btn-apply" (click)="aplicarFiltros()">
+          Aplicar
+        </button>
+        <button class="btn-clear" (click)="limpiarFiltros()">
+          Limpiar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Acciones masivas -->
+  <div *ngIf="selectedTramites.length > 0" class="bulk-actions">
+    <div class="selection-info">
+      <span>{{ selectedTramites.length }} trámites seleccionados</span>
+    </div>
+    <div class="bulk-buttons">
+      <button class="bulk-btn estado">
+        <i class="fas fa-exchange-alt"></i>
+        Cambiar Estado
+      </button>
+      <button class="bulk-btn derivar">
+        <i class="fas fa-share"></i>
+        Derivar
+      </button>
+      <button class="bulk-btn asignar">
+        <i class="fas fa-user-plus"></i>
+        Reasignar
+      </button>
+      <button class="bulk-btn exportar" (click)="exportarTramitesSeleccionados()">
+        <i class="fas fa-download"></i>
+        Exportar
+      </button>
+      <button class="bulk-btn archivar" (click)="archivarTramitesSeleccionados()">
+        <i class="fas fa-archive"></i>
+        Archivar
+      </button>
+    </div>
+  </div>
+
+  <!-- Contenido principal -->
+  <div class="tramites-content">
+    <!-- Loading -->
+    <div *ngIf="loading$ | async" class="loading-state">
+      <i class="fas fa-spinner fa-spin"></i>
+      <p>Cargando trámites...</p>
+    </div>
+
+    <!-- Sin trámites -->
+    <div *ngIf="!(loading$ | async) && tramites.length === 0" class="empty-state">
+      <i class="fas fa-inbox"></i>
+      <h3>No hay trámites</h3>
+      <p>No tienes trámites asignados en este momento</p>
+    </div>
+
+    <!-- Vista de lista -->
+    <div *ngIf="!(loading$ | async) && tramites.length > 0 && vistaActual === 'lista'" class="tramites-lista">
+      <div class="lista-header">
+        <div class="bulk-select">
+          <input 
+            type="checkbox" 
+            [checked]="selectedTramites.length === tramites.length"
+            (change)="selectAllTramites()"
+          >
+        </div>
+        <div class="header-col codigo" (click)="toggleOrden('fecha')">
+          <span>Código</span>
+          <i class="fas fa-sort" *ngIf="ordenarPor !== 'fecha'"></i>
+          <i class="fas fa-sort-up" *ngIf="ordenarPor === 'fecha' && ordenAscendente"></i>
+          <i class="fas fa-sort-down" *ngIf="ordenarPor === 'fecha' && !ordenAscendente"></i>
+        </div>
+        <div class="header-col asunto">Asunto</div>
+        <div class="header-col solicitante">Solicitante</div>
+        <div class="header-col estado" (click)="toggleOrden('estado')">
+          <span>Estado</span>
+          <i class="fas fa-sort" *ngIf="ordenarPor !== 'estado'"></i>
+          <i class="fas fa-sort-up" *ngIf="ordenarPor === 'estado' && ordenAscendente"></i>
+          <i class="fas fa-sort-down" *ngIf="ordenarPor === 'estado' && !ordenAscendente"></i>
+        </div>
+        <div class="header-col prioridad" (click)="toggleOrden('prioridad')">
+          <span>Prioridad</span>
+          <i class="fas fa-sort" *ngIf="ordenarPor !== 'prioridad'"></i>
+          <i class="fas fa-sort-up" *ngIf="ordenarPor === 'prioridad' && ordenAscendente"></i>
+          <i class="fas fa-sort-down" *ngIf="ordenarPor === 'prioridad' && !ordenAscendente"></i>
+        </div>
+        <div class="header-col responsable">Responsable</div>
+        <div class="header-col tiempo" (click)="toggleOrden('vencimiento')">
+          <span>Fecha Vencimiento</span>
+          <i class="fas fa-sort" *ngIf="ordenarPor !== 'vencimiento'"></i>
+          <i class="fas fa-sort-up" *ngIf="ordenarPor === 'vencimiento' && ordenAscendente"></i>
+          <i class="fas fa-sort-down" *ngIf="ordenarPor === 'vencimiento' && !ordenAscendente"></i>
+        </div>
+        <div class="header-col acciones">Acciones</div>
+      </div>
+
+      <div class="tramites-list">
+        <div 
+          *ngFor="let tramite of tramites; trackBy: trackByTramiteId" 
+          class="tramite-row"
+          [class]="getUrgenciaClass(tramite)"
+          (click)="verDetalle(tramite)"
+        >
+          <div class="bulk-select" (click)="$event.stopPropagation()">
+            <input 
+              type="checkbox" 
+              [checked]="isSelected(tramite.id)"
+              (change)="toggleSelectTramite(tramite.id)"
+            >
+          </div>
+
+          <div class="row-col codigo">
+            <span class="codigo-badge">{{ tramite.codigo }}</span>
+            <div class="tipo-tramite">{{ tramite.tipoTramite.nombre }}</div>
+          </div>
+
+          <div class="row-col asunto">
+            <div class="asunto-title">{{ tramite.asunto }}</div>
+            <div class="asunto-desc">{{ tramite.descripcion | slice:0:60 }}...</div>
+          </div>
+
+          <div class="row-col solicitante">
+            <div class="solicitante-info">
+              <div class="nombre">{{ tramite.solicitante.nombre }} {{ tramite.solicitante.apellidos }}</div>
+              <div class="area">{{ tramite.solicitante.area }}</div>
+            </div>
+          </div>
+
+          <div class="row-col estado">
+            <span class="estado-badge" [class]="getEstadoClase(tramite.estado.nombre)">
+              <i [class]="tramite.estado.icono"></i>
+              {{ tramite.estado.nombre }}
+            </span>
+          </div>
+
+          <div class="row-col prioridad">
+            <span class="prioridad-badge" [class]="getPrioridadClase(tramite.prioridad.nivel)">
+              <i [class]="tramite.prioridad.icono"></i>
+              {{ tramite.prioridad.nombre }}
+            </span>
+          </div>
+
+          <div class="row-col responsable">
+            <div class="responsable-info" *ngIf="tramite.usuarioRespondio; else sinResponsable">
+              <div class="responsable-nombre">{{ tramite.usuarioRespondio.nombre }} {{ tramite.usuarioRespondio.apellidos }}</div>
+              <div class="responsable-fecha" *ngIf="tramite.fechaRespuesta">
+                <i class="fas fa-clock"></i>
+                {{ formatearFechaRelativa(tramite.fechaRespuesta) }}
+              </div>
+            </div>
+            <ng-template #sinResponsable>
+              <div class="sin-responsable">
+                <span class="text-muted">No respondido</span>
+              </div>
+            </ng-template>
+          </div>
+
+          <div class="row-col tiempo">
+            <div class="tiempo-info">
+              <div class="fecha-vencimiento" *ngIf="tramite.fechaVencimiento; else sinFechaVencimiento">
+                <div class="fecha-texto">{{ formatearFecha(tramite.fechaVencimiento) }}</div>
+                <div 
+                  class="estado-vencimiento"
+                  [class.vencido]="tramite.diasVencimiento !== undefined && tramite.diasVencimiento < 0"
+                  [class.urgente]="tramite.diasVencimiento !== undefined && tramite.diasVencimiento <= 2"
+                  *ngIf="tramite.diasVencimiento !== undefined"
+                >
+                  <i class="fas fa-clock"></i>
+                  {{ tramite.diasVencimiento < 0 ? 'Vencido' : tramite.diasVencimiento + 'd restantes' }}
+                </div>
+              </div>
+              <ng-template #sinFechaVencimiento>
+                <div class="sin-vencimiento">
+                  <span class="text-muted">Sin fecha límite</span>
+                </div>
+              </ng-template>
+            </div>
+          </div>
+
+          <div class="row-col acciones" (click)="$event.stopPropagation()">
+            <div class="action-buttons">
+              <!-- Botón Editar Trámite -->
+              <button 
+                class="action-btn editar"
+                (click)="abrirEditarTramite(tramite)"
+                title="Editar trámite"
+              >
+                <i class="fas fa-edit"></i>
+              </button>
+              
+              <!-- Botón Aprobar Trámite -->
+              <button
+                *ngIf="puedeAprobar(tramite)"
+                class="action-btn aprobar"
+                (click)="abrirAprobar(tramite)"
+                title="Aprobar trámite"
+              >
+                <i class="fas fa-check-circle"></i>
+              </button>
+
+              <!-- Botón Responder Trámite -->
+              <button
+                *ngIf="puedeResponder(tramite)"
+                class="action-btn responder"
+                (click)="abrirResponderTramite(tramite)"
+                title="Responder trámite"
+              >
+                <i class="fas fa-reply"></i>
+              </button>
+
+              <button
+                class="action-btn estado"
+                (click)="abrirCambiarEstado(tramite)"
+                title="Cambiar estado"
+              >
+                <i class="fas fa-exchange-alt"></i>
+              </button>
+
+              <button
+                *ngIf="puedeMostrarDerivar(tramite)"
+                class="action-btn derivar"
+                (click)="abrirDerivar(tramite)"
+                title="Derivar"
+              >
+                <i class="fas fa-share"></i>
+              </button>
+              
+              <button 
+                class="action-btn download"
+                (click)="descargarTodosDocumentos(tramite)"
+                title="Descargar documentos ({{ tramite.documentos.length }})"
+              >
+                <i class="fas fa-download"></i>
+                <span class="doc-count">{{ tramite.documentos.length }}</span>
+              </button>
+              
+              <div class="file-upload">
+                <input 
+                  type="file" 
+                  [id]="'file-' + tramite.id"
+                  multiple
+                  accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                  (change)="subirDocumento($event, tramite.id)"
+                >
+                <label 
+                  [for]="'file-' + tramite.id"
+                  class="action-btn upload"
+                  title="Subir documentos"
+                >
+                  <i class="fas fa-upload"></i>
+                </label>
+              </div>
+              
+              <button 
+                class="action-btn export"
+                (click)="exportarTramite(tramite)"
+                title="Exportar trámite"
+              >
+                <i class="fas fa-file-export"></i>
+              </button>
+              
+              <button 
+                class="action-btn archive"
+                (click)="archivarTramite(tramite)"
+                title="Archivar trámite"
+              >
+                <i class="fas fa-archive"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vista Kanban -->
+    <div *ngIf="!(loading$ | async) && tramites.length > 0 && vistaActual === 'kanban'" class="kanban-board">
+      <div class="kanban-column" *ngFor="let estado of estadosDisponibles">
+        <div class="column-header">
+          <h3>{{ estado.nombre }}</h3>
+          <span class="column-count">
+            {{ filterTramites('estado.nombre', estado.nombre).length }}
+          </span>
+        </div>
+        
+        <div class="column-content">
+          <div 
+            *ngFor="let tramite of filterTramites('estado.nombre', estado.nombre)" 
+            class="kanban-card"
+            [class]="getUrgenciaClass(tramite)"
+            (click)="verDetalle(tramite)"
+          >
+            <div class="card-header">
+              <span class="codigo">{{ tramite.codigo }}</span>
+              <span class="prioridad" [class]="getPrioridadClase(tramite.prioridad.nivel)">
+                <i [class]="tramite.prioridad.icono"></i>
+              </span>
+            </div>
+            
+            <div class="card-content">
+              <h4>{{ tramite.asunto }}</h4>
+              <p>{{ tramite.solicitante.nombre }} {{ tramite.solicitante.apellidos }}</p>
+            </div>
+            
+            <div class="card-footer">
+              <span class="tiempo">{{ tramite.diasTranscurridos }}d</span>
+              <span class="documentos">
+                <i class="fas fa-paperclip"></i>
+                {{ tramite.documentos.length }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Paginación -->
+  <div *ngIf="totalPages > 1" class="pagination">
+    <button 
+      class="page-btn" 
+      [disabled]="currentPage === 1"
+      (click)="cambiarPagina(currentPage - 1)"
+    >
+      <i class="fas fa-chevron-left"></i>
+    </button>
+    
+    <div class="page-numbers">
+      <!-- Primera página y puntos suspensivos -->
+      <ng-container *ngIf="totalPages > 7 && currentPage > 4">
+        <button 
+          class="page-number"
+          (click)="cambiarPagina(1)"
+          title="Primera página"
+        >
+          1
+        </button>
+        <span class="page-ellipsis">...</span>
+      </ng-container>
+      
+      <!-- Páginas visibles -->
+      <button 
+        *ngFor="let page of getPaginasVisibles()"
+        class="page-number"
+        [class.active]="currentPage === page"
+        (click)="cambiarPagina(page)"
+      >
+        {{ page }}
+      </button>
+      
+      <!-- Puntos suspensivos y última página -->
+      <ng-container *ngIf="totalPages > 7 && currentPage < totalPages - 3">
+        <span class="page-ellipsis">...</span>
+        <button 
+          class="page-number"
+          (click)="cambiarPagina(totalPages)"
+          title="Última página"
+        >
+          {{ totalPages }}
+        </button>
+      </ng-container>
+    </div>
+    
+    <button 
+      class="page-btn"
+      [disabled]="currentPage === totalPages"
+      (click)="cambiarPagina(currentPage + 1)"
+    >
+      <i class="fas fa-chevron-right"></i>
+    </button>
+  </div>
+</div>
+
+<!-- Modal de notificaciones -->
+<div *ngIf="showNotificacionesModal" class="modal-overlay" (click)="cerrarModalNotificaciones()">
+  <div class="modal-content notifications-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Notificaciones</h3>
+      <button class="modal-close" (click)="cerrarModalNotificaciones()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    
+    <div class="modal-body">
+      <div *ngIf="notificaciones.length === 0" class="empty-notifications">
+        <i class="fas fa-bell-slash"></i>
+        <p>No tienes notificaciones</p>
+      </div>
+      
+      <div class="notifications-list">
+        <div 
+          *ngFor="let notificacion of notificaciones" 
+          class="notification-item"
+          [class.unread]="!notificacion.leida"
+          (click)="marcarNotificacionLeida(notificacion)"
+        >
+          <div class="notification-icon" [style.color]="notificacion.color">
+            <i [class]="notificacion.icono"></i>
+          </div>
+          <div class="notification-content">
+            <h4>{{ notificacion.titulo }}</h4>
+            <p>{{ notificacion.mensaje }}</p>
+            <span class="notification-time">{{ formatearFechaRelativa(notificacion.fecha) }}</span>
+          </div>
+          <div *ngIf="!notificacion.leida" class="unread-indicator"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de cambiar estado -->
+<div *ngIf="showCambiarEstadoModal" class="modal-overlay" (click)="cerrarModalCambiarEstado()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Cambiar Estado</h3>
+      <button class="modal-close" (click)="cerrarModalCambiarEstado()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    
+    <div class="modal-body">
+      <p>Trámite: <strong>{{ tramiteSeleccionado?.codigo }}</strong></p>
+      
+      <div class="form-group">
+        <label>Nuevo Estado</label>
+        <select [(ngModel)]="cambiarEstadoForm.nuevoEstadoId">
+          <option *ngFor="let estado of estadosDisponibles" [value]="estado.id">
+            {{ estado.nombre }}
+          </option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Observaciones</label>
+        <textarea 
+          [(ngModel)]="cambiarEstadoForm.observaciones"
+          placeholder="Observaciones sobre el cambio de estado..."
+          rows="4"
+        ></textarea>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="cerrarModalCambiarEstado()">
+        Cancelar
+      </button>
+      <button class="btn-save" (click)="confirmarCambiarEstado()">
+        <i class="fas fa-exchange-alt"></i>
+        Cambiar Estado
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de derivar -->
+<div *ngIf="showDerivarModal" class="modal-overlay" (click)="cerrarModalDerivar()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Derivar Trámite</h3>
+      <button class="modal-close" (click)="cerrarModalDerivar()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    
+    <div class="modal-body">
+      <p>Trámite: <strong>{{ tramiteSeleccionado?.codigo }}</strong></p>
+      
+      <div class="form-group">
+        <label>Área Destino</label>
+        <select [(ngModel)]="derivarForm.areaDestinoId">
+          <option value="">Seleccionar área</option>
+          <option *ngFor="let area of areasDisponibles" [value]="area.id">
+            {{ area.nombre }}
+          </option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Asignar a Trabajador (Opcional)</label>
+        <select [(ngModel)]="derivarForm.trabajadorAsignadoId">
+          <option value="">Sin asignar</option>
+          <option *ngFor="let trabajador of trabajadoresDisponibles" [value]="trabajador.id">
+            {{ trabajador.nombre }} {{ trabajador.apellidos }}
+          </option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>
+          <input type="checkbox" [(ngModel)]="derivarForm.mantenerEstado">
+          Mantener estado actual
+        </label>
+      </div>
+
+      <div class="form-group">
+        <label>Observaciones *</label>
+        <textarea 
+          [(ngModel)]="derivarForm.observaciones"
+          placeholder="Motivo de la derivación y instrucciones..."
+          rows="4"
+          required
+        ></textarea>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="cerrarModalDerivar()">
+        Cancelar
+      </button>
+      <button 
+        class="btn-save" 
+        (click)="confirmarDerivar()"
+        [disabled]="!derivarForm.areaDestinoId || !derivarForm.observaciones"
+      >
+        <i class="fas fa-share"></i>
+        Derivar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de responder trámite -->
+<app-responder-tramite-modal
+  [tramite]="tramiteSeleccionado"
+  [show]="showResponderTramiteModal"
+  (close)="cerrarModalResponder()"
+  (tramiteRespondido)="onTramiteRespondido($event)">
+</app-responder-tramite-modal>
+
+<!-- Modal de editar trámite -->
+<app-editar-tramite-modal
+  [tramite]="tramiteParaEditar"
+  [show]="showEditarTramiteModal"
+  (close)="cerrarModalEditar()"
+  (tramiteActualizado)="onTramiteEditado($event)">
+</app-editar-tramite-modal>

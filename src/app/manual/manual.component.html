@@ -1,0 +1,88 @@
+<div class="min-h-screen bg-gray-50">
+  <nav class="bg-white shadow-sm border-b-4 border-university-500 sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        <div class="flex items-center space-x-4">
+          <img src="assets/logo.png" alt="UNTUMBES" class="w-12 h-12 object-contain">
+          <div>
+            <h1 class="text-lg font-semibold text-university-700">Manual de Usuario</h1>
+            <p class="text-xs text-gray-500">Sistema de Secretaria General</p>
+          </div>
+        </div>
+        
+        <button (click)="goBack()" class="btn-university px-4 py-2 rounded-lg font-medium flex items-center">
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+          </svg>
+          Volver al Inicio
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="max-w-6xl mx-auto px-4 py-8">
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+      <div class="bg-university-gradient text-white p-8 text-center">
+        <h2 class="text-2xl font-bold mb-2">Bienvenido al Manual de Usuario</h2>
+        <p class="text-sm">Aquí encontrarás toda la información necesaria para utilizar el Sistema De Secretaria General de la Universidad Nacional de Tumbes.</p>
+      </div>
+
+      <div class="p-8">
+        <div class="grid md:grid-cols-4 gap-8">
+          <div class="md:col-span-1">
+            <div class="sticky top-24">
+              <h3 class="font-bold text-university-700 mb-4 flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
+                </svg>
+                Índice
+              </h3>
+              <nav class="space-y-2">
+                <button *ngFor="let section of manualSections; let i = index" 
+                   (click)="scrollToSection(section.id)"
+                   class="w-full text-left px-3 py-2 text-sm text-gray-600 hover:text-university-600 hover:bg-university-50 rounded-lg transition-colors flex items-center">
+                  <span class="w-6 h-6 bg-university-100 text-university-700 rounded-full flex items-center justify-center text-xs font-bold mr-3">
+                    {{ i + 1 }}
+                  </span>
+                  {{ section.title }}
+                </button>
+              </nav>
+            </div>
+          </div>
+
+          <div class="md:col-span-3 space-y-8">
+            <div *ngFor="let section of manualSections; let i = index" 
+                 [id]="section.id" 
+                 class="bg-gray-50 rounded-xl p-6 border-l-4 border-university-500 scroll-mt-24">
+              <div class="flex items-center mb-4">
+                <span class="w-8 h-8 bg-university-gradient text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">
+                  {{ i + 1 }}
+                </span>
+                <h2 class="text-xl font-bold text-university-800">{{ section.title }}</h2>
+              </div>
+              <p class="text-gray-700 mb-6 leading-relaxed">{{ section.content }}</p>
+              
+              <div *ngIf="section.steps" class="bg-white rounded-lg p-4">
+                <h4 class="font-semibold text-university-700 mb-4 flex items-center">
+                  <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                  </svg>
+                  Pasos a seguir:
+                </h4>
+                <ol class="space-y-3">
+                  <li *ngFor="let step of section.steps; let stepIndex = index" 
+                      class="flex items-start">
+                    <span class="w-6 h-6 bg-university-500 text-white rounded-full flex items-center justify-center text-xs font-bold mr-3 mt-0.5 flex-shrink-0">
+                      {{ stepIndex + 1 }}
+                    </span>
+                    <span class="text-gray-700">{{ step }}</span>
+                  </li>
+                </ol>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

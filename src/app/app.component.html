@@ -1,0 +1,50 @@
+<div class="min-h-screen bg-gray-50">
+  <!-- Preloader -->
+  <div *ngIf="isLoading" class="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-university-600 to-university-800">
+    <div class="text-center text-white">
+      <div class="mb-8">
+        <img src="assets/logo.png" alt="UNTUMBES" class="w-20 h-20 mx-auto rounded-lg shadow-2xl animate-bounce">
+      </div>
+      <div class="mb-6">
+        <p class="text-university-100">Universidad Nacional de Tumbes</p>
+      </div>
+      <div class="flex justify-center space-x-1">
+        <div class="w-3 h-3 bg-white rounded-full animate-bounce" style="animation-delay: 0s;"></div>
+        <div class="w-3 h-3 bg-white rounded-full animate-bounce" style="animation-delay: 0.2s;"></div>
+        <div class="w-3 h-3 bg-white rounded-full animate-bounce" style="animation-delay: 0.4s;"></div>
+      </div>
+    </div>
+  </div>
+
+  <nav *ngIf="showHeader && showContent" class="bg-white shadow-sm border-b-4 border-university-500 fixed top-0 left-0 right-0 z-40 transition-transform duration-500">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        <div class="flex items-center space-x-4 cursor-pointer" (click)="goHome()">
+          <img src="assets/logo.png" alt="UNTUMBES" class="w-12 h-12 rounded-lg shadow-md">
+          <div>
+            <h1 class="text-lg font-semibold text-university-700 hover:text-university-600 transition-colors">Sistema de Secretaria General</h1>
+          </div>
+        </div>
+        
+        <button *ngIf="showHomeButton" (click)="goHome()" class="btn-university px-4 py-2 rounded-lg font-medium">
+          Inicio
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <main [class.pt-16]="showHeader" class="min-h-screen flex flex-col" *ngIf="showContent">
+    <div class="flex-1">
+      <router-outlet />
+    </div>
+    
+    <footer *ngIf="showFooter" class="py-4 bg-university-700 text-white mt-auto">
+      <div class="container mx-auto px-4">
+        <div class="flex flex-col sm:flex-row items-center justify-center text-sm text-center sm:text-left space-y-1 sm:space-y-0">
+          <span>&copy; {{ currentYear }} Universidad Nacional de Tumbes.</span>
+          <span class="sm:ml-1">Institución acreditada por SUNEDU.</span>
+        </div>
+      </div>
+    </footer>
+  </main>
+</div>

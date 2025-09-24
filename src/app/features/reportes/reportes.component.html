@@ -1,0 +1,124 @@
+<div class="reportes-container">
+  <!-- Encabezado con título y botones -->
+  <div class="encabezado">
+    <h1>
+      <i class="fas fa-chart-bar"></i>
+      REPORTES DE TRÁMITES
+    </h1>
+    <div class="botones">
+      <button class="btn btn-excel" (click)="exportarExcel()">
+        <i class="fas fa-file-excel"></i> EXCEL
+      </button>
+      <button class="btn btn-imprimir" (click)="imprimirReporte()">
+        <i class="fas fa-print"></i> IMPRIMIR
+      </button>
+    </div>
+  </div>
+
+  <!-- Resumen Principal con números grandes -->
+  <div class="seccion resumen">
+    <h2>RESUMEN GENERAL - {{ fechaGeneracion | date:'MMMM yyyy' | uppercase }}</h2>
+    
+    <div *ngIf="cargando" class="cargando">Cargando datos...</div>
+
+    <div *ngIf="!cargando" class="tarjetas">
+      <div class="tarjeta total">
+        <div class="numero">{{ resumenGeneral.totalTramites || 0 | number }}</div>
+        <div class="texto">TOTAL TRÁMITES</div>
+      </div>
+
+      <div class="tarjeta completado">
+        <div class="numero">{{ resumenGeneral.completados || 0 | number }}</div>
+        <div class="texto">COMPLETADOS</div>
+      </div>
+
+      <div class="tarjeta proceso">
+        <div class="numero">{{ resumenGeneral.enProceso || 0 | number }}</div>
+        <div class="texto">EN PROCESO</div>
+      </div>
+
+      <div class="tarjeta vencido">
+        <div class="numero">{{ resumenGeneral.vencidos || 0 | number }}</div>
+        <div class="texto">VENCIDOS</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabla de trámites por tipo -->
+  <div class="seccion">
+    <h2>TRÁMITES POR TIPO DE DOCUMENTO</h2>
+    
+    <div class="tabla-responsive">
+      <table class="tabla">
+        <thead>
+          <tr>
+            <th>TIPO DE DOCUMENTO</th>
+            <th class="centro">CANTIDAD</th>
+            <th class="centro">COMPLETADOS</th>
+            <th class="centro">PENDIENTES</th>
+          </tr>
+        </thead>
+      <tbody>
+        <tr *ngFor="let tipo of tramitesPorTipo; let i = index">
+          <td><span class="punto" [ngClass]="i % 4 === 0 ? 'azul' : i % 4 === 1 ? 'verde' : i % 4 === 2 ? 'morado' : 'gris'"></span> {{ tipo.tipo }}</td>
+          <td class="centro numero">{{ tipo.cantidad | number }}</td>
+          <td class="centro numero verde">{{ tipo.completados | number }}</td>
+          <td class="centro numero naranja">{{ tipo.pendientes | number }}</td>
+        </tr>
+        <tr class="total-fila" *ngIf="tramitesPorTipo.length > 0">
+          <td><strong>TOTAL</strong></td>
+          <td class="centro numero"><strong>{{ resumenGeneral.totalTramites | number }}</strong></td>
+          <td class="centro numero verde"><strong>{{ resumenGeneral.completados | number }}</strong></td>
+          <td class="centro numero naranja"><strong>{{ resumenGeneral.enProceso | number }}</strong></td>
+        </tr>
+        <tr *ngIf="tramitesPorTipo.length === 0 && !cargando">
+          <td colspan="4" class="centro">No hay datos disponibles</td>
+        </tr>
+      </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Lista de trámites urgentes -->
+  <div class="seccion alerta">
+    <h2>
+      <i class="fas fa-exclamation-triangle"></i>
+      TRÁMITES QUE REQUIEREN ATENCIÓN URGENTE
+    </h2>
+    
+    <div class="tabla-responsive">
+      <table class="tabla tabla-urgente">
+        <thead>
+          <tr>
+            <th>CÓDIGO</th>
+            <th>DOCUMENTO</th>
+            <th class="centro">ESTADO</th>
+            <th>ÁREA</th>
+            <th>RESPONSABLE</th>
+          </tr>
+        </thead>
+      <tbody>
+        <tr *ngFor="let tramite of tramitesUrgentes" [ngClass]="obtenerClaseEstado(tramite)">
+          <td class="codigo">{{ tramite.codigo }}</td>
+          <td>{{ tramite.asunto }}</td>
+          <td class="centro"><span class="estado" [ngClass]="obtenerClaseEstadoTexto(tramite)">{{ obtenerEstadoUrgente(tramite) }}</span></td>
+          <td>{{ tramite.areaResponsable }}</td>
+          <td>{{ tramite.responsable }}</td>
+        </tr>
+        <tr *ngIf="tramitesUrgentes.length === 0 && !cargando">
+          <td colspan="5" class="centro">No hay trámites urgentes</td>
+        </tr>
+      </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Pie con información -->
+  <div class="pie">
+    <div class="linea"></div>
+    <p>
+      <strong>UNIVERSIDAD NACIONAL DE TUMBES</strong><br>
+      Reporte generado el {{ fechaGeneracion | date:'dd \'de\' MMMM \'del\' yyyy - hh:mm a' }}
+    </p>
+  </div>
+</div>

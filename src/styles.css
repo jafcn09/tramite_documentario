@@ -1,0 +1,149 @@
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Estilos para modo claro (por defecto) */
+body {
+  background-color: #f9fafb !important;
+  color: #111827 !important;
+}
+
+/* Estilos para modo oscuro */
+body.dark-mode {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+}
+
+/* Gradiente universitario */
+.university-gradient {
+  background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 25%, #3b82f6 50%, #60a5fa 75%, #93c5fd 100%);
+}
+
+.university-gradient-dark {
+  background: linear-gradient(135deg, #1e293b 0%, #334155 25%, #475569 50%, #64748b 75%, #94a3b8 100%);
+}
+
+/* Botones */
+.btn-university {
+  background-color: #2563eb;
+  color: white;
+  transition: all 0.2s;
+}
+
+.btn-university:hover {
+  background-color: #1d4ed8;
+}
+
+.btn-outline-university {
+  border: 2px solid #2563eb;
+  color: #2563eb;
+  background-color: transparent;
+  transition: all 0.2s;
+}
+
+.btn-outline-university:hover {
+  background-color: #2563eb;
+  color: white;
+}
+
+/* Navegación */
+.nav-light {
+  background-color: white;
+  border-color: #3b82f6;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.nav-dark {
+  background-color: #1e293b;
+  border-color: #60a5fa;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+/* Footer */
+.footer-light {
+  background-color: #1d4ed8;
+  color: white;
+}
+
+.footer-dark {
+  background-color: #020617;
+  color: #e2e8f0;
+}
+
+/* Inputs */
+.input-light {
+  background-color: white;
+  border-color: #d1d5db;
+  color: #111827;
+}
+
+.input-light:focus {
+  border-color: #3b82f6;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.input-dark {
+  background-color: #334155;
+  border-color: #475569;
+  color: #f1f5f9;
+}
+
+.input-dark:focus {
+  border-color: #60a5fa;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+}
+
+/* Colores personalizados para modo oscuro */
+.text-dark-50 { color: #f8fafc; }
+.text-dark-100 { color: #f1f5f9; }
+.text-dark-200 { color: #e2e8f0; }
+.text-dark-300 { color: #cbd5e1; }
+.text-dark-400 { color: #94a3b8; }
+.text-dark-500 { color: #64748b; }
+
+.bg-dark-700 { background-color: #334155; }
+.bg-dark-800 { background-color: #1e293b; }
+.bg-dark-900 { background-color: #0f172a; }
+.bg-dark-950 { background-color: #020617; }
+
+.border-dark-600 { border-color: #475569; }
+
+/* Clases adicionales de Tailwind que podrían faltar */
+.text-university-200 { color: #bfdbfe; }
+.text-university-300 { color: #93c5fd; }
+.text-university-400 { color: #60a5fa; }
+
+/* Animaciones */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.5s ease-out;
+}
+
+.animate-slide-up {
+  animation: fade-in 0.6s ease-out;
+}
+
+.delay-100 { animation-delay: 0.1s; }
+.delay-200 { animation-delay: 0.2s; }
+.delay-300 { animation-delay: 0.3s; }
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-rotate {
+  animation: rotate 1s linear infinite;
+}

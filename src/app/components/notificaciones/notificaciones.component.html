@@ -1,0 +1,754 @@
+<div class="min-h-screen bg-gray-50">
+  <!-- Header -->
+  <div class="bg-white border-b border-gray-200 sticky top-0 z-40">
+    <div class="px-3 sm:px-4 lg:px-6 max-w-7xl mx-auto">
+      <div class="flex flex-col space-y-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:py-4 sm:space-y-0">
+        <!-- Left side -->
+        <div class="flex items-center space-x-3">
+          <div class="flex-shrink-0">
+            <div class="w-8 h-8 sm:w-10 sm:h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+              <i class="fas fa-bell text-blue-600 text-sm sm:text-lg"></i>
+            </div>
+          </div>
+          <div class="min-w-0 flex-1">
+            <h1 class="text-lg sm:text-xl font-semibold text-gray-900 truncate">Centro de Notificaciones</h1>
+            <p class="text-xs sm:text-sm text-gray-500 hidden sm:block">Mantente al día con tus actualizaciones</p>
+          </div>
+          <!-- Connection badge -->
+          <div class="flex items-center">
+            <div class="flex items-center space-x-1">
+              <div class="w-2 h-2 rounded-full"
+                   [class]="estaConectadoWs ? 'bg-green-400' : 'bg-red-400'"></div>
+              <span class="text-xs text-gray-500 hidden sm:inline">
+                {{ estaConectadoWs ? 'Conectado' : 'Desconectado' }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right side -->
+        <div class="flex flex-wrap gap-2 justify-end">
+          <button class="inline-flex items-center justify-center px-3 py-2 border border-gray-300 rounded-lg text-xs sm:text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors min-h-[36px] touch-manipulation"
+                  (click)="abrirModalCrear()"
+                  *ngIf="esAdmin()">
+            <i class="fas fa-plus text-xs mr-1 sm:mr-2"></i>
+            <span class="hidden sm:inline">Crear notificación</span>
+            <span class="sm:hidden">Crear</span>
+          </button>
+
+          <button class="inline-flex items-center justify-center px-3 py-2 bg-blue-600 text-white rounded-lg text-xs sm:text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors min-h-[36px] touch-manipulation"
+                  (click)="marcarTodasLeidas()"
+                  *ngIf="contadorNoLeidas > 0">
+            <i class="fas fa-check-double text-xs mr-1 sm:mr-2"></i>
+            <span class="hidden sm:inline">Marcar todas leídas</span>
+            <span class="sm:hidden">Marcar</span>
+            <span class="ml-1 px-2 py-0.5 bg-blue-500 text-white rounded-full text-xs min-w-[18px] text-center">{{ contadorNoLeidas }}</span>
+          </button>
+
+          <button class="inline-flex items-center justify-center px-3 py-2 border border-red-300 text-red-700 bg-white rounded-lg text-xs sm:text-sm font-medium hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors min-h-[36px] touch-manipulation"
+                  (click)="limpiarNotificacionesAntiguas()"
+                  *ngIf="esAdmin()">
+            <i class="fas fa-broom text-xs mr-1 sm:mr-2"></i>
+            <span class="hidden sm:inline">Limpiar antiguas</span>
+            <span class="sm:hidden">Limpiar</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Dashboard -->
+  <div class="px-3 sm:px-4 lg:px-6 max-w-7xl mx-auto py-4 sm:py-6">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      <!-- Total -->
+      <div class="bg-white rounded-lg border border-gray-200 p-3 sm:p-4">
+        <div class="flex items-center">
+          <div class="w-6 h-6 sm:w-8 sm:h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+            <i class="fas fa-bell text-blue-600 text-xs sm:text-sm"></i>
+          </div>
+          <div class="ml-2 sm:ml-3 min-w-0">
+            <div class="text-base sm:text-lg font-semibold text-gray-900">{{ estadisticas.totalNotificaciones || 0 }}</div>
+            <div class="text-xs sm:text-sm text-gray-500 truncate">Total</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sin leer -->
+      <div class="bg-white rounded-lg border border-gray-200 p-3 sm:p-4">
+        <div class="flex items-center">
+          <div class="w-6 h-6 sm:w-8 sm:h-8 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
+            <i class="fas fa-envelope text-orange-600 text-xs sm:text-sm"></i>
+          </div>
+          <div class="ml-2 sm:ml-3 min-w-0">
+            <div class="text-base sm:text-lg font-semibold text-gray-900">{{ estadisticas.noLeidas || 0 }}</div>
+            <div class="text-xs sm:text-sm text-gray-500 truncate">Sin leer</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Leídas -->
+      <div class="bg-white rounded-lg border border-gray-200 p-3 sm:p-4">
+        <div class="flex items-center">
+          <div class="w-6 h-6 sm:w-8 sm:h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+            <i class="fas fa-check-circle text-green-600 text-xs sm:text-sm"></i>
+          </div>
+          <div class="ml-2 sm:ml-3 min-w-0">
+            <div class="text-base sm:text-lg font-semibold text-gray-900">{{ estadisticas.leidas || 0 }}</div>
+            <div class="text-xs sm:text-sm text-gray-500 truncate">Leídas</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Este mes -->
+      <div class="bg-white rounded-lg border border-gray-200 p-3 sm:p-4">
+        <div class="flex items-center">
+          <div class="w-6 h-6 sm:w-8 sm:h-8 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+            <i class="fas fa-calendar-alt text-purple-600 text-xs sm:text-sm"></i>
+          </div>
+          <div class="ml-2 sm:ml-3 min-w-0">
+            <div class="text-base sm:text-lg font-semibold text-gray-900">{{ estadisticas.ultimoMes || 0 }}</div>
+            <div class="text-xs sm:text-sm text-gray-500 truncate">Este mes</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search and Filter Bar -->
+  <div class="px-3 sm:px-4 lg:px-6 max-w-7xl mx-auto pb-4 sm:pb-6">
+    <div class="bg-white rounded-lg border border-gray-200 p-3 sm:p-4">
+      <!-- Search -->
+      <div class="flex flex-col gap-3 mb-3 sm:flex-row sm:gap-4 sm:mb-4">
+        <div class="flex-1 relative">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <i class="fas fa-search text-gray-400 text-sm"></i>
+          </div>
+          <input type="text"
+                 class="w-full pl-10 pr-4 py-3 sm:py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors touch-manipulation"
+                 placeholder="Buscar notificaciones..."
+                 [(ngModel)]="filtros.busqueda"
+                 (ngModelChange)="aplicarFiltros(); agruparNotificaciones()">
+        </div>
+
+        <button class="inline-flex items-center justify-center px-3 py-3 sm:py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors min-h-[44px] sm:min-h-auto touch-manipulation"
+                *ngIf="filtros.busqueda"
+                (click)="filtros.busqueda = ''; aplicarFiltros(); agruparNotificaciones()">
+          <i class="fas fa-times text-xs mr-2"></i>
+          <span class="hidden sm:inline">Limpiar búsqueda</span>
+          <span class="sm:hidden">Limpiar</span>
+        </button>
+      </div>
+
+      <!-- Quick Filters -->
+      <div class="flex flex-wrap gap-2">
+        <button class="inline-flex items-center px-4 py-2 sm:px-3 sm:py-1.5 rounded-full text-sm font-medium transition-colors min-h-[40px] sm:min-h-auto touch-manipulation"
+                [class]="filtros.esLeida === undefined ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+                (click)="setFiltroEstado(undefined)">
+          Todas
+        </button>
+
+        <button class="inline-flex items-center px-4 py-2 sm:px-3 sm:py-1.5 rounded-full text-sm font-medium transition-colors min-h-[40px] sm:min-h-auto touch-manipulation"
+                [class]="filtros.esLeida === false ? 'bg-orange-100 text-orange-800' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+                (click)="setFiltroEstado(false)">
+          <span class="w-2 h-2 bg-orange-400 rounded-full mr-2"></span>
+          No leídas
+        </button>
+
+        <button class="inline-flex items-center px-4 py-2 sm:px-3 sm:py-1.5 rounded-full text-sm font-medium transition-colors min-h-[40px] sm:min-h-auto touch-manipulation"
+                [class]="filtros.esLeida === true ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+                (click)="setFiltroEstado(true)">
+          <span class="w-2 h-2 bg-green-400 rounded-full mr-2"></span>
+          Leídas
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" *ngIf="cargando">
+    <div class="bg-white rounded-lg border border-gray-200 p-8 text-center">
+      <div class="inline-flex items-center justify-center w-12 h-12 bg-blue-100 rounded-lg mb-4">
+        <div class="animate-spin rounded-full h-6 w-6 border-2 border-blue-600 border-t-transparent"></div>
+      </div>
+      <h3 class="text-lg font-semibold text-gray-900 mb-2">Cargando notificaciones</h3>
+      <p class="text-sm text-gray-500">Obteniendo tus últimas actualizaciones...</p>
+    </div>
+  </div>
+
+  <!-- Notifications List -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6" *ngIf="!cargando">
+    <div class="notification-group" 
+         *ngFor="let grupo of notificacionesAgrupadas; trackBy: trackGroup" 
+         [@slideDown]>
+      
+      <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center space-x-2">
+          <i class="fas fa-calendar-day text-gray-400 text-sm"></i>
+          <span class="text-sm font-medium text-gray-900">{{ grupo.fecha }}</span>
+        </div>
+        <div class="text-xs text-gray-500">
+          {{ grupo.notificaciones.length }} {{ grupo.notificaciones.length === 1 ? 'notificación' : 'notificaciones' }}
+        </div>
+      </div>
+
+      <div class="space-y-3">
+        <div class="bg-white rounded-lg border border-gray-200 hover:border-gray-300 transition-colors cursor-pointer" 
+             *ngFor="let notificacion of grupo.notificaciones; trackBy: trackNotification"
+             [class.ring-2]="!notificacion.esLeida"
+             [class.ring-blue-100]="!notificacion.esLeida"
+             [class.border-orange-200]="notificacion.prioridad === 'ALTA'"
+             (click)="abrirNotificacion(notificacion)"
+             [@slideIn]>
+          
+          <div class="p-4">
+            <div class="flex items-start space-x-3">
+              <!-- Icon -->
+              <div class="flex-shrink-0 relative">
+                <div class="w-10 h-10 rounded-lg flex items-center justify-center" [ngClass]="getClaseTipo(notificacion.tipo)">
+                  <i [class]="getIcono(notificacion.tipo)" class="text-sm"></i>
+                </div>
+                <div class="absolute -top-1 -right-1 w-3 h-3 bg-blue-400 rounded-full" *ngIf="!notificacion.esLeida"></div>
+              </div>
+
+              <!-- Content -->
+              <div class="flex-1 min-w-0">
+                <div class="flex items-start justify-between">
+                  <h4 class="text-sm font-semibold text-gray-900 truncate pr-2">{{ notificacion.titulo }}</h4>
+                  <span class="text-xs text-gray-500 whitespace-nowrap">{{ formatearTiempo(notificacion.fechaCreacion) }}</span>
+                </div>
+                
+                <p class="text-sm text-gray-600 mt-1 line-clamp-2">{{ notificacion.mensaje }}</p>
+                
+                <div class="flex items-center justify-between mt-3">
+                  <div class="flex items-center space-x-2">
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium" [ngClass]="getClaseTipo(notificacion.tipo)">
+                      <i [class]="getIcono(notificacion.tipo)" class="text-xs mr-1"></i>
+                      {{ getTipoDisplay(notificacion.tipo) }}
+                    </span>
+                    
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800" 
+                          *ngIf="notificacion.prioridad === 'ALTA'">
+                      <i class="fas fa-exclamation text-xs mr-1"></i>
+                      Urgente
+                    </span>
+                  </div>
+                  
+                  <!-- Actions -->
+                  <div class="flex items-center space-x-1">
+                    <button class="p-1.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded transition-colors" 
+                            *ngIf="!notificacion.esLeida"
+                            (click)="marcarLeida(notificacion, $event)"
+                            title="Marcar como leída">
+                      <i class="fas fa-check text-xs"></i>
+                    </button>
+                    
+                    <button class="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors" 
+                            (click)="reenviarPorEmail(notificacion, $event)"
+                            title="Reenviar por email">
+                      <i class="fas fa-paper-plane text-xs"></i>
+                    </button>
+                    
+                    <!-- Admin Actions -->
+                    <button class="p-1.5 text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded transition-colors" 
+                            *ngIf="esAdmin()"
+                            (click)="editarNotificacion(notificacion, $event)"
+                            title="Editar notificación">
+                      <i class="fas fa-edit text-xs"></i>
+                    </button>
+                    
+                    <button class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors" 
+                            *ngIf="esAdmin()"
+                            (click)="eliminarNotificacion(notificacion, $event)"
+                            title="Eliminar notificación">
+                      <i class="fas fa-trash text-xs"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="bg-white rounded-lg border border-gray-200 p-12 text-center" *ngIf="notificacionesAgrupadas.length === 0">
+      <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <i class="fas fa-bell-slash text-gray-400 text-xl"></i>
+      </div>
+      
+      <h3 class="text-lg font-semibold text-gray-900 mb-2">¡Todo está al día!</h3>
+      <p class="text-sm text-gray-500">No tienes notificaciones que coincidan con los filtros seleccionados.</p>
+    </div>
+  </div>
+
+  <!-- Load More -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8" *ngIf="!isLastPage && !cargando && notificacionesAgrupadas.length > 0">
+    <div class="text-center">
+      <button class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors" 
+              (click)="cargarMas()">
+        <i class="fas fa-chevron-down text-xs mr-2"></i>
+        Cargar más notificaciones
+      </button>
+    </div>
+  </div>
+
+  <!-- Admin Panel -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8" *ngIf="esAdmin()">
+    <div class="bg-white rounded-lg border border-gray-200 p-4">
+      
+      <div class="flex flex-col sm:flex-row gap-3">
+        
+        <button class="inline-flex items-center px-3 py-2 border border-red-300 rounded-lg text-sm font-medium text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors" 
+                (click)="limpiarNotificacionesAntiguas()">
+          <i class="fas fa-trash-alt text-xs mr-2"></i>
+          <span>Limpiar antiguas</span>
+          <span class="text-xs text-gray-500 ml-1">(30+ días)</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" 
+       *ngIf="mostrarModalCrear" 
+       (click)="mostrarModalCrear = false">
+    <div class="bg-white rounded-lg shadow-xl max-w-lg w-full max-h-screen overflow-y-auto" 
+         (click)="$event.stopPropagation()">
+      
+      <!-- Header -->
+      <div class="flex items-center justify-between p-6 border-b border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-900">Crear Nueva Notificación</h3>
+        <button class="text-gray-400 hover:text-gray-600 transition-colors" 
+                (click)="mostrarModalCrear = false">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <!-- Form -->
+      <form (ngSubmit)="crearNotificacion()" #notificacionForm="ngForm" class="p-6 space-y-4">
+        <!-- Tipo de Destinatario -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Destinatario</label>
+          <div class="space-y-2">
+            <label class="flex items-center">
+              <input type="radio" 
+                     class="form-radio text-blue-600 focus:ring-blue-500"
+                     name="tipoDestinatario" 
+                     value="USUARIO_ESPECIFICO"
+                     [(ngModel)]="tipoDestinatario"
+                     (ngModelChange)="onTipoDestinatarioChange()">
+              <span class="ml-2 text-sm text-gray-700">Usuario específico</span>
+            </label>
+            <label class="flex items-center">
+              <input type="radio" 
+                     class="form-radio text-blue-600 focus:ring-blue-500"
+                     name="tipoDestinatario" 
+                     value="ROL_COMPLETO"
+                     [(ngModel)]="tipoDestinatario"
+                     (ngModelChange)="onTipoDestinatarioChange()">
+              <span class="ml-2 text-sm text-gray-700">Todos los usuarios de un rol</span>
+            </label>
+            <label class="flex items-center">
+              <input type="radio" 
+                     class="form-radio text-blue-600 focus:ring-blue-500"
+                     name="tipoDestinatario" 
+                     value="TODOS_USUARIOS"
+                     [(ngModel)]="tipoDestinatario"
+                     (ngModelChange)="onTipoDestinatarioChange()">
+              <span class="ml-2 text-sm text-gray-700">Todos los usuarios del sistema</span>
+            </label>
+          </div>
+          <p class="mt-1 text-sm text-red-600" *ngIf="tieneError('destinatario')">
+            {{ getError('destinatario') }}
+          </p>
+        </div>
+
+        <!-- Usuario Específico -->
+        <div *ngIf="tipoDestinatario === 'USUARIO_ESPECIFICO'">
+          <label class="block text-sm font-medium text-gray-700 mb-2">Seleccionar Usuario</label>
+          <select class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  [class.border-red-300]="tieneError('usuarioDestinatarioId')"
+                  [class.border-gray-300]="!tieneError('usuarioDestinatarioId')"
+                  [(ngModel)]="nuevaNotificacion.usuarioDestinatarioId"
+                  name="usuarioDestinatarioId">
+            <option value="">Seleccionar usuario...</option>
+            <option *ngFor="let usuario of usuarios" [value]="usuario.id">
+              {{ usuario.nombre }} {{ usuario.apellidos }} - {{ usuario.usuario }} ({{ usuario.role.name }})
+            </option>
+          </select>
+          <p class="mt-1 text-sm text-red-600" *ngIf="tieneError('usuarioDestinatarioId')">
+            {{ getError('usuarioDestinatarioId') }}
+          </p>
+        </div>
+
+        <!-- Selección de Rol -->
+        <div *ngIf="tipoDestinatario === 'ROL_COMPLETO'">
+          <label class="block text-sm font-medium text-gray-700 mb-2">Seleccionar Rol</label>
+          <select class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  [class.border-red-300]="tieneError('roleDestinatario')"
+                  [class.border-gray-300]="!tieneError('roleDestinatario')"
+                  [(ngModel)]="nuevaNotificacion.roleDestinatario"
+                  name="roleDestinatario">
+            <option value="">Seleccionar rol...</option>
+            <option *ngFor="let rol of roles" [value]="rol.name">
+              {{ rol.name }} ({{ getUsuariosPorRol(rol.name) }} usuarios)
+            </option>
+          </select>
+          <p class="mt-1 text-sm text-red-600" *ngIf="tieneError('roleDestinatario')">
+            {{ getError('roleDestinatario') }}
+          </p>
+        </div>
+
+        <!-- Confirmación para todos los usuarios -->
+        <div *ngIf="tipoDestinatario === 'TODOS_USUARIOS'" class="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+          <div class="flex">
+            <i class="fas fa-exclamation-triangle text-yellow-400 mt-0.5 mr-2"></i>
+            <div>
+              <h4 class="text-sm font-medium text-yellow-800">Notificación masiva</h4>
+              <p class="text-sm text-yellow-700">Esta notificación se enviará a todos los usuarios activos del sistema ({{ usuarios.length }} usuarios).</p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Título -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Título</label>
+          <input type="text" 
+                 class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                 [class.border-red-300]="tieneError('titulo')"
+                 [class.border-gray-300]="!tieneError('titulo')"
+                 [(ngModel)]="nuevaNotificacion.titulo"
+                 name="titulo"
+                 placeholder="Ingrese el título de la notificación"
+                 required
+                 maxlength="200">
+          <p class="mt-1 text-sm text-red-600" *ngIf="tieneError('titulo')">
+            {{ getError('titulo') }}
+          </p>
+        </div>
+        
+        <!-- Mensaje -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Mensaje</label>
+          <textarea class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                    [class.border-red-300]="tieneError('mensaje')"
+                    [class.border-gray-300]="!tieneError('mensaje')"
+                    rows="4"
+                    [(ngModel)]="nuevaNotificacion.mensaje"
+                    name="mensaje"
+                    placeholder="Escriba el mensaje de la notificación"
+                    required
+                    maxlength="500"></textarea>
+          <p class="mt-1 text-sm text-red-600" *ngIf="tieneError('mensaje')">
+            {{ getError('mensaje') }}
+          </p>
+        </div>
+        
+        <!-- Tipo -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Tipo</label>
+          <select class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  [class.border-red-300]="tieneError('tipo')"
+                  [class.border-gray-300]="!tieneError('tipo')"
+                  [(ngModel)]="nuevaNotificacion.tipo"
+                  name="tipo"
+                  required>
+            <option value="">Seleccionar tipo...</option>
+            <option value="TRAMITE_CREADO">Trámite Creado</option>
+            <option value="TRAMITE_APROBADO">Trámite Aprobado</option>
+            <option value="TRAMITE_RECHAZADO">Trámite Rechazado</option>
+            <option value="TRAMITE_OBSERVADO">Trámite Observado</option>
+            <option value="DERIVACION">Derivación</option>
+            <option value="SISTEMA">Sistema</option>
+          </select>
+          <p class="mt-1 text-sm text-red-600" *ngIf="tieneError('tipo')">
+            {{ getError('tipo') }}
+          </p>
+        </div>
+        
+        <!-- Prioridad -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Prioridad</label>
+          <select class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  [class.border-red-300]="tieneError('prioridad')"
+                  [class.border-gray-300]="!tieneError('prioridad')"
+                  [(ngModel)]="nuevaNotificacion.prioridad"
+                  name="prioridad"
+                  required>
+            <option value="">Seleccionar prioridad...</option>
+            <option value="BAJA">Baja</option>
+            <option value="NORMAL">Normal</option>
+            <option value="ALTA">Alta</option>
+          </select>
+          <p class="mt-1 text-sm text-red-600" *ngIf="tieneError('prioridad')">
+            {{ getError('prioridad') }}
+          </p>
+        </div>
+  
+        
+        <!-- Botones -->
+        <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+          <button type="button" 
+                  class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                  (click)="cancelarCreacion()">
+            Cancelar
+          </button>
+          <button type="submit" 
+                  class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  [disabled]="!notificacionForm.valid || enviandoNotificacion">
+            <span *ngIf="enviandoNotificacion">
+              <i class="fas fa-spinner fa-spin mr-2"></i>
+              Creando...
+            </span>
+            <span *ngIf="!enviandoNotificacion">
+              <i class="fas fa-plus mr-2"></i>
+              Crear Notificación
+            </span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Editar Notificación -->
+<div class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 p-4" *ngIf="mostrarModalEditar" @slideDown>
+  <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-screen overflow-y-auto">
+    <div class="flex items-center justify-between p-6 border-b border-gray-200">
+      <h3 class="text-lg font-semibold text-gray-900">
+        <i class="fas fa-edit text-orange-500 mr-2"></i>
+        Editar Notificación
+      </h3>
+      <button type="button" 
+              class="text-gray-400 hover:text-gray-600 transition-colors"
+              (click)="cerrarModalEditar()">
+        <i class="fas fa-times text-xl"></i>
+      </button>
+    </div>
+    
+    <form (ngSubmit)="confirmarEditarNotificacion()" #editarForm="ngForm" class="p-6">
+      <!-- Título -->
+      <div class="mb-6">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Título *</label>
+        <input type="text" 
+               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+               [(ngModel)]="notificacionEditando!.titulo"
+               name="titulo"
+               required
+               maxlength="200"
+               placeholder="Título de la notificación">
+      </div>
+      
+      <!-- Mensaje -->
+      <div class="mb-6">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Mensaje *</label>
+        <textarea class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 min-h-[100px]"
+                  [(ngModel)]="notificacionEditando!.mensaje"
+                  name="mensaje"
+                  required
+                  maxlength="500"
+                  placeholder="Contenido del mensaje..."
+                  rows="4"></textarea>
+      </div>
+      
+      <!-- Tipo -->
+      <div class="mb-6">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Tipo *</label>
+        <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                [(ngModel)]="notificacionEditando!.tipo"
+                name="tipo"
+                required>
+          <option value="TRAMITE_CREADO">Trámite Creado</option>
+          <option value="TRAMITE_APROBADO">Trámite Aprobado</option>
+          <option value="TRAMITE_RECHAZADO">Trámite Rechazado</option>
+          <option value="TRAMITE_OBSERVADO">Trámite Observado</option>
+          <option value="DERIVACION">Derivación</option>
+          <option value="SISTEMA">Sistema</option>
+        </select>
+      </div>
+      
+      <!-- Prioridad -->
+      <div class="mb-6">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Prioridad *</label>
+        <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                [(ngModel)]="notificacionEditando!.prioridad"
+                name="prioridad"
+                required>
+          <option value="BAJA">Baja</option>
+          <option value="NORMAL">Normal</option>
+          <option value="ALTA">Alta</option>
+        </select>
+      </div>
+      
+      <!-- Ruta Destino (opcional) -->
+      <div class="mb-6">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Ruta Destino (opcional)</label>
+        <input type="text" 
+               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+               [(ngModel)]="notificacionEditando!.rutaDestino"
+               name="rutaDestino"
+               placeholder="/dashboard, /tramites/123, etc.">
+      </div>
+      
+      <!-- Botones -->
+      <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+        <button type="button" 
+                class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-colors"
+                (click)="cerrarModalEditar()">
+          Cancelar
+        </button>
+        <button type="submit" 
+                class="px-4 py-2 bg-orange-600 text-white rounded-lg text-sm font-medium hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                [disabled]="!editarForm.valid || editandoNotificacion">
+          <span *ngIf="editandoNotificacion">
+            <i class="fas fa-spinner fa-spin mr-2"></i>
+            Actualizando...
+          </span>
+          <span *ngIf="!editandoNotificacion">
+            <i class="fas fa-save mr-2"></i>
+            Guardar Cambios
+          </span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal de Confirmar Eliminar -->
+<div class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 p-4" *ngIf="mostrarModalEliminar" @slideDown>
+  <div class="bg-white rounded-xl shadow-xl max-w-md w-full">
+    <div class="flex items-center justify-between p-6 border-b border-gray-200">
+      <h3 class="text-lg font-semibold text-gray-900">
+        <i class="fas fa-exclamation-triangle text-red-500 mr-2"></i>
+        Confirmar Eliminación
+      </h3>
+      <button type="button" 
+              class="text-gray-400 hover:text-gray-600 transition-colors"
+              (click)="cerrarModalEliminar()">
+        <i class="fas fa-times text-xl"></i>
+      </button>
+    </div>
+    
+    <div class="p-6">
+      <div class="mb-6">
+        <p class="text-gray-700 mb-4">
+          ¿Estás seguro de que deseas eliminar esta notificación?
+        </p>
+        
+        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+          <h4 class="font-medium text-gray-900 mb-2">{{ notificacionEliminar?.titulo }}</h4>
+          <p class="text-sm text-gray-600 line-clamp-3">{{ notificacionEliminar?.mensaje }}</p>
+          <div class="flex items-center mt-3 space-x-4 text-xs text-gray-500">
+            <span><i class="fas fa-tag mr-1"></i>{{ getTipoDisplay(notificacionEliminar?.tipo || '') }}</span>
+            <span><i class="fas fa-flag mr-1"></i>{{ notificacionEliminar?.prioridad }}</span>
+          </div>
+        </div>
+        
+        <p class="text-sm text-red-600 mt-3">
+          <i class="fas fa-exclamation-circle mr-1"></i>
+          Esta acción no se puede deshacer.
+        </p>
+      </div>
+      
+      <!-- Botones -->
+      <div class="flex justify-end space-x-3">
+        <button type="button" 
+                class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors"
+                (click)="cerrarModalEliminar()">
+          Cancelar
+        </button>
+        <button type="button" 
+                class="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                [disabled]="eliminandoNotificacion"
+                (click)="confirmarEliminarNotificacion()">
+          <span *ngIf="eliminandoNotificacion">
+            <i class="fas fa-spinner fa-spin mr-2"></i>
+            Eliminando...
+          </span>
+          <span *ngIf="!eliminandoNotificacion">
+            <i class="fas fa-trash mr-2"></i>
+            Eliminar Notificación
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Limpiar Notificaciones Antiguas -->
+<div class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 p-4" *ngIf="mostrarModalLimpiar" @slideDown>
+  <div class="bg-white rounded-xl shadow-xl max-w-md w-full">
+    <div class="flex items-center justify-between p-6 border-b border-gray-200">
+      <h3 class="text-lg font-semibold text-gray-900">
+        <i class="fas fa-broom text-blue-500 mr-2"></i>
+        Limpiar Notificaciones Antiguas
+      </h3>
+      <button type="button" 
+              class="text-gray-400 hover:text-gray-600 transition-colors"
+              (click)="cerrarModalLimpiar()">
+        <i class="fas fa-times text-xl"></i>
+      </button>
+    </div>
+    
+    <div class="p-6">
+      <div class="mb-6">
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            Eliminar notificaciones con más de:
+          </label>
+          <div class="flex items-center space-x-2">
+            <input type="number" 
+                   class="w-20 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                   [(ngModel)]="diasAntiguedad"
+                   min="1"
+                   max="365"
+                   name="diasAntiguedad">
+            <span class="text-gray-600">días de antigüedad</span>
+          </div>
+          <p class="text-xs text-gray-500 mt-1">
+            Configuración actual: {{ diasAntiguedad }} días
+          </p>
+        </div>
+        
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div class="flex items-center">
+            <i class="fas fa-info-circle text-blue-500 mr-2"></i>
+            <div>
+              <p class="text-sm text-blue-700">
+                <strong>Optimización de almacenamiento:</strong><br>
+                Esta operación liberará espacio eliminando notificaciones obsoletas.
+              </p>
+            </div>
+          </div>
+        </div>
+        
+        <p class="text-sm text-red-600 mt-3">
+          <i class="fas fa-exclamation-triangle mr-1"></i>
+          Esta acción no se puede deshacer.
+        </p>
+      </div>
+      
+      <!-- Botones -->
+      <div class="flex justify-end space-x-3">
+        <button type="button" 
+                class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors"
+                (click)="cerrarModalLimpiar()">
+          Cancelar
+        </button>
+        <button type="button" 
+                class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                [disabled]="limpiandoAntiguas"
+                (click)="confirmarLimpiarAntiguas()">
+          <span *ngIf="limpiandoAntiguas">
+            <i class="fas fa-spinner fa-spin mr-2"></i>
+            Limpiando...
+          </span>
+          <span *ngIf="!limpiandoAntiguas">
+            <i class="fas fa-broom mr-2"></i>
+            Limpiar Notificaciones
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

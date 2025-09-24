@@ -1,0 +1,267 @@
+<div class="organigrama-container">
+  <div class="header-section">
+    <div class="title-area">
+      <h1><i class="fas fa-sitemap"></i> Organigrama Institucional</h1>
+      <p>Estructura organizacional de la Universidad Nacional de Tumbes</p>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card nivel-1">
+        <div class="stat-icon"><i class="fas fa-crown"></i></div>
+        <div class="stat-content">
+          <div class="stat-number">{{ stats.nivel1 }}</div>
+          <div class="stat-label">Órganos Superiores</div>
+        </div>
+      </div>
+
+      <div class="stat-card nivel-2">
+        <div class="stat-icon"><i class="fas fa-users-cog"></i></div>
+        <div class="stat-content">
+          <div class="stat-number">{{ stats.nivel2 }}</div>
+          <div class="stat-label">Órganos Administrativos</div>
+        </div>
+      </div>
+
+      <div class="stat-card nivel-3">
+        <div class="stat-icon"><i class="fas fa-graduation-cap"></i></div>
+        <div class="stat-content">
+          <div class="stat-number">{{ stats.nivel3 }}</div>
+          <div class="stat-label">Facultades y Direcciones</div>
+        </div>
+      </div>
+
+      <div class="stat-card nivel-4">
+        <div class="stat-icon"><i class="fas fa-school"></i></div>
+        <div class="stat-content">
+          <div class="stat-number">{{ stats.nivel4 }}</div>
+          <div class="stat-label">Unidades Especializadas</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls-section">
+    <div class="search-container">
+      <div class="search-input-wrapper">
+        <i class="fas fa-search search-icon"></i>
+        <input
+          type="text"
+          [(ngModel)]="terminoBusqueda"
+          (input)="filtrarAreas()"
+          placeholder="Buscar área, dependencia o código..."
+          class="search-input"
+        >
+        <button
+          *ngIf="terminoBusqueda"
+          class="clear-btn"
+          (click)="limpiarBusqueda()"
+          title="Limpiar búsqueda"
+        >
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="view-controls">
+      <div class="toggle-group">
+        <button
+          class="toggle-btn"
+          [class.active]="vistaJerarquica"
+          (click)="toggleVista()"
+        >
+          <i class="fas fa-sitemap"></i>
+          <span>Jerárquica</span>
+        </button>
+        <button
+          class="toggle-btn"
+          [class.active]="!vistaJerarquica"
+          (click)="toggleVista()"
+        >
+          <i class="fas fa-th-large"></i>
+          <span>Tarjetas</span>
+        </button>
+      </div>
+
+      <div class="action-buttons">
+        <button
+          *ngIf="vistaJerarquica && !noResultados"
+          class="action-btn secondary"
+          (click)="toggleExpandirTodos()"
+        >
+          <i [class]="expandirTodos ? 'fas fa-compress-alt' : 'fas fa-expand-alt'"></i>
+          <span>{{ expandirTodos ? 'Contraer' : 'Expandir' }}</span>
+        </button>
+
+       
+
+        <button class="action-btn secondary" (click)="inicializarEstructura()">
+          <i class="fas fa-sync"></i>
+          <span>Sincronizar</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="content-section">
+
+    <div *ngIf="cargando" class="loading-container">
+      <div class="loading-spinner">
+        <div class="spinner"></div>
+        <p>Cargando estructura organizacional...</p>
+      </div>
+    </div>
+
+
+    <div *ngIf="!cargando && noResultados" class="empty-state">
+      <div class="empty-icon">
+        <i class="fas fa-search"></i>
+      </div>
+      <h3>No se encontraron resultados</h3>
+      <p>No hay áreas que coincidan con "<strong>{{ terminoBusqueda }}</strong>"</p>
+      <button class="action-btn primary" (click)="limpiarBusqueda()">
+        <i class="fas fa-times"></i>
+        Limpiar búsqueda
+      </button>
+    </div>
+
+    <div *ngIf="!cargando && !noResultados && vistaJerarquica" class="tree-view">
+      <ng-container *ngFor="let area of organigramaFiltrado; trackBy: trackByAreaId">
+        <div class="tree-node" [attr.data-level]="area.nivelJerarquico">
+          <div
+            class="node-header"
+            [class]="'nivel-' + area.nivelJerarquico"
+            (click)="toggleExpansion(area)"
+          >
+            <div class="node-content">
+              <div class="node-icon">
+                <i [class]="obtenerIconoArea(area)"></i>
+              </div>
+              <div class="node-info">
+                <h4 class="node-title">{{ area.nombre }}</h4>
+                <p *ngIf="area.descripcion" class="node-description">{{ area.descripcion }}</p>
+                <div class="node-meta">
+                  <span *ngIf="area.codigoOrganigrama" class="meta-badge">
+                    <i class="fas fa-tag"></i>
+                    {{ area.codigoOrganigrama }}
+                  </span>
+                  <span class="meta-badge">
+                    <i class="fas fa-layer-group"></i>
+                    Nivel {{ area.nivelJerarquico }}
+                  </span>
+                  <span *ngIf="area.totalUsuarios" class="meta-badge">
+                    <i class="fas fa-users"></i>
+                    {{ formatearUsuarios(area.totalUsuarios) }}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div *ngIf="area.subAreas && area.subAreas.length > 0" class="expand-btn">
+              <i class="fas" [class.fa-chevron-down]="area.expanded" [class.fa-chevron-right]="!area.expanded"></i>
+            </div>
+          </div>
+
+
+          <div *ngIf="area.expanded && area.subAreas && area.subAreas.length > 0" class="sub-nodes">
+            <ng-container *ngFor="let subArea of area.subAreas; trackBy: trackByAreaId">
+              <div class="tree-node sub-node" [attr.data-level]="subArea.nivelJerarquico">
+                <div
+                  class="node-header"
+                  [class]="'nivel-' + subArea.nivelJerarquico"
+                  (click)="toggleExpansion(subArea)"
+                >
+                  <div class="node-content">
+                    <div class="node-icon">
+                      <i [class]="obtenerIconoArea(subArea)"></i>
+                    </div>
+                    <div class="node-info">
+                      <h5 class="node-title">{{ subArea.nombre }}</h5>
+                      <p *ngIf="subArea.descripcion" class="node-description">{{ subArea.descripcion }}</p>
+                      <div class="node-meta">
+                        <span *ngIf="subArea.codigoOrganigrama" class="meta-badge">
+                          <i class="fas fa-tag"></i>
+                          {{ subArea.codigoOrganigrama }}
+                        </span>
+                        <span class="meta-badge">
+                          <i class="fas fa-layer-group"></i>
+                          Nivel {{ subArea.nivelJerarquico }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div *ngIf="subArea.subAreas && subArea.subAreas.length > 0" class="expand-btn">
+                    <i class="fas" [class.fa-chevron-down]="subArea.expanded" [class.fa-chevron-right]="!subArea.expanded"></i>
+                  </div>
+                </div>
+
+                <!-- Sub-Sub Areas -->
+                <div *ngIf="subArea.expanded && subArea.subAreas && subArea.subAreas.length > 0" class="sub-nodes">
+                  <ng-container *ngFor="let subSubArea of subArea.subAreas; trackBy: trackByAreaId">
+                    <div class="tree-node sub-sub-node" [attr.data-level]="subSubArea.nivelJerarquico">
+                      <div class="node-header" [class]="'nivel-' + subSubArea.nivelJerarquico">
+                        <div class="node-content">
+                          <div class="node-icon">
+                            <i [class]="obtenerIconoArea(subSubArea)"></i>
+                          </div>
+                          <div class="node-info">
+                            <h6 class="node-title">{{ subSubArea.nombre }}</h6>
+                            <p *ngIf="subSubArea.descripcion" class="node-description">{{ subSubArea.descripcion }}</p>
+                            <div class="node-meta">
+                              <span *ngIf="subSubArea.codigoOrganigrama" class="meta-badge">
+                                <i class="fas fa-tag"></i>
+                                {{ subSubArea.codigoOrganigrama }}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </ng-container>
+                </div>
+              </div>
+            </ng-container>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+
+    <!-- Card View -->
+    <div *ngIf="!cargando && !noResultados && !vistaJerarquica" class="card-view">
+      <div class="cards-grid">
+        <div
+          *ngFor="let area of organigramaFiltrado; trackBy: trackByAreaId"
+          class="area-card"
+          [class]="'nivel-' + area.nivelJerarquico"
+        >
+          <div class="card-header">
+            <div class="card-icon">
+              <i [class]="obtenerIconoArea(area)"></i>
+            </div>
+            <div class="card-title">
+              <h4>{{ area.nombre }}</h4>
+              <span *ngIf="area.codigoOrganigrama" class="card-code">{{ area.codigoOrganigrama }}</span>
+            </div>
+          </div>
+
+          <div class="card-body">
+            <p *ngIf="area.descripcion" class="card-description">{{ area.descripcion }}</p>
+
+            <div class="card-path">
+              <i class="fas fa-sitemap"></i>
+              <span>{{ area.rutaJerarquica }}</span>
+            </div>
+
+            <div class="card-footer">
+              <div class="card-badges">
+                <span class="badge level-badge">Nivel {{ area.nivelJerarquico }}</span>
+                <span *ngIf="area.totalUsuarios" class="badge users-badge">
+                  {{ formatearUsuarios(area.totalUsuarios) }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

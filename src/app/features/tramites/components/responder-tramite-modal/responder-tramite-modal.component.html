@@ -1,0 +1,196 @@
+<div class="modal-overlay" [class.show]="show" (click)="closeModal()">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    
+    <!-- Header -->
+    <div class="modal-header">
+      <div class="header-content">
+        <div class="header-icon">
+          <i class="fas fa-paper-plane"></i>
+        </div>
+        <div class="header-text">
+          <h2>Responder Trámite</h2>
+          <p>{{ tramite?.codigo }}</p>
+        </div>
+      </div>
+      <button type="button" class="close-btn" (click)="closeModal()" [disabled]="loading">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div class="modal-body">
+      
+      <!-- Información del trámite -->
+      <div class="tramite-info">
+        <h3 class="section-title">
+          <i class="fas fa-info-circle"></i>
+          Información del Trámite
+        </h3>
+        <div class="info-grid">
+          <div class="info-item">
+            <label>Código</label>
+            <span>{{ tramite?.codigo }}</span>
+          </div>
+          <div class="info-item">
+            <label>Solicitante</label>
+            <span>{{ tramite?.usuarioSolicitante?.nombre || 'No asignado' }} {{ tramite?.usuarioSolicitante?.apellidos || '' }}</span>
+          </div>
+          <div class="info-item">
+            <label>Tipo</label>
+            <span>{{ tramite?.tipoTramite?.nombre }}</span>
+          </div>
+          <div class="info-item">
+            <label>Estado</label>
+            <span class="estado-badge">{{ tramite?.estado?.nombre }}</span>
+          </div>
+          <div class="info-item full-width">
+            <label>Asunto</label>
+            <span>{{ tramite?.asunto }}</span>
+          </div>
+          <div class="info-item full-width">
+            <label>Descripción</label>
+            <span>{{ tramite?.descripcion }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Formulario de respuesta -->
+      <form (ngSubmit)="onSubmit()" #respuestaFormRef="ngForm" class="respuesta-form">
+        
+        <!-- Asunto -->
+        <div class="form-group">
+          <label for="asunto" class="form-label required">
+            <i class="fas fa-envelope"></i>
+            Asunto del correo
+          </label>
+          <input 
+            type="text" 
+            class="form-control" 
+            id="asunto"
+            name="asunto"
+            [(ngModel)]="respuestaForm.asunto"
+            required
+            placeholder="Asunto del correo de notificación"
+            [disabled]="loading">
+        </div>
+
+        <!-- Respuesta -->
+        <div class="form-group">
+          <label for="respuesta" class="form-label required">
+            <i class="fas fa-comment-dots"></i>
+            Respuesta
+          </label>
+          <textarea 
+            class="form-control textarea-respuesta" 
+            id="respuesta"
+            name="respuesta"
+            [(ngModel)]="respuestaForm.respuesta"
+            rows="6"
+            required
+            placeholder="Escriba aquí la respuesta al trámite. Esta respuesta será enviada por correo al solicitante."
+            [disabled]="loading">
+          </textarea>
+          <small class="form-help">
+            <i class="fas fa-info-circle"></i>
+            Esta respuesta será enviada automáticamente por correo electrónico al solicitante.
+          </small>
+        </div>
+
+        <!-- Observaciones -->
+        <div class="form-group">
+          <label for="observaciones" class="form-label">
+            <i class="fas fa-sticky-note"></i>
+            Observaciones internas (opcional)
+          </label>
+          <textarea 
+            class="form-control" 
+            id="observaciones"
+            name="observaciones"
+            [(ngModel)]="respuestaForm.observaciones"
+            rows="3"
+            placeholder="Observaciones adicionales (no se enviarán al solicitante)"
+            [disabled]="loading">
+          </textarea>
+        </div>
+
+        <!-- Archivos adjuntos -->
+        <div class="form-group">
+          <label for="archivos" class="form-label">
+            <i class="fas fa-paperclip"></i>
+            Archivos de respuesta (opcional)
+          </label>
+          <div class="file-upload-area">
+            <input 
+              type="file" 
+              class="file-input" 
+              id="archivos"
+              (change)="onFileChange($event)"
+              multiple
+              accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"
+              [disabled]="loading">
+            <label for="archivos" class="file-upload-label" [class.disabled]="loading">
+              <i class="fas fa-cloud-upload-alt"></i>
+              <span>Seleccionar archivos</span>
+            </label>
+          </div>
+          <small class="form-help">
+            <i class="fas fa-info-circle"></i>
+            Máximo 10MB por archivo. Formatos: PDF, Word, Excel, imágenes.
+          </small>
+          
+          <!-- Lista de archivos seleccionados -->
+          <div *ngIf="respuestaForm.archivos.length > 0" class="files-list">
+            <div *ngFor="let archivo of respuestaForm.archivos; let i = index" 
+                 class="file-item">
+              <div class="file-info">
+                <i class="fas fa-file-alt"></i>
+                <span class="file-name">{{ archivo.name }}</span>
+                <span class="file-size">({{ formatFileSize(archivo.size) }})</span>
+              </div>
+              <button type="button" class="remove-file-btn" (click)="removeFile(i)" [disabled]="loading">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Advertencia importante -->
+        <div class="important-notice">
+          <div class="notice-header">
+            <i class="fas fa-exclamation-triangle"></i>
+            <strong>Importante</strong>
+          </div>
+          <div class="notice-content">
+            <p>Al responder este trámite:</p>
+            <ul>
+              <li>Se enviará una notificación por correo electrónico al solicitante</li>
+              <li>El trámite cambiará a estado <strong>FINALIZADO</strong></li>
+              <li>Se registrará como documento procesado en las estadísticas</li>
+              <li>Usted quedará registrado como el responsable de la respuesta</li>
+            </ul>
+          </div>
+        </div>
+
+      </form>
+    </div>
+
+    <!-- Footer -->
+    <div class="modal-footer">
+      <button type="button" class="btn-secondary" (click)="closeModal()" [disabled]="loading">
+        <i class="fas fa-times"></i>
+        Cancelar
+      </button>
+      <button type="button" class="btn-primary" (click)="onSubmit()" [disabled]="loading || !respuestaForm.respuesta?.trim()">
+        <span *ngIf="!loading" class="btn-content">
+          <i class="fas fa-paper-plane"></i>
+          Enviar Respuesta
+        </span>
+        <span *ngIf="loading" class="btn-content">
+          <i class="fas fa-spinner fa-spin"></i>
+          Enviando...
+        </span>
+      </button>
+    </div>
+    
+  </div>
+</div>

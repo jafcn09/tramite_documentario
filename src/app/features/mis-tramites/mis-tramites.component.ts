@@ -1,0 +1,1535 @@
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { RouterModule, ActivatedRoute } from '@angular/router';
+import { Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { Subject } from 'rxjs';
+
+import { MisTramitesService } from '../../services/mis-tramites.service';
+import { BandejaTramitesService } from '../../services/bandeja-tramites.service';
+import { TramiteService } from '../../services/tramite.service';
+import { ToastService } from '../../services/toast.service';
+import { AuthService, AdministrativeUser } from '../../services/auth.service';
+import { 
+  MiTramite, 
+  FiltrosMisTramites, 
+  EstadisticasMisTramites,
+  CalificacionTramite,
+  CrearCalificacionRequest,
+  EditarMiTramiteRequest
+} from '../../shared/interfaces/mis-tramites.interface';
+import { ResponderTramiteModalComponent } from '../tramites/components/responder-tramite-modal/responder-tramite-modal.component';
+import { EditarTramiteModalComponent } from '../tramites/components/editar-tramite-modal/editar-tramite-modal.component';
+
+@Component({
+  selector: 'app-mis-tramites',
+  standalone: true,
+  imports: [CommonModule, FormsModule, RouterModule, ResponderTramiteModalComponent, EditarTramiteModalComponent],
+  templateUrl: './mis-tramites.component.html',
+  styleUrl: './mis-tramites.component.css'
+})
+export class MisTramitesComponent implements OnInit, OnDestroy {
+  misTramites: MiTramite[] = [];
+  estadisticas: EstadisticasMisTramites | null = null;
+  loading$ = this.misTramitesService.loading$;
+
+  // Cache for tramite permissions
+  tramitePermisos: Map<number, {
+    puedeAprobar: boolean;
+    puedeRechazar: boolean;
+    puedeDerivar: boolean;
+    puedeResponder: boolean;
+    estaVencido: boolean;
+  }> = new Map();
+  
+  // Paginación
+  currentPage = 1;
+  pageSize = 12;
+  totalItems = 0;
+  totalPages = 0;
+  
+
+  filtros: FiltrosMisTramites = {};
+  searchTerm = '';
+  private searchSubject = new Subject<string>();
+  searchResults: MiTramite[] = [];
+  showSearchDropdown = false;
+  searchError = '';
+  isSearching = false;
+  selectedSearchIndex = -1;
+  filteredTramites: MiTramite[] = [];
+  
+
+  showFilters = false;
+  vistaActual: 'tarjetas' | 'lista' = 'tarjetas';
+  
+
+  filterError = '';
+  isFilteringActive = false;
+  
+
+  showNuevoTramiteModal = false;
+  showDetalleTramiteModal = false;
+  showEditarTramiteModal = false;
+  showCalificarModal = false;
+  showAprobarModal = false;
+  showResponderTramiteModal = false;
+  tramiteSeleccionado: MiTramite | null = null;
+  
+
+  calificacionActual: CrearCalificacionRequest = {
+    tramiteId: 0,
+    estrellas: 5,
+    comentario: '',
+    aspectos: {
+      rapidez: 5,
+      calidad: 5,
+      comunicacion: 5,
+      solucion: 5
+    }
+  };
+  
+  private subscriptions = new Subscription();
+
+  constructor(
+    private misTramitesService: MisTramitesService,
+    private bandejaTramitesService: BandejaTramitesService,
+    private tramiteService: TramiteService,
+    private toastService: ToastService,
+    private authService: AuthService,
+    private route: ActivatedRoute
+  ) {}
+
+  // Getters para lógica condicional basada en rol
+  get userRole(): string {
+    return this.authService.currentUserValue?.role?.name || '';
+  }
+
+  get isAdministrativo(): boolean {
+    return this.userRole === 'ADMINISTRATIVO';
+  }
+
+  get isUsuario(): boolean {
+    return this.userRole === 'USUARIO';
+  }
+
+  get shouldShowCreateButton(): boolean {
+    // Usar método directo del AuthService para mayor confiabilidad
+    return this.authService.hasRole('USUARIO');
+  }
+
+  get canProcessTramites(): boolean {
+    return this.isAdministrativo;
+  }
+
+  get canCreateAdvancedTramites(): boolean {
+    return this.isAdministrativo;
+  }
+
+  ngOnInit() {
+    this.setupSearch();
+    this.cargarMisTramites();
+    this.cargarEstadisticas();
+    
+    // Verificar si hay un tramiteId en los query parameters
+    this.subscriptions.add(
+      this.route.queryParams.subscribe(params => {
+        const tramiteId = params['tramiteId'];
+        if (tramiteId) {
+          // Buscar y mostrar el detalle del trámite específico
+          this.buscarYMostrarTramite(parseInt(tramiteId));
+        }
+      })
+    );
+  }
+
+  ngOnDestroy() {
+    this.subscriptions.unsubscribe();
+  }
+
+  private setupSearch() {
+    this.subscriptions.add(
+      this.searchSubject.pipe(
+        debounceTime(300),
+        distinctUntilChanged()
+      ).subscribe(term => {
+        this.performSearch(term);
+      })
+    );
+  }
+
+  cargarMisTramites() {
+    this.subscriptions.add(
+      this.misTramitesService.getMisTramites(this.currentPage, this.pageSize, this.filtros)
+        .subscribe({
+          next: (response) => {
+        
+            response.data.forEach(tramite => {
+              
+            });
+
+            this.misTramites = response.data;
+            this.totalItems = response.total;
+            this.totalPages = response.totalPages;
+
+ 
+            if (this.isAdministrativo) {
+              this.cargarPermisosParaTramites();
+            }
+
+
+            this.applyDynamicFilters();
+
+
+            if (!this.isAdministrativo) {
+              this.calcularEstadisticasLocales();
+            }
+          },
+          error: (error) => {
+            console.error('Error al cargar mis trámites:', error);
+          }
+        })
+    );
+  }
+
+  cargarEstadisticas() {
+
+    this.subscriptions.add(
+      this.misTramitesService.getEstadisticas()
+        .subscribe(estadisticas => {
+          this.calcularEstadisticasLocales();
+        })
+    );
+  }
+
+  private calcularEstadisticasLocales() {
+    if (!this.misTramites || this.misTramites.length === 0 || !this.estadisticas) {
+      return;
+    }
+
+    let completados = 0;
+    let enRevision = 0;
+    let aprobado = 0;
+    let derivado = 0;
+    let observados = 0;
+    let borrador = 0;
+    let enviado = 0;
+
+    this.misTramites.forEach(tramite => {
+      const estado = tramite.estado?.nombre || '';
+      const isVencido = this.estaVencido(tramite);
+
+      // Si está vencido, siempre cuenta como completado
+      if (isVencido) {
+        completados++;
+      }
+      // Si no está vencido, usar el estado original
+      else if (['Finalizado', 'Archivado', 'Cancelado', 'Dado de Baja'].includes(estado)) {
+        completados++;
+      } else if (['Observado', 'Rechazado'].includes(estado)) {
+        observados++;
+      } else if (['En Revisión'].includes(estado)) {
+        enRevision++;
+      } else if (['Enviado'].includes(estado)) {
+        enviado++;
+      } else if (['Aprobado'].includes(estado)) {
+        aprobado++;
+      } else if (['Derivado'].includes(estado)) {
+        derivado++;
+      } else if (['Borrador'].includes(estado)) {
+        borrador++;
+      }
+    });
+
+    // Actualizar las estadísticas con los valores calculados localmente
+    this.estadisticas = {
+      ...this.estadisticas,
+      finalizado: completados,
+      enRevision: enRevision,
+      aprobado: aprobado,
+      derivado: derivado,
+      observado: observados,
+      borrador: borrador,
+      enviado: enviado
+    };
+
+    const tramitesVencidos = this.misTramites.filter(t => this.estaVencido(t));
+  }
+  cargarPermisosParaTramites() {
+    if (!this.isAdministrativo || this.misTramites.length === 0) {
+      return;
+    }
+
+    let permisosCompletados = 0;
+    const totalTramites = this.misTramites.length;
+
+    this.misTramites.forEach(tramite => {
+      this.subscriptions.add(
+        this.bandejaTramitesService.verificarPermisosAcciones(tramite.id)
+          .subscribe({
+            next: (permisos) => {
+              console.log('✅ PERMISOS DEBUG: Permisos recibidos para trámite', tramite.id, ':', permisos);
+              this.tramitePermisos.set(tramite.id, permisos);
+              permisosCompletados++;
+
+              // Recalcular estadísticas cuando se hayan cargado todos los permisos
+              if (permisosCompletados === totalTramites) {
+                this.calcularEstadisticasLocales();
+              }
+            },
+            error: (error) => {
+              console.error('❌ PERMISOS DEBUG: Error al verificar permisos para trámite', tramite.id, ':', error);
+              console.error('❌ PERMISOS DEBUG: Estado del trámite:', tramite.estado?.nombre);
+              console.error('❌ PERMISOS DEBUG: Usuario administrativo:', this.isAdministrativo);
+
+              // En lugar de desactivar todos los permisos, usar la lógica de fallback
+              console.log('🔄 PERMISOS DEBUG: Usando lógica de fallback local...');
+
+              // No establecer permisos en el cache para que use el fallback local
+              permisosCompletados++;
+
+              if (permisosCompletados === totalTramites) {
+                this.calcularEstadisticasLocales();
+              }
+            }
+          })
+      );
+    });
+  }
+
+  onSearch(term: string) {
+    this.searchTerm = term;
+    this.searchSubject.next(term);
+  }
+
+  private performSearch(term: string) {
+    this.isSearching = true;
+    this.searchError = '';
+    this.selectedSearchIndex = -1;
+    
+    if (!term.trim()) {
+      this.resetSearch();
+      this.applyDynamicFilters();
+      return;
+    }
+
+    this.searchResults = this.misTramites.filter(tramite => 
+      this.matchesSearchTerm(tramite, term)
+    );
+
+    if (this.searchResults.length > 0) {
+      this.showSearchDropdown = true;
+    } else {
+      this.showSearchDropdown = false;
+    }
+    
+    // Apply all filters including search
+    this.applyDynamicFilters();
+    
+    this.isSearching = false;
+  }
+
+  private matchesSearchTerm(tramite: MiTramite, term: string): boolean {
+    const searchTerm = term.toLowerCase();
+    return !!(
+      tramite.codigo?.toLowerCase().includes(searchTerm) ||
+      tramite.asunto?.toLowerCase().includes(searchTerm) ||
+      tramite.tipoTramite?.nombre?.toLowerCase().includes(searchTerm) ||
+      tramite.estado?.nombre?.toLowerCase().includes(searchTerm) ||
+      tramite.descripcion?.toLowerCase().includes(searchTerm) ||
+      tramite.trabajadorAsignado?.nombre?.toLowerCase().includes(searchTerm) ||
+      tramite.trabajadorAsignado?.apellidos?.toLowerCase().includes(searchTerm) ||
+      tramite.areaDestino?.nombre?.toLowerCase().includes(searchTerm)
+    );
+  }
+
+  private resetSearch() {
+    this.searchResults = [];
+    this.showSearchDropdown = false;
+    this.searchError = '';
+    this.isSearching = false;
+    this.filterError = '';
+
+  }
+
+  selectSearchResult(tramite: MiTramite) {
+    this.searchTerm = tramite.codigo;
+    this.showSearchDropdown = false;
+    this.applyDynamicFilters();
+  }
+
+  clearSearch() {
+    this.searchTerm = '';
+    this.resetSearch();
+    this.applyDynamicFilters();
+  }
+
+  onSearchKeydown(event: KeyboardEvent) {
+    if (!this.showSearchDropdown || this.searchResults.length === 0) return;
+
+    switch (event.key) {
+      case 'ArrowDown':
+        event.preventDefault();
+        this.selectedSearchIndex = Math.min(this.selectedSearchIndex + 1, this.searchResults.length - 1);
+        break;
+      case 'ArrowUp':
+        event.preventDefault();
+        this.selectedSearchIndex = Math.max(this.selectedSearchIndex - 1, -1);
+        break;
+      case 'Enter':
+        event.preventDefault();
+        if (this.selectedSearchIndex >= 0) {
+          this.selectSearchResult(this.searchResults[this.selectedSearchIndex]);
+        }
+        break;
+      case 'Escape':
+        this.showSearchDropdown = false;
+        break;
+    }
+  }
+
+  onSearchBlur() {
+    setTimeout(() => {
+      this.showSearchDropdown = false;
+    }, 150);
+  }
+
+  aplicarFiltros() {
+    this.applyDynamicFilters();
+    this.showFilters = false;
+  }
+
+  onFilterChange() {
+    this.applyDynamicFilters();
+  }
+
+  private applyDynamicFilters() {
+  
+    
+    this.filterError = '';
+    this.isFilteringActive = this.hasActiveFilters();
+    
+    let filtered = [...this.misTramites];
+
+    
+
+    if (this.searchTerm) {
+      const beforeSearch = filtered.length;
+      filtered = filtered.filter(tramite => this.matchesSearchTerm(tramite, this.searchTerm));
+      
+    }
+    
+   
+    if (this.filtros.estado) {
+      const beforeFilter = filtered.length;
+      const estadoId = Number(this.filtros.estado);
+      filtered = filtered.filter(tramite => tramite.estado.id === estadoId);
+     
+    }
+    
+
+    if (this.filtros.prioridad) {
+      const beforeFilter = filtered.length;
+      const prioridadId = Number(this.filtros.prioridad);
+      filtered = filtered.filter(tramite => tramite.prioridad.id === prioridadId);
+      
+    }
+    
+
+    if (this.filtros.area && this.isAdministrativo) {
+      const beforeFilter = filtered.length;
+      const areaId = Number(this.filtros.area);
+      filtered = filtered.filter(tramite => tramite.areaDestino?.id === areaId);
+
+    }
+    
+
+    if (this.filtros.tipoTramite) {
+      const beforeFilter = filtered.length;
+      const tipoId = Number(this.filtros.tipoTramite);
+      filtered = filtered.filter(tramite => tramite.tipoTramite.id === tipoId);
+      
+    }
+    
+    // Apply date filters
+    if (this.filtros.fechaDesde) {
+      const beforeFilter = filtered.length;
+      const fechaDesde = new Date(this.filtros.fechaDesde);
+      filtered = filtered.filter(tramite => new Date(tramite.fechaCreacion) >= fechaDesde);
+      
+    }
+    
+    if (this.filtros.fechaHasta) {
+      const beforeFilter = filtered.length;
+      const fechaHasta = new Date(this.filtros.fechaHasta);
+      filtered = filtered.filter(tramite => new Date(tramite.fechaCreacion) <= fechaHasta);
+      
+    }
+    
+
+
+    // Ordenar por prioridad: activos primero, finalizados/vencidos al final
+    filtered = this.sortTramitesByPriority(filtered);
+
+    this.filteredTramites = filtered;
+
+    // Show error message ONLY if no results AND there are active filters/search
+    if (filtered.length === 0 && (this.isFilteringActive || this.searchTerm)) {
+
+      this.filterError = this.generateCustomErrorMessage();
+    } else {
+
+      this.filterError = ''; // Clear error if there are results
+    }
+  }
+
+  // Ordenar trámites por prioridad: activos primero, finalizados/vencidos al final
+  private sortTramitesByPriority(tramites: MiTramite[]): MiTramite[] {
+    return tramites.sort((a, b) => {
+      const priorityA = this.getTramitePriority(a);
+      const priorityB = this.getTramitePriority(b);
+
+      // Ordenar por prioridad (menor número = mayor prioridad)
+      if (priorityA !== priorityB) {
+        return priorityA - priorityB;
+      }
+
+      // Si tienen la misma prioridad, ordenar por urgencia (si no están vencidos)
+      if (!this.estaVencido(a) && !this.estaVencido(b)) {
+        const urgenciaA = a.prioridad?.nivel || 0;
+        const urgenciaB = b.prioridad?.nivel || 0;
+        if (urgenciaA !== urgenciaB) {
+          return urgenciaB - urgenciaA; // Mayor urgencia primero
+        }
+      }
+
+      // Por último, ordenar por fecha de creación (más recientes primero)
+      const fechaA = new Date(a.fechaCreacion).getTime();
+      const fechaB = new Date(b.fechaCreacion).getTime();
+      return fechaB - fechaA;
+    });
+  }
+
+  // Obtener prioridad numérica del trámite (menor número = mayor prioridad)
+  private getTramitePriority(tramite: MiTramite): number {
+    const estado = tramite.estado?.nombre || '';
+    const isVencido = this.estaVencido(tramite);
+
+    // Prioridad 1: Urgentes activos (no vencidos)
+    if (!isVencido && tramite.prioridad?.nivel >= 4) {
+      if (['En Revisión', 'Enviado'].includes(estado)) return 1;
+      if (['Aprobado', 'Derivado'].includes(estado)) return 2;
+    }
+
+    // Prioridad 2: En revisión activos (no vencidos)
+    if (!isVencido && ['En Revisión', 'Enviado'].includes(estado)) {
+      return 3;
+    }
+
+    // Prioridad 3: En proceso activos (no vencidos)
+    if (!isVencido && ['Aprobado', 'Derivado'].includes(estado)) {
+      return 4;
+    }
+
+    // Prioridad 4: Observados activos (no vencidos)
+    if (!isVencido && ['Observado', 'Rechazado'].includes(estado)) {
+      return 5;
+    }
+
+    // Prioridad 5: Borradores y enviados normales (no vencidos)
+    if (!isVencido && ['Borrador'].includes(estado)) {
+      return 6;
+    }
+
+    // Prioridad 6: Finalizados naturalmente
+    if (['Finalizado', 'Archivado'].includes(estado)) {
+      return 7;
+    }
+
+    // ÚLTIMA PRIORIDAD: Vencidos, dados de baja, cancelados
+    if (isVencido || ['Dado de Baja', 'Cancelado'].includes(estado)) {
+      return 8;
+    }
+
+    // Por defecto
+    return 9;
+  }
+
+  private hasActiveFilters(): boolean {
+    return !!(
+      this.filtros.estado ||
+      this.filtros.prioridad ||
+      this.filtros.area ||
+      this.filtros.tipoTramite ||
+      this.filtros.fechaDesde ||
+      this.filtros.fechaHasta
+    );
+  }
+
+  private generateCustomErrorMessage(): string {
+    const activeFilters = [];
+    
+    if (this.searchTerm) {
+      activeFilters.push(`búsqueda "${this.searchTerm}"`);
+    }
+    
+    if (this.filtros.estado) {
+      const estadoTexto = this.getEstadoTexto(this.filtros.estado);
+      activeFilters.push(`estado "${estadoTexto}"`);
+    }
+    
+    if (this.filtros.prioridad) {
+      const prioridadTexto = this.getPrioridadTexto(this.filtros.prioridad);
+      activeFilters.push(`prioridad "${prioridadTexto}"`);
+    }
+    
+    if (this.filtros.tipoTramite) {
+      activeFilters.push('tipo de trámite seleccionado');
+    }
+    
+    if (this.filtros.area) {
+      activeFilters.push('área seleccionada');
+    }
+    
+    if (this.filtros.fechaDesde || this.filtros.fechaHasta) {
+      activeFilters.push('rango de fechas');
+    }
+    
+    const criterios = activeFilters.join(', ');
+    return `No se encontraron trámites que coincidan con los criterios: ${criterios}`;
+  }
+
+  private getEstadoTexto(estadoId: number): string {
+    const estados: { [key: number]: string } = {
+      1: 'Borrador',
+      2: 'Enviado', 
+      3: 'En Revisión',
+      4: 'Derivado',
+      5: 'Observado',
+      6: 'Aprobado',
+      7: 'Finalizado'
+    };
+    return estados[estadoId] || 'Desconocido';
+  }
+
+  private getPrioridadTexto(prioridadId: number): string {
+    const prioridades: { [key: number]: string } = {
+      1: 'Baja',
+      2: 'Normal',
+      3: 'Alta', 
+      4: 'Urgente'
+    };
+    return prioridades[prioridadId] || 'Desconocida';
+  }
+
+  limpiarFiltros() {
+    this.filtros = {};
+    this.searchTerm = '';
+    this.filterError = '';
+    this.isFilteringActive = false;
+    this.resetSearch();
+    this.applyDynamicFilters();
+  }
+
+  cambiarPagina(page: number) {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+      this.cargarMisTramites();
+    }
+  }
+
+  toggleVista() {
+    this.vistaActual = this.vistaActual === 'tarjetas' ? 'lista' : 'tarjetas';
+  }
+
+  toggleFilters() {
+    this.showFilters = !this.showFilters;
+  }
+
+
+  crearNuevoTramite() {
+    const userRole = this.userRole;
+    if (userRole === 'ADMIN') {
+      window.location.href = '/admin/nuevo-tramite';
+    } else if (userRole === 'ADMINISTRATIVO') {
+      window.location.href = '/administrativo/nuevo-tramite';
+    } else if (userRole === 'USUARIO') {
+      window.location.href = '/usuario/nuevo-tramite';
+    }
+  }
+
+  verDetalle(tramite: MiTramite) {
+    this.tramiteSeleccionado = tramite;
+    this.showDetalleTramiteModal = true;
+  }
+
+  // Verificar si el usuario actual puede editar el trámite
+  puedeEditarTramite(tramite: MiTramite): boolean {
+    const currentUser = this.authService.currentUserValue;
+
+
+    if (this.userRole !== 'USUARIO') {
+   
+      return false;
+    }
+
+    const estadosEditables = ['Borrador', 'Enviado', 'En Revisión', 'Pendiente'];
+    const estadoEditable = estadosEditables.includes(tramite.estado?.nombre);
+    if (!estadoEditable) {
+
+      return false;
+    }
+
+
+    return true;
+  }
+
+  editarTramite(tramite: MiTramite) {
+    if (!this.puedeEditarTramite(tramite)) {
+      this.toastService.warning(
+        'Acción no permitida',
+        'Este trámite no se puede editar en su estado actual.'
+      );
+      return;
+    }
+    this.tramiteSeleccionado = tramite;
+    this.showEditarTramiteModal = true;
+  }
+
+  calificarAtencion(tramite: MiTramite) {
+    if (!tramite.puedeCalificar) {
+      this.toastService.warning(
+        'Acción no permitida',
+        'Este trámite aún no se puede calificar.'
+      );
+      return;
+    }
+    this.tramiteSeleccionado = tramite;
+    this.calificacionActual = {
+      tramiteId: tramite.id,
+      estrellas: tramite.calificacion?.estrellas || 5,
+      comentario: tramite.calificacion?.comentario || '',
+      aspectos: tramite.calificacion?.aspectos || {
+        rapidez: 5,
+        calidad: 5,
+        comunicacion: 5,
+        solucion: 5
+      }
+    };
+    this.showCalificarModal = true;
+  }
+
+  descargarDocumento(tramiteId: number, nombreArchivo: string) {
+    this.subscriptions.add(
+      this.misTramitesService.descargarDocumento(tramiteId, nombreArchivo)
+        .subscribe({
+          next: (blob) => {
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = nombreArchivo;
+            link.click();
+            window.URL.revokeObjectURL(url);
+          },
+          error: () => {
+            this.toastService.error(
+              'Error',
+              'No se pudo descargar el documento'
+            );
+          }
+        })
+    );
+  }
+
+  descargarTodosDocumentos(tramite: MiTramite) {
+    const cantidadDocumentos = tramite.documentos ? tramite.documentos.length : 0;
+
+    if (cantidadDocumentos === 0) {
+      this.toastService.warning(
+        'Sin documentos',
+        'Este trámite no tiene documentos adjuntos para descargar.'
+      );
+      return;
+    }
+
+    if (cantidadDocumentos === 1) {
+      // Un solo documento: descargar como PDF
+      this.descargarDocumentoIndividual(tramite.id, tramite.documentos[0]);
+    } else {
+      // Múltiples documentos: descargar como ZIP
+      this.descargarDocumentosComoZip(tramite);
+    }
+  }
+
+  private descargarDocumentoIndividual(tramiteId: number, documento: any) {
+    this.subscriptions.add(
+      this.misTramitesService.descargarDocumento(tramiteId, documento.nombre)
+        .subscribe({
+          next: (blob) => {
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = documento.nombre;
+            link.click();
+            window.URL.revokeObjectURL(url);
+
+            this.toastService.success(
+              'Descarga completada',
+              `El documento "${documento.nombre}" se ha descargado exitosamente.`
+            );
+          },
+          error: () => {
+            this.toastService.error(
+              'Error',
+              `No se pudo descargar el documento "${documento.nombre}"`
+            );
+          }
+        })
+    );
+  }
+
+  private descargarDocumentosComoZip(tramite: MiTramite) {
+    this.subscriptions.add(
+      this.misTramitesService.descargarTodosDocumentos(tramite.id)
+        .subscribe({
+          next: (blob) => {
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `tramite-${tramite.codigo}-documentos.zip`;
+            link.click();
+            window.URL.revokeObjectURL(url);
+
+            this.toastService.success(
+              'Descarga completada',
+              `Se han descargado ${tramite.documentos?.length} documentos en formato ZIP.`
+            );
+          },
+          error: () => {
+            this.toastService.error(
+              'Error',
+              'No se pudieron descargar los documentos'
+            );
+          }
+        })
+    );
+  }
+
+  // Modales
+  cerrarModalNuevo() {
+    this.showNuevoTramiteModal = false;
+  }
+
+  cerrarModalDetalle() {
+    this.showDetalleTramiteModal = false;
+    this.tramiteSeleccionado = null;
+  }
+
+  cerrarModalEditar() {
+    this.showEditarTramiteModal = false;
+    this.tramiteSeleccionado = null;
+  }
+
+  cerrarModalCalificar() {
+    this.showCalificarModal = false;
+    this.tramiteSeleccionado = null;
+  }
+
+  cerrarModalAprobar() {
+    this.showAprobarModal = false;
+    this.tramiteSeleccionado = null;
+  }
+
+  cerrarModalResponder() {
+    this.showResponderTramiteModal = false;
+    this.tramiteSeleccionado = null;
+  }
+
+  onTramiteCreado() {
+    this.cargarMisTramites();
+    this.cargarEstadisticas();
+    this.cerrarModalNuevo();
+  }
+
+  onTramiteActualizado(tramiteActualizado?: any) {
+    this.toastService.success(
+      'Trámite actualizado',
+      'El trámite ha sido actualizado exitosamente.'
+    );
+    this.cargarMisTramites();
+    this.cargarEstadisticas();
+    this.cerrarModalEditar();
+  }
+
+  guardarCalificacion() {
+    this.subscriptions.add(
+      this.misTramitesService.calificarTramite(this.calificacionActual)
+        .subscribe({
+          next: () => {
+            this.toastService.success(
+              'Calificación guardada',
+              'Gracias por tu valoración'
+            );
+            this.cargarMisTramites();
+            this.cerrarModalCalificar();
+          },
+          error: () => {
+            this.toastService.error(
+              'Error',
+              'No se pudo guardar la calificación'
+            );
+          }
+        })
+    );
+  }
+
+  confirmarAprobacion() {
+    if (!this.tramiteSeleccionado) return;
+
+    const request = {
+      tramiteId: this.tramiteSeleccionado.id,
+      observaciones: 'Trámite aprobado por administrativo'
+    };
+
+    this.subscriptions.add(
+      this.misTramitesService.aprobarTramite(request)
+        .subscribe({
+          next: (response) => {
+            this.cargarMisTramites();
+            this.cargarEstadisticas();
+            this.cerrarModalAprobar();
+          },
+          error: (error) => {
+            console.error('Error al aprobar trámite:', error);
+          }
+        })
+    );
+  }
+
+  // Utilidades
+  getEstadoClase(estado: string): string {
+    const clases: { [key: string]: string } = {
+      'Borrador': 'estado-borrador',
+      'Enviado': 'estado-enviado',
+      'En Revisión': 'estado-revision',
+      'Derivado': 'estado-derivado',
+      'Observado': 'estado-observado',
+      'Aprobado': 'estado-aprobado',
+      'Rechazado': 'estado-rechazado',
+      'Finalizado': 'estado-finalizado'
+    };
+    return clases[estado] || 'estado-default';
+  }
+
+  getPrioridadClase(nivel: number): string {
+    const clases: { [key: number]: string } = {
+      1: 'prioridad-baja',
+      2: 'prioridad-normal', 
+      3: 'prioridad-alta',
+      4: 'prioridad-urgente'
+    };
+    return clases[nivel] || 'prioridad-normal';
+  }
+
+  formatearFecha(fecha: Date): string {
+    return new Date(fecha).toLocaleDateString('es-PE', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  }
+
+  // Métodos de procesamiento para administrativos
+  aprobarTramite(tramite: MiTramite) {
+    if (!this.canProcessTramites) return;
+    
+    this.tramiteSeleccionado = tramite;
+    this.showAprobarModal = true;
+  }
+
+  // Verificar si puede aprobar un trámite
+  puedeAprobar(tramite: MiTramite): boolean {
+   
+    const permisos = this.tramitePermisos.get(tramite.id);
+    if (permisos) {
+   
+      return permisos.puedeAprobar;
+    }
+
+    // Fallback: local logic (backward compatibility)
+    const estadosParaAprobar = ['En Revisión', 'Derivado', 'EN_REVISION', 'DERIVADO'];
+    const puede = this.isAdministrativo && estadosParaAprobar.includes(tramite.estado.nombre);
+
+    return puede;
+  }
+
+  // Verificar si puede responder un trámite
+  puedeResponder(tramite: MiTramite): boolean {
+   
+    const permisos = this.tramitePermisos.get(tramite.id);
+    if (permisos) {
+      return permisos.puedeResponder;
+    }
+
+
+    const estadosParaResponder = ['Aprobado', 'Derivado', 'APROBADO', 'DERIVADO', 'En Proceso', 'EN_PROCESO'];
+    const puede = this.isAdministrativo && estadosParaResponder.includes(tramite.estado.nombre);
+    return puede;
+  }
+
+  puedeRechazar(tramite: MiTramite): boolean {
+
+    const permisos = this.tramitePermisos.get(tramite.id);
+    if (permisos) {
+      return permisos.puedeRechazar;
+    }
+
+   
+    const estadosNoRechazables = ['Finalizado', 'FINALIZADO', 'Rechazado', 'RECHAZADO', 'Archivado', 'ARCHIVADO'];
+    const puede = this.isAdministrativo && !estadosNoRechazables.includes(tramite.estado.nombre);
+
+    return puede;
+  }
+
+  puedeDerivar(tramite: MiTramite): boolean {
+   
+    const permisos = this.tramitePermisos.get(tramite.id);
+    if (permisos) {
+   
+      return permisos.puedeDerivar;
+    }
+
+    const estadosParaDerivar = ['En Revisión', 'EN_REVISION', 'En Proceso', 'EN_PROCESO'];
+    const estadosNoDerivar = ['Derivado', 'DERIVADO'];
+    const puede = this.isAdministrativo &&
+                 estadosParaDerivar.includes(tramite.estado.nombre) &&
+                 !estadosNoDerivar.includes(tramite.estado.nombre);
+
+    return puede;
+  }
+
+
+  estaVencido(tramite: MiTramite): boolean {
+    const permisos = this.tramitePermisos.get(tramite.id);
+    if (permisos) {
+
+      return permisos.estaVencido;
+    }
+
+  
+    if ((tramite as any).diasRestantes !== undefined && (tramite as any).diasRestantes !== null) {
+      const vencido = (tramite as any).diasRestantes <= 0;
+     
+      return vencido;
+    }
+
+    if ((tramite as any).fechaLimite) {
+      const fechaLimite = new Date((tramite as any).fechaLimite);
+      const hoy = new Date();
+      hoy.setHours(0, 0, 0, 0);
+      fechaLimite.setHours(0, 0, 0, 0);
+      const vencido = fechaLimite < hoy;
+
+      return vencido;
+    }
+
+    if (tramite.fechaVencimiento) {
+      const fechaVencimiento = new Date(tramite.fechaVencimiento);
+      const hoy = new Date();
+      hoy.setHours(0, 0, 0, 0);
+      fechaVencimiento.setHours(0, 0, 0, 0);
+      const vencido = fechaVencimiento < hoy;
+     
+      return vencido;
+    }
+
+
+    return false;
+  }
+
+  getEstadoVisual(tramite: MiTramite): { nombre: string, icono: string } {
+    if (this.estaVencido(tramite)) {
+      return {
+        nombre: 'Finalizado',
+        icono: 'fas fa-check-circle'
+      };
+    }
+    return {
+      nombre: tramite.estado.nombre,
+      icono: tramite.estado.icono
+    };
+  }
+
+
+  getEstadoVisualTexto(tramite: MiTramite): string {
+    if (this.estaVencido(tramite)) {
+      return 'Finalizado';
+    }
+    return tramite.estado.nombre;
+  }
+
+ 
+  getEstadoClaseCompleta(tramite: MiTramite): string {
+    if (this.estaVencido(tramite)) {
+      return 'estado-finalizado';
+    }
+    return this.getEstadoClase(tramite.estado.nombre);
+  }
+
+  handleAprobarClick(event: Event, tramite: MiTramite) {
+    if (this.estaVencido(tramite) || !this.puedeAprobar(tramite)) {
+      return;
+    }
+    event.stopPropagation();
+    this.aprobarTramite(tramite);
+  }
+
+  handleRechazarClick(event: Event, tramite: MiTramite) {
+    if (this.estaVencido(tramite) || !this.puedeRechazar(tramite)) {
+      return;
+    }
+    event.stopPropagation();
+    this.rechazarTramite(tramite);
+  }
+
+  handleDerivarClick(event: Event, tramite: MiTramite) {
+    if (this.estaVencido(tramite) || !this.puedeDerivar(tramite)) {
+      return;
+    }
+    event.stopPropagation();
+    this.derivarTramite(tramite);
+  }
+
+  // Table view click handlers (no need to stop propagation)
+  handleAprobarClickTable(tramite: MiTramite) {
+    if (this.estaVencido(tramite) || !this.puedeAprobar(tramite)) {
+      return;
+    }
+    this.aprobarTramite(tramite);
+  }
+
+  handleRechazarClickTable(tramite: MiTramite) {
+    if (this.estaVencido(tramite) || !this.puedeRechazar(tramite)) {
+      return;
+    }
+    this.rechazarTramite(tramite);
+  }
+
+  handleDerivarClickTable(tramite: MiTramite) {
+    if (this.estaVencido(tramite) || !this.puedeDerivar(tramite)) {
+      return;
+    }
+    this.derivarTramite(tramite);
+  }
+
+  handleResponderClick(event: Event, tramite: MiTramite) {
+    if (this.estaVencido(tramite) || !this.puedeResponder(tramite)) {
+      return;
+    }
+    event.stopPropagation();
+    this.abrirResponderTramite(tramite);
+  }
+
+  handleResponderClickTable(tramite: MiTramite) {
+    if (this.estaVencido(tramite) || !this.puedeResponder(tramite)) {
+      return;
+    }
+    this.abrirResponderTramite(tramite);
+  }
+
+  abrirResponderTramite(tramite: MiTramite) {
+    if (!this.puedeResponder(tramite)) {
+      this.toastService.warning(
+        'Acción no permitida',
+        'Solo se pueden responder trámites aprobados.'
+      );
+      return;
+    }
+    
+    this.tramiteSeleccionado = tramite;
+    this.showResponderTramiteModal = true;
+  }
+
+  onTramiteRespondido(response: any) {
+    this.toastService.success(
+      'Trámite respondido',
+      'La respuesta ha sido enviada exitosamente.'
+    );
+    this.cargarMisTramites();
+    this.cargarEstadisticas();
+    this.cerrarModalResponder();
+  }
+
+  rechazarTramite(tramite: MiTramite) {
+    if (!this.canProcessTramites) return;
+
+    this.tramiteSeleccionado = tramite;
+    this.mostrarModalRechazo = true;
+  }
+
+  derivarTramite(tramite: MiTramite) {
+    if (!this.canProcessTramites) return;
+    
+    this.tramiteSeleccionado = tramite;
+    this.mostrarModalDerivacion = true;
+    this.cargarTrabajadoresDisponibles();
+  }
+
+  // Propiedades para el modal de derivación
+  mostrarModalDerivacion = false;
+  trabajadoresDisponibles: AdministrativeUser[] = [];
+  trabajadorSeleccionado: AdministrativeUser | null = null;
+  observacionesDerivacion = '';
+  cargandoTrabajadores = false;
+
+  // Propiedades para el modal de rechazo
+  mostrarModalRechazo = false;
+  motivoRechazo = '';
+  observacionesRechazo = '';
+  cargandoRechazo = false;
+
+  cargarTrabajadoresDisponibles() {
+    this.cargandoTrabajadores = true;
+    this.trabajadoresDisponibles = [];
+    
+    this.authService.getAdministrativosDisponibles().subscribe({
+      next: (usuarios) => {
+        this.trabajadoresDisponibles = usuarios;
+        this.cargandoTrabajadores = false;
+      
+      },
+      error: (error) => {
+        console.error('Error al cargar trabajadores:', error);
+        this.cargandoTrabajadores = false;
+        this.toastService.error('Error', 'No se pudieron cargar los trabajadores disponibles');
+      }
+    });
+  }
+
+  seleccionarTrabajador(trabajador: AdministrativeUser) {
+    // Check if user has too many assignments (you can set a limit, e.g., 5)
+    const maxWorkload = 5;
+    if (trabajador.workloadCount >= maxWorkload) {
+      this.toastService.error(
+        'Trabajador no disponible', 
+        `Este trabajador cuenta con ${trabajador.workloadCount} documentos asignados por el día, elige a otro`
+      );
+      return;
+    }
+    
+    // Si el trabajador ya está seleccionado, deseleccionarlo
+    if (this.trabajadorSeleccionado?.id === trabajador.id) {
+      this.trabajadorSeleccionado = null;
+      this.toastService.info('Trabajador deseleccionado', 'Puedes seleccionar otro trabajador');
+      return;
+    }
+    
+    // Seleccionar el nuevo trabajador
+    this.trabajadorSeleccionado = trabajador;
+    this.toastService.success(
+      'Trabajador seleccionado', 
+      `${trabajador.nombre} ${trabajador.apellidos} ha sido seleccionado para la derivación`
+    );
+  }
+
+  confirmarDerivacion() {
+    if (!this.trabajadorSeleccionado || !this.tramiteSeleccionado) {
+      this.toastService.warning('Validación', 'Debe seleccionar un trabajador para derivar el trámite');
+      return;
+    }
+
+    // Asegurarse de que el ID del trabajador sea válido
+    if (!this.trabajadorSeleccionado.id) {
+      this.toastService.error('Error', 'El trabajador seleccionado no tiene un ID válido');
+      return;
+    }
+
+    const request = {
+      tramiteId: this.tramiteSeleccionado.id,
+      areaDestinoId: 1, // Área administrativa por defecto
+      trabajadorAsignadoId: this.trabajadorSeleccionado.id,
+      observaciones: this.observacionesDerivacion || `Trámite derivado a ${this.trabajadorSeleccionado.nombre} ${this.trabajadorSeleccionado.apellidos}`,
+      mantenerEstado: false
+    };
+
+    this.subscriptions.add(
+      this.bandejaTramitesService.derivarTramite(request)
+        .subscribe({
+          next: (response) => {
+      
+
+            this.toastService.success(
+              'Trámite derivado',
+              `Se asignó el trámite ${this.tramiteSeleccionado!.codigo} a ${this.trabajadorSeleccionado!.nombre} ${this.trabajadorSeleccionado!.apellidos}`
+            );
+
+            this.cerrarModalDerivacion();
+
+            this.cargarMisTramites();
+            this.cargarEstadisticas();
+
+            // Enviar notificación al trabajador asignado
+            this.enviarNotificacionDerivacion();
+          },
+          error: (error) => {
+            console.error('❌ Error al derivar trámite:', error);
+            this.toastService.error('Error al derivar', 'No se pudo derivar el trámite. Intente nuevamente.');
+          }
+        })
+    );
+  }
+
+  enviarNotificacionDerivacion() {
+    if (!this.trabajadorSeleccionado || !this.tramiteSeleccionado) return;
+
+    const mensaje = `Te ha sido asignado el trámite ${this.tramiteSeleccionado.codigo} para que lo atiendas. Asunto: ${this.tramiteSeleccionado.asunto}`;
+
+    
+    this.toastService.info(
+      'Notificaciones enviadas', 
+      `Se notificó a ${this.trabajadorSeleccionado.nombre} por email y notificación del sistema`
+    );
+  }
+
+  cerrarModalDerivacion() {
+    this.mostrarModalDerivacion = false;
+    this.trabajadorSeleccionado = null;
+    this.observacionesDerivacion = '';
+    this.trabajadoresDisponibles = [];
+    this.tramiteSeleccionado = null;
+  }
+
+  // Métodos para el modal de rechazo
+  cerrarModalRechazo() {
+    this.mostrarModalRechazo = false;
+    this.motivoRechazo = '';
+    this.observacionesRechazo = '';
+    this.tramiteSeleccionado = null;
+  }
+
+  confirmarRechazo() {
+    if (!this.tramiteSeleccionado || !this.motivoRechazo.trim()) {
+      this.toastService.warning('Motivo requerido', 'Debe proporcionar un motivo para el rechazo');
+      return;
+    }
+
+    this.cargandoRechazo = true;
+
+    this.misTramitesService.rechazarTramite(
+      this.tramiteSeleccionado.id,
+      this.motivoRechazo.trim(),
+      this.observacionesRechazo.trim() || undefined
+    ).subscribe({
+      next: (response) => {
+        this.cargandoRechazo = false;
+        // Recargar datos después del rechazo exitoso
+        this.cargarMisTramites();
+        this.cargarEstadisticas();
+        this.cerrarModalRechazo();
+      },
+      error: (error) => {
+        this.cargandoRechazo = false;
+        console.error('Error al rechazar trámite:', error);
+      }
+    });
+  }
+
+  getDiasVencimiento(fechaVencimiento?: Date): number | null {
+    if (!fechaVencimiento) return null;
+    const hoy = new Date();
+    const vencimiento = new Date(fechaVencimiento);
+    const diferencia = vencimiento.getTime() - hoy.getTime();
+    return Math.ceil(diferencia / (1000 * 60 * 60 * 24));
+  }
+
+  getProgressoPorcentaje(estado: string, tramite?: MiTramite): number {
+    // Si el trámite está vencido, siempre mostrar como completado (100%)
+    if (tramite && this.estaVencido(tramite)) {
+      return 100;
+    }
+
+    const progresos: { [key: string]: number } = {
+      'Borrador': 10,
+      'Enviado': 25,
+      'En Revisión': 50,
+      'Derivado': 60,
+      'Observado': 40,
+      'Aprobado': 80,
+      'Finalizado': 100
+    };
+    return progresos[estado] || 0;
+  }
+
+  trackByTramiteId(_: number, tramite: MiTramite): number {
+    return tramite.id;
+  }
+
+  // Métodos para estadísticas que consideran trámites vencidos como procesados
+  getTramitesVencidos(): number {
+    if (!this.isAdministrativo) return 0;
+    return this.misTramites.filter(tramite => this.estaVencido(tramite)).length;
+  }
+
+  getTramitesPorProcesar(): number {
+    if (!this.estadisticas) return 0;
+
+    const vencidos = this.getTramitesVencidos();
+    const enProceso = this.estadisticas.aprobado + this.estadisticas.enRevision + this.estadisticas.derivado;
+
+    // Restar los vencidos del total en proceso ya que los consideramos procesados
+    return Math.max(0, enProceso - vencidos);
+  }
+
+  getTramitesProcesados(): number {
+    if (!this.estadisticas) return 0;
+
+    const vencidos = this.getTramitesVencidos();
+    const finalizados = this.estadisticas.finalizado;
+
+    // Sumar vencidos a los finalizados para mostrar como procesados
+    return finalizados + vencidos;
+  }
+
+  // Método para buscar y mostrar trámite específico desde notificación
+  private buscarYMostrarTramite(tramiteId: number): void {
+    // Dar tiempo para que la lista se cargue
+    setTimeout(() => {
+      const tramiteEncontrado = this.misTramites.find(t => t.id === tramiteId);
+      
+      if (tramiteEncontrado) {
+        // Si está en la lista, mostrar directamente el detalle
+        this.verDetalle(tramiteEncontrado);
+        this.toastService.success('Trámite encontrado', `Mostrando detalles del trámite ${tramiteEncontrado.codigo}`);
+      } else {
+        // Si no está en la lista actual, mostrar mensaje informativo
+        this.toastService.info(
+          'Trámite no visible', 
+          `El trámite ID ${tramiteId} no está en la página actual. Puedes buscarlo usando el filtro de búsqueda.`
+        );
+      }
+    }, 1000); // Esperar 1 segundo a que se carguen los datos
+  }
+
+  // Métodos auxiliares para manejo de clicks con verificación de vencimiento
+  handleDescargarClick(event: Event, tramite: MiTramite): void {
+    event.stopPropagation();
+    this.descargarTodosDocumentos(tramite);
+  }
+
+  handleDescargarTodoClick(tramite: MiTramite): void {
+    this.descargarTodosDocumentos(tramite);
+    this.cerrarModalDetalle();
+  }
+
+  imprimirTramite(tramite: MiTramite): void {
+    if (!this.puedeImprimirTramite(tramite)) {
+      this.toastService.warning(
+        'Acción no permitida',
+        'Solo se pueden imprimir trámites que no estén finalizados o dados de baja.'
+      );
+      return;
+    }
+
+    this.toastService.info(
+      'Preparando impresión',
+      'Generando vista previa para imprimir...'
+    );
+
+    this.subscriptions.add(
+      this.tramiteService.imprimirTramite(tramite.id).subscribe({
+        next: (blob) => {
+          // Convertir blob a texto
+          blob.text().then((htmlContent: string) => {
+            // Crear una nueva ventana para la impresión
+            const printWindow = window.open('', '_blank', 'width=800,height=600');
+
+            if (printWindow) {
+              // Escribir el contenido HTML en la nueva ventana
+              printWindow.document.write(htmlContent);
+              printWindow.document.close();
+
+              // Esperar a que se cargue el contenido y luego imprimir
+              printWindow.onload = () => {
+                setTimeout(() => {
+                  printWindow.print();
+                  // Cerrar la ventana después de imprimir
+                  printWindow.onafterprint = () => {
+                    printWindow.close();
+                  };
+                }, 500);
+              };
+            } else {
+              this.toastService.error(
+                'Error de impresión',
+                'No se pudo abrir la ventana de impresión. Verifique que no esté bloqueada por el navegador.'
+              );
+            }
+          });
+        },
+        error: (error) => {
+          console.error('Error al obtener HTML del trámite:', error);
+          this.toastService.error(
+            'Error de impresión',
+            'No se pudo generar el documento del trámite.'
+          );
+        }
+      })
+    );
+  }
+
+  // Verificar si el usuario puede imprimir el trámite
+  puedeImprimirTramite(tramite: MiTramite): boolean {
+    // Solo usuarios pueden usar esta funcionalidad
+    if (!this.isUsuario) {
+      return false;
+    }
+
+    // No se puede imprimir si está finalizado o dado de baja
+    const estadosNoImprimibles = ['Finalizado', 'Dado de Baja', 'Cancelado', 'Archivado'];
+    return !estadosNoImprimibles.includes(tramite.estado?.nombre);
+  }
+
+  // Obtener tooltip dinámico para el botón de descarga
+  getDownloadTooltip(tramite: MiTramite): string {
+    if (this.estaVencido(tramite)) {
+      return 'Trámite finalizado - Descarga no disponible';
+    }
+
+    const cantidadDocumentos = tramite.documentos ? tramite.documentos.length : 0;
+
+    if (cantidadDocumentos === 0) {
+      return 'Este trámite no tiene documentos adjuntos';
+    } else if (cantidadDocumentos === 1) {
+      return `Descargar documento: ${tramite.documentos[0].nombre}`;
+    } else {
+      return `Descargar ${cantidadDocumentos} documentos en formato ZIP`;
+    }
+  }
+
+
+  // Método para convertir MiTramite a formato compatible con el modal de editar
+  getTramiteForEdit(): any {
+    if (!this.tramiteSeleccionado) return null;
+
+    // Crear un objeto compatible con la interfaz Tramite esperada por el modal
+    return {
+      id: this.tramiteSeleccionado.id,
+      codigo: this.tramiteSeleccionado.codigo,
+      asunto: this.tramiteSeleccionado.asunto,
+      descripcion: this.tramiteSeleccionado.descripcion,
+      observaciones: this.tramiteSeleccionado.observaciones,
+      fechaVencimiento: this.tramiteSeleccionado.fechaVencimiento,
+      tipoTramite: this.tramiteSeleccionado.tipoTramite,
+      prioridad: this.tramiteSeleccionado.prioridad,
+      estado: this.tramiteSeleccionado.estado,
+      fechaCreacion: this.tramiteSeleccionado.fechaCreacion,
+      fechaActualizacion: this.tramiteSeleccionado.fechaActualizacion,
+      // Campos requeridos por la interfaz Tramite pero no necesarios para edición
+      solicitante: null,
+      areaOrigen: null,
+      documentos: [],
+      historial: []
+    };
+  }
+}
