@@ -11,7 +11,7 @@ import { MisTramitesService } from '../../services/mis-tramites.service';
 import { ToastService } from '../../services/toast.service';
 import { AuthService } from '../../services/auth.service';
 import { ResponderTramiteModalComponent } from '../tramites/components/responder-tramite-modal/responder-tramite-modal.component';
-import { EditarTramiteModalComponent } from '../tramites/components/editar-tramite-modal/editar-tramite-modal.component';
+// import { EditarTramiteModalComponent } from '../tramites/components/editar-tramite-modal/editar-tramite-modal.component'; // Component deleted
 import { Tramite } from '../../shared/interfaces/tramite.interface';
 import { 
   TramiteBandeja, 
@@ -26,7 +26,7 @@ import {
 @Component({
   selector: 'app-bandeja-tramites',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, ResponderTramiteModalComponent, EditarTramiteModalComponent],
+  imports: [CommonModule, FormsModule, RouterModule, ResponderTramiteModalComponent], // EditarTramiteModalComponent removed
   templateUrl: './bandeja-tramites.component.html',
   styleUrl: './bandeja-tramites.component.css'
 })

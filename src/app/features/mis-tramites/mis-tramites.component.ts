@@ -20,12 +20,13 @@ import {
   EditarMiTramiteRequest
 } from '../../shared/interfaces/mis-tramites.interface';
 import { ResponderTramiteModalComponent } from '../tramites/components/responder-tramite-modal/responder-tramite-modal.component';
-import { EditarTramiteModalComponent } from '../tramites/components/editar-tramite-modal/editar-tramite-modal.component';
+// import { EditarTramiteModalComponent } from '../tramites/components/editar-tramite-modal/editar-tramite-modal.component';
 
 @Component({
   selector: 'app-mis-tramites',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, ResponderTramiteModalComponent, EditarTramiteModalComponent],
+  imports: [CommonModule, FormsModule, RouterModule, ResponderTramiteModalComponent],
+  // EditarTramiteModalComponent removido - función deshabilitada
   templateUrl: './mis-tramites.component.html',
   styleUrl: './mis-tramites.component.css'
 })
@@ -160,18 +161,23 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
   }
 
   cargarMisTramites() {
+    console.log('🔄 MIS-TRAMITES DEBUG: cargarMisTramites llamado');
+
     this.subscriptions.add(
       this.misTramitesService.getMisTramites(this.currentPage, this.pageSize, this.filtros)
         .subscribe({
           next: (response) => {
-        
+            console.log('📋 MIS-TRAMITES DEBUG: Datos recibidos:', response);
+
             response.data.forEach(tramite => {
-              
+              console.log('📝 MIS-TRAMITES DEBUG: Trámite cargado:', tramite.id, (tramite as any).titulo || tramite.asunto);
             });
 
             this.misTramites = response.data;
             this.totalItems = response.total;
             this.totalPages = response.totalPages;
+
+            console.log('✅ MIS-TRAMITES DEBUG: Lista actualizada con', this.misTramites.length, 'trámites');
 
  
             if (this.isAdministrativo) {
@@ -853,10 +859,14 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
   }
 
   onTramiteActualizado(tramiteActualizado?: any) {
+    console.log('📝 MIS-TRAMITES DEBUG: onTramiteActualizado llamado con:', tramiteActualizado);
+
     this.toastService.success(
       'Trámite actualizado',
       'El trámite ha sido actualizado exitosamente.'
     );
+
+    console.log('🔄 MIS-TRAMITES DEBUG: Recargando lista de trámites...');
     this.cargarMisTramites();
     this.cargarEstadisticas();
     this.cerrarModalEditar();

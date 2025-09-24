@@ -12,7 +12,6 @@ import { BandejaTramitesService } from '../../../../services/bandeja-tramites.se
 import { firstValueFrom } from 'rxjs';
 import { NuevoTramiteModalComponent } from '../nuevo-tramite-modal/nuevo-tramite-modal.component';
 import { DetalleTramiteModalComponent } from '../detalle-tramite-modal/detalle-tramite-modal.component';
-import { EditarTramiteModalComponent } from '../editar-tramite-modal/editar-tramite-modal.component';
 import { 
   Tramite, 
   FiltrosTramite, 
@@ -31,7 +30,7 @@ interface EstadisticasTramites {
 @Component({
   selector: 'app-lista-tramites',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, NuevoTramiteModalComponent, DetalleTramiteModalComponent, EditarTramiteModalComponent],
+  imports: [CommonModule, FormsModule, RouterModule, NuevoTramiteModalComponent, DetalleTramiteModalComponent],
   templateUrl: './lista-tramites.component.html',
   styleUrl: './lista-tramites.component.css'
 })

@@ -314,6 +314,7 @@
             <i class="fas fa-eye"></i>
           </button>
           
+          <!-- EDICIÓN DESHABILITADA TEMPORALMENTE
           <button
             *ngIf="puedeEditarTramite(tramite)"
             class="btn-action edit"
@@ -322,6 +323,7 @@
           >
             <i class="fas fa-edit"></i>
           </button>
+          -->
           
           <button
             [class]="'btn-action download ' + (estaVencido(tramite) ? 'disabled' : '')"
@@ -461,6 +463,7 @@
                   <i class="fas fa-eye"></i>
                 </button>
                 
+                <!-- EDICIÓN DESHABILITADA TEMPORALMENTE
                 <button
                   *ngIf="puedeEditarTramite(tramite)"
                   class="btn-mini edit"
@@ -469,6 +472,7 @@
                 >
                   <i class="fas fa-edit"></i>
                 </button>
+                -->
                 <button
                   [class]="'btn-mini download ' + (estaVencido(tramite) ? 'disabled' : '')"
                   [disabled]="estaVencido(tramite)"
@@ -760,7 +764,6 @@
     
     <div class="modal-body">
       <div class="detalle-grid">
-        <!-- Información básica -->
         <div class="info-section">
           <h4>Información General</h4>
           <div class="info-item">
@@ -790,7 +793,6 @@
           </div>
         </div>
 
-        <!-- Fechas -->
         <div class="fechas-section">
           <h4>Fechas</h4>
           <div class="info-item">
@@ -855,23 +857,6 @@
         </div>
       </div>
 
-      <!-- Calificación -->
-      <div class="calificacion-section" *ngIf="tramiteSeleccionado.calificacion">
-        <h4>Calificación</h4>
-        <div class="rating-display">
-          <div class="stars">
-            <i 
-              *ngFor="let i of [1,2,3,4,5]"
-              class="fas fa-star"
-              [class.active]="i <= tramiteSeleccionado.calificacion.estrellas"
-            ></i>
-            <span class="rating-text">{{ tramiteSeleccionado.calificacion.estrellas }}/5</span>
-          </div>
-          <p *ngIf="tramiteSeleccionado.calificacion.comentario" class="rating-comment">
-            "{{ tramiteSeleccionado.calificacion.comentario }}"
-          </p>
-        </div>
-      </div>
 
       <!-- Progreso -->
       <div class="progreso-section">
@@ -895,14 +880,6 @@
       </button>
       
       <div class="footer-actions">
-        <button
-          *ngIf="puedeEditarTramite(tramiteSeleccionado)"
-          class="btn-primary"
-          (click)="editarTramite(tramiteSeleccionado); cerrarModalDetalle()"
-        >
-          <i class="fas fa-edit"></i>
-          Editar
-        </button>
         
         <button
           [class]="'btn-info ' + (estaVencido(tramiteSeleccionado) ? 'disabled' : '')"
@@ -1124,9 +1101,11 @@
   (tramiteRespondido)="onTramiteRespondido($event)">
 </app-responder-tramite-modal>
 
+<!-- MODAL DE EDICIÓN DESHABILITADO - USUARIOS NO PUEDEN EDITAR TRÁMITES
 <app-editar-tramite-modal
   [show]="showEditarTramiteModal"
   [tramite]="getTramiteForEdit()"
   (close)="cerrarModalEditar()"
   (tramiteActualizado)="onTramiteActualizado($event)">
 </app-editar-tramite-modal>
+-->

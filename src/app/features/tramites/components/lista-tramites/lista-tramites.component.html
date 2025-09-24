@@ -316,14 +316,7 @@
               >
                 <i class="fas fa-eye"></i>
               </button>
-              <button 
-                class="btn-icon" 
-                (click)="editarTramite(tramite)" 
-                [disabled]="!puedeEditarTramite(tramite)"
-                title="Editar"
-              >
-                <i class="fas fa-edit"></i>
-              </button>
+              
               <button 
                 class="btn-icon" 
                 (click)="cambiarEstado(tramite)" 
@@ -535,12 +528,15 @@
   (close)="cerrarModalDetalle()">
 </app-detalle-tramite-modal>
 
-<app-editar-tramite-modal 
+<!-- MODAL EDITAR DESHABILITADO: COMPONENTE ELIMINADO -->
+<!--
+<app-editar-tramite-modal
   [show]="showEditarTramiteModal"
   [tramite]="tramiteSeleccionado"
   (close)="cerrarModalEditar()"
   (tramiteActualizado)="onTramiteActualizado($event)">
 </app-editar-tramite-modal>
+-->
 
 <!-- Modal Cambiar Estado Mejorado -->
 <div class="modal-overlay change-state-modal" [class.show]="showCambiarEstadoModal" (click)="cerrarModalCambiarEstado()">
