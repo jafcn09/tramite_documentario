@@ -44,6 +44,9 @@ public class SecurityConfig {
 
                 // Public trámite endpoints (no token required) - MUST come before protected tramites
                 .requestMatchers("/api/tramites/public/**").permitAll()
+
+                // Public organigrama endpoints (structural data)
+                .requestMatchers("/api/organigrama/**").permitAll()
                 
                 // WebSocket endpoints
                 .requestMatchers("/ws/**").permitAll()

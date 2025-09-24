@@ -59,6 +59,7 @@ public class TramiteService {
         Tramite tramite = new Tramite();
         tramite.setCodigo(codigo);
         tramite.setTitulo(request.getTitulo());
+        tramite.setAsunto(request.getAsunto() != null ? request.getAsunto() : request.getTitulo());
         tramite.setDescripcion(request.getDescripcion());
         tramite.setTipo(Tramite.TipoTramite.valueOf(request.getTipo()));
         tramite.setEstado(Tramite.EstadoTramite.ENVIADO);
@@ -421,8 +422,6 @@ public class TramiteService {
     public Page<TramiteResponse> obtenerMisTramites(Long usuarioId, String rol, Pageable pageable) {
         Page<Tramite> tramites;
         
-        // Crear un Pageable optimizado que solo use paginaciC3n sin ordenamiento
-        // para evitar problemas de memoria con archivos base64 grandes
         org.springframework.data.domain.PageRequest pageableOptimizado = 
             org.springframework.data.domain.PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
         
@@ -658,14 +657,83 @@ public class TramiteService {
     }
     
     public org.springframework.http.ResponseEntity<byte[]> descargarArchivo(Long tramiteId, String nombreArchivo, Long usuarioId, String rol) {
-        // Verificar permisos
-        obtenerTramite(tramiteId, usuarioId, rol);
-        
-        // Implementar descarga
-        byte[] archivo = new byte[0]; // Placeholder
-        return org.springframework.http.ResponseEntity.ok()
-            .header("Content-Disposition", "attachment; filename=\"" + nombreArchivo + "\"")
-            .body(archivo);
+        // Verificar permisos y obtener el trámite
+        Tramite tramite = tramiteRepository.findById(tramiteId)
+            .orElseThrow(() -> new RuntimeException("Trámite no encontrado"));
+
+        // Verificar permisos según el rol
+        if ("USUARIO".equals(rol) && !tramite.getUsuarioSolicitanteId().equals(usuarioId)) {
+            throw new RuntimeException("No tiene permisos para acceder a este trámite");
+        }
+
+        String documentosJson = tramite.getDocumentosAdjuntos();
+        if (documentosJson == null || documentosJson.trim().isEmpty()) {
+            return org.springframework.http.ResponseEntity.notFound().build();
+        }
+
+        try {
+            log.info("📄 BACKEND DEBUG: Iniciando descarga de archivo: {}", nombreArchivo);
+            log.info("📄 BACKEND DEBUG: JSON de documentos: {}", documentosJson);
+
+            // Parsear documentos JSON
+            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            java.util.List<java.util.Map<String, Object>> documentos =
+                mapper.readValue(documentosJson, java.util.List.class);
+
+            log.info("📄 BACKEND DEBUG: Documentos parseados: {} documentos encontrados", documentos.size());
+
+            // Buscar el documento específico por nombre
+            for (int i = 0; i < documentos.size(); i++) {
+                java.util.Map<String, Object> documento = documentos.get(i);
+                String nombre = (String) documento.get("nombre");
+
+                log.info("📄 BACKEND DEBUG: Documento {}: nombre='{}', buscado='{}'", i, nombre, nombreArchivo);
+
+                if (nombreArchivo.equals(nombre)) {
+                    log.info("📄 BACKEND DEBUG: ¡Documento encontrado! Procesando...");
+
+                    String contenidoBase64 = (String) documento.get("contenido");
+                    log.info("📄 BACKEND DEBUG: Contenido base64 presente: {}", contenidoBase64 != null);
+
+                    if (contenidoBase64 != null) {
+                        log.info("📄 BACKEND DEBUG: Longitud contenido base64: {}", contenidoBase64.length());
+                        log.info("📄 BACKEND DEBUG: Primeros 50 chars: {}",
+                            contenidoBase64.length() > 50 ? contenidoBase64.substring(0, 50) : contenidoBase64);
+                    }
+
+                    if (contenidoBase64 != null && !contenidoBase64.isEmpty()) {
+                        try {
+                            // Decodificar el contenido base64
+                            byte[] archivo = java.util.Base64.getDecoder().decode(contenidoBase64);
+                            log.info("📄 BACKEND DEBUG: Archivo decodificado, tamaño: {} bytes", archivo.length);
+
+                            // Determinar el tipo de contenido
+                            String tipoArchivo = (String) documento.get("tipo");
+                            if (tipoArchivo == null) tipoArchivo = "application/octet-stream";
+
+                            log.info("📄 BACKEND DEBUG: Tipo de archivo: {}", tipoArchivo);
+                            log.info("📄 BACKEND DEBUG: Retornando archivo de {} bytes", archivo.length);
+
+                            return org.springframework.http.ResponseEntity.ok()
+                                .header("Content-Disposition", "attachment; filename=\"" + nombreArchivo + "\"")
+                                .header("Content-Type", tipoArchivo)
+                                .body(archivo);
+                        } catch (Exception decodeError) {
+                            log.error("📄 BACKEND DEBUG: Error al decodificar base64: {}", decodeError.getMessage());
+                        }
+                    } else {
+                        log.warn("📄 BACKEND DEBUG: Contenido base64 vacío o nulo");
+                    }
+                }
+            }
+
+            log.warn("Archivo no encontrado: {}", nombreArchivo);
+            return org.springframework.http.ResponseEntity.notFound().build();
+
+        } catch (Exception e) {
+            log.error("Error al descargar archivo {}: {}", nombreArchivo, e.getMessage(), e);
+            return org.springframework.http.ResponseEntity.internalServerError().build();
+        }
     }
     
     public org.springframework.http.ResponseEntity<byte[]> descargarTodosDocumentos(Long tramiteId, Long usuarioId, String rol) {
@@ -1186,21 +1254,72 @@ public class TramiteService {
         builder.contadorPorProcesar(tramite.getContadorPorProcesar() != null ? tramite.getContadorPorProcesar() : 0);
 
         // Mapear documentos adjuntos
+        log.info("Procesando documentos para trámite {}: documentos_adjuntos = '{}'",
+            tramite.getId(), tramite.getDocumentosAdjuntos());
+
         if (tramite.getDocumentosAdjuntos() != null && !tramite.getDocumentosAdjuntos().isEmpty()) {
             try {
-                com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-                mapper.registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
-                mapper.disable(com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-                java.util.List<TramiteResponse.DocumentoAdjunto> documentosList = mapper.readValue(tramite.getDocumentosAdjuntos(),
-                    mapper.getTypeFactory().constructCollectionType(java.util.List.class,
-                        TramiteResponse.DocumentoAdjunto.class));
-                builder.documentosAdjuntos(documentosList);
-                log.info("Documentos adjuntos mapeados: {} documentos", documentosList.size());
+                // Intentar parsear como JSON array primero
+                if (tramite.getDocumentosAdjuntos().trim().startsWith("[")) {
+                    com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                    mapper.registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
+                    mapper.disable(com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+                    // Intentar parsear como lista de maps primero (formato más común de la BD)
+                    java.util.List<java.util.Map<String, Object>> rawDocumentos = mapper.readValue(
+                        tramite.getDocumentosAdjuntos(),
+                        mapper.getTypeFactory().constructCollectionType(java.util.List.class, java.util.Map.class)
+                    );
+
+                    java.util.List<TramiteResponse.DocumentoAdjunto> documentosList = new java.util.ArrayList<>();
+                    for (java.util.Map<String, Object> rawDoc : rawDocumentos) {
+                        TramiteResponse.DocumentoAdjunto doc = new TramiteResponse.DocumentoAdjunto();
+                        doc.setNombre((String) rawDoc.getOrDefault("nombre", "documento"));
+                        doc.setTipo((String) rawDoc.getOrDefault("tipo", "application/octet-stream"));
+                        doc.setUrl((String) rawDoc.get("url"));
+                        doc.setDescripcion((String) rawDoc.get("descripcion"));
+
+                        // Manejar tamaño que puede venir como Integer o Long
+                        Object tamanoObj = rawDoc.get("tamano");
+                        if (tamanoObj != null) {
+                            doc.setTamanio(((Number) tamanoObj).longValue());
+                        }
+
+                        // Manejar fecha
+                        Object fechaObj = rawDoc.get("fechaSubida");
+                        if (fechaObj instanceof String) {
+                            try {
+                                doc.setFechaSubida(java.time.LocalDateTime.parse((String) fechaObj));
+                            } catch (Exception e) {
+                                doc.setFechaSubida(java.time.LocalDateTime.now());
+                            }
+                        } else {
+                            doc.setFechaSubida(java.time.LocalDateTime.now());
+                        }
+
+                        documentosList.add(doc);
+                    }
+
+                    builder.documentosAdjuntos(documentosList);
+                    log.info("✅ Documentos adjuntos mapeados exitosamente: {} documentos", documentosList.size());
+                    for (TramiteResponse.DocumentoAdjunto doc : documentosList) {
+                        log.info("  - Documento: {} ({})", doc.getNombre(), doc.getTipo());
+                    }
+                } else {
+                    // Formato simple string (nombre del archivo)
+                    TramiteResponse.DocumentoAdjunto doc = new TramiteResponse.DocumentoAdjunto();
+                    doc.setNombre(tramite.getDocumentosAdjuntos());
+                    doc.setTipo("application/octet-stream");
+                    doc.setFechaSubida(java.time.LocalDateTime.now());
+                    builder.documentosAdjuntos(java.util.Arrays.asList(doc));
+                    log.info("Documento simple adjunto: {}", doc.getNombre());
+                }
             } catch (Exception e) {
-                log.error("Error al parsear documentos adjuntos: {}", e.getMessage());
+                log.error("❌ Error al parsear documentos adjuntos: {}", e.getMessage(), e);
                 builder.documentosAdjuntos(new java.util.ArrayList<>());
             }
         } else {
+            log.info("No hay documentos adjuntos para el trámite {}", tramite.getId());
             builder.documentosAdjuntos(new java.util.ArrayList<>());
         }
 
@@ -1282,7 +1401,7 @@ public class TramiteService {
                          estadoAnterior, "FINALIZADO",
                          "TrC!mite respondido y finalizado");
         
-        // Obtener informaciC3n del responsable
+
         com.example.demo.dto.ResponderTramiteResponse.ResponsableInfo.ResponsableInfoBuilder responsableBuilder = 
             com.example.demo.dto.ResponderTramiteResponse.ResponsableInfo.builder();
         
@@ -1300,8 +1419,7 @@ public class TramiteService {
         
         com.example.demo.dto.ResponderTramiteResponse.ResponsableInfo responsableInfo = responsableBuilder.build();
         
-        // NOTIFICACICN OBLIGATORIA POR EMAIL
-        // Calcular cantidad de documentos adjuntos en la respuesta
+
         Integer cantidadDocumentosRespuesta = 0;
         if (request.getArchivosRespuesta() != null) {
             cantidadDocumentosRespuesta = request.getArchivosRespuesta().size();
@@ -1574,30 +1692,20 @@ public class TramiteService {
         String estadoNombre = tramite.getEstado() != null ? tramite.getEstado().name() : "";
 
 
-        List<String> estadosParaAprobar = Arrays.asList("EN_REVISION", "DERIVADO");
-        boolean puedeAprobar = estadosParaAprobar.contains(estadoNombre);
+        // Administrativos pueden aprobar, rechazar y derivar en cualquier estado
+        boolean puedeAprobar = true;
+        boolean puedeRechazar = true;
+        boolean puedeDerivar = true;
 
-        List<String> estadosNoRechazables = Arrays.asList("FINALIZADO", "RECHAZADO", "ARCHIVADO");
-        boolean puedeRechazar = !estadosNoRechazables.contains(estadoNombre);
 
-        List<String> estadosParaDerivar = Arrays.asList("EN_REVISION", "DERIVADO");
-        boolean puedeDerivar = estadosParaDerivar.contains(estadoNombre);
-
-       
         Long usuarioAsignado = tramite.getUsuarioAsignadoId();
-        if (usuarioAsignado != null && !usuarioAsignado.equals(usuarioId)) {
-            // Si estC! asignado a otro usuario, solo puede rechazar
-            puedeAprobar = false;
-            puedeDerivar = false;
-        }
 
-        // LC3gica para responder (puede responder si estC! aprobado o derivado)
-        List<String> estadosParaResponder = Arrays.asList("APROBADO", "DERIVADO", "EN_PROCESO");
-        boolean puedeResponder = estadosParaResponder.contains(estadoNombre);
+        // RESPONDER: Solo la persona asignada puede responder cuando está Aprobado o Derivado
+        List<String> estadosParaResponder = Arrays.asList("APROBADO", "DERIVADO");
+        boolean puedeResponder = false;
 
-        // Si estC! asignado a otro usuario, tambiC)n puede responder el usuario asignado
-        if (usuarioAsignado != null && !usuarioAsignado.equals(usuarioId)) {
-            puedeResponder = estadosParaResponder.contains(estadoNombre);
+        if (usuarioAsignado != null && usuarioAsignado.equals(usuarioId) && estadosParaResponder.contains(estadoNombre)) {
+            puedeResponder = true;
         }
 
         permisos.put("puedeAprobar", puedeAprobar);
@@ -1617,6 +1725,7 @@ public class TramiteService {
             // Crear el trámite básico
             TramiteRequest tramiteRequest = new TramiteRequest();
             tramiteRequest.setTitulo(request.getAsunto());
+            tramiteRequest.setAsunto(request.getAsunto());
             tramiteRequest.setDescripcion(request.getDescripcion());
             tramiteRequest.setObservaciones(request.getObservaciones());
             tramiteRequest.setFechaVencimiento(request.getFechaVencimiento());
@@ -1808,9 +1917,6 @@ public class TramiteService {
             try {
                 // Log para debug
                 System.out.println("🗑️ Solicitado eliminar documento ID: " + documentoId + " del trámite: " + tramiteId);
-
-                // TODO: Implementar eliminación real cuando esté listo
-                // Por ahora solo loggeamos la acción
 
             } catch (Exception e) {
                 System.err.println("❌ Error al eliminar documento " + documentoId + ": " + e.getMessage());
@@ -2130,4 +2236,275 @@ public class TramiteService {
             default -> estado;
         };
     }
+
+    public String generarHtmlParaImpresion(Long tramiteId, Long usuarioId) {
+        Tramite tramite = tramiteRepository.findById(tramiteId)
+            .orElseThrow(() -> new RuntimeException("Trámite no encontrado"));
+
+        UsuarioResponse usuarioSolicitante = null;
+        UsuarioResponse usuarioAsignado = null;
+        AreaResponse areaActual = null;
+        AreaResponse areaOrigen = null;
+
+        try {
+            if (tramite.getUsuarioSolicitanteId() != null) {
+                usuarioSolicitante = usuarioService.obtenerUsuarioPorId(tramite.getUsuarioSolicitanteId());
+            }
+            if (tramite.getUsuarioAsignadoId() != null) {
+                usuarioAsignado = usuarioService.obtenerUsuarioPorId(tramite.getUsuarioAsignadoId());
+            }
+            if (tramite.getAreaActualId() != null) {
+                areaActual = areaService.getAreaById(tramite.getAreaActualId()).orElse(null);
+            }
+            if (tramite.getAreaOrigenId() != null) {
+                areaOrigen = areaService.getAreaById(tramite.getAreaOrigenId()).orElse(null);
+            }
+        } catch (Exception e) {
+            log.warn("Error al obtener información relacionada para trámite {}: {}", tramiteId, e.getMessage());
+        }
+
+        StringBuilder html = new StringBuilder();
+        html.append("<!DOCTYPE html>")
+            .append("<html lang='es'>")
+            .append("<head>")
+            .append("<meta charset='UTF-8'>")
+            .append("<meta name='viewport' content='width=device-width, initial-scale=1.0'>")
+            .append("<title>Documento Oficial - Trámite ").append(tramite.getCodigo()).append("</title>")
+            .append("<style>")
+            // Estilos generales
+            .append("* { margin: 0; padding: 0; box-sizing: border-box; }")
+            .append("body { font-family: 'Times New Roman', serif; font-size: 12pt; line-height: 1.4; color: #000; background: #fff; max-width: 210mm; margin: 0 auto; padding: 20mm; }")
+
+            // Header oficial
+            .append(".header { text-align: center; border-bottom: 3px solid #1f4788; padding-bottom: 20px; margin-bottom: 30px; }")
+            .append(".logo-section { margin-bottom: 15px; }")
+            .append(".institution-name { font-size: 18pt; font-weight: bold; color: #1f4788; text-transform: uppercase; letter-spacing: 1px; }")
+            .append(".department { font-size: 14pt; color: #2c5aa0; margin: 5px 0; }")
+            .append(".document-title { font-size: 16pt; font-weight: bold; margin-top: 15px; text-transform: uppercase; }")
+
+            // Información del documento
+            .append(".document-info { background: #f8f9fa; border: 2px solid #dee2e6; padding: 15px; margin: 20px 0; border-radius: 5px; }")
+            .append(".doc-number { text-align: center; font-size: 14pt; font-weight: bold; color: #d63384; margin-bottom: 10px; }")
+            .append(".doc-date { text-align: right; font-style: italic; color: #6c757d; }")
+
+            // Grid de información
+            .append(".info-section { margin: 25px 0; }")
+            .append(".section-title { font-size: 14pt; font-weight: bold; color: #1f4788; border-bottom: 1px solid #1f4788; padding-bottom: 5px; margin-bottom: 15px; text-transform: uppercase; }")
+            .append(".info-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }")
+            .append(".info-table td { padding: 8px 12px; border: 1px solid #dee2e6; vertical-align: top; }")
+            .append(".info-table .label { background: #e9ecef; font-weight: bold; width: 30%; color: #495057; }")
+            .append(".info-table .value { background: #fff; }")
+
+            // Estados y prioridades
+            .append(".status-badge { display: inline-block; padding: 4px 12px; border-radius: 15px; font-size: 10pt; font-weight: bold; text-transform: uppercase; }")
+            .append(".status-enviado { background: #cce5ff; color: #004085; }")
+            .append(".status-en_revision { background: #fff3cd; color: #856404; }")
+            .append(".status-en_proceso { background: #d4edda; color: #155724; }")
+            .append(".status-finalizado { background: #d1ecf1; color: #0c5460; }")
+            .append(".status-aprobado { background: #d4edda; color: #155724; }")
+            .append(".status-rechazado { background: #f8d7da; color: #721c24; }")
+            .append(".status-observado { background: #ffeaa7; color: #856404; }")
+
+            .append(".priority-badge { display: inline-block; padding: 4px 12px; border-radius: 15px; font-size: 10pt; font-weight: bold; text-transform: uppercase; }")
+            .append(".priority-baja { background: #e2e3e5; color: #383d41; }")
+            .append(".priority-normal { background: #bee5eb; color: #0c5460; }")
+            .append(".priority-alta { background: #f8d7da; color: #721c24; }")
+            .append(".priority-urgente { background: #dc3545; color: #fff; }")
+
+            // Contenido de texto
+            .append(".content-section { margin: 25px 0; }")
+            .append(".content-box { border: 1px solid #dee2e6; padding: 15px; background: #fff; border-radius: 5px; }")
+            .append(".content-text { text-align: justify; line-height: 1.6; }")
+
+            // Footer
+            .append(".footer { margin-top: 40px; padding-top: 20px; border-top: 2px solid #1f4788; }")
+            .append(".signatures { display: flex; justify-content: space-between; margin-top: 60px; }")
+            .append(".signature-box { text-align: center; width: 45%; }")
+            .append(".signature-line { border-top: 1px solid #000; margin-top: 50px; padding-top: 5px; font-size: 10pt; }")
+
+            // Estilos de impresión
+            .append("@media print {")
+            .append("  body { margin: 0; padding: 15mm; font-size: 11pt; }")
+            .append("  .header { page-break-after: avoid; }")
+            .append("  .info-section { page-break-inside: avoid; }")
+            .append("  .content-section { page-break-inside: avoid; }")
+            .append("  .no-print { display: none; }")
+            .append("}")
+
+            .append("</style>")
+            .append("</head>")
+            .append("<body>");
+
+        // Header oficial
+        html.append("<div class='header'>")
+            .append("<div class='logo-section'>")
+            .append("<div class='institution-name'>Sistema de Trámite Documentario</div>")
+            .append("<div class='department'>Secretaría General</div>")
+            .append("</div>")
+            .append("<div class='document-title'>Documento Oficial de Trámite</div>")
+            .append("</div>");
+
+        // Información del documento
+        html.append("<div class='document-info'>")
+            .append("<div class='doc-number'>DOCUMENTO N° ").append(tramite.getCodigo()).append("</div>")
+            .append("<div class='doc-date'>Generado el: ").append(formatearFecha(LocalDateTime.now())).append("</div>")
+            .append("</div>");
+
+        // Información general del trámite
+        html.append("<div class='info-section'>")
+            .append("<div class='section-title'>Información General</div>")
+            .append("<table class='info-table'>")
+            .append("<tr><td class='label'>Código de Trámite:</td><td class='value'>").append(tramite.getCodigo()).append("</td></tr>")
+            .append("<tr><td class='label'>Título:</td><td class='value'>").append(tramite.getTitulo() != null ? tramite.getTitulo() : "N/A").append("</td></tr>")
+            .append("<tr><td class='label'>Asunto:</td><td class='value'>").append(tramite.getAsunto() != null ? tramite.getAsunto() : "N/A").append("</td></tr>")
+            .append("<tr><td class='label'>Tipo de Trámite:</td><td class='value'>").append(formatearTipoTramite(tramite.getTipo())).append("</td></tr>")
+            .append("<tr><td class='label'>Estado Actual:</td><td class='value'>")
+            .append("<span class='status-badge status-").append(tramite.getEstado().name().toLowerCase()).append("'>")
+            .append(formatearNombreEstado(tramite.getEstado().name())).append("</span></td></tr>")
+            .append("<tr><td class='label'>Prioridad:</td><td class='value'>")
+            .append("<span class='priority-badge priority-").append(tramite.getPrioridad().name().toLowerCase()).append("'>")
+            .append(formatearPrioridad(tramite.getPrioridad())).append("</span></td></tr>");
+
+        if (tramite.getNumeroExpediente() != null) {
+            html.append("<tr><td class='label'>N° Expediente:</td><td class='value'>").append(tramite.getNumeroExpediente()).append("</td></tr>");
+        }
+
+        html.append("</table>")
+            .append("</div>");
+
+        // Información de fechas
+        html.append("<div class='info-section'>")
+            .append("<div class='section-title'>Información Temporal</div>")
+            .append("<table class='info-table'>")
+            .append("<tr><td class='label'>Fecha de Creación:</td><td class='value'>").append(formatearFecha(tramite.getFechaCreacion())).append("</td></tr>");
+
+        if (tramite.getFechaVencimiento() != null) {
+            html.append("<tr><td class='label'>Fecha de Vencimiento:</td><td class='value'>").append(formatearFecha(tramite.getFechaVencimiento())).append("</td></tr>");
+        }
+        if (tramite.getFechaCompletado() != null) {
+            html.append("<tr><td class='label'>Fecha de Finalización:</td><td class='value'>").append(formatearFecha(tramite.getFechaCompletado())).append("</td></tr>");
+        }
+        if (tramite.getFechaRespuesta() != null) {
+            html.append("<tr><td class='label'>Fecha de Respuesta:</td><td class='value'>").append(formatearFecha(tramite.getFechaRespuesta())).append("</td></tr>");
+        }
+
+        html.append("</table>")
+            .append("</div>");
+
+        // Información de personas y áreas
+        html.append("<div class='info-section'>")
+            .append("<div class='section-title'>Personas y Áreas Involucradas</div>")
+            .append("<table class='info-table'>");
+
+        if (usuarioSolicitante != null) {
+            html.append("<tr><td class='label'>Solicitante:</td><td class='value'>")
+                .append(usuarioSolicitante.getNombre()).append(" ").append(usuarioSolicitante.getApellidos());
+            if (usuarioSolicitante.getCorreo() != null) {
+                html.append(" (").append(usuarioSolicitante.getCorreo()).append(")");
+            }
+            html.append("</td></tr>");
+        }
+
+        if (usuarioAsignado != null) {
+            html.append("<tr><td class='label'>Asignado a:</td><td class='value'>")
+                .append(usuarioAsignado.getNombre()).append(" ").append(usuarioAsignado.getApellidos());
+            if (usuarioAsignado.getCorreo() != null) {
+                html.append(" (").append(usuarioAsignado.getCorreo()).append(")");
+            }
+            html.append("</td></tr>");
+        }
+
+        if (areaOrigen != null) {
+            html.append("<tr><td class='label'>Área de Origen:</td><td class='value'>").append(areaOrigen.getNombre()).append("</td></tr>");
+        }
+
+        if (areaActual != null) {
+            html.append("<tr><td class='label'>Área Actual:</td><td class='value'>").append(areaActual.getNombre()).append("</td></tr>");
+        }
+
+        html.append("</table>")
+            .append("</div>");
+
+        // Descripción
+        if (tramite.getDescripcion() != null && !tramite.getDescripcion().trim().isEmpty()) {
+            html.append("<div class='content-section'>")
+                .append("<div class='section-title'>Descripción del Trámite</div>")
+                .append("<div class='content-box'>")
+                .append("<div class='content-text'>").append(tramite.getDescripcion().replace("\n", "<br>")).append("</div>")
+                .append("</div>")
+                .append("</div>");
+        }
+
+        // Observaciones
+        if (tramite.getObservaciones() != null && !tramite.getObservaciones().trim().isEmpty()) {
+            html.append("<div class='content-section'>")
+                .append("<div class='section-title'>Observaciones</div>")
+                .append("<div class='content-box'>")
+                .append("<div class='content-text'>").append(tramite.getObservaciones().replace("\n", "<br>")).append("</div>")
+                .append("</div>")
+                .append("</div>");
+        }
+
+        // Respuesta
+        if (tramite.getRespuesta() != null && !tramite.getRespuesta().trim().isEmpty()) {
+            html.append("<div class='content-section'>")
+                .append("<div class='section-title'>Respuesta Oficial</div>")
+                .append("<div class='content-box'>")
+                .append("<div class='content-text'>").append(tramite.getRespuesta().replace("\n", "<br>")).append("</div>")
+                .append("</div>")
+                .append("</div>");
+        }
+
+        // Footer con firmas
+        html.append("<div class='footer'>")
+            .append("<div class='signatures'>")
+            .append("<div class='signature-box'>")
+            .append("<div class='signature-line'>Firma del Solicitante</div>")
+            .append("</div>")
+            .append("<div class='signature-box'>")
+            .append("<div class='signature-line'>Firma del Responsable</div>")
+            .append("</div>")
+            .append("</div>")
+            .append("<div style='text-align: center; margin-top: 30px; font-size: 10pt; color: #6c757d;'>")
+            .append("Este documento ha sido generado automáticamente por el Sistema de Trámite Documentario<br>")
+            .append("Fecha y hora de generación: ").append(formatearFecha(LocalDateTime.now()))
+            .append("</div>")
+            .append("</div>");
+
+        html.append("</body></html>");
+
+        return html.toString();
+    }
+
+    private String formatearTipoTramite(Tramite.TipoTramite tipo) {
+        if (tipo == null) return "N/A";
+
+        return switch (tipo) {
+            case SOLICITUD_CERTIFICADO -> "Solicitud de Certificado";
+            case SOLICITUD_CONSTANCIA -> "Solicitud de Constancia";
+            case SOLICITUD_PERMISO -> "Solicitud de Permiso";
+            case RECLAMO -> "Reclamo";
+            case SUGERENCIA -> "Sugerencia";
+            case CONSULTA -> "Consulta";
+            case LICENCIA -> "Licencia";
+            case AUTORIZACION -> "Autorización";
+            case REVISION_EXPEDIENTE -> "Revisión de Expediente";
+            case TRAMITE_ACADEMICO -> "Trámite Académico";
+            case TRAMITE_ADMINISTRATIVO -> "Trámite Administrativo";
+            case OTRO -> "Otro";
+        };
+    }
+
+    private String formatearPrioridad(Tramite.PrioridadTramite prioridad) {
+        if (prioridad == null) return "Normal";
+
+        return switch (prioridad) {
+            case BAJA -> "Baja";
+            case NORMAL -> "Normal";
+            case ALTA -> "Alta";
+            case URGENTE -> "Urgente";
+        };
+    }
+
+
 }

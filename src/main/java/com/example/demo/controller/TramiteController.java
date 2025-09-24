@@ -1,14 +1,9 @@
 package com.example.demo.controller;
 
-import com.example.demo.dto.TramiteRequest;
-import com.example.demo.dto.TramiteResponse;
-import com.example.demo.dto.AprobarTramiteRequest;
-import com.example.demo.dto.AprobarTramiteResponse;
-import com.example.demo.dto.TramiteConArchivosRequest;
-import com.example.demo.dto.ActualizarTramiteConArchivosRequest;
-import com.example.demo.service.TramiteService;
-import com.example.demo.service.JwtService;
-import lombok.RequiredArgsConstructor;
+import java.security.Principal;
+import java.time.LocalDateTime;
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -16,13 +11,29 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import jakarta.servlet.http.HttpServletRequest;
 
-import java.security.Principal;
-import java.time.LocalDateTime;
-import java.util.List;
+import com.example.demo.dto.ActualizarTramiteConArchivosRequest;
+import com.example.demo.dto.AprobarTramiteRequest;
+import com.example.demo.dto.AprobarTramiteResponse;
+import com.example.demo.dto.TramiteConArchivosRequest;
+import com.example.demo.dto.TramiteRequest;
+import com.example.demo.dto.TramiteResponse;
+import com.example.demo.service.JwtService;
+import com.example.demo.service.TramiteService;
+
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/tramites")
@@ -89,9 +100,7 @@ public class TramiteController {
         return ResponseEntity.ok(tramite);
     }
     
-    // ENDPOINTS PROTEGIDOS (con token)
-    
-    // Obtener todos los trámites con paginación (autenticado)
+
     @GetMapping
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Page<TramiteResponse>> obtenerTramites(
@@ -160,8 +169,6 @@ public class TramiteController {
         
         if (fechaVencimiento != null && !fechaVencimiento.isEmpty()) {
             try {
-                // Frontend sends ISO 8601 date string like "2025-09-08T15:30:00.000Z"
-                // or just date like "2025-09-08"
                 if (fechaVencimiento.contains("T")) {
                     // Full datetime
                     request.setFechaVencimiento(LocalDateTime.parse(fechaVencimiento.substring(0, 19)));
@@ -761,6 +768,28 @@ public class TramiteController {
 
         } catch (Exception e) {
             throw new RuntimeException("Error al rechazar el trámite: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/{id}/imprimir")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ADMINISTRATIVO', 'USUARIO')")
+    public ResponseEntity<String> imprimirTramite(@PathVariable Long id, HttpServletRequest request) {
+        try {
+            Long usuarioId = getUserIdFromToken(request);
+
+            if (usuarioId == null) {
+                throw new RuntimeException("No se pudo obtener el ID del usuario del token");
+            }
+
+            // Generar HTML para impresión
+            String htmlContent = tramiteService.generarHtmlParaImpresion(id, usuarioId);
+
+            return ResponseEntity.ok()
+                .header("Content-Type", "text/html; charset=UTF-8")
+                .body(htmlContent);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error al generar documento para impresión: " + e.getMessage());
         }
     }
 }
