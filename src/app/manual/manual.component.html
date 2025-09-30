@@ -1,25 +1,4 @@
 <div class="min-h-screen bg-gray-50">
-  <nav class="bg-white shadow-sm border-b-4 border-university-500 sticky top-0 z-40">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex justify-between items-center h-16">
-        <div class="flex items-center space-x-4">
-          <img src="assets/logo.png" alt="UNTUMBES" class="w-12 h-12 object-contain">
-          <div>
-            <h1 class="text-lg font-semibold text-university-700">Manual de Usuario</h1>
-            <p class="text-xs text-gray-500">Sistema de Secretaria General</p>
-          </div>
-        </div>
-        
-        <button (click)="goBack()" class="btn-university px-4 py-2 rounded-lg font-medium flex items-center">
-          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-          </svg>
-          Volver al Inicio
-        </button>
-      </div>
-    </div>
-  </nav>
-
   <div class="max-w-6xl mx-auto px-4 py-8">
     <div class="bg-white rounded-xl shadow-lg overflow-hidden">
       <div class="bg-university-gradient text-white p-8 text-center">
@@ -28,25 +7,67 @@
       </div>
 
       <div class="p-8">
+        <button
+          (click)="toggleIndex()"
+          class="md:hidden fixed bottom-6 right-6 z-50 w-14 h-14 bg-university-600 hover:bg-university-700 text-white rounded-full shadow-2xl flex items-center justify-center transition-all duration-300 hover:scale-110"
+          [class.bg-university-700]="showIndex">
+          <svg *ngIf="!showIndex" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+          </svg>
+          <svg *ngIf="showIndex" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+
         <div class="grid md:grid-cols-4 gap-8">
+          <!-- Índice lateral - Oculto en móvil por defecto -->
           <div class="md:col-span-1">
-            <div class="sticky top-24">
-              <h3 class="font-bold text-university-700 mb-4 flex items-center">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
-                </svg>
-                Índice
-              </h3>
-              <nav class="space-y-2">
-                <button *ngFor="let section of manualSections; let i = index" 
-                   (click)="scrollToSection(section.id)"
-                   class="w-full text-left px-3 py-2 text-sm text-gray-600 hover:text-university-600 hover:bg-university-50 rounded-lg transition-colors flex items-center">
-                  <span class="w-6 h-6 bg-university-100 text-university-700 rounded-full flex items-center justify-center text-xs font-bold mr-3">
-                    {{ i + 1 }}
-                  </span>
-                  {{ section.title }}
+            <!-- Overlay para cerrar el menú en móvil -->
+            <div
+              *ngIf="showIndex"
+              (click)="toggleIndex()"
+              class="md:hidden fixed inset-0 bg-black bg-opacity-50 z-40 animate-fade-in">
+            </div>
+
+            <!-- Panel del índice -->
+            <div
+              [class.translate-x-0]="showIndex"
+              [class.-translate-x-full]="!showIndex"
+              class="fixed md:relative md:translate-x-0 top-0 left-0 h-full md:h-auto w-72 md:w-auto bg-white md:bg-transparent z-50 md:z-auto transition-transform duration-300 shadow-2xl md:shadow-none overflow-y-auto md:overflow-visible p-6 md:p-0">
+
+              <!-- Header del menú móvil -->
+              <div class="md:hidden flex justify-between items-center mb-6 pb-4 border-b border-gray-200">
+                <h3 class="font-bold text-university-700 text-lg flex items-center">
+                  <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
+                  </svg>
+                  Índice
+                </h3>
+                <button (click)="toggleIndex()" class="text-gray-500 hover:text-gray-700">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                  </svg>
                 </button>
-              </nav>
+              </div>
+
+              <div class="sticky top-24">
+                <h3 class="hidden md:flex font-bold text-university-700 mb-4 items-center">
+                  <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
+                  </svg>
+                  Índice
+                </h3>
+                <nav class="space-y-2">
+                  <button *ngFor="let section of manualSections; let i = index"
+                     (click)="scrollToSection(section.id); toggleIndex()"
+                     class="w-full text-left px-3 py-2 text-sm text-gray-600 hover:text-university-600 hover:bg-university-50 rounded-lg transition-colors flex items-center">
+                    <span class="w-6 h-6 bg-university-100 text-university-700 rounded-full flex items-center justify-center text-xs font-bold mr-3 flex-shrink-0">
+                      {{ i + 1 }}
+                    </span>
+                    <span class="line-clamp-2">{{ section.title }}</span>
+                  </button>
+                </nav>
+              </div>
             </div>
           </div>
 
@@ -70,12 +91,12 @@
                   Pasos a seguir:
                 </h4>
                 <ol class="space-y-3">
-                  <li *ngFor="let step of section.steps; let stepIndex = index" 
+                  <li *ngFor="let step of section.steps; let stepIndex = index"
                       class="flex items-start">
                     <span class="w-6 h-6 bg-university-500 text-white rounded-full flex items-center justify-center text-xs font-bold mr-3 mt-0.5 flex-shrink-0">
                       {{ stepIndex + 1 }}
                     </span>
-                    <span class="text-gray-700">{{ step }}</span>
+                    <span class="text-gray-700" [innerHTML]="step"></span>
                   </li>
                 </ol>
               </div>

@@ -2222,3 +2222,540 @@
   }
 }
 
+
+/* ========================================
+   ESTILOS MEJORADOS PARA MODAL DE EDICIÓN
+   ======================================== */
+
+.edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 4px 0;
+}
+
+.edit-form .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.edit-form label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #334155;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.edit-form label i {
+  color: #6366f1;
+  font-size: 16px;
+}
+
+.optional-badge {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 500;
+  color: #64748b;
+  background: #f1f5f9;
+  padding: 2px 8px;
+  border-radius: 8px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 15px;
+  color: #1e293b;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.form-input:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1), 0 4px 12px rgba(99, 102, 241, 0.15);
+  transform: translateY(-1px);
+}
+
+.form-input::placeholder {
+  color: #94a3b8;
+}
+
+.form-textarea {
+  width: 100%;
+  padding: 14px 16px;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 15px;
+  color: #1e293b;
+  resize: vertical;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  min-height: 120px;
+  line-height: 1.6;
+}
+
+.form-textarea:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.form-textarea:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1), 0 4px 12px rgba(99, 102, 241, 0.15);
+  transform: translateY(-1px);
+}
+
+.form-textarea::placeholder {
+  color: #94a3b8;
+}
+
+.char-counter {
+  font-size: 12px;
+  color: #64748b;
+  text-align: right;
+  margin-top: 4px;
+}
+
+/* Mensaje informativo mejorado */
+.info-message {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border-left: 4px solid #3b82f6;
+  border-radius: 12px;
+  margin-top: 8px;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.08);
+}
+
+.info-icon {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 18px;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.info-content {
+  flex: 1;
+}
+
+.info-content strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e3a8a;
+  margin-bottom: 4px;
+}
+
+.info-content p {
+  margin: 0;
+  font-size: 13px;
+  color: #1e40af;
+  line-height: 1.5;
+}
+
+/* Botones del modal mejorados */
+.modal-footer .btn-cancel {
+  padding: 12px 24px;
+  background: #f1f5f9;
+  color: #475569;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.modal-footer .btn-cancel:hover:not(:disabled) {
+  background: #e2e8f0;
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.modal-footer .btn-primary {
+  padding: 12px 28px;
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.modal-footer .btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+}
+
+.modal-footer .btn-primary:disabled,
+.modal-footer .btn-cancel:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Responsive para móvil */
+@media (max-width: 768px) {
+  .edit-form {
+    gap: 20px;
+  }
+
+  .form-input,
+  .form-textarea {
+    font-size: 16px; /* Evita zoom en iOS */
+    padding: 12px 14px;
+  }
+
+  .form-textarea {
+    min-height: 100px;
+  }
+
+  .info-message {
+    padding: 14px;
+    gap: 12px;
+  }
+
+  .info-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+  }
+
+  .info-content strong {
+    font-size: 13px;
+  }
+
+  .info-content p {
+    font-size: 12px;
+  }
+
+  .modal-footer .btn-cancel,
+  .modal-footer .btn-primary {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+}
+
+/* ================================================= */
+/* ESTILOS PARA GESTIÓN DE DOCUMENTOS EN EDICIÓN   */
+/* ================================================= */
+
+/* Sección de documentos existentes */
+.documentos-section {
+  margin-top: 24px;
+  padding: 20px;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+}
+
+.documentos-section h4 {
+  margin: 0 0 16px 0;
+  color: #1e293b;
+  font-size: 16px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.documentos-section h4 i {
+  color: #6366f1;
+  font-size: 18px;
+}
+
+.documentos-list-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.documento-item-edit {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: white;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.documento-item-edit:hover {
+  border-color: #6366f1;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1);
+  transform: translateY(-2px);
+}
+
+.documento-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.documento-info i {
+  color: #dc2626;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.documento-nombre {
+  color: #334155;
+  font-size: 14px;
+  font-weight: 500;
+  flex: 1;
+  word-break: break-word;
+  line-height: 1.4;
+}
+
+.documento-size {
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 400;
+  margin-left: 8px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.btn-remove-doc {
+  padding: 8px 12px;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-remove-doc:hover {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.btn-remove-doc:active {
+  transform: scale(0.98);
+}
+
+/* Sección de carga de archivos */
+.upload-section {
+  margin-top: 24px;
+  padding: 20px;
+  background: white;
+  border-radius: 16px;
+  border: 2px dashed #cbd5e1;
+  transition: all 0.3s ease;
+}
+
+.upload-section h4 {
+  margin: 0 0 16px 0;
+  color: #1e293b;
+  font-size: 16px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.upload-section h4 i {
+  color: #3b82f6;
+  font-size: 18px;
+}
+
+.upload-area {
+  padding: 40px 20px;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border: 2px dashed #cbd5e1;
+  border-radius: 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.upload-area:hover,
+.upload-area.drag-over {
+  border-color: #6366f1;
+  background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+  transform: scale(1.02);
+}
+
+.upload-area i {
+  font-size: 48px;
+  color: #6366f1;
+  margin-bottom: 16px;
+  display: block;
+}
+
+.upload-text {
+  color: #334155;
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+}
+
+.upload-hint {
+  color: #64748b;
+  font-size: 13px;
+  margin: 0;
+}
+
+/* Lista de archivos nuevos */
+.archivos-nuevos-list {
+  margin-top: 20px;
+}
+
+.archivos-nuevos-list h5 {
+  margin: 0 0 12px 0;
+  color: #1e293b;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.archivo-nuevo-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+  border: 2px solid #a5b4fc;
+  border-radius: 10px;
+  margin-bottom: 8px;
+  transition: all 0.3s ease;
+}
+
+.archivo-nuevo-item:hover {
+  border-color: #6366f1;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+}
+
+.archivo-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.archivo-info i {
+  color: #4338ca;
+  font-size: 18px;
+}
+
+.archivo-nombre {
+  color: #1e293b;
+  font-size: 14px;
+  font-weight: 500;
+  flex: 1;
+}
+
+.archivo-size {
+  color: #475569;
+  font-size: 13px;
+  font-weight: 400;
+  margin-left: 8px;
+}
+
+.btn-remove-new {
+  padding: 6px 10px;
+  background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 13px;
+}
+
+.btn-remove-new:hover {
+  background: linear-gradient(135deg, #475569 0%, #334155 100%);
+  transform: scale(1.05);
+}
+
+.btn-remove-new:active {
+  transform: scale(0.95);
+}
+
+/* Responsive para móviles */
+@media (max-width: 768px) {
+  .documentos-section,
+  .upload-section {
+    padding: 16px;
+  }
+
+  .documento-item-edit,
+  .archivo-nuevo-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .documento-info,
+  .archivo-info {
+    width: 100%;
+  }
+
+  .btn-remove-doc,
+  .btn-remove-new {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .upload-area {
+    padding: 30px 16px;
+  }
+
+  .upload-area i {
+    font-size: 36px;
+  }
+
+  .upload-text {
+    font-size: 14px;
+  }
+
+  .upload-hint {
+    font-size: 12px;
+  }
+}

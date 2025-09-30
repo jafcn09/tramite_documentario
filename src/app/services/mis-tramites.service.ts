@@ -7,7 +7,6 @@ import {
   MiTramite, 
   FiltrosMisTramites, 
   EstadisticasMisTramites,
-  CrearCalificacionRequest,
   EditarMiTramiteRequest,
   AprobarTramiteRequest,
   AprobarTramiteResponse,
@@ -159,43 +158,14 @@ export class MisTramitesService {
       );
   }
 
-  // Editar mi trámite
-  editarMiTramite(tramiteId: number, request: EditarMiTramiteRequest): Observable<MiTramite> {
-    const formData = new FormData();
-    
-    // Agregar campos del trámite
-    formData.append('asunto', request.asunto);
-    formData.append('descripcion', request.descripcion);
-    formData.append('prioridadId', request.prioridadId.toString());
-    
-    if (request.areaDestinoId) {
-      formData.append('areaDestinoId', request.areaDestinoId.toString());
-    }
-    
-    if (request.fechaVencimiento) {
-      formData.append('fechaVencimiento', request.fechaVencimiento.toISOString());
-    }
-
-    // Documentos a eliminar
-    if (request.documentosAEliminar && request.documentosAEliminar.length > 0) {
-      request.documentosAEliminar.forEach(docId => {
-        formData.append('documentosAEliminar[]', docId.toString());
-      });
-    }
-
-    // Documentos nuevos
-    if (request.documentosNuevos && request.documentosNuevos.length > 0) {
-      request.documentosNuevos.forEach((documento, index) => {
-        formData.append(`documentosNuevos`, documento, documento.name);
-      });
-    }
-
-    return this.http.put<MiTramite>(`${this.apiUrl}/${tramiteId}`, formData)
+  // Editar mi trámite (método con soporte para FormData - archivos y datos)
+  editarMiTramite(tramiteId: number, request: EditarMiTramiteRequest | FormData): Observable<MiTramite> {
+    return this.http.put<MiTramite>(`${this.apiUrl}/${tramiteId}/editar`, request)
       .pipe(
         tap(tramiteActualizado => {
           this.toastService.success(
             'Trámite actualizado',
-            `El trámite ${tramiteActualizado.codigo} ha sido actualizado exitosamente.`
+            `El trámite ${tramiteActualizado.codigo} ha sido actualizado exitosamente. Se ha enviado una notificación por correo.`
           );
         }),
         catchError(error => {
@@ -208,25 +178,6 @@ export class MisTramitesService {
       );
   }
 
-  // Calificar trámite
-  calificarTramite(request: CrearCalificacionRequest): Observable<void> {
-    return this.http.post<void>(`${this.apiUrl}/${request.tramiteId}/calificar`, request)
-      .pipe(
-        tap(() => {
-          this.toastService.success(
-            'Calificación guardada',
-            'Gracias por tu valoración. Nos ayuda a mejorar nuestro servicio.'
-          );
-        }),
-        catchError(error => {
-          this.toastService.error(
-            'Error al guardar calificación',
-            'No se pudo guardar tu calificación. Inténtalo nuevamente.'
-          );
-          throw error;
-        })
-      );
-  }
 
   // Subir documento adicional a mi trámite
   subirDocumento(tramiteId: number, archivo: File, descripcion?: string): Observable<void> {
@@ -339,11 +290,11 @@ export class MisTramitesService {
     if (!tiposPermitidos.includes(archivo.type)) {
       return {
         valido: false,
-        mensaje: 'Solo se permiten archivos PDF, DOC, DOCX, JPG, JPEG y PNG.'
+        mensaje: 'Solo se permiten archivos PDF, DOC, DOCX'
       };
     }
 
-    const tamañoMaximo = 10 * 1024 * 1024; // 10MB
+    const tamañoMaximo = 10 * 1024 * 1024; 
     if (archivo.size > tamañoMaximo) {
       return {
         valido: false,
@@ -443,7 +394,9 @@ export class MisTramitesService {
       respuesta: tramiteBackend.respuesta,
       calificacion: tramiteBackend.calificacion,
       puedeEditar: tramiteBackend.puedeEditar || false,
-      puedeCalificar: tramiteBackend.puedeCalificar || false
+      puedeCalificar: tramiteBackend.puedeCalificar || false,
+      estaVencido: tramiteBackend.estaVencido || false,
+      diasRestantes: tramiteBackend.diasRestantes
     };
 
     console.log('✅ SERVICE DEBUG: Trámite mapeado final:', tramiteMapeado);
@@ -500,7 +453,9 @@ export class MisTramitesService {
       } : undefined,
       calificacion: tramiteBackend.calificacion,
       puedeEditar: tramiteBackend.puedeEditar || false,
-      puedeCalificar: tramiteBackend.puedeCalificar || false
+      puedeCalificar: tramiteBackend.puedeCalificar || false,
+      estaVencido: tramiteBackend.estaVencido || false,
+      diasRestantes: tramiteBackend.diasRestantes
     }));
   }
 

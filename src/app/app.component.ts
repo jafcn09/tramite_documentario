@@ -36,7 +36,7 @@ export class AppComponent implements OnInit {
     // Ocultar header y footer en rutas administrativas y de login
     const adminRoutes = ['/servicios-administrativos', '/admin', '/administrativo', '/usuario', '/alumno', '/externo'];
     const loginRoutes = ['/admin-login', '/usuario-login', '/alumno-login', '/externo-login'];
-    const userRoutes = ['/profile', '/change-password'];
+    const userRoutes = ['/perfil', '/cambiar-contrasena'];
     
     const isAdminRoute = adminRoutes.some(route => currentUrl.includes(route));
     const isLoginRoute = loginRoutes.some(route => currentUrl.includes(route));
@@ -60,7 +60,7 @@ export class AppComponent implements OnInit {
     
     // No mostrar preloader en rutas administrativas y de usuario
     const adminRoutes = ['/servicios-administrativos', '/admin', '/administrativo', '/usuario', '/alumno', '/externo'];
-    const userRoutes = ['/profile', '/change-password'];
+    const userRoutes = ['/perfil', '/cambiar-contrasena'];
     const isAdminRoute = adminRoutes.some(route => currentUrl.includes(route));
     const isUserRoute = userRoutes.some(route => currentUrl.includes(route));
     

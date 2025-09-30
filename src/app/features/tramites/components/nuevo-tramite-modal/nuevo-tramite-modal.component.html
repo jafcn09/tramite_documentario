@@ -10,7 +10,6 @@
   
   <div class="modal-content">
     <form (ngSubmit)="onSubmit()" #tramiteForm="ngForm">
-      <!-- Información Básica -->
       <div class="form-section">
         <h3 class="section-title">
           <i class="fas fa-info-circle"></i>
@@ -196,64 +195,6 @@
           </small>
         </div>
       </div>
-
-      <!-- Documentos -->
-      <div class="form-section">
-        <h3 class="section-title">
-          <i class="fas fa-paperclip"></i>
-          Documentos Adjuntos
-        </h3>
-
-        <div class="form-group">
-          <label class="form-label">Subir Archivos</label>
-          <div class="file-upload-area">
-            <input
-              type="file"
-              id="archivos"
-              class="file-input"
-              multiple
-              accept=".pdf,.docx"
-              (change)="onFileSelected($event)">
-            <label for="archivos" class="file-upload-label">
-              <i class="fas fa-cloud-upload-alt"></i>
-              <span>Haga clic para seleccionar archivos o arrástrelos aquí</span>
-              <small>Se permiten archivos PDF y DOCX (máx. 10MB cada uno)</small>
-            </label>
-          </div>
-        </div>
-
-        <!-- Lista de archivos seleccionados -->
-        <div class="selected-files" *ngIf="archivosSeleccionados.length > 0">
-          <h4 class="files-title">Archivos Seleccionados ({{ archivosSeleccionados.length }})</h4>
-          <div class="file-list">
-            <div *ngFor="let archivo of archivosSeleccionados; let i = index" class="file-item">
-              <div class="file-info">
-                <i class="fas fa-file-pdf" *ngIf="archivo.type === 'application/pdf'"></i>
-                <i class="fas fa-file-word" *ngIf="archivo.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'"></i>
-                <div class="file-details">
-                  <span class="file-name">{{ archivo.name }}</span>
-                  <span class="file-size">{{ formatearTamanioArchivo(archivo.size) }}</span>
-                </div>
-              </div>
-              <div class="file-actions">
-                <input
-                  type="text"
-                  class="form-control form-control-sm"
-                  placeholder="Descripción del documento (opcional)"
-                  [(ngModel)]="documentosAdjuntos[i].descripcion"
-                  name="descripcion_{{i}}">
-                <button
-                  type="button"
-                  class="btn btn-sm btn-danger"
-                  (click)="eliminarArchivo(i)">
-                  <i class="fas fa-trash"></i>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
     </form>
   </div>
 

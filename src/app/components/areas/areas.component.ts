@@ -63,20 +63,24 @@ import { Areas, Usuario } from './areas.interface';
               <h3>{{ area.nombre }}</h3>
               <p>{{ area.descripcion || 'Sin descripción' }}</p>
             </div>
-            <div class="area-actions">
-              <button class="action-btn action-edit" (click)="editArea(area); $event.stopPropagation()" title="Editar">
-                Editar
+            <div class="area-actions-menu">
+              <button class="menu-trigger" (click)="toggleMenu(area.id); $event.stopPropagation()" title="Opciones">
+                <i class="fas fa-ellipsis-v"></i>
               </button>
-              <button class="action-btn" 
-                      (click)="toggleAreaStatus(area); $event.stopPropagation()" 
-                      [title]="area.activa ? 'Desactivar' : 'Activar'"
-                      [class.action-deactivate]="area.activa"
-                      [class.action-activate]="!area.activa">
-                {{ area.activa ? 'Desactivar' : 'Activar' }}
-              </button>
-              <button class="action-btn action-delete" (click)="confirmDeleteArea(area); $event.stopPropagation()" title="Eliminar">
-                Eliminar
-              </button>
+              <div class="dropdown-menu" *ngIf="openMenuId === area.id" (click)="$event.stopPropagation()">
+                <button class="dropdown-item" (click)="editArea(area); closeMenu()">
+                  <i class="fas fa-edit"></i>
+                  Editar
+                </button>
+                <button class="dropdown-item" (click)="toggleAreaStatus(area); closeMenu()">
+                  <i [class]="area.activa ? 'fas fa-toggle-off' : 'fas fa-toggle-on'"></i>
+                  {{ area.activa ? 'Desactivar' : 'Activar' }}
+                </button>
+                <button class="dropdown-item delete" (click)="confirmDeleteArea(area); closeMenu()">
+                  <i class="fas fa-trash"></i>
+                  Eliminar
+                </button>
+              </div>
             </div>
           </div>
           
@@ -357,109 +361,83 @@ import { Areas, Usuario } from './areas.interface';
       line-height: 1.4;
     }
 
-    .area-actions {
-      display: flex;
-      gap: 6px;
-      opacity: 0;
-      transition: opacity 0.3s ease;
+    .area-actions-menu {
+      position: relative;
     }
 
-    .area-card:hover .area-actions {
-      opacity: 1;
-    }
-
-    @media (max-width: 768px) {
-      .area-actions {
-        opacity: 1;
-        flex-direction: column;
-        gap: 4px;
-        margin-top: 12px;
-      }
-    }
-
-    .action-btn {
+    .menu-trigger {
       background: transparent;
       border: none;
-      color: #2c5aa0;
-      font-size: 12px;
-      font-weight: 600;
-      padding: 4px 8px;
-      border-radius: 4px;
+      color: #718096;
+      font-size: 18px;
+      padding: 8px;
+      border-radius: 6px;
       cursor: pointer;
       transition: all 0.2s ease;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
     }
 
-    @media (max-width: 768px) {
-      .action-btn {
-        width: 100%;
-        padding: 8px 12px;
-        font-size: 13px;
-        border: 1px solid #e2e8f0;
-        background: #f8f9fa;
-        text-align: center;
-      }
-      
-      .action-btn.action-edit {
-        background: #e8f1fb;
-        border-color: #2c5aa0;
-      }
-      
-      .action-btn.action-deactivate {
-        background: #fee;
-        border-color: #dc3545;
-      }
-      
-      .action-btn.action-activate {
-        background: #e8f5e9;
-        border-color: #28a745;
-      }
-      
-      .action-btn.action-delete {
-        background: #fee;
-        border-color: #dc3545;
-      }
-    }
-
-    .action-btn:hover {
+    .menu-trigger:hover {
       background: #f0f4f8;
-    }
-
-    .action-btn.action-edit {
       color: #2c5aa0;
     }
 
-    .action-btn.action-edit:hover {
-      background: #e8f1fb;
-      color: #1e3a5f;
+    .dropdown-menu {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      border: 1px solid #e2e8f0;
+      min-width: 160px;
+      z-index: 10;
+      margin-top: 4px;
+      overflow: hidden;
     }
 
-    .action-btn.action-deactivate {
+    .dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      padding: 12px 16px;
+      background: transparent;
+      border: none;
+      color: #2d3748;
+      font-size: 14px;
+      font-weight: 500;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border-bottom: 1px solid #f7fafc;
+    }
+
+    .dropdown-item:last-child {
+      border-bottom: none;
+    }
+
+    .dropdown-item:hover {
+      background: #f7fafc;
+      color: #2c5aa0;
+    }
+
+    .dropdown-item.delete {
       color: #dc3545;
     }
 
-    .action-btn.action-deactivate:hover {
-      background: #fee;
-      color: #c82333;
+    .dropdown-item.delete:hover {
+      background: #fff5f5;
+      color: #c53030;
     }
 
-    .action-btn.action-activate {
-      color: #28a745;
-    }
-
-    .action-btn.action-activate:hover {
-      background: #e8f5e9;
-      color: #1e7e34;
-    }
-
-    .action-btn.action-delete {
-      color: #dc3545;
-    }
-
-    .action-btn.action-delete:hover {
-      background: #fee;
-      color: #c82333;
+    .dropdown-item i {
+      width: 16px;
+      text-align: center;
     }
 
     .area-stats {
@@ -1179,7 +1157,8 @@ export class AreasComponent implements OnInit {
   areaForm: FormGroup;
   successMessage = '';
   errorMessage = '';
-  
+  openMenuId: number | null = null;
+
   searchTerm = '';
   currentPage = 1;
   itemsPerPage = 5;
@@ -1400,5 +1379,13 @@ export class AreasComponent implements OnInit {
   private clearMessages() {
     this.successMessage = '';
     this.errorMessage = '';
+  }
+
+  toggleMenu(areaId: number) {
+    this.openMenuId = this.openMenuId === areaId ? null : areaId;
+  }
+
+  closeMenu() {
+    this.openMenuId = null;
   }
 }

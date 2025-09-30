@@ -9,11 +9,11 @@ import { RoleGuard } from './guards/role.guard';
 export const routes: Routes = [
   // Rutas públicas
   { path: '', component: HomeComponent },
-  { path: 'login', component: AdminLoginComponent },
+  { path: 'ingresar', component: AdminLoginComponent },
   { path: 'servicios-administrativos', component: AdminLoginComponent }, // Alias para mantener compatibilidad
   { path: 'manual', component: ManualComponent },
   { path: 'buscar', component: SearchComponent },
-  
+
   // Rutas protegidas por rol ADMIN
   {
     path: 'admin',
@@ -22,11 +22,11 @@ export const routes: Routes = [
     loadComponent: () => import('./shared/layout/layout.component').then(m => m.LayoutComponent),
     children: [
       {
-        path: 'dashboard',
+        path: 'tablero',
         loadComponent: () => import('./admin/dashboard/dashboard.component').then(m => m.DashboardComponent)
       },
       {
-        path: 'profile',
+        path: 'perfil',
         loadComponent: () => import('./shared/user-profile/user-profile.component').then(m => m.UserProfileComponent)
       },
       {
@@ -34,11 +34,11 @@ export const routes: Routes = [
         loadComponent: () => import('./components/areas/areas.component').then(m => m.AreasComponent)
       },
       {
-        path: 'user-management',
+        path: 'gestion-usuarios',
         loadComponent: () => import('./components/user-management/user-management.component').then(m => m.UserManagementComponent)
       },
       {
-        path: 'role-management',
+        path: 'gestion-roles',
         loadComponent: () => import('./components/role-management/role-management.component').then(m => m.RoleManagementComponent)
       },
       {
@@ -71,13 +71,13 @@ export const routes: Routes = [
       },
       {
         path: '',
-        redirectTo: 'dashboard',
+        redirectTo: 'tablero',
         pathMatch: 'full'
       }
     ]
   },
-  
-  // Rutas protegidas por rol ADMINISTRATIVO 
+
+  // Rutas protegidas por rol ADMINISTRATIVO
   {
     path: 'administrativo',
     canActivate: [AuthGuard, RoleGuard],
@@ -85,11 +85,11 @@ export const routes: Routes = [
     loadComponent: () => import('./shared/layout/layout.component').then(m => m.LayoutComponent),
     children: [
       {
-        path: 'dashboard',
+        path: 'tablero',
         loadComponent: () => import('./administrativo/dashboard/dashboard.component').then(m => m.DashboardComponent)
       },
       {
-        path: 'profile',
+        path: 'perfil',
         loadComponent: () => import('./shared/user-profile/user-profile.component').then(m => m.UserProfileComponent)
       },
       {
@@ -114,13 +114,13 @@ export const routes: Routes = [
       },
       {
         path: '',
-        redirectTo: 'dashboard',
+        redirectTo: 'tablero',
         pathMatch: 'full'
       }
     ]
   },
 
-  // Rutas protegidas por rol USUARIO 
+  // Rutas protegidas por rol USUARIO
   {
     path: 'usuario',
     canActivate: [AuthGuard, RoleGuard],
@@ -128,11 +128,11 @@ export const routes: Routes = [
     loadComponent: () => import('./shared/layout/layout.component').then(m => m.LayoutComponent),
     children: [
       {
-        path: 'dashboard',
+        path: 'tablero',
         loadComponent: () => import('./usuario/dashboard/dashboard.component').then(m => m.UsuarioDashboardComponent)
       },
       {
-        path: 'profile',
+        path: 'perfil',
         loadComponent: () => import('./shared/user-profile/user-profile.component').then(m => m.UserProfileComponent)
       },
       {
@@ -157,7 +157,7 @@ export const routes: Routes = [
       },
       {
         path: '',
-        redirectTo: 'dashboard',
+        redirectTo: 'tablero',
         pathMatch: 'full'
       }
     ]
@@ -165,27 +165,24 @@ export const routes: Routes = [
 
   // Ruta de perfil para todos los usuarios autenticados
   {
-    path: 'profile',
+    path: 'perfil',
     canActivate: [AuthGuard],
     loadComponent: () => import('./shared/user-profile/user-profile.component').then(m => m.UserProfileComponent)
   },
 
   // Ruta de cambio de contraseña para todos los usuarios autenticados
   {
-    path: 'change-password',
+    path: 'cambiar-contrasena',
     canActivate: [AuthGuard],
     loadComponent: () => import('./shared/change-password/change-password.component').then(m => m.ChangePasswordComponent)
   },
-  
- 
-  
-  
+
   // Página de acceso denegado
   {
-    path: 'access-denied',
+    path: 'acceso-denegado',
     loadComponent: () => import('./shared/access-denied/access-denied.component').then(m => m.AccessDeniedComponent)
   },
-  
+
   // Redirección por defecto
   { path: '**', redirectTo: '' }
 ];

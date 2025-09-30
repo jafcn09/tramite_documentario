@@ -424,11 +424,9 @@ export class AuthService {
     }
 
     const roleRoutes: { [key: string]: string } = {
-      'ADMIN': '/admin/dashboard',
-      'USUARIO': '/usuario/dashboard',
-      'ALUMNO': '/alumno/dashboard',
-      'EXTERNO': '/externo/dashboard',
-      'ADMINISTRATIVO': '/administrativo/dashboard'
+      'ADMIN': '/admin/tablero',
+      'USUARIO': '/usuario/tablero',
+      'ADMINISTRATIVO': '/administrativo/tablero'
     };
 
     const route = roleRoutes[role] || '/home';

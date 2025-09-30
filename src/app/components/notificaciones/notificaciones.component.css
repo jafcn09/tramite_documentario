@@ -618,6 +618,35 @@
   to { transform: rotate(360deg); }
 }
 
+/* Mobile Button Fix - Force icon-only buttons */
+@media (max-width: 640px) {
+  /* Fix: Force buttons to be icon-only */
+  button[class*="inline-flex"] {
+    min-width: 40px !important;
+    width: 40px !important;
+    padding: 8px !important;
+    justify-content: center !important;
+  }
+
+  /* Hide ALL text spans except badges */
+  button[class*="inline-flex"] > span:not([class*="absolute"]):not([class*="bg-red"]):not([class*="bg-blue"]) {
+    display: none !important;
+  }
+
+  /* Center icons */
+  button[class*="inline-flex"] > i {
+    margin: 0 !important;
+  }
+
+  /* Fix badge position */
+  button[class*="inline-flex"] span[class*="absolute"] {
+    position: absolute !important;
+    top: -4px !important;
+    right: -4px !important;
+    margin: 0 !important;
+  }
+}
+
 /* Responsive Simple */
 @media (max-width: 768px) {
   .modern-notifications-container {
@@ -632,7 +661,23 @@
 
   .header-actions {
     width: 100%;
-    justify-content: flex-end;
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+  }
+
+  .header-actions .modern-btn {
+    white-space: nowrap;
+    font-size: 13px;
+    padding: 7px 12px;
+  }
+
+  .header-actions .modern-btn span {
+    display: none;
+  }
+
+  .header-actions .modern-btn i {
+    margin: 0;
   }
 
   .modern-stats {
@@ -674,7 +719,33 @@
 
 @media (max-width: 480px) {
   .header-info h1 {
-    font-size: 20px;
+    font-size: 18px;
+  }
+
+  .header-info p {
+    font-size: 12px;
+  }
+
+  .header-actions {
+    flex-wrap: nowrap;
+  }
+
+  .header-actions .modern-btn {
+    min-width: 40px;
+    padding: 8px 10px;
+    justify-content: center;
+  }
+
+  .quick-filters {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    width: 100%;
+    padding-bottom: 4px;
+  }
+
+  .quick-filter-btn {
+    font-size: 12px;
+    padding: 7px 12px;
   }
 
   .modern-stats {
@@ -693,5 +764,14 @@
 
   .notification-meta {
     display: none;
+  }
+
+  .notification-actions {
+    gap: 6px;
+  }
+
+  .action-btn {
+    width: 32px;
+    height: 32px;
   }
 }

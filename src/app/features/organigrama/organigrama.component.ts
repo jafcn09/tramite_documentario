@@ -39,7 +39,12 @@ export class OrganigramaComponent implements OnInit {
     try {
       this.organigramaService.obtenerOrganigramaCompleto().subscribe({
         next: (organigramaData) => {
-          this.organigrama = organigramaData || [];
+          // Ordenar para que Rectorado vaya primero
+          const datos = organigramaData || [];
+          const rectorado = datos.find(a => a.codigoOrganigrama === 'RECTORADO' || a.nombre.includes('RECTORADO'));
+          const otros = datos.filter(a => a.id !== rectorado?.id);
+
+          this.organigrama = rectorado ? [rectorado, ...otros] : datos;
           this.organigramaFiltrado = [...this.organigrama];
           this.totalAreas = this.organigramaService.contarTotalAreas(this.organigrama);
           this.calcularEstadisticas();

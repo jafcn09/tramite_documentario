@@ -45,9 +45,7 @@ export class RoleGuard implements CanActivate {
 
       return true;
     }
-    
-
-    this.router.navigate(['/access-denied']);
+    this.router.navigate(['/acceso-denegado']);
     return false;
   }
 }

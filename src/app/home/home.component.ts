@@ -49,15 +49,17 @@ interface Stat {
 
     <section class="py-12 lg:py-16 px-4 bg-white">
       <div class="max-w-6xl mx-auto">
-        <div class="grid grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 mb-12 lg:mb-16">
-          <div *ngFor="let stat of stats" class="text-center animate-fade-in delay-100">
-            <div class="inline-flex items-center justify-center w-16 h-16 mb-4 rounded-xl bg-university-100">
-              <svg class="w-8 h-8 text-university-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="stat.icon"></path>
-              </svg>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 mb-12 lg:mb-16">
+          <div *ngFor="let stat of stats" class="bg-gradient-to-br from-white to-university-50 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 animate-fade-in delay-100 border border-university-100">
+            <div class="flex flex-col items-center text-center">
+              <div class="inline-flex items-center justify-center w-16 h-16 mb-4 rounded-xl bg-university-100 shadow-md">
+                <svg class="w-8 h-8 text-university-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="stat.icon"></path>
+                </svg>
+              </div>
+              <div class="text-4xl md:text-5xl font-bold text-university-800 mb-2">{{ stat.value }}</div>
+              <div class="text-sm md:text-base text-gray-600 font-medium">{{ stat.label }}</div>
             </div>
-            <div class="text-3xl font-bold text-university-800 mb-1">{{ stat.value }}</div>
-            <div class="text-sm text-gray-600">{{ stat.label }}</div>
           </div>
         </div>
       </div>

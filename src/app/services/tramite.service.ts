@@ -118,6 +118,25 @@ export class TramiteService {
       );
   }
 
+  asignarseTramite(tramiteId: number): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/${tramiteId}/asignarse`, {})
+      .pipe(
+        tap(response => {
+          this.toastService.success(
+            'Trámite asignado',
+            'Te has asignado el trámite exitosamente. Se ha enviado una notificación por correo.'
+          );
+        }),
+        catchError(error => {
+          this.toastService.error(
+            'Error al asignarse',
+            error.error?.message || 'No se pudo asignar el trámite. Intente nuevamente.'
+          );
+          throw error;
+        })
+      );
+  }
+
   // Crear nuevo trámite
   crearTramite(tramite: CrearTramiteRequest): Observable<Tramite> {
     const formData = new FormData();
@@ -779,6 +798,27 @@ export class TramiteService {
       4: 'URGENTE'
     };
     return prioridadMap[prioridadId] || 'NORMAL';
+  }
+
+  // Editar trámite (Usuario)
+  editarTramiteUsuario(tramiteId: number, request: any): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/${tramiteId}/editar`, request)
+      .pipe(
+        tap(() => {
+          this.toastService.success(
+            'Trámite editado',
+            'El trámite ha sido editado correctamente. Se ha enviado una notificación por correo.'
+          );
+        }),
+        catchError(error => {
+          const mensaje = error?.error?.message || 'No se pudo editar el trámite';
+          this.toastService.error(
+            'Error al editar',
+            mensaje
+          );
+          throw error;
+        })
+      );
   }
 
   // Limpiar estado local

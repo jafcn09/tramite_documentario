@@ -129,14 +129,40 @@
       </div>
 
       <div class="mt-8 flex flex-col sm:flex-row gap-4">
-        <button (click)="clearSearch()" 
-                class="flex-1 btn-outline-university px-6 py-3 rounded-lg font-medium">
-          Nueva Búsqueda
+        <button (click)="clearSearch()"
+                class="flex-1 btn-outline-university px-6 py-3 rounded-lg font-medium transition-all hover:scale-105">
+          <span class="flex items-center justify-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+            </svg>
+            Nueva Búsqueda
+          </span>
         </button>
-        <button (click)="viewDocument()" 
-                class="flex-1 btn-university px-6 py-3 rounded-lg font-medium">
-          Ver Documento
+        <button (click)="viewDocument()"
+                [disabled]="loadingDocuments"
+                class="flex-1 btn-university px-6 py-3 rounded-lg font-medium transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed">
+          <span class="flex items-center justify-center gap-2">
+            <svg *ngIf="!loadingDocuments" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+            </svg>
+            <div *ngIf="loadingDocuments" class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            {{ loadingDocuments ? 'Cargando...' : 'Ver Documentos' }}
+          </span>
         </button>
+      </div>
+
+      <!-- Mensaje de error para documentos -->
+      <div *ngIf="errorMessage && showError" class="mt-4 p-4 border-l-4 border-red-500 bg-red-50 rounded-lg animate-slide-up">
+        <div class="flex items-start gap-3">
+          <svg class="w-6 h-6 text-red-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <div>
+            <p class="font-medium text-red-800">{{ errorMessage }}</p>
+            <p class="text-sm text-red-600 mt-1">Si el problema persiste, contacta con Mesa de Partes.</p>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -153,7 +179,101 @@
       </div>
     </div>
 
-    <div *ngIf="showPdfViewer" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <!-- Modal de Lista de Documentos -->
+    <div *ngIf="showDocumentsModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4 animate-fade-in">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col animate-slide-up">
+        <!-- Header del Modal -->
+        <div class="flex justify-between items-center p-6 border-b border-gray-200 bg-gradient-to-r from-university-600 to-university-700">
+          <div>
+            <h3 class="text-xl font-bold text-white flex items-center gap-2">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+              </svg>
+              Documentos Adjuntos
+            </h3>
+            <p class="text-sm text-university-100 mt-1">Expediente: {{ selectedResult?.expediente }}</p>
+          </div>
+          <button (click)="closeDocumentsModal()"
+                  class="text-white hover:text-university-200 transition-colors p-2 hover:bg-white/10 rounded-lg">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Contenido del Modal -->
+        <div class="flex-1 overflow-y-auto p-6">
+          <div *ngIf="documentos.length === 0" class="text-center py-12">
+            <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            <p class="text-gray-500 text-lg">No hay documentos disponibles</p>
+          </div>
+
+          <div *ngIf="documentos.length > 0" class="space-y-3">
+            <p class="text-sm text-gray-600 mb-4">
+              <strong>{{ documentos.length }}</strong> documento(s) encontrado(s). Haz clic en uno para visualizarlo.
+            </p>
+
+            <div *ngFor="let doc of documentos; let i = index"
+                 (click)="viewSpecificDocument(doc)"
+                 class="group border-2 border-gray-200 rounded-xl p-4 hover:border-university-400 hover:shadow-lg transition-all cursor-pointer bg-gradient-to-r from-white to-gray-50 hover:from-university-50 hover:to-white">
+              <div class="flex items-start gap-4">
+                <!-- Icono del documento -->
+                <div class="flex-shrink-0 w-12 h-12 bg-university-100 rounded-lg flex items-center justify-center group-hover:bg-university-200 transition-colors">
+                  <i [class]="getFileIcon(doc.tipo)" class="text-2xl text-university-600"></i>
+                </div>
+
+                <!-- Información del documento -->
+                <div class="flex-1 min-w-0">
+                  <h4 class="font-semibold text-gray-900 truncate group-hover:text-university-700 transition-colors">
+                    {{ doc.nombre }}
+                  </h4>
+                  <div class="flex flex-wrap gap-3 mt-2 text-sm text-gray-500">
+                    <span class="flex items-center gap-1">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                      </svg>
+                      {{ doc.tipo || 'Tipo desconocido' }}
+                    </span>
+                    <span *ngIf="doc.tamanio" class="flex items-center gap-1">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
+                      </svg>
+                      {{ formatFileSize(doc.tamanio) }}
+                    </span>
+                    <span *ngIf="doc.fechaSubida" class="flex items-center gap-1">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                      </svg>
+                      {{ formatDate(doc.fechaSubida) }}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Flecha indicadora -->
+                <div class="flex-shrink-0">
+                  <svg class="w-6 h-6 text-gray-400 group-hover:text-university-600 group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer del Modal -->
+        <div class="p-6 border-t border-gray-200 bg-gray-50">
+          <button (click)="closeDocumentsModal()"
+                  class="w-full btn-outline-university px-6 py-3 rounded-lg font-medium hover:scale-105 transition-transform">
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de Visor de PDF -->
+    <div *ngIf="showPdfViewer" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4 animate-fade-in">
       <div class="bg-white rounded-lg shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col">
         <div class="flex justify-between items-center p-4 border-b border-gray-200">
           <h3 class="text-lg font-semibold text-university-800">

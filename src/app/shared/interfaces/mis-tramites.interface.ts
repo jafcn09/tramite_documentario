@@ -50,11 +50,12 @@ export interface MiTramite {
   historial: HistorialMiTramite[];
   observaciones?: string;
   respuesta?: string;
-  calificacion?: CalificacionTramite;
   puedeEditar: boolean;
   puedeCalificar: boolean;
   contadorProcesados?: number;
   contadorPorProcesar?: number;
+  estaVencido?: boolean;
+  diasRestantes?: number;
 }
 
 export interface DocumentoMiTramite {
@@ -64,7 +65,7 @@ export interface DocumentoMiTramite {
   tamano: number;
   tipo: string;
   fechaSubida: Date;
-  esSubidoPorUsuario: boolean; // true si lo subió el docente, false si lo subió el abogado
+  esSubidoPorUsuario: boolean; 
   descripcion?: string;
 }
 
@@ -80,36 +81,17 @@ export interface HistorialMiTramite {
   tieneDocumentos: boolean;
 }
 
-export interface CalificacionTramite {
-  id?: number;
-  estrellas: number; // 1-5
-  comentario: string;
-  aspectos: AspectosCalificacion;
-  fecha?: Date;
-}
 
-export interface AspectosCalificacion {
-  rapidez: number; // 1-5
-  calidad: number; // 1-5
-  comunicacion: number; // 1-5
-  solucion: number; // 1-5
-}
-
-export interface CrearCalificacionRequest {
-  tramiteId: number;
-  estrellas: number;
-  comentario: string;
-  aspectos: AspectosCalificacion;
-}
 
 export interface EditarMiTramiteRequest {
-  asunto: string;
-  descripcion: string;
-  prioridadId: number;
+  titulo?: string;
+  asunto?: string;
+  descripcion?: string;
+  numeroExpediente?: string;
+  observaciones?: string;
+  tipo?: string;
+  prioridad?: string;
   areaDestinoId?: number;
-  fechaVencimiento?: Date;
-  documentosAEliminar?: number[];
-  documentosNuevos?: File[];
 }
 
 export interface FiltrosMisTramites {

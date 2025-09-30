@@ -48,8 +48,6 @@
       </div>
       
     </ng-container>
-
-    <!-- Stats para USUARIO -->
     <ng-container *ngIf="isUsuario">
       <div class="stat-card total">
         <div class="stat-icon">
@@ -93,7 +91,6 @@
     </ng-container>
   </div>
 
-  <!-- Barra de herramientas -->
   <div class="toolbar">
     <div class="search-section">
       <div class="search-container">
@@ -145,8 +142,6 @@
             </div>
           </div>
         </div>
-        
-        <!-- Search error -->
         <div *ngIf="searchError && searchTerm && !isSearching" class="search-error">
           <div class="search-error-content">
             <i class="fas fa-exclamation-circle"></i>
@@ -157,68 +152,12 @@
     </div>
 
     <div class="toolbar-actions">
-      <button 
-        class="btn-filter" 
-        (click)="toggleFilters()"
-        [class.active]="showFilters"
-      >
-        <i class="fas fa-filter"></i>
-        Filtros
-      </button>
-      
-      <button 
-        class="btn-view" 
+      <button
+        class="btn-view"
         (click)="toggleVista()"
       >
         <i [class]="vistaActual === 'tarjetas' ? 'fas fa-list' : 'fas fa-th-large'"></i>
       </button>
-    </div>
-  </div>
-
-  <!-- Panel de filtros -->
-  <div class="filters-panel" [class.active]="showFilters">
-    <div class="filters-content">
-      <div class="filter-group">
-        <label>Estado</label>
-        <select [(ngModel)]="filtros.estado" (change)="onFilterChange()">
-          <option value="">Todos los estados</option>
-          <option value="1" *ngIf="!isUsuario">Borrador</option>
-          <option value="2" *ngIf="!isUsuario">Enviado</option>
-          <option value="3">En Revisión</option>
-          <option value="4" *ngIf="isAdministrativo">Derivado</option>
-          <option value="5">Observado</option>
-          <option value="6">Aprobado</option>
-          <option value="7">Finalizado</option>
-        </select>
-      </div>
-
-      <div class="filter-group">
-        <label>Prioridad</label>
-        <select [(ngModel)]="filtros.prioridad" (change)="onFilterChange()">
-          <option value="">Todas las prioridades</option>
-          <option value="1">Baja</option>
-          <option value="2">Normal</option>
-          <option value="3">Alta</option>
-          <option value="4">Urgente</option>
-        </select>
-      </div>
-
-   
-      <div class="filter-group" *ngIf="isAdministrativo">
-        <label>Área</label>
-        <select [(ngModel)]="filtros.area" (change)="onFilterChange()">
-          <option value="">Todas las áreas</option>
-        </select>
-      </div>
-
-      <div class="filter-actions">
-        <button class="btn-apply" (click)="aplicarFiltros()">
-          Aplicar
-        </button>
-        <button class="btn-clear" (click)="limpiarFiltros()">
-          Limpiar
-        </button>
-      </div>
     </div>
   </div>
 
@@ -230,22 +169,8 @@
       <p>Cargando trámites...</p>
     </div>
 
-    <div *ngIf="filterError && !isSearching && !(loading$ | async)" class="filter-error-state">
-      <div class="filter-error-content">
-        <i class="fas fa-search-minus"></i>
-        <h3>No se encontraron resultados</h3>
-        <p>{{ filterError }}</p>
-        <div class="filter-error-actions">
-          <button class="btn-clear-filters" (click)="limpiarFiltros()">
-            <i class="fas fa-times-circle"></i>
-            Limpiar filtros
-          </button>
-        </div>
-      </div>
-    </div>
-
     <!-- Sin trámites -->
-    <div *ngIf="!(loading$ | async) && misTramites && misTramites.length === 0 && !filterError" class="empty-state">
+    <div *ngIf="!(loading$ | async) && misTramites && misTramites.length === 0" class="empty-state">
       <i class="fas fa-file-alt"></i>
       <h3>No tienes trámites</h3>
       <p>Crea tu primer trámite para empezar</p>
@@ -253,7 +178,7 @@
     </div>
 
     <!-- Vista de tarjetas -->
-    <div *ngIf="!(loading$ | async) && filteredTramites.length > 0 && vistaActual === 'tarjetas' && !filterError" class="tramites-grid">
+    <div *ngIf="!(loading$ | async) && filteredTramites.length > 0 && vistaActual === 'tarjetas'" class="tramites-grid">
       <div 
         *ngFor="let tramite of filteredTramites; trackBy: trackByTramiteId" 
         class="tramite-card"
@@ -268,7 +193,6 @@
           <h3 class="tramite-asunto">{{ tramite.asunto }}</h3>
           <p class="tramite-tipo">{{ tramite.tipoTramite.nombre }}</p>
           
-          <!-- Respuesta del administrativo (preview) -->
           <div *ngIf="tramite.respuesta && tramite.estado?.nombre === 'FINALIZADO'" class="respuesta-preview">
             <div class="respuesta-header">
               <i class="fas fa-reply"></i>
@@ -314,7 +238,6 @@
             <i class="fas fa-eye"></i>
           </button>
           
-          <!-- EDICIÓN DESHABILITADA TEMPORALMENTE
           <button
             *ngIf="puedeEditarTramite(tramite)"
             class="btn-action edit"
@@ -323,7 +246,6 @@
           >
             <i class="fas fa-edit"></i>
           </button>
-          -->
           
           <button
             [class]="'btn-action download ' + (estaVencido(tramite) ? 'disabled' : '')"
@@ -354,8 +276,6 @@
             >
               <i class="fas fa-check"></i>
             </button>
-
-            <!-- Botón Rechazar - SIEMPRE visible para administrativos (excepto finalizados) -->
             <button
               *ngIf="isAdministrativo"
               [class]="'btn-action reject ' + (estaVencido(tramite) || !puedeRechazar(tramite) ? 'disabled' : '')"
@@ -365,8 +285,6 @@
             >
               <i class="fas fa-times"></i>
             </button>
-
-            <!-- Botón Derivar - Para trámites en revisión/proceso, NO derivados -->
             <button
               *ngIf="isAdministrativo"
               [class]="'btn-action forward ' + (estaVencido(tramite) || !puedeDerivar(tramite) ? 'disabled' : '')"
@@ -390,10 +308,6 @@
           </ng-container>
      
 
-          <div *ngIf="tramite.calificacion && isUsuario" class="rating-display" title="Tu calificación">
-            <i class="fas fa-star"></i>
-            {{ tramite.calificacion.estrellas }}
-          </div>
         </div>
 
 
@@ -415,7 +329,7 @@
     </div>
 
 
-    <div *ngIf="!(loading$ | async) && filteredTramites.length > 0 && vistaActual === 'lista' && !filterError" class="tramites-table">
+    <div *ngIf="!(loading$ | async) && filteredTramites.length > 0 && vistaActual === 'lista'" class="tramites-table">
       <div class="table-responsive-wrapper">
         <table>
         <thead>
@@ -463,7 +377,6 @@
                   <i class="fas fa-eye"></i>
                 </button>
                 
-                <!-- EDICIÓN DESHABILITADA TEMPORALMENTE
                 <button
                   *ngIf="puedeEditarTramite(tramite)"
                   class="btn-mini edit"
@@ -472,7 +385,6 @@
                 >
                   <i class="fas fa-edit"></i>
                 </button>
-                -->
                 <button
                   [class]="'btn-mini download ' + (estaVencido(tramite) ? 'disabled' : '')"
                   [disabled]="estaVencido(tramite)"
@@ -481,15 +393,6 @@
                 >
                   <i class="fas fa-download"></i>
                   <span *ngIf="tramite.documentos && tramite.documentos.length > 0" class="badge">{{ tramite.documentos.length }}</span>
-                </button>
-                <!-- Botón de calificación SOLO para docentes (USUARIO) -->
-                <button 
-                  *ngIf="tramite.puedeCalificar && isUsuario"
-                  class="btn-mini rate"
-                  (click)="calificarAtencion(tramite)"
-                  title="Calificar"
-                >
-                  <i class="fas fa-star"></i>
                 </button>
                 
                 <!-- Botones administrativos en vista de tabla -->
@@ -504,8 +407,6 @@
                 >
                   <i class="fas fa-check"></i>
                 </button>
-
-                <!-- Botón Rechazar - SIEMPRE visible para administrativos (excepto finalizados) -->
                 <button
                   *ngIf="isAdministrativo"
                   [class]="'btn-mini reject ' + (estaVencido(tramite) || !puedeRechazar(tramite) ? 'disabled' : '')"
@@ -567,102 +468,7 @@
     >
       <i class="fas fa-chevron-right"></i>
     </button>
-  </div>
-</div>
 
-<!-- Modal de calificación -->
-<div *ngIf="showCalificarModal" class="modal-overlay" (click)="cerrarModalCalificar()">
-  <div class="modal-content calificar-modal" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h3>Calificar Atención</h3>
-      <button class="modal-close" (click)="cerrarModalCalificar()">
-        <i class="fas fa-times"></i>
-      </button>
-    </div>
-    
-    <div class="modal-body">
-      <p>Trámite: <strong>{{ tramiteSeleccionado?.codigo }}</strong></p>
-      
-      <div class="rating-section">
-        <label>Calificación General</label>
-        <div class="stars-rating">
-          <button 
-            *ngFor="let i of [1,2,3,4,5]"
-            class="star-btn"
-            [class.active]="i <= calificacionActual.estrellas"
-            (click)="calificacionActual.estrellas = i"
-          >
-            <i class="fas fa-star"></i>
-          </button>
-        </div>
-      </div>
-
-      <div class="aspects-rating">
-        <div class="aspect-item">
-          <label>Rapidez</label>
-          <select [(ngModel)]="calificacionActual.aspectos.rapidez">
-            <option value="1">1 - Muy lento</option>
-            <option value="2">2 - Lento</option>
-            <option value="3">3 - Regular</option>
-            <option value="4">4 - Rápido</option>
-            <option value="5">5 - Muy rápido</option>
-          </select>
-        </div>
-
-        <div class="aspect-item">
-          <label>Calidad</label>
-          <select [(ngModel)]="calificacionActual.aspectos.calidad">
-            <option value="1">1 - Muy mala</option>
-            <option value="2">2 - Mala</option>
-            <option value="3">3 - Regular</option>
-            <option value="4">4 - Buena</option>
-            <option value="5">5 - Excelente</option>
-          </select>
-        </div>
-
-        <div class="aspect-item">
-          <label>Comunicación</label>
-          <select [(ngModel)]="calificacionActual.aspectos.comunicacion">
-            <option value="1">1 - Muy mala</option>
-            <option value="2">2 - Mala</option>
-            <option value="3">3 - Regular</option>
-            <option value="4">4 - Buena</option>
-            <option value="5">5 - Excelente</option>
-          </select>
-        </div>
-
-        <div class="aspect-item">
-          <label>Solución</label>
-          <select [(ngModel)]="calificacionActual.aspectos.solucion">
-            <option value="1">1 - No resolvió</option>
-            <option value="2">2 - Resolvió parcialmente</option>
-            <option value="3">3 - Resolvió</option>
-            <option value="4">4 - Resolvió bien</option>
-            <option value="5">5 - Resolvió perfectamente</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="comment-section">
-        <label>Comentarios</label>
-        <textarea 
-          [(ngModel)]="calificacionActual.comentario"
-          placeholder="Comparte tu experiencia..."
-          rows="4"
-        ></textarea>
-      </div>
-    </div>
-
-    <div class="modal-footer">
-      <button class="btn-cancel" (click)="cerrarModalCalificar()">
-        Cancelar
-      </button>
-      <button class="btn-save" (click)="guardarCalificacion()">
-        <i class="fas fa-star"></i>
-        Guardar Calificación
-      </button>
-    </div>
-  </div>
 </div>
 
 <!-- Modal de aprobación de trámite -->
@@ -704,8 +510,6 @@
             </div>
           </div>
         </div>
-
-        <!-- Información del responsable que verá el trámite -->
         <div class="responsable-info">
           <div class="responsable-card">
             <div class="responsable-header">
@@ -890,15 +694,6 @@
           <i class="fas fa-download"></i>
           Descargar Todo
           <span *ngIf="tramiteSeleccionado.documentos && tramiteSeleccionado.documentos.length > 0" class="badge-modal">({{ tramiteSeleccionado.documentos.length }})</span>
-        </button>
-        
-        <button 
-          *ngIf="tramiteSeleccionado.puedeCalificar && isUsuario"
-          class="btn-warning"
-          (click)="calificarAtencion(tramiteSeleccionado); cerrarModalDetalle()"
-        >
-          <i class="fas fa-star"></i>
-          Calificar
         </button>
       </div>
     </div>
@@ -1101,11 +896,163 @@
   (tramiteRespondido)="onTramiteRespondido($event)">
 </app-responder-tramite-modal>
 
-<!-- MODAL DE EDICIÓN DESHABILITADO - USUARIOS NO PUEDEN EDITAR TRÁMITES
-<app-editar-tramite-modal
-  [show]="showEditarTramiteModal"
-  [tramite]="getTramiteForEdit()"
-  (close)="cerrarModalEditar()"
-  (tramiteActualizado)="onTramiteActualizado($event)">
-</app-editar-tramite-modal>
--->
+<!-- Modal de Edición de Trámite -->
+<div *ngIf="showEditarTramiteModal && tramiteSeleccionado" class="modal-overlay" (click)="cerrarModalEditar()">
+  <div class="modal-content-large" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>
+        <i class="fas fa-edit"></i>
+        Editar Trámite
+      </h2>
+      <button class="close-btn" (click)="cerrarModalEditar()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="tramite-info-card">
+        <h3>{{ tramiteSeleccionado.codigo }}</h3>
+        <p><strong>Estado:</strong> {{ tramiteSeleccionado.estado.nombre }}</p>
+        <p class="info-text">
+          <i class="fas fa-info-circle"></i>
+          Todos los campos son opcionales. Solo complete los que desea modificar.
+        </p>
+      </div>
+
+      <form class="edit-form">
+        <!-- Descripción con mejor diseño -->
+        <div class="form-group">
+          <label for="editDescripcion">
+            <i class="fas fa-align-left"></i>
+            Descripción Detallada
+          </label>
+          <textarea
+            id="editDescripcion"
+            [(ngModel)]="formEditar.descripcion"
+            [name]="'editDescripcion'"
+            placeholder="Escriba aquí los detalles completos de su trámite..."
+            rows="5"
+            maxlength="1000"
+            class="form-textarea">
+          </textarea>
+          <small class="char-counter">{{ (formEditar.descripcion || '').length }}/1000 caracteres</small>
+        </div>
+
+        <!-- Observaciones -->
+        <div class="form-group">
+          <label for="editObservaciones">
+            <i class="fas fa-comment"></i>
+            Observaciones Adicionales
+            <span class="optional-badge">Opcional</span>
+          </label>
+          <textarea
+            id="editObservaciones"
+            [(ngModel)]="formEditar.observaciones"
+            [name]="'editObservaciones'"
+            placeholder="Agregue comentarios o notas adicionales si lo requiere..."
+            rows="3"
+            maxlength="500"
+            class="form-textarea">
+          </textarea>
+          <small class="char-counter">{{ (formEditar.observaciones || '').length }}/500 caracteres</small>
+        </div>
+
+        <div class="documentos-section" *ngIf="getDocumentosVisibles().length > 0">
+          <h4>
+            <i class="fas fa-file-alt"></i>
+            Documentos Adjuntos ({{ getDocumentosVisibles().length }})
+          </h4>
+          <div class="documentos-list-edit">
+            <div *ngFor="let documento of getDocumentosVisibles()" class="documento-item-edit">
+              <div class="documento-info">
+                <i class="fas fa-file-pdf"></i>
+                <span class="documento-nombre">{{ documento.nombreOriginal || documento.nombre }}</span>
+                <span class="documento-size">{{ formatearTamano(documento.tamano) }}</span>
+              </div>
+              <button
+                type="button"
+                class="btn-remove-doc"
+                (click)="removerDocumento(documento.id)"
+                title="Eliminar documento">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sección para subir nuevos archivos -->
+        <div class="upload-section">
+          <h4>
+            <i class="fas fa-upload"></i>
+            Agregar Nuevos Documentos
+            <span class="optional-badge">Opcional</span>
+          </h4>
+          <div class="upload-area"
+               (click)="fileInput.click()"
+               (dragover)="onDragOver($event)"
+               (dragleave)="onDragLeave($event)"
+               (drop)="onDrop($event)">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <p class="upload-text">Haga clic o arrastre archivos aquí</p>
+            <p class="upload-hint">PDF, DOC, DOCX, (Max. 10MB)</p>
+            <input
+              #fileInput
+              type="file"
+              multiple
+              accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+              (change)="onFileSelected($event)"
+              style="display: none;">
+          </div>
+
+          <!-- Lista de archivos nuevos seleccionados -->
+          <div *ngIf="archivosNuevos.length > 0" class="archivos-nuevos-list">
+            <h5>Archivos por subir ({{ archivosNuevos.length }})</h5>
+            <div *ngFor="let archivo of archivosNuevos; let i = index" class="archivo-nuevo-item">
+              <div class="archivo-info">
+                <i class="fas fa-file"></i>
+                <span class="archivo-nombre">{{ archivo.name }}</span>
+                <span class="archivo-size">{{ formatearTamano(archivo.size) }}</span>
+              </div>
+              <button
+                type="button"
+                class="btn-remove-new"
+                (click)="removerArchivoNuevo(i)"
+                title="Quitar archivo">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mensaje de notificación mejorado -->
+        <div class="info-message">
+          <div class="info-icon">
+            <i class="fas fa-envelope"></i>
+          </div>
+          <div class="info-content">
+            <strong>Notificación automática</strong>
+            <p>Se enviará un correo electrónico confirmando los cambios realizados.</p>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <div class="modal-footer">
+      <button
+        class="btn-cancel"
+        (click)="cerrarModalEditar()"
+        [disabled]="guardandoEdicion">
+        <i class="fas fa-times"></i>
+        Cancelar
+      </button>
+      <button
+        class="btn-primary"
+        [disabled]="guardandoEdicion || !hayCambiosEnFormulario()"
+        (click)="guardarEdicion()">
+        <i class="fas fa-spinner fa-spin" *ngIf="guardandoEdicion"></i>
+        <i class="fas fa-save" *ngIf="!guardandoEdicion"></i>
+        {{ guardandoEdicion ? 'Guardando...' : 'Guardar Cambios' }}
+      </button>
+    </div>
+  </div>
+</div>

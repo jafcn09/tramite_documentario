@@ -92,11 +92,9 @@ export class AdminLoginComponent implements OnInit {
             const currentUser = this.authService.currentUserValue;
             if (currentUser && currentUser.role) {
               const roleRoutes: { [key: string]: string } = {
-                'ADMIN': '/admin/dashboard',
-                'ADMINISTRATIVO': '/administrativo/dashboard',
-                'USUARIO': '/usuario/dashboard',
-                'ALUMNO': '/alumno/dashboard',
-                'EXTERNO': '/externo/dashboard'
+                'ADMIN': '/admin/tablero',
+                'ADMINISTRATIVO': '/administrativo/tablero',
+                'USUARIO': '/usuario/tablero',
               };
 
               redirectRoute = roleRoutes[currentUser.role.name] || '/';

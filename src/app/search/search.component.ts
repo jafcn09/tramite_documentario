@@ -88,6 +88,10 @@ export class SearchComponent implements OnInit, OnDestroy {
   private themeSubscription?: Subscription;
   private apiUrl = environment.apiUrl;
   errorMessage = '';
+  showDocumentsModal = false;
+  documentos: any[] = [];
+  currentDocument: any | null = null;
+  loadingDocuments = false;
 
   constructor(
     private router: Router,
@@ -247,43 +251,105 @@ export class SearchComponent implements OnInit, OnDestroy {
 
   viewDocument(): void {
     if (!this.selectedResult) return;
-    
-    // First get the tramite details to get document names
+
+    this.loadingDocuments = true;
+    this.errorMessage = '';
+
+    // Obtener los detalles del trámite incluyendo documentos
     this.http.get<TramiteResponse>(`${this.apiUrl}/api/tramites/public/preview/${this.selectedResult.codigo}`)
     .pipe(
       catchError(error => {
         console.error('Error al obtener datos del trámite:', error);
-        this.errorMessage = 'No se pudo cargar el documento. Intente nuevamente.';
+        this.loadingDocuments = false;
+
+        // Mensajes de error personalizados
+        if (error.status === 404) {
+          this.errorMessage = '❌ Trámite no encontrado. El expediente podría no existir o no está disponible públicamente.';
+        } else if (error.status === 403) {
+          this.errorMessage = '🔒 Acceso denegado. Este trámite no está disponible para consulta pública.';
+        } else if (error.status === 0) {
+          this.errorMessage = '🌐 Sin conexión. Verifica tu conexión a internet e intenta nuevamente.';
+        } else {
+          this.errorMessage = '⚠️ Error al cargar el documento. Por favor, intenta nuevamente más tarde.';
+        }
+
+        this.showError = true;
         return of(null);
       })
     )
     .subscribe(tramite => {
-      if (tramite && tramite.documentosAdjuntos && tramite.documentosAdjuntos.length > 0) {
-        // Get the first document 
-        const primerDocumento = tramite.documentosAdjuntos[0];
-        
-        // Download the document
-        this.http.get(`${this.apiUrl}/api/tramites/public/${this.selectedResult!.codigo}/archivo/${primerDocumento.nombre}`, {
-          responseType: 'blob'
-        })
-        .pipe(
-          catchError(error => {
-            console.error('Error al descargar documento:', error);
-            this.errorMessage = 'No se pudo cargar el documento. Intente nuevamente.';
-            return of(null);
-          })
-        )
-        .subscribe(blob => {
-          if (blob) {
-            const url = URL.createObjectURL(blob);
-            this.pdfUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
-            this.showPdfViewer = true;
-          }
-        });
+      this.loadingDocuments = false;
+
+      if (!tramite) {
+        return;
+      }
+
+      if (tramite.documentosAdjuntos && tramite.documentosAdjuntos.length > 0) {
+        this.documentos = tramite.documentosAdjuntos;
+        this.showDocumentsModal = true;
+        this.showError = false;
       } else {
-        this.errorMessage = 'No hay documentos disponibles para este trámite.';
+        this.errorMessage = '📄 No hay documentos adjuntos disponibles para este trámite.';
+        this.showError = true;
+        this.documentos = [];
       }
     });
+  }
+
+  viewSpecificDocument(documento: any): void {
+    if (!this.selectedResult || !documento) return;
+
+    this.currentDocument = documento;
+    this.loadingDocuments = true;
+
+    // Descargar el documento específico
+    this.http.get(`${this.apiUrl}/api/tramites/public/${this.selectedResult.codigo}/archivo/${documento.nombre}`, {
+      responseType: 'blob'
+    })
+    .pipe(
+      catchError(error => {
+        console.error('Error al descargar documento:', error);
+        this.loadingDocuments = false;
+
+        if (error.status === 404) {
+          this.errorMessage = '❌ Documento no encontrado. El archivo podría haber sido eliminado.';
+        } else {
+          this.errorMessage = '⚠️ Error al cargar el documento. Intenta nuevamente.';
+        }
+
+        return of(null);
+      })
+    )
+    .subscribe(blob => {
+      this.loadingDocuments = false;
+
+      if (blob) {
+        const url = URL.createObjectURL(blob);
+        this.pdfUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
+        this.showPdfViewer = true;
+      }
+    });
+  }
+
+  closeDocumentsModal(): void {
+    this.showDocumentsModal = false;
+    this.documentos = [];
+  }
+
+  formatFileSize(bytes: number): string {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+  }
+
+  getFileIcon(tipo: string): string {
+    if (tipo.includes('pdf')) return 'fas fa-file-pdf';
+    if (tipo.includes('word') || tipo.includes('doc')) return 'fas fa-file-word';
+    if (tipo.includes('excel') || tipo.includes('sheet')) return 'fas fa-file-excel';
+    if (tipo.includes('image') || tipo.includes('png') || tipo.includes('jpg')) return 'fas fa-file-image';
+    return 'fas fa-file';
   }
 
   closePdfViewer(): void {

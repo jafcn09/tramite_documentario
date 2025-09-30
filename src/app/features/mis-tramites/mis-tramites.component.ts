@@ -11,16 +11,12 @@ import { BandejaTramitesService } from '../../services/bandeja-tramites.service'
 import { TramiteService } from '../../services/tramite.service';
 import { ToastService } from '../../services/toast.service';
 import { AuthService, AdministrativeUser } from '../../services/auth.service';
-import { 
-  MiTramite, 
-  FiltrosMisTramites, 
+import {
+  MiTramite,
   EstadisticasMisTramites,
-  CalificacionTramite,
-  CrearCalificacionRequest,
   EditarMiTramiteRequest
 } from '../../shared/interfaces/mis-tramites.interface';
 import { ResponderTramiteModalComponent } from '../tramites/components/responder-tramite-modal/responder-tramite-modal.component';
-// import { EditarTramiteModalComponent } from '../tramites/components/editar-tramite-modal/editar-tramite-modal.component';
 
 @Component({
   selector: 'app-mis-tramites',
@@ -51,7 +47,6 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
   totalPages = 0;
   
 
-  filtros: FiltrosMisTramites = {};
   searchTerm = '';
   private searchSubject = new Subject<string>();
   searchResults: MiTramite[] = [];
@@ -60,36 +55,16 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
   isSearching = false;
   selectedSearchIndex = -1;
   filteredTramites: MiTramite[] = [];
-  
 
-  showFilters = false;
   vistaActual: 'tarjetas' | 'lista' = 'tarjetas';
-  
-
-  filterError = '';
-  isFilteringActive = false;
   
 
   showNuevoTramiteModal = false;
   showDetalleTramiteModal = false;
   showEditarTramiteModal = false;
-  showCalificarModal = false;
   showAprobarModal = false;
   showResponderTramiteModal = false;
   tramiteSeleccionado: MiTramite | null = null;
-  
-
-  calificacionActual: CrearCalificacionRequest = {
-    tramiteId: 0,
-    estrellas: 5,
-    comentario: '',
-    aspectos: {
-      rapidez: 5,
-      calidad: 5,
-      comunicacion: 5,
-      solucion: 5
-    }
-  };
   
   private subscriptions = new Subscription();
 
@@ -133,13 +108,14 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
     this.cargarMisTramites();
     this.cargarEstadisticas();
     
-    // Verificar si hay un tramiteId en los query parameters
     this.subscriptions.add(
       this.route.queryParams.subscribe(params => {
         const tramiteId = params['tramiteId'];
+        const action = params['action'];
+
         if (tramiteId) {
-          // Buscar y mostrar el detalle del trámite específico
-          this.buscarYMostrarTramite(parseInt(tramiteId));
+          const id = parseInt(tramiteId);
+          this.buscarYMostrarTramite(id, action);
         }
       })
     );
@@ -164,7 +140,7 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
     console.log('🔄 MIS-TRAMITES DEBUG: cargarMisTramites llamado');
 
     this.subscriptions.add(
-      this.misTramitesService.getMisTramites(this.currentPage, this.pageSize, this.filtros)
+      this.misTramitesService.getMisTramites(this.currentPage, this.pageSize, {})
         .subscribe({
           next: (response) => {
             console.log('📋 MIS-TRAMITES DEBUG: Datos recibidos:', response);
@@ -355,8 +331,6 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
     this.showSearchDropdown = false;
     this.searchError = '';
     this.isSearching = false;
-    this.filterError = '';
-
   }
 
   selectSearchResult(tramite: MiTramite) {
@@ -401,93 +375,17 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
     }, 150);
   }
 
-  aplicarFiltros() {
-    this.applyDynamicFilters();
-    this.showFilters = false;
-  }
-
-  onFilterChange() {
-    this.applyDynamicFilters();
-  }
-
   private applyDynamicFilters() {
-  
-    
-    this.filterError = '';
-    this.isFilteringActive = this.hasActiveFilters();
-    
     let filtered = [...this.misTramites];
 
-    
-
     if (this.searchTerm) {
-      const beforeSearch = filtered.length;
       filtered = filtered.filter(tramite => this.matchesSearchTerm(tramite, this.searchTerm));
-      
     }
-    
-   
-    if (this.filtros.estado) {
-      const beforeFilter = filtered.length;
-      const estadoId = Number(this.filtros.estado);
-      filtered = filtered.filter(tramite => tramite.estado.id === estadoId);
-     
-    }
-    
-
-    if (this.filtros.prioridad) {
-      const beforeFilter = filtered.length;
-      const prioridadId = Number(this.filtros.prioridad);
-      filtered = filtered.filter(tramite => tramite.prioridad.id === prioridadId);
-      
-    }
-    
-
-    if (this.filtros.area && this.isAdministrativo) {
-      const beforeFilter = filtered.length;
-      const areaId = Number(this.filtros.area);
-      filtered = filtered.filter(tramite => tramite.areaDestino?.id === areaId);
-
-    }
-    
-
-    if (this.filtros.tipoTramite) {
-      const beforeFilter = filtered.length;
-      const tipoId = Number(this.filtros.tipoTramite);
-      filtered = filtered.filter(tramite => tramite.tipoTramite.id === tipoId);
-      
-    }
-    
-    // Apply date filters
-    if (this.filtros.fechaDesde) {
-      const beforeFilter = filtered.length;
-      const fechaDesde = new Date(this.filtros.fechaDesde);
-      filtered = filtered.filter(tramite => new Date(tramite.fechaCreacion) >= fechaDesde);
-      
-    }
-    
-    if (this.filtros.fechaHasta) {
-      const beforeFilter = filtered.length;
-      const fechaHasta = new Date(this.filtros.fechaHasta);
-      filtered = filtered.filter(tramite => new Date(tramite.fechaCreacion) <= fechaHasta);
-      
-    }
-    
-
 
     // Ordenar por prioridad: activos primero, finalizados/vencidos al final
     filtered = this.sortTramitesByPriority(filtered);
 
     this.filteredTramites = filtered;
-
-    // Show error message ONLY if no results AND there are active filters/search
-    if (filtered.length === 0 && (this.isFilteringActive || this.searchTerm)) {
-
-      this.filterError = this.generateCustomErrorMessage();
-    } else {
-
-      this.filterError = ''; // Clear error if there are results
-    }
   }
 
   // Ordenar trámites por prioridad: activos primero, finalizados/vencidos al final
@@ -562,81 +460,6 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
     return 9;
   }
 
-  private hasActiveFilters(): boolean {
-    return !!(
-      this.filtros.estado ||
-      this.filtros.prioridad ||
-      this.filtros.area ||
-      this.filtros.tipoTramite ||
-      this.filtros.fechaDesde ||
-      this.filtros.fechaHasta
-    );
-  }
-
-  private generateCustomErrorMessage(): string {
-    const activeFilters = [];
-    
-    if (this.searchTerm) {
-      activeFilters.push(`búsqueda "${this.searchTerm}"`);
-    }
-    
-    if (this.filtros.estado) {
-      const estadoTexto = this.getEstadoTexto(this.filtros.estado);
-      activeFilters.push(`estado "${estadoTexto}"`);
-    }
-    
-    if (this.filtros.prioridad) {
-      const prioridadTexto = this.getPrioridadTexto(this.filtros.prioridad);
-      activeFilters.push(`prioridad "${prioridadTexto}"`);
-    }
-    
-    if (this.filtros.tipoTramite) {
-      activeFilters.push('tipo de trámite seleccionado');
-    }
-    
-    if (this.filtros.area) {
-      activeFilters.push('área seleccionada');
-    }
-    
-    if (this.filtros.fechaDesde || this.filtros.fechaHasta) {
-      activeFilters.push('rango de fechas');
-    }
-    
-    const criterios = activeFilters.join(', ');
-    return `No se encontraron trámites que coincidan con los criterios: ${criterios}`;
-  }
-
-  private getEstadoTexto(estadoId: number): string {
-    const estados: { [key: number]: string } = {
-      1: 'Borrador',
-      2: 'Enviado', 
-      3: 'En Revisión',
-      4: 'Derivado',
-      5: 'Observado',
-      6: 'Aprobado',
-      7: 'Finalizado'
-    };
-    return estados[estadoId] || 'Desconocido';
-  }
-
-  private getPrioridadTexto(prioridadId: number): string {
-    const prioridades: { [key: number]: string } = {
-      1: 'Baja',
-      2: 'Normal',
-      3: 'Alta', 
-      4: 'Urgente'
-    };
-    return prioridades[prioridadId] || 'Desconocida';
-  }
-
-  limpiarFiltros() {
-    this.filtros = {};
-    this.searchTerm = '';
-    this.filterError = '';
-    this.isFilteringActive = false;
-    this.resetSearch();
-    this.applyDynamicFilters();
-  }
 
   cambiarPagina(page: number) {
     if (page >= 1 && page <= this.totalPages) {
@@ -647,10 +470,6 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
 
   toggleVista() {
     this.vistaActual = this.vistaActual === 'tarjetas' ? 'lista' : 'tarjetas';
-  }
-
-  toggleFilters() {
-    this.showFilters = !this.showFilters;
   }
 
 
@@ -672,23 +491,13 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
 
   // Verificar si el usuario actual puede editar el trámite
   puedeEditarTramite(tramite: MiTramite): boolean {
-    const currentUser = this.authService.currentUserValue;
-
-
     if (this.userRole !== 'USUARIO') {
-   
       return false;
     }
 
-    const estadosEditables = ['Borrador', 'Enviado', 'En Revisión', 'Pendiente'];
-    const estadoEditable = estadosEditables.includes(tramite.estado?.nombre);
-    if (!estadoEditable) {
-
-      return false;
-    }
-
-
-    return true;
+    // Solo permitir editar si el estado no es FINALIZADO, RECHAZADO o ARCHIVADO
+    const estadosNoEditables = ['Finalizado', 'Rechazado', 'Archivado', 'FINALIZADO', 'RECHAZADO', 'ARCHIVADO'];
+    return !estadosNoEditables.includes(tramite.estado?.nombre);
   }
 
   editarTramite(tramite: MiTramite) {
@@ -699,31 +508,160 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
       );
       return;
     }
+
+    // Precargar datos en el formulario
     this.tramiteSeleccionado = tramite;
+    this.formEditar = {
+      descripcion: tramite.descripcion,
+      observaciones: tramite.observaciones || ''
+    };
+
+    // Limpiar arrays de documentos
+    this.archivosNuevos = [];
+    this.documentosAEliminar = [];
+
     this.showEditarTramiteModal = true;
   }
 
-  calificarAtencion(tramite: MiTramite) {
-    if (!tramite.puedeCalificar) {
-      this.toastService.warning(
-        'Acción no permitida',
-        'Este trámite aún no se puede calificar.'
-      );
+  hayCambiosEnFormulario(): boolean {
+    if (!this.tramiteSeleccionado) return false;
+
+    const hayCambiosTexto = (
+      this.formEditar.descripcion !== this.tramiteSeleccionado.descripcion ||
+      this.formEditar.observaciones !== (this.tramiteSeleccionado.observaciones || '')
+    );
+
+    const hayCambiosDocumentos = this.archivosNuevos.length > 0 || this.documentosAEliminar.length > 0;
+
+    return hayCambiosTexto || hayCambiosDocumentos;
+  }
+
+  guardarEdicion() {
+    if (!this.tramiteSeleccionado || !this.hayCambiosEnFormulario()) {
       return;
     }
-    this.tramiteSeleccionado = tramite;
-    this.calificacionActual = {
-      tramiteId: tramite.id,
-      estrellas: tramite.calificacion?.estrellas || 5,
-      comentario: tramite.calificacion?.comentario || '',
-      aspectos: tramite.calificacion?.aspectos || {
-        rapidez: 5,
-        calidad: 5,
-        comunicacion: 5,
-        solucion: 5
+
+    this.guardandoEdicion = true;
+
+    // Construir FormData para enviar archivos y datos
+    const formData = new FormData();
+
+    // Agregar campos que cambiaron
+    if (this.formEditar.descripcion !== this.tramiteSeleccionado.descripcion) {
+      formData.append('descripcion', this.formEditar.descripcion || '');
+    }
+
+    if (this.formEditar.observaciones !== (this.tramiteSeleccionado.observaciones || '')) {
+      formData.append('observaciones', this.formEditar.observaciones || '');
+    }
+
+    // Agregar documentos nuevos
+    this.archivosNuevos.forEach((archivo) => {
+      formData.append('documentosNuevos', archivo, archivo.name);
+    });
+
+    // Agregar IDs de documentos a eliminar
+    if (this.documentosAEliminar.length > 0) {
+      formData.append('documentosAEliminar', JSON.stringify(this.documentosAEliminar));
+    }
+
+    // Llamar al servicio
+    this.subscriptions.add(
+      this.tramiteService.editarTramiteUsuario(this.tramiteSeleccionado.id, formData)
+        .subscribe({
+          next: (response) => {
+            this.guardandoEdicion = false;
+            this.cargarMisTramites();
+            this.cargarEstadisticas();
+            this.cerrarModalEditar();
+          },
+          error: (error) => {
+            this.guardandoEdicion = false;
+            console.error('Error al editar trámite:', error);
+          }
+        })
+    );
+  }
+
+  // Métodos para gestión de documentos
+  getDocumentosVisibles() {
+    if (!this.tramiteSeleccionado?.documentos) {
+      return [];
+    }
+    return this.tramiteSeleccionado.documentos.filter(
+      doc => !this.documentosAEliminar.includes(doc.id)
+    );
+  }
+
+  removerDocumento(documentoId: number) {
+    if (!this.documentosAEliminar.includes(documentoId)) {
+      this.documentosAEliminar.push(documentoId);
+      this.toastService.success('Documento eliminado', 'El documento ha sido eliminado de la lista');
+    }
+  }
+
+  onFileSelected(event: any) {
+    const files: FileList = event.target.files;
+    this.procesarArchivos(files);
+  }
+
+  onDragOver(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    (event.currentTarget as HTMLElement).classList.add('drag-over');
+  }
+
+  onDragLeave(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    (event.currentTarget as HTMLElement).classList.remove('drag-over');
+  }
+
+  onDrop(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    (event.currentTarget as HTMLElement).classList.remove('drag-over');
+
+    const files = event.dataTransfer?.files;
+    if (files) {
+      this.procesarArchivos(files);
+    }
+  }
+
+  procesarArchivos(files: FileList) {
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    const allowedTypes = ['application/pdf', 'application/msword',
+                         'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                         'image/jpeg', 'image/png'];
+
+    Array.from(files).forEach(file => {
+      if (file.size > maxSize) {
+        this.toastService.error('Archivo muy grande', `${file.name} excede el tamaño máximo de 10MB`);
+        return;
       }
-    };
-    this.showCalificarModal = true;
+
+      if (!allowedTypes.includes(file.type)) {
+        this.toastService.error('Tipo no permitido', `${file.name} no es un tipo de archivo permitido`);
+        return;
+      }
+
+      this.archivosNuevos.push(file);
+      this.toastService.success('Archivo agregado', `${file.name} se agregará al guardar`);
+    });
+  }
+
+  removerArchivoNuevo(index: number) {
+    const archivo = this.archivosNuevos[index];
+    this.archivosNuevos.splice(index, 1);
+    this.toastService.info('Archivo removido', `${archivo.name} ha sido removido`);
+  }
+
+  formatearTamano(bytes: number): string {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
   }
 
   descargarDocumento(tramiteId: number, nombreArchivo: string) {
@@ -835,11 +773,8 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
   cerrarModalEditar() {
     this.showEditarTramiteModal = false;
     this.tramiteSeleccionado = null;
-  }
-
-  cerrarModalCalificar() {
-    this.showCalificarModal = false;
-    this.tramiteSeleccionado = null;
+    this.formEditar = {};
+    this.guardandoEdicion = false;
   }
 
   cerrarModalAprobar() {
@@ -870,28 +805,6 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
     this.cargarMisTramites();
     this.cargarEstadisticas();
     this.cerrarModalEditar();
-  }
-
-  guardarCalificacion() {
-    this.subscriptions.add(
-      this.misTramitesService.calificarTramite(this.calificacionActual)
-        .subscribe({
-          next: () => {
-            this.toastService.success(
-              'Calificación guardada',
-              'Gracias por tu valoración'
-            );
-            this.cargarMisTramites();
-            this.cerrarModalCalificar();
-          },
-          error: () => {
-            this.toastService.error(
-              'Error',
-              'No se pudo guardar la calificación'
-            );
-          }
-        })
-    );
   }
 
   confirmarAprobacion() {
@@ -1021,40 +934,32 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
 
 
   estaVencido(tramite: MiTramite): boolean {
+    // Prioridad 1: Usar el campo estaVencido que viene del backend
+    if (tramite.estaVencido !== undefined && tramite.estaVencido !== null) {
+      return tramite.estaVencido;
+    }
+
+    // Prioridad 2: Verificar permisos cargados del backend
     const permisos = this.tramitePermisos.get(tramite.id);
     if (permisos) {
-
       return permisos.estaVencido;
     }
 
-  
-    if ((tramite as any).diasRestantes !== undefined && (tramite as any).diasRestantes !== null) {
-      const vencido = (tramite as any).diasRestantes <= 0;
-     
-      return vencido;
+    // Prioridad 3: Usar diasRestantes si está disponible
+    if (tramite.diasRestantes !== undefined && tramite.diasRestantes !== null) {
+      return tramite.diasRestantes <= 0;
     }
 
-    if ((tramite as any).fechaLimite) {
-      const fechaLimite = new Date((tramite as any).fechaLimite);
-      const hoy = new Date();
-      hoy.setHours(0, 0, 0, 0);
-      fechaLimite.setHours(0, 0, 0, 0);
-      const vencido = fechaLimite < hoy;
-
-      return vencido;
-    }
-
+    // Fallback 4: Calcular manualmente desde fechaVencimiento
     if (tramite.fechaVencimiento) {
       const fechaVencimiento = new Date(tramite.fechaVencimiento);
       const hoy = new Date();
       hoy.setHours(0, 0, 0, 0);
       fechaVencimiento.setHours(0, 0, 0, 0);
-      const vencido = fechaVencimiento < hoy;
-     
-      return vencido;
+      return fechaVencimiento < hoy;
     }
 
-
+    // Por defecto, no está vencido
     return false;
   }
 
@@ -1198,6 +1103,17 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
   motivoRechazo = '';
   observacionesRechazo = '';
   cargandoRechazo = false;
+
+  // Propiedades para el modal de edición
+  guardandoEdicion = false;
+  formEditar: {
+    descripcion?: string;
+    observaciones?: string;
+  } = {};
+
+  // Propiedades para gestión de documentos en edición
+  archivosNuevos: File[] = [];
+  documentosAEliminar: number[] = [];
 
   cargarTrabajadoresDisponibles() {
     this.cargandoTrabajadores = true;
@@ -1402,23 +1318,28 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
   }
 
   // Método para buscar y mostrar trámite específico desde notificación
-  private buscarYMostrarTramite(tramiteId: number): void {
-    // Dar tiempo para que la lista se cargue
+  private buscarYMostrarTramite(tramiteId: number, action?: string): void {
     setTimeout(() => {
       const tramiteEncontrado = this.misTramites.find(t => t.id === tramiteId);
-      
+
       if (tramiteEncontrado) {
-        // Si está en la lista, mostrar directamente el detalle
-        this.verDetalle(tramiteEncontrado);
-        this.toastService.success('Trámite encontrado', `Mostrando detalles del trámite ${tramiteEncontrado.codigo}`);
+        if (action === 'responder') {
+          this.abrirResponderTramite(tramiteEncontrado);
+          this.toastService.success('Trámite encontrado', `Abriendo formulario para responder trámite ${tramiteEncontrado.codigo}`);
+        } else if (action === 'derivar') {
+          this.derivarTramite(tramiteEncontrado);
+          this.toastService.success('Trámite encontrado', `Abriendo formulario para derivar trámite ${tramiteEncontrado.codigo}`);
+        } else {
+          this.verDetalle(tramiteEncontrado);
+          this.toastService.success('Trámite encontrado', `Mostrando detalles del trámite ${tramiteEncontrado.codigo}`);
+        }
       } else {
-        // Si no está en la lista actual, mostrar mensaje informativo
         this.toastService.info(
-          'Trámite no visible', 
+          'Trámite no visible',
           `El trámite ID ${tramiteId} no está en la página actual. Puedes buscarlo usando el filtro de búsqueda.`
         );
       }
-    }, 1000); // Esperar 1 segundo a que se carguen los datos
+    }, 1000);
   }
 
   // Métodos auxiliares para manejo de clicks con verificación de vencimiento

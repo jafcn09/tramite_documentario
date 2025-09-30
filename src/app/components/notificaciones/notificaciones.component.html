@@ -27,30 +27,27 @@
         </div>
 
         <!-- Right side -->
-        <div class="flex flex-wrap gap-2 justify-end">
-          <button class="inline-flex items-center justify-center px-3 py-2 border border-gray-300 rounded-lg text-xs sm:text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors min-h-[36px] touch-manipulation"
+        <div class="flex flex-nowrap gap-2 justify-end overflow-x-auto">
+          <button class="inline-flex items-center justify-center px-2 sm:px-3 py-2 border border-gray-300 rounded-lg text-xs sm:text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors min-h-[36px] min-w-[36px] sm:min-w-0 touch-manipulation"
                   (click)="abrirModalCrear()"
                   *ngIf="esAdmin()">
-            <i class="fas fa-plus text-xs mr-1 sm:mr-2"></i>
+            <i class="fas fa-plus text-xs sm:mr-2"></i>
             <span class="hidden sm:inline">Crear notificación</span>
-            <span class="sm:hidden">Crear</span>
           </button>
 
-          <button class="inline-flex items-center justify-center px-3 py-2 bg-blue-600 text-white rounded-lg text-xs sm:text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors min-h-[36px] touch-manipulation"
+          <button class="inline-flex items-center justify-center px-2 sm:px-3 py-2 bg-blue-600 text-white rounded-lg text-xs sm:text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors min-h-[36px] min-w-[36px] sm:min-w-0 touch-manipulation relative"
                   (click)="marcarTodasLeidas()"
                   *ngIf="contadorNoLeidas > 0">
-            <i class="fas fa-check-double text-xs mr-1 sm:mr-2"></i>
+            <i class="fas fa-check-double text-xs sm:mr-2"></i>
             <span class="hidden sm:inline">Marcar todas leídas</span>
-            <span class="sm:hidden">Marcar</span>
-            <span class="ml-1 px-2 py-0.5 bg-blue-500 text-white rounded-full text-xs min-w-[18px] text-center">{{ contadorNoLeidas }}</span>
+            <span class="absolute -top-1 -right-1 sm:static sm:ml-1 px-1.5 sm:px-2 py-0.5 bg-red-500 text-white rounded-full text-xs min-w-[18px] text-center">{{ contadorNoLeidas }}</span>
           </button>
 
-          <button class="inline-flex items-center justify-center px-3 py-2 border border-red-300 text-red-700 bg-white rounded-lg text-xs sm:text-sm font-medium hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors min-h-[36px] touch-manipulation"
+          <button class="inline-flex items-center justify-center px-2 sm:px-3 py-2 border border-red-300 text-red-700 bg-white rounded-lg text-xs sm:text-sm font-medium hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors min-h-[36px] min-w-[36px] sm:min-w-0 touch-manipulation"
                   (click)="limpiarNotificacionesAntiguas()"
                   *ngIf="esAdmin()">
-            <i class="fas fa-broom text-xs mr-1 sm:mr-2"></i>
+            <i class="fas fa-broom text-xs sm:mr-2"></i>
             <span class="hidden sm:inline">Limpiar antiguas</span>
-            <span class="sm:hidden">Limpiar</span>
           </button>
         </div>
       </div>
@@ -67,7 +64,7 @@
             <i class="fas fa-bell text-blue-600 text-xs sm:text-sm"></i>
           </div>
           <div class="ml-2 sm:ml-3 min-w-0">
-            <div class="text-base sm:text-lg font-semibold text-gray-900">{{ estadisticas.totalNotificaciones || 0 }}</div>
+            <div class="text-base sm:text-lg font-semibold text-gray-900">{{ estadisticasLocales.totalNotificaciones }}</div>
             <div class="text-xs sm:text-sm text-gray-500 truncate">Total</div>
           </div>
         </div>
@@ -80,7 +77,7 @@
             <i class="fas fa-envelope text-orange-600 text-xs sm:text-sm"></i>
           </div>
           <div class="ml-2 sm:ml-3 min-w-0">
-            <div class="text-base sm:text-lg font-semibold text-gray-900">{{ estadisticas.noLeidas || 0 }}</div>
+            <div class="text-base sm:text-lg font-semibold text-gray-900">{{ estadisticasLocales.noLeidas }}</div>
             <div class="text-xs sm:text-sm text-gray-500 truncate">Sin leer</div>
           </div>
         </div>
@@ -93,7 +90,7 @@
             <i class="fas fa-check-circle text-green-600 text-xs sm:text-sm"></i>
           </div>
           <div class="ml-2 sm:ml-3 min-w-0">
-            <div class="text-base sm:text-lg font-semibold text-gray-900">{{ estadisticas.leidas || 0 }}</div>
+            <div class="text-base sm:text-lg font-semibold text-gray-900">{{ estadisticasLocales.leidas }}</div>
             <div class="text-xs sm:text-sm text-gray-500 truncate">Leídas</div>
           </div>
         </div>
@@ -106,7 +103,7 @@
             <i class="fas fa-calendar-alt text-purple-600 text-xs sm:text-sm"></i>
           </div>
           <div class="ml-2 sm:ml-3 min-w-0">
-            <div class="text-base sm:text-lg font-semibold text-gray-900">{{ estadisticas.ultimoMes || 0 }}</div>
+            <div class="text-base sm:text-lg font-semibold text-gray-900">{{ estadisticasLocales.ultimoMes }}</div>
             <div class="text-xs sm:text-sm text-gray-500 truncate">Este mes</div>
           </div>
         </div>
@@ -219,48 +216,52 @@
                 
                 <p class="text-sm text-gray-600 mt-1 line-clamp-2">{{ notificacion.mensaje }}</p>
                 
-                <div class="flex items-center justify-between mt-3">
-                  <div class="flex items-center space-x-2">
+                <div class="flex items-center justify-between flex-wrap gap-2 mt-3">
+                  <div class="flex items-center flex-wrap gap-2">
                     <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium" [ngClass]="getClaseTipo(notificacion.tipo)">
                       <i [class]="getIcono(notificacion.tipo)" class="text-xs mr-1"></i>
                       {{ getTipoDisplay(notificacion.tipo) }}
                     </span>
-                    
-                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800" 
+
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800"
                           *ngIf="notificacion.prioridad === 'ALTA'">
                       <i class="fas fa-exclamation text-xs mr-1"></i>
                       Urgente
                     </span>
                   </div>
-                  
+
                   <!-- Actions -->
-                  <div class="flex items-center space-x-1">
-                    <button class="p-1.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded transition-colors" 
-                            *ngIf="!notificacion.esLeida"
-                            (click)="marcarLeida(notificacion, $event)"
-                            title="Marcar como leída">
-                      <i class="fas fa-check text-xs"></i>
+                  <div class="flex items-center gap-1">
+                    <!-- Acciones rápidas de trámite -->
+                    <button class="p-1.5 rounded transition-colors text-purple-600 hover:bg-purple-50"
+                            *ngIf="esTramiteNotificacion(notificacion.tipo) && notificacion.referenciaId && !esNotificacionAntigua(notificacion) && esAdministrativo()"
+                            (click)="asignarseTramite(notificacion, $event)"
+                            title="Asignarse este trámite">
+                      <i class="fas fa-user-check text-xs"></i>
                     </button>
-                    
-                    <button class="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors" 
-                            (click)="reenviarPorEmail(notificacion, $event)"
-                            title="Reenviar por email">
-                      <i class="fas fa-paper-plane text-xs"></i>
-                    </button>
-                    
-                    <!-- Admin Actions -->
-                    <button class="p-1.5 text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded transition-colors" 
-                            *ngIf="esAdmin()"
-                            (click)="editarNotificacion(notificacion, $event)"
-                            title="Editar notificación">
+
+                    <button class="p-1.5 rounded transition-colors text-blue-600 hover:bg-blue-50"
+                            *ngIf="esTramiteNotificacion(notificacion.tipo) && notificacion.referenciaId && !esNotificacionAntigua(notificacion) && esAdministrativo()"
+                            (click)="responderTramiteRapido(notificacion, $event)"
+                            title="Responder trámite">
                       <i class="fas fa-edit text-xs"></i>
                     </button>
-                    
-                    <button class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors" 
-                            *ngIf="esAdmin()"
-                            (click)="eliminarNotificacion(notificacion, $event)"
-                            title="Eliminar notificación">
-                      <i class="fas fa-trash text-xs"></i>
+
+                    <button class="p-1.5 rounded transition-colors text-orange-600 hover:bg-orange-50"
+                            *ngIf="esTramiteNotificacion(notificacion.tipo) && notificacion.referenciaId && !esNotificacionAntigua(notificacion) && esAdministrativo()"
+                            (click)="derivarTramiteRapido(notificacion, $event)"
+                            title="Derivar trámite">
+                      <i class="fas fa-arrow-right text-xs"></i>
+                    </button>
+
+                    <!-- Acciones generales -->
+                    <button class="p-1.5 rounded transition-colors"
+                            *ngIf="!notificacion.esLeida"
+                            [class]="esNotificacionAntigua(notificacion) ? 'text-gray-300 cursor-not-allowed' : 'text-gray-400 hover:text-green-600 hover:bg-green-50'"
+                            [disabled]="esNotificacionAntigua(notificacion)"
+                            (click)="marcarLeida(notificacion, $event)"
+                            [title]="esNotificacionAntigua(notificacion) ? 'Notificación antigua' : 'Marcar como leída'">
+                      <i class="fas fa-check text-xs"></i>
                     </button>
                   </div>
                 </div>
@@ -294,12 +295,12 @@
   </div>
 
   <!-- Admin Panel -->
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8" *ngIf="esAdmin()">
-    <div class="bg-white rounded-lg border border-gray-200 p-4">
-      
+  <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pb-8" *ngIf="esAdmin()">
+    <div class="bg-white rounded-lg border border-gray-200 p-3 sm:p-4">
+
       <div class="flex flex-col sm:flex-row gap-3">
-        
-        <button class="inline-flex items-center px-3 py-2 border border-red-300 rounded-lg text-sm font-medium text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors" 
+
+        <button class="inline-flex items-center justify-center px-3 py-2 border border-red-300 rounded-lg text-sm font-medium text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors whitespace-nowrap"
                 (click)="limpiarNotificacionesAntiguas()">
           <i class="fas fa-trash-alt text-xs mr-2"></i>
           <span>Limpiar antiguas</span>

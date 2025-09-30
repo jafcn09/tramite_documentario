@@ -66,40 +66,38 @@
     <div class="search-section">
       <div class="search-box" [class.has-dropdown]="searchTerm && searchTerm.trim()">
         <i class="fas fa-search" [class.searching]="isSearching"></i>
-        <input 
-          type="text" 
-          placeholder="Buscar por código, asunto o solicitante..." 
+        <input
+          type="text"
+          placeholder="Buscar por código, asunto o solicitante..."
           [(ngModel)]="searchTerm"
-          (input)="onSearch(searchTerm)"
+          (ngModelChange)="onSearch($event)"
           (focus)="onSearchInputFocus()"
           (blur)="onSearchInputBlur()"
           (keydown)="onSearchKeyDown($event)"
           class="search-input"
           autocomplete="off"
         >
-       
-        
-   
+        <button
+          *ngIf="searchTerm"
+          class="clear-search-btn"
+          (click)="clearSearch()"
+          title="Limpiar búsqueda"
+        >
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <!-- Mensaje de error de búsqueda -->
+      <div class="search-error-message" *ngIf="searchError && searchTerm">
+        <i class="fas fa-exclamation-circle"></i>
+        {{ searchError }}
       </div>
     </div>
 
     <div class="toolbar-actions">
-      <!-- Filtros -->
-      <button 
-        class="btn btn-outline" 
-        (click)="toggleFilters()"
-        [class.active]="showFilters"
-      >
-        <i class="fas fa-filter"></i>
-        <span>Filtros</span>
-        <span *ngIf="activeFiltersCount > 0" class="filter-count">
-          {{ activeFiltersCount }}
-        </span>
-      </button>
-
       <!-- Cambiar vista -->
-      <button 
-        class="btn btn-outline" 
+      <button
+        class="btn btn-outline"
         (click)="toggleVista()"
         [title]="vistaActual === 'tabla' ? 'Ver tarjetas' : 'Ver tabla'"
       >
@@ -153,66 +151,6 @@
     </div>
   </div>
 
-  <!-- Panel de filtros -->
-  <div class="filters-panel" *ngIf="showFilters">
-    <div class="filters-header">
-      <div class="filters-title">
-        <i class="fas fa-filter"></i>
-        Filtros Avanzados
-      </div>
-    </div>
-    <div class="filters-content">
-      <div class="filter-group">
-        <label>Tipo de Trámite</label>
-        <select [(ngModel)]="filtros.tipoTramite" (change)="updateActiveFiltersCount()">
-          <option value="">Todos los tipos</option>
-          <option *ngFor="let tipo of tiposTramite" [value]="tipo.id">
-            {{ tipo.nombre }}
-          </option>
-        </select>
-      </div>
-
-      <div class="filter-group">
-        <label>Estado</label>
-        <select [(ngModel)]="filtros.estado" (change)="updateActiveFiltersCount()">
-          <option value="">Todos los estados</option>
-          <option *ngFor="let estado of estadosTramite" [value]="estado.id">
-            {{ estado.nombre }}
-          </option>
-        </select>
-      </div>
-
-      <div class="filter-group">
-        <label>Prioridad</label>
-        <select [(ngModel)]="filtros.prioridad" (change)="updateActiveFiltersCount()">
-          <option value="">Todas las prioridades</option>
-          <option *ngFor="let prioridad of prioridadesTramite" [value]="prioridad.id">
-            {{ prioridad.nombre }}
-          </option>
-        </select>
-      </div>
-
-      <div class="filter-group">
-        <label>Fecha Desde</label>
-        <input type="date" [(ngModel)]="filtros.fechaDesde" (change)="updateActiveFiltersCount()">
-      </div>
-
-      <div class="filter-group">
-        <label>Fecha Hasta</label>
-        <input type="date" [(ngModel)]="filtros.fechaHasta" (change)="updateActiveFiltersCount()">
-      </div>
-    </div>
-    <div class="filter-actions">
-      <button class="btn btn-apply-filters" (click)="aplicarFiltros()">
-        <i class="fas fa-search"></i>
-        Aplicar Filtros
-      </button>
-      <button class="btn btn-clear-filters" (click)="limpiarFiltros()">
-        <i class="fas fa-times"></i>
-        Limpiar
-      </button>
-    </div>
-  </div>
 
   <!-- Loading -->
   <div class="loading-container" *ngIf="loading$ | async">

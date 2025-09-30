@@ -43,18 +43,30 @@ Sistema integral de gestión documentaria para la Universidad Nacional de Tumbes
 - ✅ Diseño responsive mobile-first
 - ✅ Animaciones y transiciones suaves
 - ✅ Notificaciones y toasts informativos
+- ✅ **Sistema de notificaciones en tiempo real** con WebSocket
+- ✅ **Búsqueda pública** de trámites sin autenticación
+- ✅ **Flujo completo de derivación** de trámites
+- ✅ **Respuestas con archivos adjuntos**
+- ✅ **Rechazo de trámites** con motivos detallados
+- ✅ **Notificaciones por email** con templates HTML profesionales
+- ✅ **Acciones rápidas** en notificaciones (asignar, responder, derivar)
+- ✅ **Organigrama institucional** jerárquico
+- ✅ **Sistema de reportes** con filtros avanzados
 
 ## 🛠 Tecnologías Utilizadas
 
-- **Framework**: Angular 18+
-- **Estilos**: CSS personalizado + Tailwind CSS
+- **Framework**: Angular 17.3+
+- **Estilos**: Tailwind CSS 3.x + CSS personalizado
 - **Formularios**: Reactive Forms con validaciones
 - **Routing**: Angular Router con guards
 - **Componentes**: Standalone Components
 - **Autenticación**: JWT + Guards
 - **HTTP**: HttpClient con interceptors
-- **TypeScript**: v5.x
+- **WebSocket**: STOMP + SockJS para tiempo real
+- **TypeScript**: v5.4
 - **RxJS**: Observables y operadores reactivos
+- **Iconos**: FontAwesome 7.0
+- **Animaciones**: Angular Animations
 
 ## 📦 Instalación y Configuración
 
@@ -110,27 +122,37 @@ http://localhost:4200
 ### Rutas Protegidas - ADMIN
 | Ruta | Descripción |
 |------|-------------|
-| `/admin/dashboard` | Panel administrativo |
-| `/admin/user-management` | Gestión de usuarios |
+| `/admin/tablero` | Panel administrativo con estadísticas |
+| `/admin/gestion-usuarios` | Gestión de usuarios |
 | `/admin/areas` | Gestión de áreas |
-| `/admin/roles` | Gestión de roles |
+| `/admin/gestion-roles` | Gestión de roles |
 | `/admin/tramites` | Vista global de trámites |
 | `/admin/reportes` | Reportes del sistema |
+| `/admin/notificaciones` | Gestión de notificaciones |
+| `/admin/organigrama` | Organigrama institucional |
+| `/admin/mis-tramites` | Mis trámites creados |
+| `/admin/nuevo-tramite` | Crear nuevo trámite |
+| `/admin/perfil` | Perfil de usuario |
 
 ### Rutas Protegidas - ADMINISTRATIVO
 | Ruta | Descripción |
 |------|-------------|
-| `/administrativo/dashboard` | Dashboard administrativo |
+| `/administrativo/tablero` | Dashboard administrativo con métricas |
 | `/administrativo/mis-tramites` | Gestión de trámites asignados |
 | `/administrativo/nuevo-tramite` | Crear nuevo trámite |
+| `/administrativo/notificaciones` | Notificaciones personales |
+| `/administrativo/reportes` | Reportes de trámites |
+| `/administrativo/perfil` | Perfil de usuario |
 
 ### Rutas Protegidas - USUARIO
 | Ruta | Descripción |
 |------|-------------|
-| `/usuario/dashboard` | Dashboard personal |
+| `/usuario/tablero` | Dashboard personal con estadísticas |
 | `/usuario/mis-tramites` | Mis trámites personales |
 | `/usuario/nuevo-tramite` | Crear nuevo trámite |
 | `/usuario/bandeja-tramites` | Bandeja de trámites |
+| `/usuario/notificaciones` | Notificaciones personales |
+| `/usuario/perfil` | Perfil de usuario |
 
 ## 🏗 Estructura del Proyecto
 
@@ -297,20 +319,7 @@ npm run e2e
 - **RoleGuard**: Verificar permisos por rol
 - **RedirectGuard**: Redirección automática
 
-## 🤝 Contribución
 
-Para contribuir al proyecto:
-1. Fork el repositorio
-2. Crea una rama para tu feature (`git checkout -b feature/NuevaCaracteristica`)
-3. Commit tus cambios (`git commit -m 'Agrega nueva característica'`)
-4. Push a la rama (`git push origin feature/NuevaCaracteristica`)
-5. Abre un Pull Request
-
-### Convenciones de Código
-- Usar camelCase para variables y métodos
-- Usar PascalCase para clases y interfaces
-- Comentarios en español para documentación
-- Seguir las convenciones de Angular Style Guide
 
 ## 📞 Soporte
 

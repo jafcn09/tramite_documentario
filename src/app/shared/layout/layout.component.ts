@@ -1109,20 +1109,20 @@ export class LayoutComponent implements OnInit {
 
     const roleMenus: { [key: string]: any[] } = {
       'ADMIN': [
-        { label: 'Inicio', route: '/admin/dashboard', icon: 'fas fa-home' },
+        { label: 'Inicio', route: '/admin/tablero', icon: 'fas fa-home' },
         { label: 'Gestión de Trámites', route: '/admin/tramites', icon: 'fas fa-file-alt' },
         { label: 'Reportes', route: '/admin/reportes', icon: 'fas fa-chart-bar' },
-        { 
-          label: 'Configuración', 
+        {
+          label: 'Configuración',
           icon: 'fas fa-cog',
           submenu: [
-            { label: 'Gestión de usuarios', route: '/admin/user-management', icon: 'fas fa-users' },
-            { label: 'Gestión de roles', route: '/admin/role-management', icon: 'fas fa-shield-alt' },
-       
+            { label: 'Gestión de usuarios', route: '/admin/gestion-usuarios', icon: 'fas fa-users' },
+            { label: 'Gestión de roles', route: '/admin/gestion-roles', icon: 'fas fa-shield-alt' },
+
           ]
         },
-        { 
-          label: 'Administración Institucional', 
+        {
+          label: 'Administración Institucional',
           icon: 'fas fa-university',
           submenu: [
 
@@ -1132,11 +1132,11 @@ export class LayoutComponent implements OnInit {
         },
       ],
       'ADMINISTRATIVO': [
-        { label: 'Inicio', route: '/administrativo/dashboard', icon: 'fas fa-home' },
+        { label: 'Inicio', route: '/administrativo/tablero', icon: 'fas fa-home' },
         { label: 'Mis Trámites', route: '/administrativo/mis-tramites', icon: 'fas fa-file-alt' }
       ],
       'USUARIO': [
-        { label: 'Inicio', route: '/usuario/dashboard', icon: 'fas fa-home' },
+        { label: 'Inicio', route: '/usuario/tablero', icon: 'fas fa-home' },
         { label: 'Mis Trámites', route: '/usuario/mis-tramites', icon: 'fas fa-file-alt' }
       ],
     };
@@ -1154,13 +1154,13 @@ export class LayoutComponent implements OnInit {
   }
 
   getProfileRoute(): string {
-    return '/profile';
+    return '/perfil';
   }
 
   changePassword(event: Event) {
     event.preventDefault();
     this.showUserDropdown = false;
-    this.router.navigate(['/change-password']);
+    this.router.navigate(['/cambiar-contrasena']);
   }
 
   logout(event?: Event) {

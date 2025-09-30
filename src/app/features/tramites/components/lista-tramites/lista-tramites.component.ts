@@ -12,13 +12,6 @@ import { BandejaTramitesService } from '../../../../services/bandeja-tramites.se
 import { firstValueFrom } from 'rxjs';
 import { NuevoTramiteModalComponent } from '../nuevo-tramite-modal/nuevo-tramite-modal.component';
 import { DetalleTramiteModalComponent } from '../detalle-tramite-modal/detalle-tramite-modal.component';
-import { 
-  Tramite, 
-  FiltrosTramite, 
-  TipoTramite, 
-  EstadoTramite, 
-  PrioridadTramite 
-} from '../../../../shared/interfaces/tramite.interface';
 
 interface EstadisticasTramites {
   total: number;
@@ -60,12 +53,6 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
   totalItems = 0;
   totalPages = 0;
   
-  // Filtros
-  filtros: FiltrosTramite = {};
-  tiposTramite: TipoTramite[] = [];
-  estadosTramite: EstadoTramite[] = [];
-  prioridadesTramite: PrioridadTramite[] = [];
-  
   // Búsqueda
   searchTerm = '';
   private searchSubject = new Subject<string>();
@@ -75,16 +62,14 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
   isSearching = false;
   selectedSearchIndex = -1;
   filteredTramites: any[] = [];
-  
+
   // Configuración de vista
   vistaActual: 'tabla' | 'tarjetas' = 'tabla';
   ordenarPor: 'fecha' | 'codigo' | 'estado' | 'prioridad' = 'fecha';
   ordenAscendente = false;
-  
+
   // Estados UI
-  showFilters = false;
   selectedTramites: number[] = [];
-  activeFiltersCount = 0;
   mostrarArchivados = false;
   
   // Modales
@@ -113,7 +98,11 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    this.initializeData();
+    // Inicializar búsqueda
+    this.searchTerm = '';
+    this.searchError = '';
+    this.filteredTramites = [];
+
     this.setupSearch();
     this.cargarTramites();
   }
@@ -122,28 +111,6 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
     this.subscriptions.unsubscribe();
   }
 
-  private initializeData() {
-    // Cargar tipos de trámite
-    this.subscriptions.add(
-      this.tramiteService.getTiposTramite().subscribe(
-        tipos => this.tiposTramite = tipos
-      )
-    );
-
-    // Cargar estados
-    this.subscriptions.add(
-      this.tramiteService.getEstadosTramite().subscribe(
-        estados => this.estadosTramite = estados
-      )
-    );
-
-    // Cargar prioridades
-    this.subscriptions.add(
-      this.tramiteService.getPrioridadesTramite().subscribe(
-        prioridades => this.prioridadesTramite = prioridades
-      )
-    );
-  }
 
   private setupSearch() {
     this.subscriptions.add(
@@ -160,40 +127,65 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
     this.isSearching = true;
     this.searchError = '';
     this.selectedSearchIndex = -1;
-    
+
+    console.log('🔍 Buscando:', term);
+    console.log('📋 Total trámites disponibles:', this.tramites.length);
+
     if (!term.trim()) {
       this.resetSearch();
       return;
     }
 
     // Buscar en tiempo real dentro de los trámites cargados
-    this.searchResults = this.tramites.filter(tramite => 
-      this.matchesSearchTerm(tramite, term)
+    const termLower = term.toLowerCase().trim();
+    this.searchResults = this.tramites.filter(tramite =>
+      this.matchesSearchTerm(tramite, termLower)
     );
 
+    console.log('✅ Resultados encontrados:', this.searchResults.length);
+
     if (this.searchResults.length > 0) {
-      this.showSearchDropdown = true;
+      this.showSearchDropdown = false; // No mostrar dropdown, filtrar directamente
       this.filteredTramites = this.searchResults;
+      this.searchError = '';
+      console.log('✨ Mostrando resultados filtrados');
     } else {
-      this.searchError = 'No se encontraron trámites que coincidan con la búsqueda';
+      this.searchError = `No se encontraron trámites que coincidan con "${term}"`;
       this.showSearchDropdown = false;
       this.filteredTramites = [];
+      console.log('❌ Sin resultados');
     }
-    
+
     this.isSearching = false;
   }
 
-  private matchesSearchTerm(tramite: any, term: string): boolean {
-    const searchLower = term.toLowerCase();
+  private matchesSearchTerm(tramite: any, searchLower: string): boolean {
+    // Función auxiliar para normalizar texto
+    const normalize = (text: any): string => {
+      if (!text) return '';
+      return String(text).toLowerCase().trim();
+    };
+
     return (
-      tramite.codigo?.toLowerCase().includes(searchLower) ||
-      tramite.asunto?.toLowerCase().includes(searchLower) ||
-      tramite.descripcion?.toLowerCase().includes(searchLower) ||
-      tramite.solicitante?.nombre?.toLowerCase().includes(searchLower) ||
-      tramite.solicitante?.apellidos?.toLowerCase().includes(searchLower) ||
-      tramite.tipoTramite?.nombre?.toLowerCase().includes(searchLower) ||
-      tramite.estado?.nombre?.toLowerCase().includes(searchLower) ||
-      tramite.areaOrigen?.nombre?.toLowerCase().includes(searchLower)
+      normalize(tramite.codigo).includes(searchLower) ||
+      normalize(tramite.asunto).includes(searchLower) ||
+      normalize(tramite.titulo).includes(searchLower) ||
+      normalize(tramite.descripcion).includes(searchLower) ||
+      normalize(tramite.tipo).includes(searchLower) ||
+      normalize(tramite.estado).includes(searchLower) ||
+      normalize(tramite.prioridad).includes(searchLower) ||
+      // Solicitante
+      normalize(tramite.usuarioSolicitante?.nombre).includes(searchLower) ||
+      normalize(tramite.usuarioSolicitante?.apellidos).includes(searchLower) ||
+      normalize(tramite.solicitante?.nombre).includes(searchLower) ||
+      normalize(tramite.solicitante?.apellidos).includes(searchLower) ||
+      // Tipo de trámite
+      normalize(tramite.tipoTramite?.nombre).includes(searchLower) ||
+      // Estado
+      normalize(tramite.estado?.nombre).includes(searchLower) ||
+      // Área
+      normalize(tramite.areaOrigen?.nombre).includes(searchLower) ||
+      normalize(tramite.area?.nombre).includes(searchLower)
     );
   }
 
@@ -202,7 +194,8 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
     this.searchResults = [];
     this.searchError = '';
     this.isSearching = false;
-    this.filteredTramites = this.tramites;
+    this.filteredTramites = [];
+    console.log('🔄 Búsqueda reseteada');
   }
 
   cargarTramites() {
@@ -359,6 +352,7 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
   }
 
   onSearch(term: string) {
+    console.log('⌨️ onSearch llamado con:', term);
     this.searchTerm = term;
     this.searchSubject.next(term);
   }
@@ -424,17 +418,15 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
   }
 
   getTramitesParaMostrar(): any[] {
-    return this.searchTerm.trim() ? this.filteredTramites : this.tramites;
+    // Si hay búsqueda activa, mostrar resultados filtrados
+    if (this.searchTerm && this.searchTerm.trim().length > 0) {
+      return this.filteredTramites;
+    }
+
+    // Si no hay búsqueda, mostrar todos los trámites
+    return this.tramites;
   }
 
-  updateActiveFiltersCount() {
-    this.activeFiltersCount = 0;
-    if (this.filtros.tipoTramite) this.activeFiltersCount++;
-    if (this.filtros.estado) this.activeFiltersCount++;
-    if (this.filtros.prioridad) this.activeFiltersCount++;
-    if (this.filtros.fechaDesde) this.activeFiltersCount++;
-    if (this.filtros.fechaHasta) this.activeFiltersCount++;
-  }
 
   exportarSeleccionados() {
     if (this.selectedTramites.length === 0) {
@@ -559,19 +551,6 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
     return pages;
   }
 
-  aplicarFiltros() {
-    this.currentPage = 0;
-    this.cargarTramites();
-    this.showFilters = false;
-  }
-
-  limpiarFiltros() {
-    this.filtros = {};
-    this.searchTerm = '';
-    this.currentPage = 0;
-    this.activeFiltersCount = 0;
-    this.cargarTramites();
-  }
 
   cambiarPagina(page: number) {
     if (page >= 0 && page < this.totalPages) {
@@ -599,10 +578,6 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
 
   toggleVista() {
     this.vistaActual = this.vistaActual === 'tabla' ? 'tarjetas' : 'tabla';
-  }
-
-  toggleFilters() {
-    this.showFilters = !this.showFilters;
   }
 
   // Selección múltiple

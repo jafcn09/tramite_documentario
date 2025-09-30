@@ -94,15 +94,7 @@ export class WebSocketService implements OnDestroy {
       return;
     }
 
-    // Suscribirse a notificaciones personales
-    this.stompClient.subscribe(
-      `/queue/notificaciones/${userId}`,
-      (message: any) => {
-        this.manejarNuevaNotificacion(JSON.parse(message.body));
-      }
-    );
-
-    // Suscribirse a notificaciones de usuario específico
+    // Suscribirse a notificaciones de usuario específico (solo una suscripción)
     this.stompClient.subscribe(
       `/user/queue/notificaciones`,
       (message: any) => {

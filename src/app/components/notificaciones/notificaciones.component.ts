@@ -18,6 +18,7 @@ import {
 import { NotificacionService } from '../../services/notificacion.service';
 import { WebSocketService } from '../../services/websocket.service';
 import { AuthService } from '../../services/auth.service';
+import { TramiteService } from '../../services/tramite.service';
 
 @Component({
   selector: 'app-notificaciones',
@@ -53,9 +54,22 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
     leidas: 0,
     ultimoMes: 0
   };
-  
+
   // Contador directo para el template
   contadorNoLeidas = 0;
+
+  // Getter para estadísticas calculadas localmente
+  get estadisticasLocales(): NotificacionEstadisticas {
+    const now = new Date();
+    const mesAnterior = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+
+    return {
+      totalNotificaciones: this.notificaciones.length,
+      noLeidas: this.notificaciones.filter(n => !n.esLeida).length,
+      leidas: this.notificaciones.filter(n => n.esLeida).length,
+      ultimoMes: this.notificaciones.filter(n => new Date(n.fechaCreacion) >= mesAnterior).length
+    };
+  }
   
   // Paginación
   currentPage = 0;
@@ -113,7 +127,8 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
     private notificacionService: NotificacionService,
     private webSocketService: WebSocketService,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private tramiteService: TramiteService
   ) {}
 
   ngOnInit(): void {
@@ -127,28 +142,27 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
   private inicializarComponente(): void {
     // Cargar notificaciones iniciales
     this.cargarNotificaciones();
-    
-    // Cargar estadísticas si es admin
+
+    // Cargar usuarios y roles si es admin (sin estadísticas del backend)
     if (this.esAdmin()) {
-      this.cargarEstadisticas();
       this.cargarUsuarios();
       this.cargarRoles();
     }
-    
+
     // Suscribirse a nuevas notificaciones en tiempo real
     this.subscriptions.push(
       this.notificacionService.nuevaNotificacion$.subscribe(notificacion => {
         this.agregarNuevaNotificacion(notificacion);
       })
     );
-    
+
     // Suscribirse al contador de no leídas
     this.subscriptions.push(
       this.notificacionService.contadorNoLeidas$.subscribe(count => {
         this.contadorNoLeidas = count;
       })
     );
-    
+
     // Suscribirse al estado de conexión WebSocket
     this.subscriptions.push(
       this.webSocketService.connected$.subscribe(conectado => {
@@ -331,12 +345,90 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
 
   abrirNotificacion(notificacion: Notificacion): void {
     this.marcarLeida(notificacion);
-    
-    if (notificacion.rutaDestino) {
+
+    // Si es una notificación de trámite y tiene referenciaId, navegar al trámite
+    if (this.esTramiteNotificacion(notificacion.tipo) && notificacion.referenciaId) {
+      // Determinar la ruta según el rol del usuario
+      const userRole = this.authService.currentUserValue?.role?.name;
+      if (userRole === 'ADMINISTRATIVO' || userRole === 'ADMIN') {
+        this.router.navigate(['/administrativo/mis-tramites'], {
+          queryParams: { tramiteId: notificacion.referenciaId, openDetail: true }
+        });
+      } else {
+        this.router.navigate(['/usuario/mis-tramites'], {
+          queryParams: { tramiteId: notificacion.referenciaId, openDetail: true }
+        });
+      }
+    } else if (notificacion.rutaDestino) {
       this.router.navigate([notificacion.rutaDestino]);
     } else {
       // Mostrar modal con detalles de la notificación
       this.mostrarDetalleNotificacion(notificacion);
+    }
+  }
+
+  // Verificar si la notificación es de tipo trámite
+  esTramiteNotificacion(tipo: string): boolean {
+    if (!tipo) return false;
+    return tipo.includes('TRAMITE') || tipo === 'DERIVACION';
+  }
+
+  // Verificar si la notificación es antigua (más de 24 horas)
+  esNotificacionAntigua(notificacion: Notificacion): boolean {
+    const ahora = new Date();
+    const fechaCreacion = new Date(notificacion.fechaCreacion);
+    const diferenciaHoras = (ahora.getTime() - fechaCreacion.getTime()) / (1000 * 60 * 60);
+    return diferenciaHoras > 24;
+  }
+
+  // Verificar si se puede interactuar con la notificación
+  puedeInteractuarConNotificacion(notificacion: Notificacion): boolean {
+    return !notificacion.esLeida || !this.esNotificacionAntigua(notificacion);
+  }
+
+
+
+  esAdministrativo(): boolean {
+    const userRole = this.authService.currentUserValue?.role?.name;
+    return userRole === 'ADMINISTRATIVO' || userRole === 'ADMIN';
+  }
+
+  asignarseTramite(notificacion: Notificacion, event: Event): void {
+    event.stopPropagation();
+    if (!notificacion.referenciaId) return;
+
+    if (confirm('¿Deseas asignarte este trámite?')) {
+      this.tramiteService.asignarseTramite(notificacion.referenciaId).subscribe({
+        next: () => {
+          this.marcarLeida(notificacion, event);
+          this.cargarNotificaciones();
+        },
+        error: (error) => console.error('Error al asignarse trámite:', error)
+      });
+    }
+  }
+
+  responderTramiteRapido(notificacion: Notificacion, event: Event): void {
+    event.stopPropagation();
+    if (!notificacion.referenciaId) return;
+
+    const userRole = this.authService.currentUserValue?.role?.name;
+    if (userRole === 'ADMINISTRATIVO' || userRole === 'ADMIN') {
+      this.router.navigate(['/administrativo/mis-tramites'], {
+        queryParams: { tramiteId: notificacion.referenciaId, action: 'responder' }
+      });
+    }
+  }
+
+  derivarTramiteRapido(notificacion: Notificacion, event: Event): void {
+    event.stopPropagation();
+    if (!notificacion.referenciaId) return;
+
+    const userRole = this.authService.currentUserValue?.role?.name;
+    if (userRole === 'ADMINISTRATIVO' || userRole === 'ADMIN') {
+      this.router.navigate(['/administrativo/mis-tramites'], {
+        queryParams: { tramiteId: notificacion.referenciaId, action: 'derivar' }
+      });
     }
   }
 
@@ -414,22 +506,6 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
     this.agruparNotificaciones();
   }
 
-  // Métodos de estadísticas (solo para admin)
-  cargarEstadisticas(): void {
-    if (!this.esAdmin()) return;
-    
-    this.subscriptions.push(
-      this.notificacionService.obtenerEstadisticas().subscribe({
-        next: (stats) => {
-          this.estadisticas = stats;
-        },
-        error: (error) => {
-          console.error('Error cargando estadísticas:', error);
-        }
-      })
-    );
-  }
-
   limpiarNotificacionesAntiguas(): void {
     if (!this.esAdmin()) return;
     
@@ -461,10 +537,7 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
           
           // Cerrar modal y recargar
           this.cerrarModalLimpiar();
-          this.cargarNotificaciones(); // Recargar lista
-          if (this.esAdmin()) {
-            this.cargarEstadisticas(); // Recargar estadísticas también
-          }
+          this.cargarNotificaciones(); // Recargar lista (las estadísticas se calculan automáticamente)
           this.limpiandoAntiguas = false;
         },
         error: (error) => {
@@ -572,6 +645,14 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
 
   // Métodos auxiliares
   private agregarNuevaNotificacion(notificacion: Notificacion): void {
+    // Verificar si la notificación ya existe antes de agregarla (evitar duplicados)
+    const existe = this.notificaciones.some(n => n.id === notificacion.id);
+    if (existe) {
+      console.log('⚠️ Notificación duplicada detectada, ignorando:', notificacion.id);
+      return;
+    }
+
+    console.log('✅ Agregando nueva notificación:', notificacion.id);
     this.notificaciones = [notificacion, ...this.notificaciones];
     this.aplicarFiltros();
     this.agruparNotificaciones();
