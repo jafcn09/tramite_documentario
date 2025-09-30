@@ -34,6 +34,29 @@ Sistema backend para gestión de trámites documentarios de la Universidad Nacio
 - **Sistema de calificación** de atención
 - **Descarga de documentos** individuales y en lote
 - **Historial de cambios** y auditoría
+- **Flujo de derivación** entre trabajadores
+- **Respuestas con archivos adjuntos**
+- **Rechazo de trámites** con motivos y observaciones
+- **Búsqueda pública** de trámites por código
+
+### 🔔 Sistema de Notificaciones
+- **Notificaciones en tiempo real** vía WebSocket
+- **Notificaciones por email** con templates HTML profesionales
+- **Persistencia de notificaciones** en base de datos
+- **Notificaciones por rol** o usuarios específicos
+- **Prioridades de notificación** (Baja, Normal, Alta, Urgente)
+- **Limpieza automática** de notificaciones antiguas
+- **Historial completo** de notificaciones
+
+### 📧 Sistema de Emails
+- **Templates HTML profesionales** con diseño responsivo
+- **Emails transaccionales** para cada acción del trámite
+- **Notificación de recepción** con timeline de próximos pasos
+- **Notificación de derivación** con detalles completos
+- **Notificación de respuesta** con documentos adjuntos
+- **Notificación de rechazo** con motivos detallados
+- **Notificación de autoasignación** con diseño animado
+- **Notificación de edición** con changelog de cambios
 
 ### 🎯 Funcionalidades por Rol
 - **ADMIN**: Gestión completa del sistema, usuarios, áreas y configuraciones
@@ -49,6 +72,8 @@ Sistema backend para gestión de trámites documentarios de la Universidad Nacio
 - **Hibernate** - ORM para mapeo objeto-relacional
 - **MySQL 8.0+** - Base de datos relacional
 - **JWT (JSON Web Tokens)** - Autenticación stateless
+- **WebSocket (STOMP)** - Notificaciones en tiempo real
+- **JavaMail** - Envío de correos electrónicos
 - **Lombok** - Reducción de código boilerplate
 - **Gradle 8** - Herramienta de construcción
 - **Validation API** - Validaciones de datos
@@ -428,6 +453,236 @@ Content-Type: application/json
 }
 ```
 
+#### Responder trámite (ADMINISTRATIVO/ADMIN)
+```http
+POST /api/tramites/{id}/responder
+Authorization: Bearer <token>
+Content-Type: multipart/form-data
+
+{
+  "respuesta": "Su solicitud ha sido aprobada",
+  "observaciones": "Se adjuntan los documentos solicitados",
+  "asunto": "Respuesta a Solicitud de Certificado",
+  "archivos": [archivo1.pdf, archivo2.pdf]
+}
+```
+
+#### Derivar trámite (ADMINISTRATIVO/ADMIN)
+```http
+POST /api/tramites/{id}/derivar
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "trabajadorNuevoId": 5,
+  "motivo": "Requiere atención especializada del área de Recursos Humanos"
+}
+```
+
+#### Rechazar trámite (ADMINISTRATIVO/ADMIN)
+```http
+PUT /api/tramites/{id}/rechazar
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "tramiteId": 10,
+  "motivoRechazo": "Documentación incompleta",
+  "observaciones": "Falta adjuntar copia de DNI y comprobante de pago"
+}
+```
+
+#### Búsqueda pública de trámites
+```http
+GET /api/tramites/public/buscar?codigo=TRAM-2025-001
+```
+
+#### Descargar archivo público
+```http
+GET /api/tramites/public/{codigo}/archivo/{nombreArchivo}
+```
+
+## 🔔 API de Notificaciones
+
+### Endpoints de Notificaciones
+
+#### Obtener mis notificaciones
+```http
+GET /api/notificaciones/mis-notificaciones?page=0&size=20
+Authorization: Bearer <token>
+```
+
+#### Obtener todas las notificaciones (ADMIN)
+```http
+GET /api/notificaciones?page=0&size=20
+Authorization: Bearer <admin_token>
+```
+
+#### Crear notificación (ADMIN)
+```http
+POST /api/notificaciones
+Authorization: Bearer <admin_token>
+Content-Type: application/json
+
+{
+  "usuarioDestinatarioId": 5,
+  "titulo": "Nueva actualización del sistema",
+  "mensaje": "Se han implementado mejoras en el módulo de trámites",
+  "tipo": "SISTEMA",
+  "prioridad": "NORMAL",
+  "rutaDestino": "/admin/configuracion"
+}
+```
+
+#### Crear notificación por rol (ADMIN)
+```http
+POST /api/notificaciones
+Authorization: Bearer <admin_token>
+Content-Type: application/json
+
+{
+  "roleDestinatario": "ADMINISTRATIVO",
+  "titulo": "Capacitación obligatoria",
+  "mensaje": "Se realizará capacitación el día viernes 15",
+  "tipo": "SISTEMA",
+  "prioridad": "ALTA"
+}
+```
+
+#### Marcar notificación como leída
+```http
+PUT /api/notificaciones/{id}/marcar-leida
+Authorization: Bearer <token>
+```
+
+#### Marcar todas como leídas
+```http
+PUT /api/notificaciones/marcar-todas-leidas
+Authorization: Bearer <token>
+```
+
+#### Eliminar notificación (ADMIN)
+```http
+DELETE /api/notificaciones/{id}
+Authorization: Bearer <admin_token>
+```
+
+#### Limpiar notificaciones antiguas (ADMIN)
+```http
+DELETE /api/notificaciones/limpiar-antiguas?dias=30
+Authorization: Bearer <admin_token>
+```
+
+### WebSocket - Notificaciones en Tiempo Real
+
+#### Conectarse al WebSocket
+```javascript
+const socket = new SockJS('http://localhost:8081/ws');
+const stompClient = Stomp.over(socket);
+
+stompClient.connect({
+  'Authorization': 'Bearer ' + token
+}, (frame) => {
+  console.log('Connected: ' + frame);
+
+  // Suscribirse a notificaciones personales
+  stompClient.subscribe('/user/queue/notificaciones', (message) => {
+    const notificacion = JSON.parse(message.body);
+    console.log('Nueva notificación:', notificacion);
+  });
+});
+```
+
+## 📧 Sistema de Emails
+
+### Templates HTML Disponibles
+
+El sistema cuenta con templates HTML profesionales y responsivos para:
+
+#### 1. Notificación de Recepción
+- **Trigger**: Cuando un trabajador recepciona un trámite
+- **Destinatario**: Usuario solicitante
+- **Contenido**:
+  - Código y detalles del trámite
+  - Personal asignado
+  - Tiempo estimado de procesamiento
+  - Timeline de próximos pasos
+  - Botón para seguimiento en línea
+
+#### 2. Notificación de Derivación
+- **Trigger**: Cuando un trámite es derivado a otro trabajador
+- **Destinatario**: Nuevo trabajador asignado
+- **Contenido**:
+  - Motivo de la derivación
+  - Detalles completos del trámite
+  - Badge de prioridad con colores dinámicos
+  - Información del solicitante
+  - Fecha límite de atención
+  - Botón directo para atender
+
+#### 3. Notificación de Respuesta
+- **Trigger**: Cuando se responde un trámite
+- **Destinatario**: Usuario solicitante
+- **Contenido**:
+  - Respuesta del administrativo
+  - Información del trámite
+  - Observaciones adicionales
+  - Cantidad de documentos adjuntos
+  - Botón para ver detalles completos
+
+#### 4. Notificación de Rechazo
+- **Trigger**: Cuando se rechaza un trámite
+- **Destinatario**: Usuario solicitante
+- **Contenido**:
+  - Motivo del rechazo
+  - Observaciones detalladas
+  - Fecha de rechazo
+  - Responsable del rechazo
+  - Pasos a seguir
+  - Botón para ver en el sistema
+
+#### 5. Notificación de Autoasignación
+- **Trigger**: Cuando un trabajador se asigna un trámite
+- **Destinatario**: Trabajador que se asignó
+- **Contenido**:
+  - Confirmación de asignación
+  - Detalles del trámite
+  - Prioridad con colores
+  - Plazo de atención
+  - Diseño con animaciones CSS
+
+#### 6. Notificación de Edición
+- **Trigger**: Cuando un usuario edita su trámite
+- **Destinatario**: Usuario que editó
+- **Contenido**:
+  - Changelog de cambios (antes/después)
+  - Detalles actualizados
+  - Fecha de edición
+  - Diseño moderno con cards
+
+### Características de los Templates
+
+- ✅ **Diseño Responsivo**: Compatible con todos los dispositivos
+- ✅ **Gradientes Profesionales**: Colores según tipo de notificación
+- ✅ **Botones Call-to-Action**: Enlaces directos al sistema
+- ✅ **Tablas de Información**: Detalles organizados visualmente
+- ✅ **Badges Dinámicos**: Prioridades con colores personalizados
+- ✅ **Footer Institucional**: Información de la universidad
+- ✅ **Encoding UTF-8**: Soporte para caracteres especiales
+- ✅ **Inline CSS**: Máxima compatibilidad con clientes de correo
+
+### Configuración de Email
+
+```properties
+# Mail Configuration
+spring.mail.host=smtp.gmail.com
+spring.mail.port=587
+spring.mail.username=noreply@untumbes.edu.pe
+spring.mail.password=app_password_here
+spring.mail.properties.mail.smtp.auth=true
+spring.mail.properties.mail.smtp.starttls.enable=true
+```
+
 ## 🔒 Sistema de Seguridad
 
 ### Características de Seguridad Implementadas
@@ -479,7 +734,10 @@ src/main/java/com/example/demo/
 │   ├── UsuarioController.java       # Gestión de usuarios
 │   ├── AreaController.java          # Gestión de áreas
 │   ├── RoleController.java          # Gestión de roles
-│   └── TramiteController.java       # Gestión de trámites
+│   ├── TramiteController.java       # Gestión de trámites
+│   ├── NotificacionController.java  # Gestión de notificaciones
+│   ├── NotificacionWebSocketController.java # WebSocket notificaciones
+│   └── ReporteController.java       # Generación de reportes
 ├── dto/
 │   ├── request/
 │   │   ├── LoginRequest.java        # Login
@@ -508,7 +766,10 @@ src/main/java/com/example/demo/
 │   ├── JwtService.java              # Servicio JWT
 │   ├── UsuarioService.java          # Lógica usuarios
 │   ├── AreaService.java             # Lógica áreas
-│   └── TramiteService.java          # Lógica trámites
+│   ├── TramiteService.java          # Lógica trámites
+│   ├── NotificacionService.java     # Lógica notificaciones
+│   ├── EmailService.java            # Envío de emails con templates
+│   └── ReporteService.java          # Generación de reportes
 └── exception/
     ├── GlobalExceptionHandler.java  # Manejo global errores
     └── CustomExceptions.java        # Excepciones personalizadas
@@ -525,9 +786,12 @@ n
 
 - **Usuario** ←→ **Role** (Many-to-One)
 - **Usuario** ←→ **Area** (Many-to-One, opcional)
-- **Tramite** ←→ **Usuario** (Many-to-One)
-- **Tramite** ←→ **TipoTramite** (Many-to-One)
-- **Tramite** ←→ **EstadoTramite** (Many-to-One)
+- **Tramite** ←→ **Usuario** (Many-to-One - solicitante)
+- **Tramite** ←→ **Usuario** (Many-to-One - trabajador asignado)
+- **Tramite** ←→ **TramiteHistorial** (One-to-Many)
+- **Notificacion** ←→ **Usuario** (Many-to-One - destinatario)
+- **Notificacion** ←→ **Tramite** (Many-to-One, opcional)
+- **TramiteHistorial** ←→ **Usuario** (Many-to-One - quien realiza la acción)
 
 ## 🧪 Testing y Debugging
 
@@ -719,6 +983,19 @@ curl http://localhost:8080/actuator/health/db
 
 ## 📝 Changelog
 
+### v2.1.0 (2025-01-XX) - Mejoras de Notificaciones y UI
+- ✅ **Sistema de notificaciones completo** con WebSocket en tiempo real
+- ✅ **Templates HTML profesionales** para emails transaccionales
+- ✅ **Notificación de recepción** con timeline visual
+- ✅ **Notificación de derivación** con badge de prioridad dinámica
+- ✅ **Notificación de respuesta** con documentos adjuntos
+- ✅ **Notificación de rechazo** mejorada con diseño alerta
+- ✅ **Notificación de autoasignación** con animaciones CSS
+- ✅ **Notificación de edición** con changelog de cambios
+- ✅ **Iconos diferenciados** en acciones rápidas de notificaciones
+- ✅ **Limpieza automática** de notificaciones antiguas
+- ✅ **Gestión de notificaciones** por rol o usuarios específicos
+
 ### v2.0.0 (2025-01-XX)
 - ✅ Sistema completo de gestión de usuarios con CRUD
 - ✅ Gestión de áreas organizacionales
@@ -728,6 +1005,10 @@ curl http://localhost:8080/actuator/health/db
 - ✅ Validación anti-reutilización de contraseñas
 - ✅ Dashboard diferenciado por roles
 - ✅ Descarga de documentos en lote
+- ✅ Flujo completo de derivación de trámites
+- ✅ Sistema de respuestas con archivos adjuntos
+- ✅ Rechazo de trámites con motivos
+- ✅ Búsqueda pública de trámites
 
 ### v1.0.0 (2024-12-XX)
 - ✅ Sistema de autenticación JWT con refresh tokens
@@ -752,8 +1033,7 @@ curl http://localhost:8080/actuator/health/db
 
 ### Recursos Adicionales
 - **Manual de Usuario**: Disponible en `/manual` del frontend
-- **API Documentation**: Swagger UI en `/swagger-ui.html` (desarrollo)
-- **Postman Collection**: Disponible en `/docs/postman/`
+
 
 ## 📄 Licencia
 

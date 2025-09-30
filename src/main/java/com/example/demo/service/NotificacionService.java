@@ -1,13 +1,10 @@
 package com.example.demo.service;
 
-import com.example.demo.dto.NotificacionRequest;
-import com.example.demo.dto.NotificacionResponse;
-import com.example.demo.model.Notificacion;
-import com.example.demo.repository.NotificacionRepository;
-import com.example.demo.repository.TramiteRepository;
-import com.example.demo.repository.UsuarioRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -15,10 +12,15 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import com.example.demo.dto.NotificacionRequest;
+import com.example.demo.dto.NotificacionResponse;
+import com.example.demo.model.Notificacion;
+import com.example.demo.repository.NotificacionRepository;
+import com.example.demo.repository.TramiteRepository;
+import com.example.demo.repository.UsuarioRepository;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
@@ -63,6 +65,30 @@ public class NotificacionService {
         log.info("Notificado nuevo trámite {} a {} trabajadores", tramiteId, trabajadoresArea.size());
     }
     
+    // Notificar autoasignacion de tramite
+    @Async
+    public void notificarAutoasignacionTramite(Long tramiteId, Long trabajadorId, Long solicitanteId) {
+        tramiteRepository.findById(tramiteId).ifPresent(tramite -> {
+            Notificacion notificacion = new Notificacion();
+            notificacion.setUsuarioDestinatarioId(trabajadorId);
+            notificacion.setTitulo("Te has asignado un tramite");
+            notificacion.setMensaje(String.format(
+                "Te has asignado el tramite %s. Recuerda atenderlo dentro del plazo establecido.",
+                tramite.getCodigo()
+            ));
+            notificacion.setTipo(Notificacion.TipoNotificacion.TRAMITE_ASIGNADO);
+            notificacion.setPrioridad(Notificacion.PrioridadNotificacion.NORMAL);
+            notificacion.setTramiteRelacionadoId(tramiteId);
+            notificacion.setUsuarioEmisorId(trabajadorId);
+            notificacion.setRutaDestino("/tramites/" + tramiteId);
+
+            Notificacion saved = notificacionRepository.save(notificacion);
+            enviarNotificacionWebSocket(saved, trabajadorId);
+
+            emailService.notificarAutoasignacionATrabajador(trabajadorId, tramiteId);
+        });
+    }
+
     // Notificar recepción de trámite al solicitante
     @Async
     public void notificarRecepcionTramite(Long tramiteId, Long trabajadorId, Long solicitanteId) {
@@ -490,6 +516,7 @@ public class NotificacionService {
             .prioridad(notificacion.getPrioridad().name())
             .esLeida(notificacion.getEsLeida())
             .rutaDestino(notificacion.getRutaDestino())
+            .referenciaId(notificacion.getTramiteRelacionadoId()) // Mapear tramiteRelacionadoId como referenciaId
             .fechaCreacion(notificacion.getFechaCreacion())
             .fechaLectura(notificacion.getFechaLectura())
             .fechaVencimiento(notificacion.getFechaVencimiento())

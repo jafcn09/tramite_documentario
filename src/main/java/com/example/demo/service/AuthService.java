@@ -1,5 +1,12 @@
 package com.example.demo.service;
 
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
 import com.example.demo.dto.LoginRequest;
 import com.example.demo.dto.LoginResponse;
 import com.example.demo.dto.UsuarioResponse;
@@ -8,14 +15,9 @@ import com.example.demo.model.Role;
 import com.example.demo.model.Usuario;
 import com.example.demo.repository.LoginAttemptRepository;
 import com.example.demo.repository.UsuarioRepository;
+
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -200,13 +202,12 @@ public class AuthService {
     
     private String getRoleBasedRedirectUrl(Role role) {
         Map<String, String> roleRoutes = new HashMap<>();
-        roleRoutes.put("ADMIN", "/admin/dashboard");
-        roleRoutes.put("USUARIO", "/usuario/dashboard");
-        roleRoutes.put("ALUMNO", "/alumno/dashboard");
-        roleRoutes.put("EXTERNO", "/externo/dashboard");
-        roleRoutes.put("ADMINISTRATIVO", "/administrativo/dashboard");
-        
-        return roleRoutes.getOrDefault(role.getName(), "/dashboard");
+      roleRoutes.put("ADMIN", "/admin/tablero");
+             roleRoutes.put("USUARIO", "/usuario/tablero");
+
+                roleRoutes.put("ADMINISTRATIVO", "/administrativo/tablero");
+         
+                 return roleRoutes.getOrDefault(role.getName(), "/tablero");
     }
     
     private String getClientIpAddress(HttpServletRequest request) {

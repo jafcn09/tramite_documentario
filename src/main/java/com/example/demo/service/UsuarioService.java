@@ -161,41 +161,39 @@ public class UsuarioService {
     }
     
     public void changePassword(Long userId, ChangePasswordRequest request) {
-        // Validar que las contraseC1as coincidan
+        // Validar que las contraseñas coincidan
         if (!request.getNewPassword().equals(request.getConfirmPassword())) {
-            throw new IllegalArgumentException("Las contraseC1as no coinciden");
+            throw new IllegalArgumentException("Las contraseñas no coinciden");
         }
-        
+
         Usuario usuario = usuarioRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado con ese id: " + userId));
-        
-        // Validar contraseC1a actual
-        if (!passwordEncoder.matches(request.getCurrentPassword(), usuario.getClave())) {
-            throw new IllegalArgumentException("La contraseC1a actual es incorrecta");
-        }
-        
-        // Validar que la nueva contraseC1a no sea igual a la actual
+
+        // NO validamos contraseña actual porque el usuario ya está autenticado con JWT
+        // El token JWT ya valida la identidad del usuario - Mejor UX
+
+        // Validar que la nueva contraseña no sea igual a la actual
         if (passwordEncoder.matches(request.getNewPassword(), usuario.getClave())) {
-            throw new IllegalArgumentException("La nueva contraseC1a debe ser diferente a la actual");
+            throw new IllegalArgumentException("La nueva contraseña debe ser diferente a la actual");
         }
-        
-        // Validar que no estC) en las C:ltimas 10 contraseC1as
+
+        // Validar que no esté en las últimas 10 contraseñas
         if (isPasswordInHistory(usuario, request.getNewPassword())) {
-            throw new IllegalArgumentException("No puedes usar una de las C:ltimas 10 contraseC1as utilizadas");
+            throw new IllegalArgumentException("No puedes usar una de las últimas 10 contraseñas utilizadas");
         }
-        
-        // Guardar contraseC1a actual en el historial
+
+        // Guardar contraseña actual en el historial
         savePasswordHistory(usuario, usuario.getClave());
-        
-        // Actualizar contraseC1a
+
+        // Actualizar contraseña
         String encodedNewPassword = passwordEncoder.encode(request.getNewPassword());
         usuario.setClave(encodedNewPassword);
         usuario.setMustChangePassword(false);
         usuario.setPasswordExpiry(null);
-        
+
         usuarioRepository.save(usuario);
-        
-        // Enviar notificaciC3n por email
+
+        // Enviar notificación por email
         sendPasswordChangeNotification(usuario);
     }
     

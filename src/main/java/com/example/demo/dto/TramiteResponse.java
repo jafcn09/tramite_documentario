@@ -51,7 +51,9 @@ public class TramiteResponse {
 
     // Permisos y estados
     private Boolean puedeEditar;
-    
+    private Boolean estaVencido;
+    private Long diasRestantes;
+
     // Fechas
     private LocalDateTime fechaCreacion;
     private LocalDateTime fechaActualizacion;

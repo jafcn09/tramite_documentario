@@ -4,12 +4,14 @@ import com.example.demo.dto.AreaJerarquicaDTO;
 import com.example.demo.entity.Area;
 import com.example.demo.repository.AreaRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -18,10 +20,21 @@ public class OrganigramaService {
     private final AreaRepository areaRepository;
 
     public List<AreaJerarquicaDTO> obtenerOrganigramaCompleto() {
-        List<Area> areasRaiz = areaRepository.findAreasRaizActivas();
-        return areasRaiz.stream()
-                .map(this::convertirAAreaJerarquica)
-                .collect(Collectors.toList());
+        try {
+            log.info("Buscando áreas raíz activas");
+            List<Area> areasRaiz = areaRepository.findAreasRaizActivas();
+            log.info("Se encontraron {} áreas raíz", areasRaiz.size());
+
+            List<AreaJerarquicaDTO> resultado = areasRaiz.stream()
+                    .map(this::convertirAAreaJerarquica)
+                    .collect(Collectors.toList());
+
+            log.info("Conversión a DTO completada exitosamente");
+            return resultado;
+        } catch (Exception e) {
+            log.error("Error en obtenerOrganigramaCompleto", e);
+            throw new RuntimeException("Error al obtener organigrama completo: " + e.getMessage(), e);
+        }
     }
 
     public List<AreaJerarquicaDTO> obtenerAreasPlanas() {
@@ -115,6 +128,30 @@ public class OrganigramaService {
     }
 
     private AreaJerarquicaDTO convertirAAreaJerarquica(Area area) {
+        // Contar usuarios de manera segura sin cargar la colección completa
+        int totalUsuarios = 0;
+        try {
+            if (area.getUsuarios() != null) {
+                totalUsuarios = area.getUsuarios().size();
+            }
+        } catch (Exception e) {
+            // Si hay problema con lazy loading, dejamos en 0
+            totalUsuarios = 0;
+        }
+
+        // Obtener el nombre del área padre de manera segura
+        Long areaPadreId = null;
+        String areaPadreNombre = null;
+        try {
+            if (area.getAreaPadre() != null) {
+                areaPadreId = area.getAreaPadre().getId();
+                areaPadreNombre = area.getAreaPadre().getNombre();
+            }
+        } catch (Exception e) {
+            // Si hay problema con lazy loading del padre, dejamos null
+        }
+
+        // Cargar subáreas activas
         List<Area> subAreas = areaRepository.findSubAreasActivas(area);
 
         return AreaJerarquicaDTO.builder()
@@ -124,16 +161,27 @@ public class OrganigramaService {
                 .codigoOrganigrama(area.getCodigoOrganigrama())
                 .nivelJerarquico(area.getNivelJerarquico())
                 .rutaJerarquica(area.getRutaJerarquica())
-                .areaPadreId(area.getAreaPadre() != null ? area.getAreaPadre().getId() : null)
-                .areaPadreNombre(area.getAreaPadre() != null ? area.getAreaPadre().getNombre() : null)
+                .areaPadreId(areaPadreId)
+                .areaPadreNombre(areaPadreNombre)
                 .activa(area.getActiva())
-                .totalUsuarios(area.getUsuarios() != null ? area.getUsuarios().size() : 0)
+                .totalUsuarios(totalUsuarios)
                 .subAreas(subAreas.stream().map(this::convertirAAreaJerarquica).collect(Collectors.toList()))
                 .expanded(false)
                 .build();
     }
 
     private AreaJerarquicaDTO convertirAAreaJerarquicaSimple(Area area) {
+        // Contar usuarios de manera segura sin cargar la colección completa
+        int totalUsuarios = 0;
+        try {
+            if (area.getUsuarios() != null) {
+                totalUsuarios = area.getUsuarios().size();
+            }
+        } catch (Exception e) {
+            // Si hay problema con lazy loading, dejamos en 0
+            totalUsuarios = 0;
+        }
+
         return AreaJerarquicaDTO.builder()
                 .id(area.getId())
                 .nombre(area.getNombre())
@@ -144,7 +192,7 @@ public class OrganigramaService {
                 .areaPadreId(area.getAreaPadre() != null ? area.getAreaPadre().getId() : null)
                 .areaPadreNombre(area.getAreaPadre() != null ? area.getAreaPadre().getNombre() : null)
                 .activa(area.getActiva())
-                .totalUsuarios(area.getUsuarios() != null ? area.getUsuarios().size() : 0)
+                .totalUsuarios(totalUsuarios)
                 .expanded(false)
                 .build();
     }

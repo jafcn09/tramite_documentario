@@ -172,42 +172,254 @@ public class EmailService {
             });
         });
     }
-    
+
+    @Async
+    public void notificarAutoasignacionATrabajador(Long trabajadorId, Long tramiteId) {
+        usuarioRepository.findById(trabajadorId).ifPresent(trabajador -> {
+            tramiteRepository.findById(tramiteId).ifPresent(tramite -> {
+                try {
+                    MimeMessage mimeMessage = mailSender.createMimeMessage();
+                    MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+
+                    helper.setFrom(fromEmail);
+                    helper.setTo(trabajador.getCorreo());
+                    helper.setSubject("✅ Te has asignado el trámite " + tramite.getCodigo());
+
+                    String htmlContent = String.format("""
+                        <!DOCTYPE html>
+                        <html>
+                        <head>
+                            <meta charset="UTF-8">
+                            <style>
+                                @keyframes slideIn { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+                                @keyframes pulse { 0%%, 100%% { transform: scale(1); } 50%% { transform: scale(1.05); } }
+                                body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background: linear-gradient(135deg, #667eea 0%%, #764ba2 100%%); }
+                                .container { max-width: 600px; margin: 40px auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+                                .header { background: linear-gradient(135deg, #667eea 0%%, #764ba2 100%%); padding: 40px 30px; text-align: center; animation: slideIn 0.6s ease; }
+                                .header h1 { color: white; margin: 0; font-size: 28px; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+                                .badge { display: inline-block; background: rgba(255,255,255,0.2); color: white; padding: 8px 16px; border-radius: 20px; font-size: 14px; margin-top: 10px; animation: pulse 2s infinite; }
+                                .content { padding: 40px 30px; }
+                                .greeting { font-size: 18px; color: #2c3e50; margin-bottom: 20px; }
+                                .message-box { background: linear-gradient(135deg, #f5f7fa 0%%, #c3cfe2 100%%); padding: 25px; border-radius: 12px; margin: 20px 0; border-left: 4px solid #667eea; }
+                                .details { background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; }
+                                .detail-row { display: flex; padding: 10px 0; border-bottom: 1px solid #e9ecef; }
+                                .detail-row:last-child { border-bottom: none; }
+                                .detail-label { font-weight: 600; color: #495057; width: 140px; }
+                                .detail-value { color: #6c757d; }
+                                .cta-button { display: inline-block; background: linear-gradient(135deg, #667eea 0%%, #764ba2 100%%); color: white; padding: 15px 40px; text-decoration: none; border-radius: 50px; margin: 20px 0; font-weight: 600; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4); transition: all 0.3s; }
+                                .cta-button:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6); }
+                                .footer { text-align: center; padding: 30px; background: #f8f9fa; color: #6c757d; font-size: 14px; }
+                                .priority-high { color: #dc3545; font-weight: bold; }
+                                .priority-normal { color: #ffc107; font-weight: bold; }
+                                .priority-low { color: #28a745; font-weight: bold; }
+                            </style>
+                        </head>
+                        <body>
+                            <div class="container">
+                                <div class="header">
+                                    <h1>🎯 Trámite Asignado</h1>
+                                    <div class="badge">%s</div>
+                                </div>
+                                <div class="content">
+                                    <p class="greeting">¡Hola %s %s!</p>
+                                    <div class="message-box">
+                                        <p style="margin: 0; font-size: 16px; color: #2c3e50;">
+                                            Has tomado el trámite <strong>%s</strong> y ahora eres responsable de su atención.
+                                            Recuerda gestionarlo dentro del plazo establecido.
+                                        </p>
+                                    </div>
+                                    <div class="details">
+                                        <h3 style="margin-top: 0; color: #2c3e50;">📋 Detalles del Trámite</h3>
+                                        <div class="detail-row">
+                                            <div class="detail-label">Código:</div>
+                                            <div class="detail-value"><strong>%s</strong></div>
+                                        </div>
+                                        <div class="detail-row">
+                                            <div class="detail-label">Tipo:</div>
+                                            <div class="detail-value">%s</div>
+                                        </div>
+                                        <div class="detail-row">
+                                            <div class="detail-label">Prioridad:</div>
+                                            <div class="detail-value priority-%s">%s</div>
+                                        </div>
+                                        <div class="detail-row">
+                                            <div class="detail-label">Solicitante:</div>
+                                            <div class="detail-value">%s</div>
+                                        </div>
+                                        <div class="detail-row">
+                                            <div class="detail-label">Plazo:</div>
+                                            <div class="detail-value"><strong>3 días hábiles</strong></div>
+                                        </div>
+                                    </div>
+                                    <center>
+                                        <a href="%s/tramites/%d" class="cta-button">
+                                            Ver Trámite Completo →
+                                        </a>
+                                    </center>
+                                </div>
+                                <div class="footer">
+                                    <p style="margin: 5px 0;">Universidad Nacional de Tumbes</p>
+                                    <p style="margin: 5px 0;">Sistema de Trámite Documentario</p>
+                                    <p style="margin: 5px 0; font-size: 12px;">Este es un correo automático, por favor no responder.</p>
+                                </div>
+                            </div>
+                        </body>
+                        </html>
+                        """,
+                        tramite.getCodigo(),
+                        trabajador.getNombre(),
+                        trabajador.getApellidos(),
+                        tramite.getCodigo(),
+                        tramite.getCodigo(),
+                        tramite.getTipo(),
+                        tramite.getPrioridad().name().toLowerCase(),
+                        tramite.getPrioridad(),
+                        obtenerNombreSolicitante(tramite.getUsuarioSolicitanteId()),
+                        appUrl,
+                        tramiteId
+                    );
+
+                    helper.setText(htmlContent, true);
+                    mailSender.send(mimeMessage);
+                    log.info("Email de autoasignacion enviado a trabajador {} sobre tramite {}", trabajadorId, tramiteId);
+                } catch (Exception e) {
+                    log.error("Error enviando email de autoasignacion a trabajador {}: {}", trabajadorId, e.getMessage());
+                }
+            });
+        });
+    }
+
     // Enviar correo de recepción al solicitante
     @Async
     public void enviarCorreoRecepcion(Long solicitanteId, Long tramiteId, Map<String, Object> datos) {
         usuarioRepository.findById(solicitanteId).ifPresent(solicitante -> {
-            try {
-                SimpleMailMessage message = new SimpleMailMessage();
-                message.setFrom(fromEmail);
-                message.setTo(solicitante.getCorreo());
-                message.setSubject("Su trámite ha sido recepcionado - " + datos.get("tramiteCodigo"));
-                message.setText(String.format(
-                    "Estimado/a %s %s,\n\n" +
-                    "Su trámite con código %s ha sido recepcionado exitosamente.\n\n" +
-                    "Información del proceso:\n" +
-                    "- Personal asignado: %s\n" +
-                    "- Tiempo estimado: %s\n" +
-                    "- Estado actual: EN REVISIÓN\n\n" +
-                    "Puede hacer seguimiento de su trámite en:\n" +
-                    "%s/tramites/%d\n\n" +
-                    "Le notificaremos cualquier cambio en el estado de su trámite.\n\n" +
-                    "Atentamente,\n" +
-                    "Sistema de Trámite Documentario",
-                    solicitante.getNombre(),
-                    solicitante.getApellidos(),
-                    datos.get("tramiteCodigo"),
-                    datos.get("trabajadorNombre"),
-                    datos.get("tiempoEstimado"),
-                    appUrl,
-                    tramiteId
-                ));
-                
-                mailSender.send(message);
-                log.info("Email de recepción enviado a solicitante {}", solicitanteId);
-            } catch (Exception e) {
-                log.error("Error enviando email de recepción: {}", e.getMessage());
-            }
+            tramiteRepository.findById(tramiteId).ifPresent(tramite -> {
+                try {
+                    MimeMessage message = mailSender.createMimeMessage();
+                    MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+                    helper.setFrom(fromEmail);
+                    helper.setTo(solicitante.getCorreo());
+                    helper.setSubject("✅ Trámite Recepcionado - " + datos.get("tramiteCodigo"));
+
+                    String htmlContent = String.format("""
+                        <!DOCTYPE html>
+                        <html lang='es'>
+                        <head>
+                            <meta charset='UTF-8'>
+                            <style>
+                                body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background: #f5f7fa; }
+                                .container { max-width: 600px; margin: 40px auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+                                .header { background: linear-gradient(135deg, #10b981 0%%, #059669 100%%); padding: 40px; text-align: center; color: white; }
+                                .header h1 { margin: 0; font-size: 28px; font-weight: 600; }
+                                .badge { display: inline-block; background: rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 20px; margin-top: 10px; font-size: 14px; }
+                                .content { padding: 40px 30px; }
+                                .greeting { font-size: 18px; color: #1f2937; margin-bottom: 20px; }
+                                .info-card { background: #f0fdf4; border-left: 4px solid #10b981; padding: 25px; margin: 25px 0; border-radius: 8px; }
+                                .detail-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #d1fae5; }
+                                .detail-row:last-child { border-bottom: none; }
+                                .detail-label { font-weight: 600; color: #047857; }
+                                .detail-value { color: #1f2937; }
+                                .timeline { background: #f9fafb; padding: 20px; border-radius: 8px; margin: 25px 0; }
+                                .timeline h3 { color: #1f2937; margin-top: 0; font-size: 16px; }
+                                .timeline-item { display: flex; align-items: center; padding: 10px 0; }
+                                .timeline-dot { width: 12px; height: 12px; background: #10b981; border-radius: 50%%; margin-right: 15px; }
+                                .cta-button { display: inline-block; background: #10b981; color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
+                                .footer { background: #f9fafb; padding: 25px; text-align: center; color: #6b7280; font-size: 13px; border-top: 1px solid #e5e7eb; }
+                            </style>
+                        </head>
+                        <body>
+                            <div class='container'>
+                                <div class='header'>
+                                    <h1>✅ Trámite Recepcionado</h1>
+                                    <div class='badge'>%s</div>
+                                </div>
+                                <div class='content'>
+                                    <p class='greeting'>Estimado/a <strong>%s %s</strong>,</p>
+                                    <p>Nos complace informarle que su trámite ha sido <strong>recepcionado exitosamente</strong> y está siendo procesado por nuestro equipo.</p>
+
+                                    <div class='info-card'>
+                                        <h3 style='margin-top: 0; color: #047857;'>📋 Información del Trámite</h3>
+                                        <div class='detail-row'>
+                                            <span class='detail-label'>Código:</span>
+                                            <span class='detail-value'><strong>%s</strong></span>
+                                        </div>
+                                        <div class='detail-row'>
+                                            <span class='detail-label'>Asunto:</span>
+                                            <span class='detail-value'>%s</span>
+                                        </div>
+                                        <div class='detail-row'>
+                                            <span class='detail-label'>Tipo:</span>
+                                            <span class='detail-value'>%s</span>
+                                        </div>
+                                        <div class='detail-row'>
+                                            <span class='detail-label'>Estado Actual:</span>
+                                            <span class='detail-value'><strong style='color: #10b981;'>EN REVISIÓN</strong></span>
+                                        </div>
+                                        <div class='detail-row'>
+                                            <span class='detail-label'>Personal Asignado:</span>
+                                            <span class='detail-value'>%s</span>
+                                        </div>
+                                        <div class='detail-row'>
+                                            <span class='detail-label'>Tiempo Estimado:</span>
+                                            <span class='detail-value'><strong>%s</strong></span>
+                                        </div>
+                                    </div>
+
+                                    <div class='timeline'>
+                                        <h3>📍 Próximos Pasos</h3>
+                                        <div class='timeline-item'>
+                                            <div class='timeline-dot'></div>
+                                            <span>Revisión de documentación presentada</span>
+                                        </div>
+                                        <div class='timeline-item'>
+                                            <div class='timeline-dot'></div>
+                                            <span>Evaluación y procesamiento del trámite</span>
+                                        </div>
+                                        <div class='timeline-item'>
+                                            <div class='timeline-dot'></div>
+                                            <span>Emisión de respuesta o documento final</span>
+                                        </div>
+                                    </div>
+
+                                    <p>Le notificaremos por correo y por el sistema sobre cualquier actualización en el estado de su trámite.</p>
+
+                                    <center>
+                                        <a href='%s/tramites/%d' class='cta-button'>Hacer Seguimiento del Trámite →</a>
+                                    </center>
+
+                                    <p style='margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; color: #6b7280; font-size: 14px;'>
+                                        💡 <strong>Recordatorio:</strong> Puede consultar el estado de su trámite en cualquier momento ingresando su código en nuestro sistema.
+                                    </p>
+                                </div>
+                                <div class='footer'>
+                                    <p><strong>Sistema de Trámite Documentario</strong></p>
+                                    <p>Universidad Nacional de Tumbes</p>
+                                    <p style='margin-top: 10px;'>Este es un correo automático, por favor no responda</p>
+                                </div>
+                            </div>
+                        </body>
+                        </html>
+                        """,
+                        datos.get("tramiteCodigo"),
+                        solicitante.getNombre(),
+                        solicitante.getApellidos(),
+                        datos.get("tramiteCodigo"),
+                        tramite.getAsunto(),
+                        tramite.getTipo(),
+                        datos.get("trabajadorNombre"),
+                        datos.get("tiempoEstimado"),
+                        appUrl,
+                        tramiteId
+                    );
+
+                    helper.setText(htmlContent, true);
+                    mailSender.send(message);
+                    log.info("Email de recepción enviado a solicitante {}", solicitanteId);
+                } catch (Exception e) {
+                    log.error("Error enviando email de recepción: {}", e.getMessage());
+                }
+            });
         });
     }
     
@@ -217,35 +429,125 @@ public class EmailService {
         usuarioRepository.findById(trabajadorId).ifPresent(trabajador -> {
             tramiteRepository.findById(tramiteId).ifPresent(tramite -> {
                 try {
-                    SimpleMailMessage message = new SimpleMailMessage();
-                    message.setFrom(fromEmail);
-                    message.setTo(trabajador.getCorreo());
-                    message.setSubject("Trámite derivado a usted - " + tramite.getCodigo());
-                    message.setText(String.format(
-                        "Estimado/a %s %s,\n\n" +
-                        "Se le ha derivado un trámite para su atención.\n\n" +
-                        "Detalles del trámite:\n" +
-                        "- Código: %s\n" +
-                        "- Tipo: %s\n" +
-                        "- Prioridad: %s\n" +
-                        "- Motivo de derivación: %s\n" +
-                        "- Fecha límite: %s\n\n" +
-                        "Por favor, acceda al sistema para procesar este trámite:\n" +
-                        "%s/tramites/%d\n\n" +
-                        "Atentamente,\n" +
-                        "Sistema de Trámite Documentario",
+                    MimeMessage message = mailSender.createMimeMessage();
+                    MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+                    helper.setFrom(fromEmail);
+                    helper.setTo(trabajador.getCorreo());
+                    helper.setSubject("🔄 Trámite Derivado - " + tramite.getCodigo());
+
+                    String prioridadColor = switch(tramite.getPrioridad().name()) {
+                        case "URGENTE" -> "#dc3545";
+                        case "ALTA" -> "#ffc107";
+                        case "NORMAL" -> "#17a2b8";
+                        case "BAJA" -> "#28a745";
+                        default -> "#6c757d";
+                    };
+
+                    String htmlContent = String.format("""
+                        <!DOCTYPE html>
+                        <html lang='es'>
+                        <head>
+                            <meta charset='UTF-8'>
+                            <style>
+                                body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background: #f5f7fa; }
+                                .container { max-width: 600px; margin: 40px auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+                                .header { background: linear-gradient(135deg, #f59e0b 0%%, #d97706 100%%); padding: 40px; text-align: center; color: white; }
+                                .header h1 { margin: 0; font-size: 28px; font-weight: 600; }
+                                .badge { display: inline-block; background: rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 20px; margin-top: 10px; font-size: 14px; }
+                                .content { padding: 40px 30px; }
+                                .greeting { font-size: 18px; color: #1f2937; margin-bottom: 20px; }
+                                .alert-box { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 20px; margin: 25px 0; border-radius: 8px; }
+                                .alert-box h3 { color: #92400e; margin-top: 0; font-size: 16px; }
+                                .info-card { background: #f9fafb; padding: 25px; margin: 25px 0; border-radius: 8px; }
+                                .detail-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #e5e7eb; }
+                                .detail-row:last-child { border-bottom: none; }
+                                .detail-label { font-weight: 600; color: #6b7280; }
+                                .detail-value { color: #1f2937; }
+                                .priority-badge { display: inline-block; padding: 6px 12px; border-radius: 20px; color: white; font-size: 12px; font-weight: 600; }
+                                .cta-button { display: inline-block; background: #f59e0b; color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
+                                .footer { background: #f9fafb; padding: 25px; text-align: center; color: #6b7280; font-size: 13px; border-top: 1px solid #e5e7eb; }
+                            </style>
+                        </head>
+                        <body>
+                            <div class='container'>
+                                <div class='header'>
+                                    <h1>🔄 Trámite Derivado</h1>
+                                    <div class='badge'>%s</div>
+                                </div>
+                                <div class='content'>
+                                    <p class='greeting'>Estimado/a <strong>%s %s</strong>,</p>
+                                    <p>Se le ha <strong>derivado un trámite</strong> para su atención y procesamiento.</p>
+
+                                    <div class='alert-box'>
+                                        <h3>📌 Motivo de Derivación</h3>
+                                        <p style='margin: 0;'>%s</p>
+                                    </div>
+
+                                    <div class='info-card'>
+                                        <h3 style='margin-top: 0; color: #1f2937;'>📋 Detalles del Trámite</h3>
+                                        <div class='detail-row'>
+                                            <span class='detail-label'>Código:</span>
+                                            <span class='detail-value'><strong>%s</strong></span>
+                                        </div>
+                                        <div class='detail-row'>
+                                            <span class='detail-label'>Asunto:</span>
+                                            <span class='detail-value'>%s</span>
+                                        </div>
+                                        <div class='detail-row'>
+                                            <span class='detail-label'>Tipo:</span>
+                                            <span class='detail-value'>%s</span>
+                                        </div>
+                                        <div class='detail-row'>
+                                            <span class='detail-label'>Prioridad:</span>
+                                            <span class='detail-value'><span class='priority-badge' style='background: %s;'>%s</span></span>
+                                        </div>
+                                        <div class='detail-row'>
+                                            <span class='detail-label'>Solicitante:</span>
+                                            <span class='detail-value'>%s</span>
+                                        </div>
+                                        <div class='detail-row'>
+                                            <span class='detail-label'>Fecha Límite:</span>
+                                            <span class='detail-value'><strong>%s</strong></span>
+                                        </div>
+                                    </div>
+
+                                    <p><strong>⏰ Acción Requerida:</strong> Por favor, revise y procese este trámite a la brevedad posible según su prioridad asignada.</p>
+
+                                    <center>
+                                        <a href='%s/administrativo/mis-tramites?tramiteId=%d' class='cta-button'>Atender Trámite Ahora →</a>
+                                    </center>
+
+                                    <p style='margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; color: #6b7280; font-size: 14px;'>
+                                        💡 <strong>Recordatorio:</strong> Asegúrese de revisar toda la documentación adjunta antes de procesar el trámite.
+                                    </p>
+                                </div>
+                                <div class='footer'>
+                                    <p><strong>Sistema de Trámite Documentario</strong></p>
+                                    <p>Universidad Nacional de Tumbes</p>
+                                    <p style='margin-top: 10px;'>Este es un correo automático, por favor no responda</p>
+                                </div>
+                            </div>
+                        </body>
+                        </html>
+                        """,
+                        tramite.getCodigo(),
                         trabajador.getNombre(),
                         trabajador.getApellidos(),
-                        tramite.getCodigo(),
-                        tramite.getTipo(),
-                        tramite.getPrioridad(),
                         motivo,
-                        tramite.getFechaVencimiento() != null ? 
+                        tramite.getCodigo(),
+                        tramite.getAsunto(),
+                        tramite.getTipo(),
+                        prioridadColor,
+                        tramite.getPrioridad(),
+                        obtenerNombreSolicitante(tramite.getUsuarioSolicitanteId()),
+                        tramite.getFechaVencimiento() != null ?
                             tramite.getFechaVencimiento().format(DATE_FORMATTER) : "No especificada",
                         appUrl,
                         tramiteId
-                    ));
-                    
+                    );
+
+                    helper.setText(htmlContent, true);
                     mailSender.send(message);
                     log.info("Email de derivación enviado a trabajador {}", trabajadorId);
                 } catch (Exception e) {
@@ -561,6 +863,237 @@ public class EmailService {
                     log.info("Correo de rechazo enviado a {} para trámite {}", solicitante.getCorreo(), tramite.getCodigo());
                 } catch (Exception e) {
                     log.error("Error enviando correo de rechazo: {}", e.getMessage(), e);
+                }
+            });
+        });
+    }
+
+    // Notificar edición de trámite al usuario
+    @Async
+    public void notificarEdicionTramiteAUsuario(Long usuarioId, Long tramiteId, String tituloAnterior, String tituloNuevo) {
+        usuarioRepository.findById(usuarioId).ifPresent(usuario -> {
+            tramiteRepository.findById(tramiteId).ifPresent(tramite -> {
+                try {
+                    MimeMessage message = mailSender.createMimeMessage();
+                    MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+                    helper.setFrom(fromEmail);
+                    helper.setTo(usuario.getCorreo());
+                    helper.setSubject("✏️ Trámite Editado - " + tramite.getCodigo());
+
+                    // Template HTML moderno y profesional
+                    String htmlContent = String.format("""
+                        <!DOCTYPE html>
+                        <html lang='es'>
+                        <head>
+                            <meta charset='UTF-8'>
+                            <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+                            <style>
+                                * { margin: 0; padding: 0; box-sizing: border-box; }
+                                body {
+                                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+                                    line-height: 1.6;
+                                    color: #333;
+                                    background: #f5f7fa;
+                                    padding: 20px;
+                                }
+                                .container {
+                                    max-width: 600px;
+                                    margin: 0 auto;
+                                    background: white;
+                                    border-radius: 16px;
+                                    overflow: hidden;
+                                    box-shadow: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06);
+                                }
+                                .header {
+                                    background: linear-gradient(135deg, #667eea 0%%, #764ba2 100%%);
+                                    color: white;
+                                    padding: 40px 30px;
+                                    text-align: center;
+                                }
+                                .header h1 {
+                                    font-size: 26px;
+                                    font-weight: 600;
+                                    margin-bottom: 8px;
+                                }
+                                .header p {
+                                    opacity: 0.95;
+                                    font-size: 15px;
+                                }
+                                .content {
+                                    padding: 35px 30px;
+                                }
+                                .greeting {
+                                    font-size: 16px;
+                                    margin-bottom: 20px;
+                                }
+                                .info-card {
+                                    background: #f8f9fb;
+                                    border-left: 4px solid #667eea;
+                                    padding: 20px;
+                                    margin: 25px 0;
+                                    border-radius: 8px;
+                                }
+                                .info-row {
+                                    display: flex;
+                                    justify-content: space-between;
+                                    padding: 10px 0;
+                                    border-bottom: 1px solid #e5e7eb;
+                                }
+                                .info-row:last-child {
+                                    border-bottom: none;
+                                }
+                                .info-label {
+                                    font-weight: 600;
+                                    color: #6b7280;
+                                    font-size: 14px;
+                                }
+                                .info-value {
+                                    color: #1f2937;
+                                    font-size: 14px;
+                                }
+                                .changes-box {
+                                    background: #fef3c7;
+                                    border: 1px solid #fbbf24;
+                                    padding: 20px;
+                                    margin: 25px 0;
+                                    border-radius: 8px;
+                                }
+                                .changes-box h3 {
+                                    color: #92400e;
+                                    margin-bottom: 15px;
+                                    font-size: 16px;
+                                }
+                                .change-item {
+                                    background: white;
+                                    padding: 12px;
+                                    margin-bottom: 10px;
+                                    border-radius: 6px;
+                                }
+                                .change-label {
+                                    font-size: 12px;
+                                    color: #92400e;
+                                    font-weight: 600;
+                                    text-transform: uppercase;
+                                    letter-spacing: 0.5px;
+                                }
+                                .change-text {
+                                    color: #1f2937;
+                                    margin-top: 4px;
+                                }
+                                .button {
+                                    display: inline-block;
+                                    padding: 14px 32px;
+                                    background: #667eea;
+                                    color: white;
+                                    text-decoration: none;
+                                    border-radius: 8px;
+                                    margin: 25px 0;
+                                    font-weight: 600;
+                                    text-align: center;
+                                }
+                                .footer {
+                                    background: #f9fafb;
+                                    padding: 25px;
+                                    text-align: center;
+                                    color: #6b7280;
+                                    font-size: 13px;
+                                    border-top: 1px solid #e5e7eb;
+                                }
+                                .badge {
+                                    display: inline-block;
+                                    padding: 6px 12px;
+                                    background: #667eea;
+                                    color: white;
+                                    border-radius: 20px;
+                                    font-size: 12px;
+                                    font-weight: 600;
+                                }
+                            </style>
+                        </head>
+                        <body>
+                            <div class='container'>
+                                <div class='header'>
+                                    <h1>✏️ Trámite Editado</h1>
+                                    <p>Su trámite ha sido modificado exitosamente</p>
+                                </div>
+                                <div class='content'>
+                                    <p class='greeting'>Estimado/a <strong>%s %s</strong>,</p>
+                                    <p>Le informamos que su trámite ha sido <strong>editado</strong> correctamente en el sistema.</p>
+
+                                    <div class='info-card'>
+                                        <div class='info-row'>
+                                            <span class='info-label'>📋 Código:</span>
+                                            <span class='info-value'><strong>%s</strong></span>
+                                        </div>
+                                        <div class='info-row'>
+                                            <span class='info-label'>📝 Asunto Actual:</span>
+                                            <span class='info-value'>%s</span>
+                                        </div>
+                                        <div class='info-row'>
+                                            <span class='info-label'>🏷️ Tipo:</span>
+                                            <span class='info-value'>%s</span>
+                                        </div>
+                                        <div class='info-row'>
+                                            <span class='info-label'>📊 Estado:</span>
+                                            <span class='info-value'><span class='badge'>%s</span></span>
+                                        </div>
+                                        <div class='info-row'>
+                                            <span class='info-label'>📅 Fecha de Edición:</span>
+                                            <span class='info-value'>%s</span>
+                                        </div>
+                                    </div>
+
+                                    <div class='changes-box'>
+                                        <h3>📝 Cambios Realizados</h3>
+                                        <div class='change-item'>
+                                            <div class='change-label'>Título Anterior</div>
+                                            <div class='change-text'>%s</div>
+                                        </div>
+                                        <div class='change-item'>
+                                            <div class='change-label'>Título Nuevo</div>
+                                            <div class='change-text'>%s</div>
+                                        </div>
+                                    </div>
+
+                                    <p>Para ver todos los detalles del trámite actualizado, puede acceder al sistema:</p>
+                                    <center>
+                                        <a href='%s/usuario/mis-tramites?codigo=%s' class='button'>Ver Trámite</a>
+                                    </center>
+
+                                    <p style='margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; color: #6b7280; font-size: 14px;'>
+                                        💡 <strong>Nota:</strong> Si no realizó esta modificación o tiene alguna consulta, por favor contacte con el área correspondiente.
+                                    </p>
+                                </div>
+                                <div class='footer'>
+                                    <p><strong>Sistema de Trámite Documentario</strong></p>
+                                    <p>Universidad Nacional de Tumbes</p>
+                                    <p style='margin-top: 10px;'>Este es un correo automático, por favor no responda a este mensaje</p>
+                                    <p style='margin-top: 10px; font-size: 12px;'>© 2024 Todos los derechos reservados</p>
+                                </div>
+                            </div>
+                        </body>
+                        </html>
+                        """,
+                        usuario.getNombre(),
+                        usuario.getApellidos(),
+                        tramite.getCodigo(),
+                        tramite.getAsunto(),
+                        tramite.getTipo(),
+                        tramite.getEstado(),
+                        LocalDateTime.now().format(DATE_FORMATTER),
+                        tituloAnterior,
+                        tituloNuevo,
+                        appUrl,
+                        tramite.getCodigo()
+                    );
+
+                    helper.setText(htmlContent, true);
+                    mailSender.send(message);
+
+                    log.info("Correo de edición enviado a {} para trámite {}", usuario.getCorreo(), tramite.getCodigo());
+                } catch (Exception e) {
+                    log.error("Error enviando correo de edición: {}", e.getMessage(), e);
                 }
             });
         });

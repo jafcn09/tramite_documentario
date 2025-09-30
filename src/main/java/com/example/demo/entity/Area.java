@@ -2,8 +2,10 @@ package com.example.demo.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import com.example.demo.model.Usuario;
@@ -13,9 +15,11 @@ import java.util.List;
 
 @Entity
 @Table(name = "areas")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString(exclude = {"areaPadre", "subAreas", "usuarios"})
 public class Area {
     
     @Id

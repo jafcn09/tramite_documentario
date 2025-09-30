@@ -20,10 +20,11 @@ public class NotificacionResponse {
     private String prioridad;
     private Boolean esLeida;
     private String rutaDestino;
+    private Long referenciaId; // ID del trámite o entidad relacionada para el frontend
     private LocalDateTime fechaCreacion;
     private LocalDateTime fechaLectura;
     private LocalDateTime fechaVencimiento;
-    
+
     // Información del trámite relacionado (opcional)
     private TramiteBasicInfo tramiteRelacionado;
     

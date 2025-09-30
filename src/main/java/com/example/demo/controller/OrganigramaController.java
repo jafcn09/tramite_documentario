@@ -3,11 +3,14 @@ package com.example.demo.controller;
 import com.example.demo.dto.AreaJerarquicaDTO;
 import com.example.demo.service.OrganigramaService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/organigrama")
 @RequiredArgsConstructor
@@ -18,7 +21,15 @@ public class OrganigramaController {
 
     @GetMapping("/completo")
     public ResponseEntity<List<AreaJerarquicaDTO>> obtenerOrganigramaCompleto() {
-        return ResponseEntity.ok(organigramaService.obtenerOrganigramaCompleto());
+        try {
+            log.info("Obteniendo organigrama completo");
+            List<AreaJerarquicaDTO> organigrama = organigramaService.obtenerOrganigramaCompleto();
+            log.info("Organigrama obtenido exitosamente con {} áreas raíz", organigrama.size());
+            return ResponseEntity.ok(organigrama);
+        } catch (Exception e) {
+            log.error("Error al obtener organigrama completo", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @GetMapping("/areas-planas")

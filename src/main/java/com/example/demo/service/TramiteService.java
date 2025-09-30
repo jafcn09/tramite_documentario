@@ -264,12 +264,46 @@ public class TramiteService {
                                                      tramite.getUsuarioSolicitanteId());
         
         log.info("TrC!mite {} recepcionado por trabajador {}", tramite.getCodigo(), trabajadorId);
-        
+
         return convertirAResponse(saved);
     }
-    
+
+    public TramiteResponse asignarseTramite(Long tramiteId, Long trabajadorId) {
+        Tramite tramite = tramiteRepository.findById(tramiteId)
+            .orElseThrow(() -> new RuntimeException("Tramite no encontrado"));
+
+        List<Tramite.EstadoTramite> estadosValidos = Arrays.asList(
+            Tramite.EstadoTramite.ENVIADO,
+            Tramite.EstadoTramite.EN_REVISION,
+            Tramite.EstadoTramite.DERIVADO
+        );
+
+        if (!estadosValidos.contains(tramite.getEstado())) {
+            throw new RuntimeException("El tramite no esta disponible para asignarse. Estado actual: " + tramite.getEstado());
+        }
+
+        String estadoAnterior = tramite.getEstado().name();
+        tramite.setUsuarioAsignadoId(trabajadorId);
+        tramite.setEstado(Tramite.EstadoTramite.EN_PROCESO);
+        tramite.setFechaVencimiento(LocalDateTime.now().plusDays(DIAS_PROCESAMIENTO));
+
+        Tramite saved = tramiteRepository.save(tramite);
+
+        registrarHistorial(tramiteId, trabajadorId,
+                         TramiteHistorial.TipoAccion.ASIGNADO,
+                         estadoAnterior, "EN_PROCESO",
+                         "Trabajador se asigno el tramite");
+
+        notificacionService.notificarAutoasignacionTramite(tramiteId, trabajadorId,
+                                                          tramite.getUsuarioSolicitanteId());
+
+        log.info("Tramite {} autoasignado al trabajador {}", tramite.getCodigo(), trabajadorId);
+
+        return convertirAResponse(saved);
+    }
+
     // Derivar trC!mite a otro trabajador
-    public TramiteResponse derivarTramite(Long tramiteId, Long trabajadorActual, 
+    public TramiteResponse derivarTramite(Long tramiteId, Long trabajadorActual,
                                          Long trabajadorNuevo, String motivo) {
         // Verificar que el nuevo trabajador puede recibir el trC!mite
         if (!puedeAsumirTramite(trabajadorNuevo)) {
@@ -1341,6 +1375,27 @@ public class TramiteService {
         } else {
             builder.archivosRespuesta(new java.util.ArrayList<>());
         }
+
+        // Calcular si el trámite está vencido y días restantes
+        boolean estaVencido = false;
+        Long diasRestantes = null;
+
+        if (tramite.getFechaVencimiento() != null) {
+            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime fechaVencimiento = tramite.getFechaVencimiento();
+
+            // Verificar si está vencido
+            estaVencido = now.isAfter(fechaVencimiento);
+
+            // Calcular días restantes (puede ser negativo si ya venció)
+            long horas = java.time.Duration.between(now, fechaVencimiento).toHours();
+            diasRestantes = horas / 24; // Convertir horas a días
+
+            log.info("Trámite {}: estaVencido={}, diasRestantes={}", tramite.getCodigo(), estaVencido, diasRestantes);
+        }
+
+        builder.estaVencido(estaVencido);
+        builder.diasRestantes(diasRestantes);
 
         return builder.build();
     }
@@ -2551,6 +2606,88 @@ public class TramiteService {
                 yield null;
             }
         };
+    }
+
+    // Editar trámite por el usuario que lo creó
+    @Transactional
+    public TramiteResponse editarTramiteUsuario(Long tramiteId, com.example.demo.dto.EditarTramiteRequest request, Long usuarioId) {
+        // Buscar el trámite
+        Tramite tramite = tramiteRepository.findById(tramiteId)
+            .orElseThrow(() -> new RuntimeException("Trámite no encontrado"));
+
+        // Verificar que el usuario sea el creador del trámite
+        if (!tramite.getUsuarioSolicitanteId().equals(usuarioId)) {
+            throw new RuntimeException("No tiene permisos para editar este trámite");
+        }
+
+        // Solo se puede editar si está en ciertos estados
+        if (tramite.getEstado() == Tramite.EstadoTramite.FINALIZADO ||
+            tramite.getEstado() == Tramite.EstadoTramite.RECHAZADO ||
+            tramite.getEstado() == Tramite.EstadoTramite.ARCHIVADO) {
+            throw new RuntimeException("No se pueden editar trámites en estado FINALIZADO, RECHAZADO o ARCHIVADO");
+        }
+
+        // Guardar datos anteriores para el historial
+        String tituloAnterior = tramite.getTitulo();
+        String asuntoAnterior = tramite.getAsunto();
+
+        // Actualizar campos opcionales
+        if (request.getTitulo() != null && !request.getTitulo().trim().isEmpty()) {
+            tramite.setTitulo(request.getTitulo().trim());
+        }
+        if (request.getAsunto() != null && !request.getAsunto().trim().isEmpty()) {
+            tramite.setAsunto(request.getAsunto().trim());
+        }
+        if (request.getDescripcion() != null) {
+            tramite.setDescripcion(request.getDescripcion().trim());
+        }
+        if (request.getNumeroExpediente() != null) {
+            tramite.setNumeroExpediente(request.getNumeroExpediente().trim());
+        }
+        if (request.getObservaciones() != null) {
+            tramite.setObservaciones(request.getObservaciones().trim());
+        }
+        if (request.getTipo() != null && !request.getTipo().trim().isEmpty()) {
+            try {
+                tramite.setTipo(Tramite.TipoTramite.valueOf(request.getTipo().toUpperCase()));
+            } catch (IllegalArgumentException e) {
+                log.warn("Tipo de trámite inválido: {}", request.getTipo());
+            }
+        }
+        if (request.getPrioridad() != null && !request.getPrioridad().trim().isEmpty()) {
+            try {
+                tramite.setPrioridad(Tramite.PrioridadTramite.valueOf(request.getPrioridad().toUpperCase()));
+            } catch (IllegalArgumentException e) {
+                log.warn("Prioridad inválida: {}", request.getPrioridad());
+            }
+        }
+        if (request.getAreaDestinoId() != null) {
+            tramite.setAreaActualId(request.getAreaDestinoId());
+        }
+
+        // Guardar cambios
+        Tramite tramiteActualizado = tramiteRepository.save(tramite);
+
+        // Crear registro en historial
+        TramiteHistorial historial = new TramiteHistorial();
+        historial.setTramiteId(tramiteId);
+        historial.setUsuarioId(usuarioId);
+        historial.setAccion(TramiteHistorial.TipoAccion.MODIFICADO);
+        historial.setEstadoAnterior(tramite.getEstado().name());
+        historial.setEstadoNuevo(tramite.getEstado().name());
+        historial.setObservaciones(String.format(
+            "Trámite editado por el usuario. Título anterior: %s. Asunto anterior: %s",
+            tituloAnterior,
+            asuntoAnterior
+        ));
+        historialRepository.save(historial);
+
+        // Enviar notificación por correo al usuario
+        emailService.notificarEdicionTramiteAUsuario(usuarioId, tramiteId, tituloAnterior, tramite.getTitulo());
+
+        log.info("Trámite {} editado por usuario {}", tramite.getCodigo(), usuarioId);
+
+        return convertirAResponse(tramiteActualizado);
     }
 
 }

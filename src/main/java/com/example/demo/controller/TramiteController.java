@@ -202,26 +202,22 @@ public class TramiteController {
         return ResponseEntity.ok(tramite);
     }
     
-    // ENDPOINT DE EDICIÓN DESHABILITADO TEMPORALMENTE - USUARIOS NO PUEDEN EDITAR TRÁMITES
-    /*
-    // Editar trámite (USUARIO solo sus trámites, ADMIN todos)
-    @PutMapping("/{id}")
+    // Editar trámite por el usuario que lo creó (USUARIO)
+    @PutMapping("/{id}/editar")
     @PreAuthorize("hasRole('USUARIO') or hasRole('ADMIN')")
-    public ResponseEntity<TramiteResponse> editarTramite(
+    public ResponseEntity<TramiteResponse> editarTramiteUsuario(
             @PathVariable(name = "id") Long id,
-            @RequestBody TramiteRequest request,
-            Principal principal,
+            @RequestBody com.example.demo.dto.EditarTramiteRequest request,
             HttpServletRequest httpRequest) {
 
         Long usuarioId = getUserIdFromToken(httpRequest);
         if (usuarioId == null) {
             throw new RuntimeException("No se pudo obtener el ID del usuario del token");
         }
-        String rol = getRole(principal);
-        TramiteResponse tramite = tramiteService.editarTramite(id, request, usuarioId, rol);
+
+        TramiteResponse tramite = tramiteService.editarTramiteUsuario(id, request, usuarioId);
         return ResponseEntity.ok(tramite);
     }
-    */
     
     // Recepcionar trámite (ADMINISTRATIVO)
     @PostMapping("/{id}/recepcionar")
@@ -230,12 +226,29 @@ public class TramiteController {
             @PathVariable(name = "id") Long id,
             Principal principal,
             HttpServletRequest httpRequest) {
-        
+
         Long trabajadorId = getUserIdFromToken(httpRequest);
         if (trabajadorId == null) {
             throw new RuntimeException("No se pudo obtener el ID del usuario del token");
         }
         TramiteResponse tramite = tramiteService.recepcionarTramite(id, trabajadorId);
+        return ResponseEntity.ok(tramite);
+    }
+
+    // Asignarse un trámite (ADMINISTRATIVO/ADMIN)
+    @PostMapping("/{id}/asignarse")
+    @PreAuthorize("hasRole('ADMINISTRATIVO') or hasRole('ADMIN')")
+    public ResponseEntity<TramiteResponse> asignarseTramite(
+            @PathVariable(name = "id") Long id,
+            Principal principal,
+            HttpServletRequest httpRequest) {
+
+        Long trabajadorId = getUserIdFromToken(httpRequest);
+        if (trabajadorId == null) {
+            throw new RuntimeException("No se pudo obtener el ID del usuario del token");
+        }
+
+        TramiteResponse tramite = tramiteService.asignarseTramite(id, trabajadorId);
         return ResponseEntity.ok(tramite);
     }
     

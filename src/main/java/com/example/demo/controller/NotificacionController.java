@@ -101,6 +101,23 @@ public class NotificacionController {
         return ResponseEntity.noContent().build();
     }
 
+    // Obtener estadísticas (solo ADMIN)
+    @GetMapping("/admin/estadisticas")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Object> obtenerEstadisticas() {
+        Object estadisticas = notificacionService.obtenerEstadisticasNotificaciones();
+        return ResponseEntity.ok(estadisticas);
+    }
+
+    // Limpiar notificaciones antiguas (solo ADMIN)
+    @DeleteMapping("/limpiar-antiguas")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Integer> limpiarNotificacionesAntiguas(
+            @RequestParam(name = "diasAntiguedad", defaultValue = "30") int diasAntiguedad) {
+        int eliminadas = notificacionService.limpiarNotificacionesAntiguas(diasAntiguedad);
+        return ResponseEntity.ok(eliminadas);
+    }
+
     // ENDPOINTS PARA USUARIOS
 
     // Obtener notificación por ID
