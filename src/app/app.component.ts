@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { DevToolsProtectionService } from './core/services/devtools-protection.service';
 import { AntiTamperingService } from './core/services/anti-tampering.service';
+import { HtmlObfuscatorService } from './core/services/html-obfuscator.service';
 
 @Component({
   selector: 'app-root',
@@ -21,7 +22,8 @@ export class AppComponent implements OnInit {
   constructor(
     private router: Router,
     private devToolsProtection: DevToolsProtectionService,
-    private antiTampering: AntiTamperingService
+    private antiTampering: AntiTamperingService,
+    private htmlObfuscator: HtmlObfuscatorService
   ) {}
 
   ngOnInit(): void {
