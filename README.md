@@ -693,18 +693,220 @@ spring.mail.properties.mail.smtp.starttls.enable=true
 - **Role-Based Access**: Control de acceso basado en roles
 - **Method Security**: Anotaciones `@PreAuthorize` en endpoints
 
-#### Protección contra Ataques
+#### 🆕 Protección contra Ataques (Nuevas Mejoras 2025)
 - **Bloqueo automático**: 5 intentos (temporal), 10 intentos (permanente)
-- **Rate Limiting**: Limitación de requests por IP
+- **Rate Limiting con Bucket4j**: Limitación inteligente de requests por IP/usuario
+  - Login: 5 intentos por minuto
+  - API General: 60 requests por minuto
+  - Upload de archivos: 10 uploads por minuto
+  - Creación de trámites: 20 por hora
+  - Búsqueda: 100 por minuto
+- **Sanitización de Inputs (XSS Protection)**:
+  - Escapado automático de HTML en campos de texto
+  - Detección de patrones XSS maliciosos
+  - Validación contra SQL Injection
+  - Sanitización de nombres de archivos
+- **Validación Avanzada de Archivos**:
+  - Verificación de tipo MIME real
+  - Validación de magic numbers (firmas de archivos)
+  - Límite de tamaño: 10MB por archivo, 50MB total
+  - Path traversal prevention
+  - Extensiones permitidas: PDF, DOC, DOCX, XLS, XLSX, JPG, PNG, GIF, TXT
 - **SQL Injection**: Prevención mediante JPA/Hibernate
 - **CORS**: Configuración restrictiva de orígenes
 - **CSRF**: Protección contra Cross-Site Request Forgery
 
 #### Auditoría y Logging
 - **Login Attempts**: Registro de todos los intentos con IP
-- **Security Events**: Log de eventos de seguridad
+- **Security Events**: Log de eventos de seguridad con alertas
+- **XSS Attempts**: Detección y logging de intentos de XSS
+- **Rate Limit Violations**: Registro de violaciones de rate limiting
+- **File Upload Attacks**: Detección de archivos maliciosos
 - **Error Tracking**: Seguimiento detallado de errores
 - **Performance Monitoring**: Monitoreo de rendimiento
+
+### 🆕 Servicios de Seguridad Implementados
+
+#### 1. InputSanitizerService
+
+Servicio para sanitizar y validar inputs del usuario, previniendo ataques XSS y SQL Injection.
+
+```java
+@Autowired
+private InputSanitizerService inputSanitizerService;
+
+// Sanitizar texto HTML
+String textoLimpio = inputSanitizerService.sanitizeTextField(inputUsuario);
+
+// Sanitizar nombre de archivo
+String nombreSeguro = inputSanitizerService.sanitizeFilename(nombreArchivo);
+
+// Validar longitud de campo
+inputSanitizerService.validateLength("descripcion", texto, 2000);
+
+// Validar campo no vacío
+inputSanitizerService.validateNotEmpty("asunto", asunto);
+
+// Detectar SQL injection
+boolean esPeligroso = inputSanitizerService.containsSqlInjection(input);
+```
+
+**Métodos disponibles:**
+- `sanitizeHtml(String)` - Escapa caracteres HTML peligrosos
+- `sanitizeJavaScript(String)` - Sanitiza para uso en JavaScript
+- `sanitizeUrl(String)` - Sanitiza URLs
+- `sanitizeFilename(String)` - Limpia nombres de archivos
+- `sanitizeTextField(String)` - Sanitización completa de texto
+- `containsSqlInjection(String)` - Detecta patrones SQL peligrosos
+- `validateLength(String, String, int)` - Valida longitud máxima
+- `validateNotEmpty(String, String)` - Valida que no esté vacío
+
+#### 2. FileValidationService
+
+Servicio para validar archivos subidos, previniendo malware y archivos maliciosos.
+
+```java
+@Autowired
+private FileValidationService fileValidationService;
+
+// Validar un archivo
+fileValidationService.validateFile(multipartFile);
+
+// Validar lista de archivos
+fileValidationService.validateFiles(listaArchivos);
+
+// Obtener tamaño total
+long tamanioTotal = fileValidationService.getTotalSize(archivos);
+```
+
+**Validaciones incluidas:**
+- ✅ Tamaño máximo: 10MB por archivo
+- ✅ Tipos MIME permitidos verificados
+- ✅ Extensiones de archivo validadas
+- ✅ Magic numbers (firmas de archivo) verificados
+- ✅ Path traversal prevention
+- ✅ Nombres de archivo sanitizados
+
+**Archivos permitidos:**
+- Documentos: PDF, DOC, DOCX, XLS, XLSX, TXT
+- Imágenes: JPG, JPEG, PNG, GIF
+
+#### 3. RateLimitConfig
+
+Configuración de rate limiting usando Bucket4j para prevenir abuso de la API.
+
+```java
+@Autowired
+private RateLimitConfig rateLimitConfig;
+
+// Verificar si una request está permitida
+String clientKey = request.getRemoteAddr();
+boolean permitido = rateLimitConfig.tryConsume(
+    clientKey,
+    RateLimitConfig.RateLimitType.API_GENERAL
+);
+
+if (!permitido) {
+    throw new TooManyRequestsException("Rate limit excedido");
+}
+```
+
+**Tipos de límites configurados:**
+- `LOGIN`: 5 intentos por minuto
+- `API_GENERAL`: 60 requests por minuto
+- `FILE_UPLOAD`: 10 uploads por minuto
+- `CREATE_TRAMITE`: 20 por hora
+- `SEARCH`: 100 por minuto
+
+#### 4. RateLimitInterceptor
+
+Interceptor que aplica automáticamente rate limiting a todos los endpoints de la API.
+
+**Características:**
+- ✅ Aplicado automáticamente a `/api/**`
+- ✅ Excluye `/api/auth/refresh-token` y `/error`
+- ✅ Agrega headers informativos:
+  - `X-RateLimit-Remaining`: Tokens restantes
+  - `X-RateLimit-Limit`: Límite máximo
+- ✅ Responde con HTTP 429 cuando se excede el límite
+
+**Respuesta cuando se excede el límite:**
+```json
+{
+  "error": "Too Many Requests",
+  "message": "Has excedido el límite de solicitudes. Por favor, intenta más tarde.",
+  "status": 429,
+  "limitType": "API_GENERAL"
+}
+```
+
+### Ejemplo de Uso Completo en un Controller
+
+```java
+@RestController
+@RequestMapping("/api/tramites")
+@RequiredArgsConstructor
+public class TramiteController {
+
+    private final TramiteService tramiteService;
+    private final FileValidationService fileValidationService;
+    private final InputSanitizerService inputSanitizerService;
+
+    @PostMapping(consumes = {"multipart/form-data"})
+    @PreAuthorize("hasRole('USUARIO') or hasRole('ADMIN')")
+    public ResponseEntity<TramiteResponse> crearTramite(
+            @RequestParam("asunto") String asunto,
+            @RequestParam("descripcion") String descripcion,
+            @RequestParam(value = "documentos", required = false) List<MultipartFile> documentos) {
+
+        // 1. Validar y sanitizar inputs de texto
+        inputSanitizerService.validateNotEmpty("asunto", asunto);
+        inputSanitizerService.validateNotEmpty("descripcion", descripcion);
+        inputSanitizerService.validateLength("asunto", asunto, 255);
+        inputSanitizerService.validateLength("descripcion", descripcion, 2000);
+
+        String asuntoSanitizado = inputSanitizerService.sanitizeTextField(asunto);
+        String descripcionSanitizada = inputSanitizerService.sanitizeTextField(descripcion);
+
+        // 2. Validar archivos si existen
+        if (documentos != null && !documentos.isEmpty()) {
+            fileValidationService.validateFiles(documentos);
+
+            // Validar tamaño total
+            long totalSize = fileValidationService.getTotalSize(documentos);
+            if (totalSize > 50 * 1024 * 1024) {
+                throw new IllegalArgumentException(
+                    "El tamaño total de los archivos excede el límite de 50MB"
+                );
+            }
+        }
+
+        // 3. Crear trámite con valores sanitizados
+        TramiteRequest request = new TramiteRequest();
+        request.setAsunto(asuntoSanitizado);
+        request.setDescripcion(descripcionSanitizada);
+
+        return ResponseEntity.ok(tramiteService.crearTramite(request, documentos));
+    }
+}
+```
+
+### Logs de Seguridad
+
+El sistema registra automáticamente eventos de seguridad:
+
+```log
+⚠️ Intento de XSS detectado en input: <script>alert('xss')</script>...
+⚠️ Posible SQL Injection detectado: SELECT * FROM users WHERE...
+🚫 Path traversal detectado en nombre de archivo: ../../../etc/passwd
+⚠️ Archivo excede tamaño máximo: documento.pdf - 15728640 bytes
+⚠️ Tipo MIME no permitido: application/x-executable para archivo: malware.exe
+⚠️ Rate limit excedido para key: 192.168.1.100 en endpoint tipo: LOGIN
+🚫 Archivo con extensión .pdf no coincide con su contenido: fake.pdf
+✅ Archivo validado correctamente: documento.pdf (2.5 MB)
+✅ {} archivos validados correctamente
+✅ Cache de rate limiting limpiado
+```
 
 ### Configuración de Roles y Permisos
 
@@ -982,6 +1184,29 @@ curl http://localhost:8080/actuator/health/db
 - [ ] Logs apropiados implementados
 
 ## 📝 Changelog
+
+### v2.2.0 (2025-01-XX) - 🔒 Mejoras Críticas de Seguridad
+- ✅ **Rate Limiting con Bucket4j**: Protección contra abuso de API
+  - Límites diferenciados por tipo de endpoint
+  - Cache en memoria con identificación por IP/usuario
+  - Headers informativos de límites en respuestas
+  - Logging de violaciones de rate limit
+- ✅ **Sanitización de Inputs (XSS Protection)**:
+  - `InputSanitizerService` con múltiples métodos de sanitización
+  - Detección automática de patrones XSS maliciosos
+  - Prevención de SQL Injection
+  - Validación de longitud de campos
+  - Sanitización de nombres de archivos
+- ✅ **Validación Avanzada de Archivos**:
+  - `FileValidationService` con validación multicapa
+  - Verificación de magic numbers (firmas reales de archivos)
+  - Validación de tipos MIME contra extensiones
+  - Path traversal prevention
+  - Límites de tamaño individual y total
+  - Logging de intentos de subir archivos maliciosos
+- ✅ **Integración automática**: Servicios aplicados en `TramiteController`
+- ✅ **Documentación completa**: Guías de uso y ejemplos en README
+- ✅ **Logs mejorados**: Eventos de seguridad con emojis para fácil identificación
 
 ### v2.1.0 (2025-01-XX) - Mejoras de Notificaciones y UI
 - ✅ **Sistema de notificaciones completo** con WebSocket en tiempo real

@@ -43,10 +43,15 @@ dependencies {
 	// Lombok for getters/setters
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
-	
+
 	// Environment variables
 	implementation 'me.paulschwarz:spring-dotenv:4.0.0'
 	implementation 'io.github.cdimascio:dotenv-java:3.0.0'
+
+	// Security enhancements
+	implementation 'com.bucket4j:bucket4j-core:8.10.1'
+	implementation 'org.owasp.encoder:encoder:1.2.3'
+	implementation 'org.apache.commons:commons-text:1.11.0'
 	
 	// Docker/Testcontainers
 	testImplementation 'org.springframework.boot:spring-boot-docker-compose'

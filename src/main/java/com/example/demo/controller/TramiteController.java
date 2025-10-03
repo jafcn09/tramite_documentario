@@ -29,6 +29,8 @@ import com.example.demo.dto.AprobarTramiteResponse;
 import com.example.demo.dto.TramiteConArchivosRequest;
 import com.example.demo.dto.TramiteRequest;
 import com.example.demo.dto.TramiteResponse;
+import com.example.demo.service.FileValidationService;
+import com.example.demo.service.InputSanitizerService;
 import com.example.demo.service.JwtService;
 import com.example.demo.service.TramiteService;
 
@@ -40,9 +42,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*")
 public class TramiteController {
-    
+
     private final TramiteService tramiteService;
     private final JwtService jwtService;
+    private final FileValidationService fileValidationService;
+    private final InputSanitizerService inputSanitizerService;
     
     // ENDPOINTS PÚBLICOS (sin token)
     
@@ -147,17 +151,40 @@ public class TramiteController {
             @RequestParam(value = "documentos", required = false) List<MultipartFile> documentos,
             Principal principal,
             HttpServletRequest httpRequest) {
-        
+
         Long usuarioId = getUserIdFromToken(httpRequest);
         if (usuarioId == null) {
             throw new RuntimeException("No se pudo obtener el ID del usuario del token");
         }
+
+        // 🔒 VALIDACIÓN DE SEGURIDAD
+        // 1. Sanitizar inputs de texto
+        inputSanitizerService.validateNotEmpty("asunto", asunto);
+        inputSanitizerService.validateNotEmpty("descripcion", descripcion);
+        inputSanitizerService.validateLength("asunto", asunto, 255);
+        inputSanitizerService.validateLength("descripcion", descripcion, 2000);
+
+        String asuntoSanitizado = inputSanitizerService.sanitizeTextField(asunto);
+        String descripcionSanitizada = inputSanitizerService.sanitizeTextField(descripcion);
+
+        // 2. Validar archivos si existen
+        if (documentos != null && !documentos.isEmpty()) {
+            fileValidationService.validateFiles(documentos);
+
+            // Validar tamaño total (max 50MB para todos los archivos)
+            long totalSize = fileValidationService.getTotalSize(documentos);
+            if (totalSize > 50 * 1024 * 1024) {
+                throw new IllegalArgumentException(
+                    "El tamaño total de los archivos excede el límite de 50MB"
+                );
+            }
+        }
         String rol = getRole(principal);
-        
-        // Create TramiteRequest from form parameters
+
+        // Create TramiteRequest from form parameters (usando valores sanitizados)
         TramiteRequest request = new TramiteRequest();
-        request.setTitulo(asunto);
-        request.setDescripcion(descripcion);
+        request.setTitulo(asuntoSanitizado);  // ✅ Valor sanitizado
+        request.setDescripcion(descripcionSanitizada);  // ✅ Valor sanitizado
         
         // Map numeric IDs to enum strings
         String tipoString = mapTipoTramiteIdToString(tipoTramiteId);
@@ -590,6 +617,23 @@ public class TramiteController {
 
         java.util.Map<String, Boolean> permisos = tramiteService.verificarPermisosAcciones(id, usuarioId, rol);
         return ResponseEntity.ok(permisos);
+    }
+
+    @GetMapping("/{id}/historial")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<java.util.Map<String, Object>> obtenerHistorialTramite(
+            @PathVariable(name = "id") Long id,
+            Principal principal,
+            HttpServletRequest httpRequest) {
+
+        Long usuarioId = getUserIdFromToken(httpRequest);
+        if (usuarioId == null) {
+            throw new RuntimeException("No se pudo obtener el ID del usuario del token");
+        }
+        String rol = getRole(principal);
+
+        java.util.Map<String, Object> resultado = tramiteService.obtenerHistorialConConteo(id, usuarioId, rol);
+        return ResponseEntity.ok(resultado);
     }
     
     // Obtener tipos de trámite disponibles

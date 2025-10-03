@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.demo.dto.AreaResponse;
 import com.example.demo.dto.TramiteRequest;
 import com.example.demo.dto.TramiteResponse;
+import com.example.demo.dto.TramiteHistorialResponse;
 import com.example.demo.dto.UsuarioResponse;
 import com.example.demo.dto.TramiteConArchivosRequest;
 import com.example.demo.dto.ActualizarTramiteConArchivosRequest;
@@ -1003,23 +1004,23 @@ public class TramiteService {
     @Transactional(readOnly = true)
     public Object obtenerEstadisticasUsuario(Long usuarioId, String rol) {
         java.util.Map<String, Object> estadisticas = new java.util.HashMap<>();
-        
+
         if ("USUARIO".equals(rol)) {
             // EstadC-sticas para usuario remitente - solo sus trC!mites
             estadisticas.put("total", tramiteRepository.countByUsuarioSolicitanteId(usuarioId));
-            
+
             // Contar por estado para sus trC!mites
             for (Tramite.EstadoTramite estado : Tramite.EstadoTramite.values()) {
                 Long count = tramiteRepository.countByUsuarioSolicitanteIdAndEstado(usuarioId, estado);
                 estadisticas.put("estado_" + estado.name(), count);
             }
-            
+
             // Contar por tipo para sus trC!mites
             for (Tramite.TipoTramite tipo : Tramite.TipoTramite.values()) {
                 Long count = tramiteRepository.countByUsuarioSolicitanteIdAndTipo(usuarioId, tipo);
                 estadisticas.put("tipo_" + tipo.name(), count);
             }
-            
+
         } else if ("ADMINISTRATIVO".equals(rol) || "ADMIN".equals(rol)) {
             // Administrativo y Admin ven estadC-sticas generales de todos los trC!mites
             return obtenerEstadisticas();
@@ -1027,8 +1028,79 @@ public class TramiteService {
             // Cualquier otro rol ve estadC-sticas generales
             return obtenerEstadisticas();
         }
-        
+
         return estadisticas;
+    }
+
+    @Transactional(readOnly = true)
+    public java.util.Map<String, Object> obtenerHistorialConConteo(Long tramiteId, Long usuarioId, String rol) {
+        java.util.Map<String, Object> resultado = new java.util.HashMap<>();
+
+        Tramite tramite = tramiteRepository.findById(tramiteId)
+            .orElseThrow(() -> new RuntimeException("Trámite no encontrado"));
+
+        if (!("ADMIN".equals(rol) ||
+              "ADMINISTRATIVO".equals(rol) ||
+              tramite.getUsuarioSolicitanteId().equals(usuarioId))) {
+            throw new RuntimeException("No tiene permisos para ver este trámite");
+        }
+
+        List<TramiteHistorial> historialList = historialRepository.findByTramiteIdOrderByFechaAccionDesc(tramiteId);
+        Long totalModificaciones = historialRepository.countModificacionesByTramiteId(tramiteId);
+
+        List<TramiteHistorialResponse> historialResponse = new ArrayList<>();
+        for (TramiteHistorial h : historialList) {
+            TramiteHistorialResponse.TramiteHistorialResponseBuilder builder = TramiteHistorialResponse.builder()
+                .id(h.getId())
+                .accion(h.getAccion().name())
+                .estadoAnterior(h.getEstadoAnterior())
+                .estadoNuevo(h.getEstadoNuevo())
+                .observaciones(h.getObservaciones())
+                .motivo(h.getMotivo())
+                .fechaAccion(h.getFechaAccion())
+                .totalModificaciones(totalModificaciones);
+
+            // Agregar información del usuario si existe
+            if (h.getUsuarioId() != null) {
+                try {
+                    UsuarioResponse usuario = usuarioService.obtenerUsuarioPorId(h.getUsuarioId());
+                    builder.usuario(TramiteHistorialResponse.UsuarioBasicInfo.builder()
+                        .id(usuario.getId())
+                        .nombre(usuario.getNombre())
+                        .apellidos(usuario.getApellidos())
+                        .rol(usuario.getRole() != null ? usuario.getRole().getName() : null)
+                        .build());
+                } catch (Exception e) {
+                    log.warn("Usuario con ID {} no encontrado para historial", h.getUsuarioId());
+                }
+            }
+
+            // Agregar información de las áreas si existen
+            if (h.getAreaOrigenId() != null) {
+                areaService.getAreaById(h.getAreaOrigenId()).ifPresent(areaOrigen ->
+                    builder.areaOrigen(TramiteHistorialResponse.AreaBasicInfo.builder()
+                        .id(areaOrigen.getId())
+                        .nombre(areaOrigen.getNombre())
+                        .build())
+                );
+            }
+
+            if (h.getAreaDestinoId() != null) {
+                areaService.getAreaById(h.getAreaDestinoId()).ifPresent(areaDestino ->
+                    builder.areaDestino(TramiteHistorialResponse.AreaBasicInfo.builder()
+                        .id(areaDestino.getId())
+                        .nombre(areaDestino.getNombre())
+                        .build())
+                );
+            }
+
+            historialResponse.add(builder.build());
+        }
+
+        resultado.put("historial", historialResponse);
+        resultado.put("totalModificaciones", totalModificaciones);
+
+        return resultado;
     }
     
     // Proceso automC!tico: cambiar estados segC:n tiempo

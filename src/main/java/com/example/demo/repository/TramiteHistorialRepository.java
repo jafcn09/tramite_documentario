@@ -54,6 +54,9 @@ public interface TramiteHistorialRepository extends JpaRepository<TramiteHistori
     // Contar acciones por tipo para un trámite
     @Query("SELECT COUNT(th) FROM TramiteHistorial th WHERE th.tramiteId = :tramiteId AND th.accion = :accion")
     Long countByTramiteIdAndAccion(@Param("tramiteId") Long tramiteId, @Param("accion") TramiteHistorial.TipoAccion accion);
+
+    @Query("SELECT COUNT(th) FROM TramiteHistorial th WHERE th.tramiteId = :tramiteId")
+    Long countModificacionesByTramiteId(@Param("tramiteId") Long tramiteId);
     
     // Obtener estadísticas de acciones por usuario en un período
     @Query("SELECT th.accion, COUNT(th) FROM TramiteHistorial th WHERE th.usuarioId = :usuarioId " +

@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TramiteHistorialResponse {
-    
+
     private Long id;
     private String accion;
     private String estadoAnterior;
@@ -20,6 +20,7 @@ public class TramiteHistorialResponse {
     private String observaciones;
     private String motivo;
     private LocalDateTime fechaAccion;
+    private Long totalModificaciones;
     
     // Información del usuario que realizó la acción
     private UsuarioBasicInfo usuario;
