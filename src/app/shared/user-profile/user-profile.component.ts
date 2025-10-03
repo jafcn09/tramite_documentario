@@ -1611,11 +1611,9 @@ export class UserProfileComponent implements OnInit {
 
   getBackRoute(): string {
     const roleRoutes: { [key: string]: string } = {
-      'ADMIN': '/admin/dashboard',
-      'ADMINISTRATIVO': '/administrativo/dashboard',
-      'USUARIO': '/usuario/dashboard',
-      'ALUMNO': '/alumno/dashboard',
-      'EXTERNO': '/externo/dashboard'
+      'ADMIN': '/admin/tablero',
+      'ADMINISTRATIVO': '/administrativo/tablero',
+      'USUARIO': '/usuario/tablero',
     };
     return roleRoutes[this.currentUser?.role?.name || ''] || '/';
   }

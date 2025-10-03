@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
+import { DevToolsProtectionService } from './core/services/devtools-protection.service';
 
 @Component({
   selector: 'app-root',
@@ -15,9 +16,12 @@ export class AppComponent implements OnInit {
   showHeader = true;
   showFooter = true;
   currentYear = new Date().getFullYear();
-  
-  constructor(private router: Router) {}
-  
+
+  constructor(
+    private router: Router,
+    private devToolsProtection: DevToolsProtectionService
+  ) {}
+
   ngOnInit(): void {
     this.showPreloader();
     this.checkRouteVisibility();

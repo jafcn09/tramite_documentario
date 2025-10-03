@@ -495,6 +495,11 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
       return false;
     }
 
+    // No permitir editar si está vencido
+    if (this.estaVencido(tramite)) {
+      return false;
+    }
+
     // Solo permitir editar si el estado no es FINALIZADO, RECHAZADO o ARCHIVADO
     const estadosNoEditables = ['Finalizado', 'Rechazado', 'Archivado', 'FINALIZADO', 'RECHAZADO', 'ARCHIVADO'];
     return !estadosNoEditables.includes(tramite.estado?.nombre);

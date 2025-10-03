@@ -495,6 +495,19 @@ export class TramiteService {
     );
   }
 
+  // Obtener historial con conteo de modificaciones
+  getHistorialConConteo(tramiteId: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/${tramiteId}/historial`).pipe(
+      catchError(error => {
+        this.toastService.error(
+          'Error al cargar historial',
+          'No se pudo obtener el historial del trámite.'
+        );
+        throw error;
+      })
+    );
+  }
+
   // Eliminar trámite
   eliminarTramite(tramiteId: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${tramiteId}`)

@@ -216,43 +216,70 @@
         <div class="historial-container">
           <div class="historial-header">
             <h3>Historial del Trámite</h3>
-            <span class="tiempo-transcurrido">
-              {{ getDiasTranscurridos(tramite.fechaCreacion!) }} días desde la creación
-            </span>
+            <div class="historial-stats">
+              <span class="tiempo-transcurrido">
+                {{ getDiasTranscurridos(tramite.fechaCreacion!) }} días desde la creación
+              </span>
+              <span class="modificaciones-count" *ngIf="totalModificaciones">
+                <i class="fas fa-edit"></i>
+                {{ totalModificaciones }} modificaciones
+              </span>
+            </div>
           </div>
 
           <div class="historial-timeline" *ngIf="historial.length > 0; else noHistorial">
-            <div *ngFor="let evento of historial; let i = index" class="timeline-item">
-              <div class="timeline-marker" [class]="getEstadoClase(evento.estadoAnterior || '')">
-                <i class="fas fa-circle"></i>
+            <div *ngFor="let evento of historial; let i = index; let last = last" class="timeline-item" [class.last-item]="last">
+              <div class="timeline-line"></div>
+              <div class="timeline-marker" [class]="getEventoIcon(evento.accion)">
+                <i class="fas" [class]="getEventoIconClass(evento.accion)"></i>
               </div>
               <div class="timeline-content">
-                <div class="evento-header">
-                  <h4 class="evento-accion">{{ evento.descripcion }}</h4>
-                  <span class="evento-fecha">{{ formatearFecha(evento.fecha!) }}</span>
-                </div>
-                <div class="evento-detalles">
-                  <p class="evento-descripcion" *ngIf="evento.observaciones">
-                    {{ evento.observaciones }}
-                  </p>
-                  <div class="evento-meta">
-                    <span class="usuario">
-                      <i class="fas fa-user"></i>
-                      {{ evento.usuario }}
-                    </span>
-                    <span class="area" *ngIf="evento.area">
-                      <i class="fas fa-building"></i>
-                      {{ evento.area }}
-                    </span>
+                <div class="evento-card">
+                  <div class="evento-header">
+                    <div class="evento-title-group">
+                      <h4 class="evento-accion">{{ evento.descripcion }}</h4>
+                      <span class="evento-badge" [class]="getAccionClase(evento.accion)">
+                        {{ evento.accion }}
+                      </span>
+                    </div>
+                    <div class="evento-time">
+                      <i class="fas fa-clock"></i>
+                      <span>{{ formatearFechaCompleta(evento.fecha!) }}</span>
+                    </div>
                   </div>
-                  <div class="cambio-estado" *ngIf="evento.estadoAnterior && evento.estadoNuevo">
-                    <span class="estado-anterior" [class]="getEstadoClase(evento.estadoAnterior)">
-                      {{ evento.estadoAnterior }}
-                    </span>
-                    <i class="fas fa-arrow-right"></i>
-                    <span class="estado-nuevo" [class]="getEstadoClase(evento.estadoNuevo)">
-                      {{ evento.estadoNuevo }}
-                    </span>
+
+                  <div class="evento-body">
+                    <p class="evento-descripcion" *ngIf="evento.observaciones">
+                      <i class="fas fa-comment-alt"></i>
+                      {{ evento.observaciones }}
+                    </p>
+
+                    <div class="evento-meta-grid">
+                      <div class="meta-item" *ngIf="evento.usuario">
+                        <i class="fas fa-user-circle"></i>
+                        <div class="meta-content">
+                          <span class="meta-label">Realizado por</span>
+                          <span class="meta-value">{{ evento.usuario }}</span>
+                        </div>
+                      </div>
+                      <div class="meta-item" *ngIf="evento.area">
+                        <i class="fas fa-building"></i>
+                        <div class="meta-content">
+                          <span class="meta-label">Área</span>
+                          <span class="meta-value">{{ evento.area }}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="estado-transition" *ngIf="evento.estadoAnterior && evento.estadoNuevo">
+                      <span class="estado-badge anterior" [class]="getEstadoClase(evento.estadoAnterior)">
+                        {{ evento.estadoAnterior }}
+                      </span>
+                      <i class="fas fa-long-arrow-alt-right transition-arrow"></i>
+                      <span class="estado-badge nuevo" [class]="getEstadoClase(evento.estadoNuevo)">
+                        {{ evento.estadoNuevo }}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -260,10 +287,16 @@
           </div>
 
           <ng-template #noHistorial>
-            <div class="empty-state">
-              <i class="fas fa-clock"></i>
-              <h4>Sin historial</h4>
-              <p>No hay eventos registrados para este trámite.</p>
+            <div class="empty-state-modern">
+              <div class="empty-icon">
+                <i class="fas fa-history"></i>
+              </div>
+              <h4>Sin eventos en el historial</h4>
+              <p>Aún no se han registrado eventos para este trámite.</p>
+              <div class="empty-hint">
+                <i class="fas fa-info-circle"></i>
+                <span>Los eventos aparecerán aquí cuando se realicen acciones sobre el trámite</span>
+              </div>
             </div>
           </ng-template>
         </div>

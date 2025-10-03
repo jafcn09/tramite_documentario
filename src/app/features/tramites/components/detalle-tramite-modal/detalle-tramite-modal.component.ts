@@ -34,6 +34,7 @@ export class DetalleTramiteModalComponent implements OnInit, OnDestroy, OnChange
   tramiteCompleto: MiTramite | null = null;
   documentos: DocumentoMiTramite[] = [];
   historial: HistorialMiTramite[] = [];
+  totalModificaciones: number = 0;
 
   // Estados del componente
   loading = false;
@@ -106,6 +107,9 @@ export class DetalleTramiteModalComponent implements OnInit, OnDestroy, OnChange
           console.log('📄 MODAL DEBUG: Documentos asignados al componente:', this.documentos);
           console.log('📄 MODAL DEBUG: Historial asignado:', this.historial);
 
+          // Cargar historial con conteo de modificaciones
+          this.cargarHistorialConConteo();
+
           this.loading = false;
         },
         error: (error) => {
@@ -126,6 +130,57 @@ export class DetalleTramiteModalComponent implements OnInit, OnDestroy, OnChange
         }
       })
     );
+  }
+
+  private cargarHistorialConConteo() {
+    if (!this.tramite?.id) return;
+
+    this.tramiteService.getHistorialConConteo(this.tramite.id).subscribe({
+      next: (response) => {
+        console.log('✅ Historial con conteo cargado:', response);
+        this.totalModificaciones = response.totalModificaciones || 0;
+
+        // Mapear el historial del nuevo formato al formato esperado por el template
+        if (response.historial && response.historial.length > 0) {
+          this.historial = response.historial.map((evento: any) => ({
+            id: evento.id,
+            descripcion: this.getDescripcionAccion(evento.accion),
+            fecha: evento.fechaAccion,
+            usuario: evento.usuario ?
+              `${evento.usuario.nombre} ${evento.usuario.apellidos}` :
+              'Usuario desconocido',
+            area: evento.areaDestino?.nombre || evento.areaOrigen?.nombre || '',
+            estadoAnterior: evento.estadoAnterior,
+            estadoNuevo: evento.estadoNuevo,
+            observaciones: evento.observaciones || evento.motivo || '',
+            accion: evento.accion
+          }));
+          console.log('📜 Historial mapeado:', this.historial);
+        }
+      },
+      error: (error) => {
+        console.error('❌ Error al cargar historial con conteo:', error);
+        // No es crítico, continuamos sin el conteo
+        this.totalModificaciones = 0;
+      }
+    });
+  }
+
+  private getDescripcionAccion(accion: string): string {
+    const descripciones: { [key: string]: string } = {
+      'CREADO': 'Trámite creado',
+      'ASIGNADO': 'Trámite asignado',
+      'DERIVADO': 'Trámite derivado',
+      'EN_REVISION': 'En revisión',
+      'EN_PROCESO': 'En proceso',
+      'RESPONDIDO': 'Respuesta enviada',
+      'FINALIZADO': 'Trámite finalizado',
+      'RECHAZADO': 'Trámite rechazado',
+      'MODIFICADO': 'Trámite modificado',
+      'DOCUMENTO_AGREGADO': 'Documento agregado',
+      'COMENTARIO_AGREGADO': 'Comentario agregado'
+    };
+    return descripciones[accion] || accion;
   }
 
   cambiarTab(tab: 'info' | 'documentos' | 'historial') {
@@ -222,6 +277,63 @@ export class DetalleTramiteModalComponent implements OnInit, OnDestroy, OnChange
       hour: '2-digit',
       minute: '2-digit'
     });
+  }
+
+  formatearFechaCompleta(fecha: Date | string): string {
+    const fechaObj = typeof fecha === 'string' ? new Date(fecha) : fecha;
+    return fechaObj.toLocaleDateString('es-PE', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
+
+  getEventoIcon(accion?: string): string {
+    if (!accion) return 'marker-default';
+    const icons: { [key: string]: string } = {
+      'CREADO': 'marker-created',
+      'ASIGNADO': 'marker-assigned',
+      'DERIVADO': 'marker-derivado',
+      'EN_REVISION': 'marker-revision',
+      'EN_PROCESO': 'marker-proceso',
+      'RESPONDIDO': 'marker-respondido',
+      'FINALIZADO': 'marker-finalizado',
+      'RECHAZADO': 'marker-rechazado',
+      'MODIFICADO': 'marker-modificado'
+    };
+    return icons[accion] || 'marker-default';
+  }
+
+  getEventoIconClass(accion?: string): string {
+    if (!accion) return 'fa-circle';
+    const iconClasses: { [key: string]: string } = {
+      'CREADO': 'fa-plus-circle',
+      'ASIGNADO': 'fa-user-check',
+      'DERIVADO': 'fa-share',
+      'EN_REVISION': 'fa-search',
+      'EN_PROCESO': 'fa-cog',
+      'RESPONDIDO': 'fa-comment-dots',
+      'FINALIZADO': 'fa-check-circle',
+      'RECHAZADO': 'fa-times-circle',
+      'MODIFICADO': 'fa-edit'
+    };
+    return iconClasses[accion] || 'fa-circle';
+  }
+
+  getAccionClase(accion?: string): string {
+    if (!accion) return 'badge-default';
+    const clases: { [key: string]: string } = {
+      'CREADO': 'badge-created',
+      'ASIGNADO': 'badge-assigned',
+      'DERIVADO': 'badge-derivado',
+      'MODIFICADO': 'badge-modificado',
+      'FINALIZADO': 'badge-finalizado',
+      'RECHAZADO': 'badge-rechazado'
+    };
+    return clases[accion] || 'badge-default';
   }
 
   formatearTamanioArchivo(bytes: number): string {

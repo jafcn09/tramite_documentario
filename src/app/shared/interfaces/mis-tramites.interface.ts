@@ -79,6 +79,7 @@ export interface HistorialMiTramite {
   descripcion: string;
   observaciones?: string;
   tieneDocumentos: boolean;
+  accion?: string;
 }
 
 

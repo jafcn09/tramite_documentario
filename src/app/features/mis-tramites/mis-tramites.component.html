@@ -240,9 +240,10 @@
           
           <button
             *ngIf="puedeEditarTramite(tramite)"
-            class="btn-action edit"
-            (click)="$event.stopPropagation(); editarTramite(tramite)"
-            title="Editar trámite"
+            [class]="'btn-action edit ' + (estaVencido(tramite) ? 'disabled' : '')"
+            [disabled]="estaVencido(tramite)"
+            (click)="$event.stopPropagation(); !estaVencido(tramite) ? editarTramite(tramite) : null"
+            [title]="estaVencido(tramite) ? 'Trámite vencido - No se puede editar' : 'Editar trámite'"
           >
             <i class="fas fa-edit"></i>
           </button>
@@ -379,9 +380,10 @@
                 
                 <button
                   *ngIf="puedeEditarTramite(tramite)"
-                  class="btn-mini edit"
-                  (click)="editarTramite(tramite)"
-                  title="Editar"
+                  [class]="'btn-mini edit ' + (estaVencido(tramite) ? 'disabled' : '')"
+                  [disabled]="estaVencido(tramite)"
+                  (click)="!estaVencido(tramite) ? editarTramite(tramite) : null"
+                  [title]="estaVencido(tramite) ? 'Trámite vencido - No se puede editar' : 'Editar'"
                 >
                   <i class="fas fa-edit"></i>
                 </button>
