@@ -42,7 +42,7 @@ export class AppComponent implements OnInit {
     const currentUrl = this.router.url;
     
     // Ocultar header y footer en rutas administrativas y de login
-    const adminRoutes = ['/servicios-administrativos', '/admin', '/administrativo', '/usuario', '/alumno', '/externo'];
+    const adminRoutes = ['/servicios-administrativos', '/admin', '/administrativo', '/usuario', '/alumno', '/externo', '/estudiante'];
     const loginRoutes = ['/admin-login', '/usuario-login', '/alumno-login', '/externo-login'];
     const userRoutes = ['/perfil', '/cambiar-contrasena'];
     

@@ -284,7 +284,7 @@ export class AuthService {
   hasAnyRole(roles: string[]): boolean {
     const user = this.currentUserValue;
     if (!user || !user.role) return false;
-    return roles.includes(user.role.name);
+    return roles.some(role => role.toUpperCase() === user.role.name.toUpperCase());
   }
 
   private storeTokens(token: string, refreshToken: string): void {
@@ -426,7 +426,8 @@ export class AuthService {
     const roleRoutes: { [key: string]: string } = {
       'ADMIN': '/admin/tablero',
       'USUARIO': '/usuario/tablero',
-      'ADMINISTRATIVO': '/administrativo/tablero'
+      'ADMINISTRATIVO': '/administrativo/tablero',
+      'ESTUDIANTE': '/estudiante/tablero'
     };
 
     const route = roleRoutes[role] || '/home';

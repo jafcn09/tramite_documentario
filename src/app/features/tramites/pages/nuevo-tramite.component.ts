@@ -93,6 +93,8 @@ export class NuevoTramitePageComponent {
       this.router.navigate(['/administrativo/mis-tramites']);
     } else if (currentPath.includes('/usuario/')) {
       this.router.navigate(['/usuario/mis-tramites']);
+    } else if (currentPath.includes('/estudiante/')) {
+      this.router.navigate(['/estudiante/tablero']);
     } else {
       this.router.navigate(['/']);
     }

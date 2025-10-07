@@ -163,6 +163,45 @@ export const routes: Routes = [
     ]
   },
 
+  // Rutas protegidas por rol ESTUDIANTE
+  {
+    path: 'estudiante',
+    canActivate: [AuthGuard, RoleGuard],
+    data: { roles: ['ESTUDIANTE'] },
+    loadComponent: () => import('./shared/layout/layout.component').then(m => m.LayoutComponent),
+    children: [
+      {
+        path: 'tablero',
+        loadComponent: () => import('./estudiante/dashboard/dashboard.component').then(m => m.EstudianteDashboardComponent)
+      },
+      {
+        path: 'perfil',
+        loadComponent: () => import('./shared/user-profile/user-profile.component').then(m => m.UserProfileComponent)
+      },
+      {
+        path: 'mis-tramites',
+        loadComponent: () => import('./features/mis-tramites/mis-tramites.component').then(m => m.MisTramitesComponent)
+      },
+      {
+        path: 'nuevo-tramite',
+        loadComponent: () => import('./features/tramites/pages/nuevo-tramite.component').then(m => m.NuevoTramitePageComponent)
+      },
+      {
+        path: 'notificaciones',
+        loadComponent: () => import('./components/notificaciones/notificaciones.component').then(m => m.NotificacionesComponent)
+      },
+      {
+        path: 'notificaciones/:id',
+        loadComponent: () => import('./components/notificaciones/notificacion-detalle/notificacion-detalle.component').then(m => m.NotificacionDetalleComponent)
+      },
+      {
+        path: '',
+        redirectTo: 'tablero',
+        pathMatch: 'full'
+      }
+    ]
+  },
+
   // Ruta de perfil para todos los usuarios autenticados
   {
     path: 'perfil',

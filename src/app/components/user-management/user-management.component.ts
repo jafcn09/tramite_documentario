@@ -360,10 +360,12 @@ import { Area, Role, User } from './user.interface';
               
               <div class="form-group">
                 <label for="numDocumento">Número de Documento <span class="required">*</span></label>
-                <input type="text" id="numDocumento" formControlName="numDocumento" 
-                       class="form-control" placeholder="Número de documento">
+                <input type="text" id="numDocumento" formControlName="numDocumento"
+                       class="form-control" placeholder="Número de documento" maxlength="8">
                 <div class="error-message" *ngIf="createUserForm.get('numDocumento')?.invalid && createUserForm.get('numDocumento')?.touched">
-                  El número de documento es requerido
+                  <span *ngIf="createUserForm.get('numDocumento')?.errors?.['required']">El número de documento es requerido</span>
+                  <span *ngIf="createUserForm.get('numDocumento')?.errors?.['minlength'] || createUserForm.get('numDocumento')?.errors?.['maxlength']">Debe tener exactamente 8 dígitos</span>
+                  <span *ngIf="createUserForm.get('numDocumento')?.errors?.['pattern']">Solo se permiten números</span>
                 </div>
               </div>
             </div>
@@ -388,8 +390,12 @@ import { Area, Role, User } from './user.interface';
             <div class="form-row">
               <div class="form-group">
                 <label for="celular">Celular</label>
-                <input type="text" id="celular" formControlName="celular" 
-                       class="form-control" placeholder="999999999">
+                <input type="text" id="celular" formControlName="celular"
+                       class="form-control" placeholder="999999999" maxlength="9">
+                <div class="error-message" *ngIf="createUserForm.get('celular')?.invalid && createUserForm.get('celular')?.touched">
+                  <span *ngIf="createUserForm.get('celular')?.errors?.['minlength'] || createUserForm.get('celular')?.errors?.['maxlength']">Debe tener exactamente 9 dígitos</span>
+                  <span *ngIf="createUserForm.get('celular')?.errors?.['pattern']">Solo se permiten números</span>
+                </div>
               </div>
               
               <div class="form-group">
@@ -579,10 +585,12 @@ import { Area, Role, User } from './user.interface';
             
             <div class="form-group">
               <label for="editNumDocumento">Número de Documento <span class="required">*</span></label>
-              <input type="text" id="editNumDocumento" formControlName="numDocumento" 
-                     class="form-control" placeholder="Número de documento">
+              <input type="text" id="editNumDocumento" formControlName="numDocumento"
+                     class="form-control" placeholder="Número de documento" maxlength="8">
               <div class="error-message" *ngIf="editUserForm.get('numDocumento')?.invalid && editUserForm.get('numDocumento')?.touched">
-                El número de documento es requerido
+                <span *ngIf="editUserForm.get('numDocumento')?.errors?.['required']">El número de documento es requerido</span>
+                <span *ngIf="editUserForm.get('numDocumento')?.errors?.['minlength'] || editUserForm.get('numDocumento')?.errors?.['maxlength']">Debe tener exactamente 8 dígitos</span>
+                <span *ngIf="editUserForm.get('numDocumento')?.errors?.['pattern']">Solo se permiten números</span>
               </div>
             </div>
           </div>
@@ -602,8 +610,12 @@ import { Area, Role, User } from './user.interface';
           <div class="form-row">
             <div class="form-group">
               <label for="editCelular">Celular</label>
-              <input type="text" id="editCelular" formControlName="celular" 
-                     class="form-control" placeholder="999999999">
+              <input type="text" id="editCelular" formControlName="celular"
+                     class="form-control" placeholder="999999999" maxlength="9">
+              <div class="error-message" *ngIf="editUserForm.get('celular')?.invalid && editUserForm.get('celular')?.touched">
+                <span *ngIf="editUserForm.get('celular')?.errors?.['minlength'] || editUserForm.get('celular')?.errors?.['maxlength']">Debe tener exactamente 9 dígitos</span>
+                <span *ngIf="editUserForm.get('celular')?.errors?.['pattern']">Solo se permiten números</span>
+              </div>
             </div>
             
             <div class="form-group">
@@ -1817,9 +1829,9 @@ export class UserManagementComponent implements OnInit {
       nombre: ['', Validators.required],
       apellidos: ['', Validators.required],
       tipoDocumento: ['', Validators.required],
-      numDocumento: ['', Validators.required],
+      numDocumento: ['', [Validators.required, Validators.minLength(8), Validators.maxLength(8), Validators.pattern('^[0-9]*$')]],
       correo: ['', [Validators.required, Validators.email]],
-      celular: [''],
+      celular: ['', [Validators.minLength(9), Validators.maxLength(9), Validators.pattern('^[0-9]*$')]],
       direccion: [''],
       roleId: ['', Validators.required],
       areaId: [''],
@@ -1836,9 +1848,9 @@ export class UserManagementComponent implements OnInit {
       nombre: ['', Validators.required],
       apellidos: ['', Validators.required],
       tipoDocumento: ['', Validators.required],
-      numDocumento: ['', Validators.required],
+      numDocumento: ['', [Validators.required, Validators.minLength(8), Validators.maxLength(8), Validators.pattern('^[0-9]*$')]],
       correo: ['', [Validators.required, Validators.email]],
-      celular: [''],
+      celular: ['', [Validators.minLength(9), Validators.maxLength(9), Validators.pattern('^[0-9]*$')]],
       direccion: [''],
       roleId: ['', Validators.required],
       areaId: ['']

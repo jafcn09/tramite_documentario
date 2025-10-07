@@ -103,7 +103,7 @@ import { NotificationBellComponent } from '../components/notification-bell/notif
 
       <div class="main-content" [class.sidebar-collapsed]="sidebarCollapsed">
 
-        <header class="header">
+        <header class="header" *ngIf="userRole !== 'estudiante'">
           <div class="header-left">
             <div class="header-top-row">
               <div class="greeting-section">
@@ -131,8 +131,8 @@ import { NotificationBellComponent } from '../components/notification-bell/notif
 
             <div class="user-dropdown" *ngIf="currentUser">
               <button class="user-dropdown-btn" (click)="toggleUserDropdown($event)">
-                <img 
-                  [src]="currentUser?.foto || '/assets/default-avatar.png'" 
+                <img
+                  [src]="currentUser?.foto || '/assets/default-avatar.png'"
                   [alt]="currentUser?.nombre"
                   class="user-avatar-sm"
                   onerror="this.src='/assets/default-avatar.png'"
@@ -1138,6 +1138,14 @@ export class LayoutComponent implements OnInit {
       'USUARIO': [
         { label: 'Inicio', route: '/usuario/tablero', icon: 'fas fa-home' },
         { label: 'Mis Trámites', route: '/usuario/mis-tramites', icon: 'fas fa-file-alt' }
+      ],
+      'ESTUDIANTE': [
+        { label: 'Inicio', route: '/estudiante/tablero', icon: 'fas fa-home' },
+        { label: 'Mis Trámites', route: '/estudiante/mis-tramites', icon: 'fas fa-folder-open' }
+      ],
+      'estudiante': [
+        { label: 'Inicio', route: '/estudiante/tablero', icon: 'fas fa-home' },
+        { label: 'Mis Trámites', route: '/estudiante/mis-tramites', icon: 'fas fa-folder-open' }
       ],
     };
 

@@ -32,6 +32,14 @@ Sistema integral de gestión documentaria para la Universidad Nacional de Tumbes
 - Calificación de atención recibida
 - Dashboard personal de estadísticas
 
+#### 🎓 ESTUDIANTE (Estudiantes)
+- Dashboard personalizado con diseño purple/indigo gradient
+- Creación de trámites académicos específicos (certificados, constancias, permisos)
+- Tipos de trámite filtrados: Certificado, Constancia, Permiso, Trámite Académico, Otro
+- Seguimiento de trámites personales con privacidad completa
+- Acciones rápidas: Nueva Solicitud, Mis Trámites, Notificaciones, Consultar Estado
+- Sidebar minimalista con solo Inicio y Mis Trámites
+
 ### Funcionalidades Destacadas
 - ✅ Formularios con validación en tiempo real
 - ✅ Sistema de autenticación JWT

@@ -95,6 +95,7 @@ export class AdminLoginComponent implements OnInit {
                 'ADMIN': '/admin/tablero',
                 'ADMINISTRATIVO': '/administrativo/tablero',
                 'USUARIO': '/usuario/tablero',
+                'ESTUDIANTE': '/estudiante/tablero'
               };
 
               redirectRoute = roleRoutes[currentUser.role.name] || '/';

@@ -22,8 +22,11 @@ export class HttpErrorInterceptor implements HttpInterceptor {
 
         if (error.status === 0) {
           // Network error - no connection to server
-          this.toastService.error('Sin conexión al servidor', 'Error de Conexión');
-          this.redirectToHome();
+          // NO hacer logout si es una petición de login
+          if (!error.url?.includes('/api/auth/login')) {
+            this.toastService.error('Sin conexión al servidor', 'Error de Conexión');
+            this.redirectToHome();
+          }
         } else if (error.status === 401) {
           // Unauthorized - handled by auth interceptor
           // No need to redirect here as auth interceptor will handle it
