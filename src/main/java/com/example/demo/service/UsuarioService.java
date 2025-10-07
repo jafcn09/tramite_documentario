@@ -114,8 +114,24 @@ public class UsuarioService {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado con ese id: " + id));
         
+        if (request.getNombre() != null) {
+            usuario.setNombre(request.getNombre());
+        }
+        if (request.getApellidos() != null) {
+            usuario.setApellidos(request.getApellidos());
+        }
+        if (request.getTipoDocumento() != null) {
+            usuario.setTipoDocumento(request.getTipoDocumento());
+        }
+        if (request.getNumDocumento() != null) {
+            if (!request.getNumDocumento().equals(usuario.getNumDocumento()) &&
+                usuarioRepository.existsByNumDocumento(request.getNumDocumento())) {
+                throw new IllegalArgumentException("Número de documento ya existe: " + request.getNumDocumento());
+            }
+            usuario.setNumDocumento(request.getNumDocumento());
+        }
         if (request.getCorreo() != null) {
-            if (!request.getCorreo().equals(usuario.getCorreo()) && 
+            if (!request.getCorreo().equals(usuario.getCorreo()) &&
                 usuarioRepository.existsByCorreo(request.getCorreo())) {
                 throw new IllegalArgumentException("Email already exists: " + request.getCorreo());
             }
@@ -126,6 +142,11 @@ public class UsuarioService {
         }
         if (request.getCelular() != null) {
             usuario.setCelular(request.getCelular());
+        }
+        if (request.getRoleId() != null) {
+            Role role = roleRepository.findById(request.getRoleId())
+                    .orElseThrow(() -> new EntityNotFoundException("Role no encontrado con id: " + request.getRoleId()));
+            usuario.setRole(role);
         }
         if (request.getClave() != null) {
             usuario.setClave(passwordEncoder.encode(request.getClave()));

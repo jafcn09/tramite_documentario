@@ -45,6 +45,22 @@ public class DataInitializer {
                     return roleRepository.save(role);
                 });
 
+            Role administrativoRole = roleRepository.findByName("ADMINISTRATIVO")
+                .orElseGet(() -> {
+                    Role role = new Role();
+                    role.setName("ADMINISTRATIVO");
+                    role.setDescription("Administrative staff role");
+                    return roleRepository.save(role);
+                });
+
+            Role estudianteRole = roleRepository.findByName("ESTUDIANTE")
+                .orElseGet(() -> {
+                    Role role = new Role();
+                    role.setName("ESTUDIANTE");
+                    role.setDescription("Student role");
+                    return roleRepository.save(role);
+                });
+
             // Create default admin user if doesn't exist
             String defaultUsername = "admin";
             String defaultPassword = "admin123";

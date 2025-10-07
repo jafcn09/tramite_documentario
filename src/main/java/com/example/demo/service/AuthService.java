@@ -202,12 +202,11 @@ public class AuthService {
     
     private String getRoleBasedRedirectUrl(Role role) {
         Map<String, String> roleRoutes = new HashMap<>();
-      roleRoutes.put("ADMIN", "/admin/tablero");
-             roleRoutes.put("USUARIO", "/usuario/tablero");
-
-                roleRoutes.put("ADMINISTRATIVO", "/administrativo/tablero");
-         
-                 return roleRoutes.getOrDefault(role.getName(), "/tablero");
+        roleRoutes.put("ADMIN", "/admin/tablero");
+        roleRoutes.put("USUARIO", "/usuario/tablero");
+        roleRoutes.put("ADMINISTRATIVO", "/administrativo/tablero");
+        roleRoutes.put("ESTUDIANTE", "/estudiante/tablero");
+        return roleRoutes.getOrDefault(role.getName().toUpperCase(), "/tablero");
     }
     
     private String getClientIpAddress(HttpServletRequest request) {

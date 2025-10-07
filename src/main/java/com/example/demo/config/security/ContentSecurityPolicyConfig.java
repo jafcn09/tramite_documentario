@@ -27,7 +27,7 @@ public class ContentSecurityPolicyConfig extends OncePerRequestFilter {
             "style-src 'self' 'unsafe-inline'; " +
             "img-src 'self' data: https:; " +
             "font-src 'self' data:; " +
-            "connect-src 'self'; " +
+            "connect-src 'self' http://localhost:4200 http://localhost:8081 ws://localhost:8081; " +
             "frame-ancestors 'none'; " +
             "base-uri 'self'; " +
             "form-action 'self'"

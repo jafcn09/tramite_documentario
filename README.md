@@ -31,6 +31,8 @@ Sistema backend para gestión de trámites documentarios de la Universidad Nacio
 - **Estados de trámite** (Borrador, Enviado, En Revisión, etc.)
 - **Prioridades** configurables (Baja, Normal, Alta, Urgente)
 - **Tipos de trámite** personalizables
+- **Filtrado de tipos por rol** (estudiantes solo ven: Certificado, Constancia, Permiso, Trámite Académico, Otro)
+- **Privacidad de trámites** (cada usuario ve solo sus propios trámites)
 - **Sistema de calificación** de atención
 - **Descarga de documentos** individuales y en lote
 - **Historial de cambios** y auditoría
@@ -62,6 +64,7 @@ Sistema backend para gestión de trámites documentarios de la Universidad Nacio
 - **ADMIN**: Gestión completa del sistema, usuarios, áreas y configuraciones
 - **ADMINISTRATIVO**: Procesamiento de trámites, aprobación/rechazo/derivación
 - **USUARIO**: Creación y seguimiento de trámites personales, calificación
+- **ESTUDIANTE**: Creación de trámites académicos (constancias, certificados, permisos), seguimiento personal
 
 ## 🛠️ Tecnologías Utilizadas
 
@@ -236,7 +239,7 @@ curl http://localhost:8080/api/auth/status
 ### Inicialización Automática
 
 Al iniciar la aplicación por primera vez:
-- ✅ Se crean **roles por defecto**: ADMIN, ADMINISTRATIVO, USUARIO
+- ✅ Se crean **roles por defecto**: ADMIN, ADMINISTRATIVO, USUARIO, ESTUDIANTE
 - ✅ Se crea **usuario administrador**: admin / admin123
 - ✅ Se generan **tokens iniciales** mostrados en console
 - ✅ Se crean **áreas de ejemplo**: Secretaría General, Recursos Humanos, etc.
@@ -1184,6 +1187,15 @@ curl http://localhost:8080/actuator/health/db
 - [ ] Logs apropiados implementados
 
 ## 📝 Changelog
+
+### v2.3.0 (2025-10-06) - 🎓 Soporte para Rol Estudiante
+- ✅ **Rol ESTUDIANTE completo**: Dashboard personalizado con diseño moderno
+- ✅ **Tipos de trámite filtrados**: Solo Certificado, Constancia, Permiso, Trámite Académico, Otro
+- ✅ **Privacidad de trámites**: Estudiantes ven solo sus propios trámites
+- ✅ **Navegación adaptada**: Redirección automática a dashboard estudiantil
+- ✅ **Case-insensitive role matching**: Soporte para roles en minúsculas/mayúsculas
+- ✅ **Validaciones específicas**: DNI 8 dígitos, Celular 9 dígitos
+- ✅ **UI diferenciada**: Gradient purple/indigo para estudiantes
 
 ### v2.2.0 (2025-01-XX) - 🔒 Mejoras Críticas de Seguridad
 - ✅ **Rate Limiting con Bucket4j**: Protección contra abuso de API

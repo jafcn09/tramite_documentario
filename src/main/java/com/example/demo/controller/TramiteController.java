@@ -638,19 +638,36 @@ public class TramiteController {
     
     // Obtener tipos de trámite disponibles
     @GetMapping("/tipos")
-    public ResponseEntity<List<java.util.Map<String, Object>>> obtenerTiposTramite() {
+    public ResponseEntity<List<java.util.Map<String, Object>>> obtenerTiposTramite(Principal principal) {
         List<java.util.Map<String, Object>> tipos = new java.util.ArrayList<>();
-        
+        String rol = getRole(principal);
+
         com.example.demo.model.Tramite.TipoTramite[] enumValues = com.example.demo.model.Tramite.TipoTramite.values();
+
+        // Tipos permitidos para estudiantes
+        java.util.Set<String> tiposEstudiante = java.util.Set.of(
+            "SOLICITUD_CERTIFICADO",
+            "SOLICITUD_CONSTANCIA",
+            "SOLICITUD_PERMISO",
+            "TRAMITE_ACADEMICO",
+            "OTRO"
+        );
+
         for (int i = 0; i < enumValues.length; i++) {
             com.example.demo.model.Tramite.TipoTramite tipo = enumValues[i];
+
+            // Filtrar tipos para estudiantes
+            if ("ESTUDIANTE".equalsIgnoreCase(rol) && !tiposEstudiante.contains(tipo.name())) {
+                continue;
+            }
+
             java.util.Map<String, Object> tipoMap = new java.util.HashMap<>();
-            tipoMap.put("id", i + 1); 
+            tipoMap.put("id", i + 1);
             tipoMap.put("nombre", formatearNombreTipo(tipo.name()));
             tipoMap.put("descripcion", obtenerDescripcionTipo(tipo.name()));
             tipos.add(tipoMap);
         }
-        
+
         return ResponseEntity.ok(tipos);
     }
     

@@ -460,8 +460,8 @@ public class TramiteService {
         org.springframework.data.domain.PageRequest pageableOptimizado = 
             org.springframework.data.domain.PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
         
-        if ("USUARIO".equals(rol)) {
-            // Usuario ve solo sus trC!mites creados - usar consulta optimizada por ID
+        if ("USUARIO".equals(rol) || "ESTUDIANTE".equalsIgnoreCase(rol)) {
+            // Usuario y Estudiante ven solo sus trC!mites creados - usar consulta optimizada por ID
             tramites = tramiteRepository.findByUsuarioSolicitanteIdOrderById(usuarioId, pageableOptimizado);
         } else if ("ADMINISTRATIVO".equals(rol) || "ADMIN".equals(rol)) {
             // Usar consulta optimizada que ordena por ID en lugar de fecha
@@ -484,8 +484,8 @@ public class TramiteService {
         org.springframework.data.domain.PageRequest pageableOptimizado = 
             org.springframework.data.domain.PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
         
-        if ("USUARIO".equals(rol)) {
-            // Usuario ve solo sus trC!mites creados, excluyendo archivados por defecto
+        if ("USUARIO".equals(rol) || "ESTUDIANTE".equalsIgnoreCase(rol)) {
+            // Usuario y Estudiante ven solo sus trC!mites creados, excluyendo archivados por defecto
             if (estado == null) {
                 // Excluir archivados por defecto
                 tramites = tramiteRepository.findByUsuarioSolicitanteIdAndEstadoNotOrderById(usuarioId, Tramite.EstadoTramite.ARCHIVADO, pageableOptimizado);
