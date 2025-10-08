@@ -1,15 +1,17 @@
 package com.example.demo.service;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-
-import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.crypto.SecretKey;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
 
 @Service
 public class JwtService {
@@ -17,10 +19,10 @@ public class JwtService {
     @Value("${jwt.secret:mySecretKey123456789012345678901234567890}")
     private String secretKey;
     
-    @Value("${jwt.expiration:86400000}") // 24 horas en milisegundos
+    @Value("${jwt.expiration:86400000}") 
     private long jwtExpiration;
     
-    @Value("${jwt.refresh.expiration:604800000}") // 7 días en milisegundos  
+    @Value("${jwt.refresh.expiration:604800000}") 
     private long refreshExpiration;
     
     public String generateToken(String username, String role, Long userId) {

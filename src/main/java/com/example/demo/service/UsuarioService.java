@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -28,6 +29,8 @@ import com.example.demo.repository.RoleRepository;
 import com.example.demo.repository.TramiteRepository;
 import com.example.demo.repository.UsuarioRepository;
 
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
@@ -42,6 +45,7 @@ public class UsuarioService {
     private final TramiteRepository tramiteRepository;
     private final PasswordEncoder passwordEncoder;
     private final JavaMailSender mailSender;
+    private final EmailTemplateService emailTemplateService;
     
     private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
     private static final int PASSWORD_LENGTH = 12;
@@ -87,15 +91,15 @@ public class UsuarioService {
         // Handle area assignment if provided
         if (request.getAreaId() != null) {
             com.example.demo.entity.Area area = areaRepository.findById(request.getAreaId())
-                    .orElseThrow(() -> new EntityNotFoundException("Crea no encontrada con id: " + request.getAreaId()));
+                    .orElseThrow(() -> new EntityNotFoundException("Area no encontrada con id: " + request.getAreaId()));
             usuario.setArea(area);
         }
         
-        // Set password change requirement based on request, default to false for smooth login
+      
         boolean mustChangePassword = request.getMustChangePassword() != null ? request.getMustChangePassword() : false;
         usuario.setMustChangePassword(mustChangePassword);
         
-        // Only set password expiry if mustChangePassword is true
+
         if (mustChangePassword) {
             usuario.setPasswordExpiry(LocalDateTime.now().plusDays(2)); // 48 horas
         }
@@ -189,24 +193,17 @@ public class UsuarioService {
 
         Usuario usuario = usuarioRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado con ese id: " + userId));
-
-        // NO validamos contraseña actual porque el usuario ya está autenticado con JWT
-        // El token JWT ya valida la identidad del usuario - Mejor UX
-
-        // Validar que la nueva contraseña no sea igual a la actual
         if (passwordEncoder.matches(request.getNewPassword(), usuario.getClave())) {
             throw new IllegalArgumentException("La nueva contraseña debe ser diferente a la actual");
         }
 
-        // Validar que no esté en las últimas 10 contraseñas
+
         if (isPasswordInHistory(usuario, request.getNewPassword())) {
             throw new IllegalArgumentException("No puedes usar una de las últimas 10 contraseñas utilizadas");
         }
 
-        // Guardar contraseña actual en el historial
         savePasswordHistory(usuario, usuario.getClave());
 
-        // Actualizar contraseña
         String encodedNewPassword = passwordEncoder.encode(request.getNewPassword());
         usuario.setClave(encodedNewPassword);
         usuario.setMustChangePassword(false);
@@ -214,7 +211,6 @@ public class UsuarioService {
 
         usuarioRepository.save(usuario);
 
-        // Enviar notificación por email
         sendPasswordChangeNotification(usuario);
     }
     
@@ -284,24 +280,17 @@ public class UsuarioService {
     
     private void sendPasswordChangeNotification(Usuario usuario) {
         try {
-            SimpleMailMessage message = new SimpleMailMessage();
-            message.setTo(usuario.getCorreo());
-            message.setSubject("ContraseC1a Cambiada Exitosamente");
-            message.setText(String.format(
-                "Hola %s %s,\n\n" +
-                "Tu contraseC1a ha sido cambiada exitosamente en nuestro sistema.\n\n" +
-                "Si no fuiste tC: quien realizC3 este cambio, por favor contacta inmediatamente " +
-                "al administrador del sistema.\n\n" +
-                "Fecha del cambio: %s\n\n" +
-                "Saludos,\n" +
-                "El equipo del sistema",
-                usuario.getNombre(),
-                usuario.getApellidos(),
-                LocalDateTime.now().toString()
-            ));
-            
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setTo(usuario.getCorreo());
+            helper.setSubject("🔐 Contraseña Actualizada Exitosamente");
+
+            String htmlContent = emailTemplateService.createPasswordChangeNotificationTemplate(usuario);
+            helper.setText(htmlContent, true);
+
             mailSender.send(message);
-        } catch (Exception e) {
+        } catch (MessagingException e) {
             // Log the error but don't fail the password change
             System.err.println("Failed to send password change notification: " + e.getMessage());
         }
@@ -309,66 +298,38 @@ public class UsuarioService {
     
     private void sendAccountStatusNotification(Usuario usuario, boolean enabled, String reason) {
         try {
-            SimpleMailMessage message = new SimpleMailMessage();
-            message.setTo(usuario.getCorreo());
-            
-            String subject = enabled ? "Cuenta Habilitada" : "Cuenta Deshabilitada";
-            String status = enabled ? "habilitada" : "deshabilitada";
-            
-            message.setSubject(subject);
-            message.setText(String.format(
-                "Hola %s %s,\n\n" +
-                "Tu cuenta ha sido %s en nuestro sistema.\n\n" +
-                "Motivo: %s\n\n" +
-                "Fecha: %s\n\n" +
-                "%s\n\n" +
-                "Si tienes alguna pregunta, contacta al administrador del sistema.\n\n" +
-                "Saludos,\n" +
-                "El equipo del sistema",
-                usuario.getNombre(),
-                usuario.getApellidos(),
-                status,
-                reason != null ? reason : "No especificado",
-                LocalDateTime.now().toString(),
-                enabled ? "Ya puedes acceder al sistema normalmente." : 
-                         "No podrC!s acceder al sistema hasta que tu cuenta sea habilitada nuevamente."
-            ));
-            
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setTo(usuario.getCorreo());
+
+            String subject = enabled ? "✅ Cuenta Habilitada" : "❌ Cuenta Deshabilitada";
+            helper.setSubject(subject);
+
+            String htmlContent = emailTemplateService.createAccountStatusNotificationTemplate(usuario, enabled, reason);
+            helper.setText(htmlContent, true);
+
             mailSender.send(message);
-        } catch (Exception e) {
+        } catch (MessagingException e) {
             System.err.println("Failed to send account status notification: " + e.getMessage());
         }
     }
     
     private void sendAccountLockNotification(Usuario usuario, boolean locked, String reason) {
         try {
-            SimpleMailMessage message = new SimpleMailMessage();
-            message.setTo(usuario.getCorreo());
-            
-            String subject = locked ? "Cuenta Bloqueada" : "Cuenta Desbloqueada";
-            String status = locked ? "bloqueada" : "desbloqueada";
-            
-            message.setSubject(subject);
-            message.setText(String.format(
-                "Hola %s %s,\n\n" +
-                "Tu cuenta ha sido %s por seguridad.\n\n" +
-                "Motivo: %s\n\n" +
-                "Fecha: %s\n\n" +
-                "%s\n\n" +
-                "Si consideras que esto es un error, contacta inmediatamente al administrador.\n\n" +
-                "Saludos,\n" +
-                "El equipo del sistema",
-                usuario.getNombre(),
-                usuario.getApellidos(),
-                status,
-                reason != null ? reason : "No especificado",
-                LocalDateTime.now().toString(),
-                locked ? "Tu cuenta permanecerC! bloqueada hasta nuevo aviso." : 
-                        "Ya puedes acceder al sistema normalmente."
-            ));
-            
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setTo(usuario.getCorreo());
+
+            String subject = locked ? "🔒 Cuenta Bloqueada" : "🔓 Cuenta Desbloqueada";
+            helper.setSubject(subject);
+
+            String htmlContent = emailTemplateService.createAccountLockNotificationTemplate(usuario, locked, reason);
+            helper.setText(htmlContent, true);
+
             mailSender.send(message);
-        } catch (Exception e) {
+        } catch (MessagingException e) {
             System.err.println("Failed to send account lock notification: " + e.getMessage());
         }
     }
@@ -411,27 +372,17 @@ public class UsuarioService {
     
     private void sendWelcomeEmail(Usuario usuario, String username, String password) {
         try {
-            SimpleMailMessage message = new SimpleMailMessage();
-            message.setTo(usuario.getCorreo());
-            message.setSubject("Bienvenido al Sistema - Credenciales de Acceso");
-            message.setText(String.format(
-                "Hola %s %s,\n\n" +
-                "Tu cuenta ha sido creada exitosamente en nuestro sistema.\n\n" +
-                "Tus credenciales de acceso son:\n" +
-                "Usuario: %s\n" +
-                "ContraseC1a: %s\n\n" +
-                "IMPORTANTE: Debes cambiar tu contraseC1a dentro de las prC3ximas 24 horas.\n" +
-                "DespuC)s de ese tiempo, tendrC!s que solicitar una nueva contraseC1a.\n\n" +
-                "Saludos,\n" +
-                "El equipo del sistema",
-                usuario.getNombre(), 
-                usuario.getApellidos(),
-                username,
-                password
-            ));
-            
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setTo(usuario.getCorreo());
+            helper.setSubject("🎉 Bienvenido al Sistema - Tu cuenta está lista");
+
+            String htmlContent = emailTemplateService.createWelcomeEmailTemplate(usuario, username, password);
+            helper.setText(htmlContent, true);
+
             mailSender.send(message);
-        } catch (Exception e) {
+        } catch (MessagingException e) {
             // Log the error but don't fail the user creation
             System.err.println("Failed to send welcome email: " + e.getMessage());
         }
@@ -601,28 +552,27 @@ public class UsuarioService {
             }
         }
         
-        // Guardar contraseC1a actual en el historial antes de cambiarla
+
         if (usuario.getClave() != null && !usuario.getClave().isEmpty()) {
             savePasswordHistory(usuario, usuario.getClave());
         }
         
-        // Update password
+
         String encodedPassword = passwordEncoder.encode(newPassword);
         usuario.setClave(encodedPassword);
         
-        // Set password change requirement
+
         usuario.setMustChangePassword(request.getMustChangePassword() != null ? request.getMustChangePassword() : false);
-        
-        // Set password expiry if mustChangePassword is true
+     
         if (usuario.isMustChangePassword()) {
-            usuario.setPasswordExpiry(LocalDateTime.now().plusDays(2)); // 48 horas
+            usuario.setPasswordExpiry(LocalDateTime.now().plusDays(2)); 
         } else {
             usuario.setPasswordExpiry(null);
         }
         
         Usuario savedUsuario = usuarioRepository.save(usuario);
         
-        // Send notification email
+
         sendPasswordResetNotification(savedUsuario, newPassword, request.getReason());
         
         return convertToResponse(savedUsuario);
