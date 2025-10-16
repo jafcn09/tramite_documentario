@@ -78,33 +78,6 @@ curl http://localhost:8081/api/auth/status
 - **SQL Injection**: Detección de patrones maliciosos
 - **Validación**: Longitud y formato de campos
 
-## 📁 Estructura
-
-```
-src/main/java/com/example/demo/
-├── config/          # Configuraciones
-├── controller/      # Controladores REST
-├── dto/            # DTOs de request/response
-├── model/          # Entidades JPA
-├── repository/     # Repositorios
-├── service/        # Lógica de negocio
-└── exception/      # Manejo de errores
-```
-
-## 🚀 Despliegue
-
-### Build de Producción
-```bash
-./gradlew clean build
-java -jar build/libs/demo-0.0.1-SNAPSHOT.jar
-```
-
-### Variables de Producción
-```env
-SPRING_PROFILES_ACTIVE=prod
-JWT_SECRET=super_secure_secret_key_production
-ALLOWED_ORIGINS=https://tramites.untumbes.edu.pe
-```
 
 ## 📞 Soporte
 
