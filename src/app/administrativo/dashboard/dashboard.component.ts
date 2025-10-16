@@ -217,7 +217,6 @@ import { ReportesService } from '../../services/reportes.service';
       margin: 0;
     }
 
-
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -658,12 +657,10 @@ export class DashboardComponent implements OnInit {
       next: (response) => {
         this.allTramites = response.data || [];
 
-
         // Load permissions for each tramite
         this.loadPermissionsForTramites();
       },
       error: (error) => {
-        console.error('❌ Error al cargar trámites del dashboard:', error);
         this.loading = false;
         // Fallback to basic stats
         this.loadBasicStats();
@@ -681,7 +678,6 @@ export class DashboardComponent implements OnInit {
           return permisos;
         })
         .catch(error => {
-          console.error(`❌ Error al cargar permisos para trámite ${tramite.codigo}:`, error);
           return null;
         })
     );
@@ -708,7 +704,6 @@ export class DashboardComponent implements OnInit {
       completedTramites: baseStats.completed + expiredCount,
       rejectedTramites: baseStats.rejected
     };
-
 
   }
 
@@ -756,7 +751,6 @@ export class DashboardComponent implements OnInit {
         this.loading = false;
       },
       error: (error) => {
-        console.error('❌ Error al cargar estadísticas básicas:', error);
         this.loading = false;
       }
     });
@@ -961,7 +955,6 @@ export class DashboardComponent implements OnInit {
         isExpired: false
       }));
 
-
   }
 
   private loadPendingTramites() {
@@ -983,7 +976,6 @@ export class DashboardComponent implements OnInit {
           }));
       },
       error: (error) => {
-        console.error('❌ Error al cargar trámites pendientes:', error);
       }
     });
   }

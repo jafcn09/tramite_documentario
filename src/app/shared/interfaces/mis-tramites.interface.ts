@@ -82,8 +82,6 @@ export interface HistorialMiTramite {
   accion?: string;
 }
 
-
-
 export interface EditarMiTramiteRequest {
   titulo?: string;
   asunto?: string;

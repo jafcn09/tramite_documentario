@@ -1,10 +1,8 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
 
-/**
- * Servicio de anti-tampering y protección avanzada
- * Previene inspección, modificación y debugging del código
- */
+
+// Servicio avanzado de protección contra manipulación y tampering
 @Injectable({
   providedIn: 'root'
 })
@@ -39,9 +37,8 @@ export class AntiTamperingService {
     this.detectDevToolsAdvanced();
   }
 
-  /**
-   * Deshabilita completamente la consola del navegador
-   */
+
+  // Deshabilita la consola para prevenir inspecciónn
   private disableConsole(): void {
     // Guardar referencia original
     this.originalConsole = {
@@ -75,15 +72,12 @@ export class AntiTamperingService {
     Object.freeze(console);
   }
 
-  /**
-   * Anti-debugging agresivo con múltiples técnicas
-   */
+  
+  // Anti-debugging agresivo
   private aggressiveAntiDebug(): void {
     // Técnica 1: debugger infinito
     setInterval(() => {
       const startTime = performance.now();
-      // eslint-disable-next-line no-debugger
-      debugger;
       const endTime = performance.now();
 
       // Si se detectó pausa (debugger activo)
@@ -105,8 +99,6 @@ export class AntiTamperingService {
     this.checkInterval = setInterval(() => {
       const threshold = 100;
       const start = performance.now();
-      // eslint-disable-next-line no-debugger
-      debugger;
       const end = performance.now();
 
       if (end - start > threshold) {
@@ -115,9 +107,8 @@ export class AntiTamperingService {
     }, 2000);
   }
 
-  /**
-   * Detecta modificaciones no autorizadas en el DOM
-   */
+ 
+  // Detecta modificaciones en el DOM
   private detectDOMTampering(): void {
     // Monitorear cambios en el DOM
     const observer = new MutationObserver((mutations) => {
@@ -141,9 +132,8 @@ export class AntiTamperingService {
     });
   }
 
-  /**
-   * Ofusca strings y variables en tiempo de ejecución
-   */
+ 
+  // Ofusca variables globales y objetos sensibles
   private obfuscateRuntime(): void {
     // Ofuscar window.location
     const originalLocation = window.location.toString;
@@ -167,9 +157,8 @@ export class AntiTamperingService {
     Object.freeze(Function.prototype);
   }
 
-  /**
-   * Previene copiar código desde DevTools
-   */
+ 
+  // Previene copy-paste de código
   private preventCodeCopy(): void {
     // Prevenir selección de texto en elementos sensibles
     document.addEventListener('selectstart', (e) => {
@@ -193,9 +182,8 @@ export class AntiTamperingService {
     });
   }
 
-  /**
-   * Detección avanzada de DevTools
-   */
+  
+  // Detecta herramientas de desarrollo avanzadas
   private detectDevToolsAdvanced(): void {
     // Método 1: Diferencia de tamaño
     const checkDevTools = () => {
@@ -236,9 +224,8 @@ export class AntiTamperingService {
     }, 500);
   }
 
-  /**
-   * Acción cuando se detecta DevTools
-   */
+
+  // Acción cuando se detectan DevTools abiertas
   private onDevToolsDetected(orientation: string): void {
     // Ofuscar todo el contenido
     document.body.style.filter = 'blur(10px) grayscale(100%)';
@@ -309,22 +296,16 @@ export class AntiTamperingService {
     }, 3000);
   }
 
-  /**
-   * Acción cuando se detecta tampering
-   */
+  // Acción a tomar cuando se detecta tampering
   private onTamperingDetected(reason: string): void {
     // Log interno (no visible)
     this.originalConsole?.error?.('[SECURITY]', reason);
 
-    // Redirigir a página de error o limpiar sesión
-    // sessionStorage.clear();
-    // localStorage.clear();
-    // window.location.href = '/error';
+
   }
 
-  /**
-   * Cleanup al destruir el servicio
-   */
+
+  // Limpiar intervalos al destruir el servicio
   ngOnDestroy(): void {
     if (this.checkInterval) {
       clearInterval(this.checkInterval);

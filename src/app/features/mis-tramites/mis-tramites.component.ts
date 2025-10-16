@@ -137,39 +137,30 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
   }
 
   cargarMisTramites() {
-    console.log('🔄 MIS-TRAMITES DEBUG: cargarMisTramites llamado');
 
     this.subscriptions.add(
       this.misTramitesService.getMisTramites(this.currentPage, this.pageSize, {})
         .subscribe({
           next: (response) => {
-            console.log('📋 MIS-TRAMITES DEBUG: Datos recibidos:', response);
 
             response.data.forEach(tramite => {
-              console.log('📝 MIS-TRAMITES DEBUG: Trámite cargado:', tramite.id, (tramite as any).titulo || tramite.asunto);
             });
 
             this.misTramites = response.data;
             this.totalItems = response.total;
             this.totalPages = response.totalPages;
 
-            console.log('✅ MIS-TRAMITES DEBUG: Lista actualizada con', this.misTramites.length, 'trámites');
-
- 
             if (this.isAdministrativo) {
               this.cargarPermisosParaTramites();
             }
 
-
             this.applyDynamicFilters();
-
 
             if (!this.isAdministrativo) {
               this.calcularEstadisticasLocales();
             }
           },
           error: (error) => {
-            console.error('Error al cargar mis trámites:', error);
           }
         })
     );
@@ -251,7 +242,7 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
         this.bandejaTramitesService.verificarPermisosAcciones(tramite.id)
           .subscribe({
             next: (permisos) => {
-              console.log('✅ PERMISOS DEBUG: Permisos recibidos para trámite', tramite.id, ':', permisos);
+
               this.tramitePermisos.set(tramite.id, permisos);
               permisosCompletados++;
 
@@ -261,12 +252,8 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
               }
             },
             error: (error) => {
-              console.error('❌ PERMISOS DEBUG: Error al verificar permisos para trámite', tramite.id, ':', error);
-              console.error('❌ PERMISOS DEBUG: Estado del trámite:', tramite.estado?.nombre);
-              console.error('❌ PERMISOS DEBUG: Usuario administrativo:', this.isAdministrativo);
 
               // En lugar de desactivar todos los permisos, usar la lógica de fallback
-              console.log('🔄 PERMISOS DEBUG: Usando lógica de fallback local...');
 
               // No establecer permisos en el cache para que use el fallback local
               permisosCompletados++;
@@ -460,7 +447,6 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
     return 9;
   }
 
-
   cambiarPagina(page: number) {
     if (page >= 1 && page <= this.totalPages) {
       this.currentPage = page;
@@ -471,7 +457,6 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
   toggleVista() {
     this.vistaActual = this.vistaActual === 'tarjetas' ? 'lista' : 'tarjetas';
   }
-
 
   crearNuevoTramite() {
     const userRole = this.userRole;
@@ -582,7 +567,6 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
           },
           error: (error) => {
             this.guardandoEdicion = false;
-            console.error('Error al editar trámite:', error);
           }
         })
     );
@@ -799,14 +783,12 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
   }
 
   onTramiteActualizado(tramiteActualizado?: any) {
-    console.log('📝 MIS-TRAMITES DEBUG: onTramiteActualizado llamado con:', tramiteActualizado);
 
     this.toastService.success(
       'Trámite actualizado',
       'El trámite ha sido actualizado exitosamente.'
     );
 
-    console.log('🔄 MIS-TRAMITES DEBUG: Recargando lista de trámites...');
     this.cargarMisTramites();
     this.cargarEstadisticas();
     this.cerrarModalEditar();
@@ -829,7 +811,6 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
             this.cerrarModalAprobar();
           },
           error: (error) => {
-            console.error('Error al aprobar trámite:', error);
           }
         })
     );
@@ -900,7 +881,6 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
       return permisos.puedeResponder;
     }
 
-
     const estadosParaResponder = ['Aprobado', 'Derivado', 'APROBADO', 'DERIVADO', 'En Proceso', 'EN_PROCESO'];
     const puede = this.isAdministrativo && estadosParaResponder.includes(tramite.estado.nombre);
     return puede;
@@ -936,7 +916,6 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
 
     return puede;
   }
-
 
   estaVencido(tramite: MiTramite): boolean {
     // Prioridad 1: Usar el campo estaVencido que viene del backend
@@ -980,7 +959,6 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
       icono: tramite.estado.icono
     };
   }
-
 
   getEstadoVisualTexto(tramite: MiTramite): string {
     if (this.estaVencido(tramite)) {
@@ -1131,7 +1109,6 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
       
       },
       error: (error) => {
-        console.error('Error al cargar trabajadores:', error);
         this.cargandoTrabajadores = false;
         this.toastService.error('Error', 'No se pudieron cargar los trabajadores disponibles');
       }
@@ -1204,7 +1181,6 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
             this.enviarNotificacionDerivacion();
           },
           error: (error) => {
-            console.error('❌ Error al derivar trámite:', error);
             this.toastService.error('Error al derivar', 'No se pudo derivar el trámite. Intente nuevamente.');
           }
         })
@@ -1261,7 +1237,6 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
       },
       error: (error) => {
         this.cargandoRechazo = false;
-        console.error('Error al rechazar trámite:', error);
       }
     });
   }
@@ -1404,7 +1379,6 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
           });
         },
         error: (error) => {
-          console.error('Error al obtener HTML del trámite:', error);
           this.toastService.error(
             'Error de impresión',
             'No se pudo generar el documento del trámite.'
@@ -1442,7 +1416,6 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
       return `Descargar ${cantidadDocumentos} documentos en formato ZIP`;
     }
   }
-
 
   // Método para convertir MiTramite a formato compatible con el modal de editar
   getTramiteForEdit(): any {

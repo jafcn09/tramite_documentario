@@ -18,8 +18,7 @@ import { AuthService } from './auth.service';
 })
 export class NotificacionService {
   private apiUrl = `${environment.apiUrl}/api/notificaciones`;
-  
-  // Subjects for real-time updates
+
   private notificacionesSubject = new BehaviorSubject<Notificacion[]>([]);
   private contadorNoLeidasSubject = new BehaviorSubject<number>(0);
   private nuevaNotificacionSubject = new Subject<Notificacion>();
@@ -36,7 +35,6 @@ export class NotificacionService {
       this.contadorNoLeidasSubject.next(count);
     });
   }
-
 
   obtenerMisNotificaciones(
     page: number = 0,
@@ -55,7 +53,6 @@ export class NotificacionService {
       params = params.set('soloNoLeidas', soloNoLeidas.toString());
     }
 
-
     const token = this.authService.getToken();
     const endpoint = token ?
       this.apiUrl :
@@ -67,7 +64,6 @@ export class NotificacionService {
     return this.http.get<Notificacion>(`${this.apiUrl}/${id}`);
   }
 
-
   contarNotificacionesNoLeidas(): Observable<number> {
 
     const token = this.authService.getToken();
@@ -78,12 +74,10 @@ export class NotificacionService {
     return this.http.get<number>(endpoint);
   }
 
-  // Marcar notificación como leída
   marcarComoLeida(id: number): Observable<void> {
     return this.http.put<void>(`${this.apiUrl}/${id}/marcar-leida`, {});
   }
 
-  // Marcar todas las notificaciones como leídas
   marcarTodasComoLeidas(): Observable<void> {
     return this.http.put<void>(`${this.apiUrl}/marcar-todas-leidas`, {});
   }
@@ -214,7 +208,6 @@ export class NotificacionService {
         this.contadorNoLeidasSubject.next(count || 0);
       },
       error: (error) => {
-        console.error('Error actualizando contador de notificaciones:', error);
 
         this.contadorNoLeidasSubject.next(0);
       }
@@ -235,7 +228,6 @@ export class NotificacionService {
     // Emitir evento de nueva notificación
     this.nuevaNotificacionSubject.next(notificacion);
   }
-
 
   marcarLeidaLocal(id: number): void {
     this.marcarComoLeida(id).subscribe(() => {

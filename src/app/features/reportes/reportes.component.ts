@@ -34,7 +34,6 @@ export class ReportesComponent implements OnInit {
         this.cargando = false;
       },
       error: (error) => {
-        console.error('Error al cargar reportes:', error);
         this.cargando = false;
       }
     });

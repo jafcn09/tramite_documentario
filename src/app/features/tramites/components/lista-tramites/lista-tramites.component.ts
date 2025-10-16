@@ -111,7 +111,6 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
     this.subscriptions.unsubscribe();
   }
 
-
   private setupSearch() {
     this.subscriptions.add(
       this.searchSubject.pipe(
@@ -128,9 +127,6 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
     this.searchError = '';
     this.selectedSearchIndex = -1;
 
-    console.log('🔍 Buscando:', term);
-    console.log('📋 Total trámites disponibles:', this.tramites.length);
-
     if (!term.trim()) {
       this.resetSearch();
       return;
@@ -142,18 +138,16 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
       this.matchesSearchTerm(tramite, termLower)
     );
 
-    console.log('✅ Resultados encontrados:', this.searchResults.length);
-
     if (this.searchResults.length > 0) {
       this.showSearchDropdown = false; // No mostrar dropdown, filtrar directamente
       this.filteredTramites = this.searchResults;
       this.searchError = '';
-      console.log('✨ Mostrando resultados filtrados');
+
     } else {
       this.searchError = `No se encontraron trámites que coincidan con "${term}"`;
       this.showSearchDropdown = false;
       this.filteredTramites = [];
-      console.log('❌ Sin resultados');
+
     }
 
     this.isSearching = false;
@@ -195,7 +189,7 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
     this.searchError = '';
     this.isSearching = false;
     this.filteredTramites = [];
-    console.log('🔄 Búsqueda reseteada');
+
   }
 
   cargarTramites() {
@@ -220,7 +214,6 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
           }
         },
         error: (error) => {
-          console.error('Error al cargar trámites:', error);
         }
       })
     );
@@ -232,20 +225,17 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
   }
 
   private loadTramitesAndPermissions() {
-    console.log('🔍 Lista Trámites: Cargando trámites y permisos...');
 
     // Load tramites from bandeja service
     this.subscriptions.add(
       this.bandejaTramitesService.getTramites(1, 1000).subscribe({
         next: (response) => {
           this.tramites = response.data || [];
-          console.log('📊 Lista Trámites: Trámites cargados:', this.tramites.length);
 
           // Load permissions for each tramite
           this.loadPermissionsForTramites();
         },
         error: (error) => {
-          console.error('❌ Error al cargar trámites:', error);
           // Fallback to basic stats
           this.calcularEstadisticasBasicas();
         }
@@ -263,13 +253,12 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
           return permisos;
         })
         .catch(error => {
-          console.error(`❌ Error al cargar permisos para trámite ${tramite.codigo}:`, error);
           return null;
         })
     );
 
     Promise.all(tramitePromises).then(() => {
-      console.log('✅ Permisos cargados para', this.tramitePermisos.size, 'trámites');
+
       this.calculateStatsWithExpiredTramites();
     });
   }
@@ -289,10 +278,6 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
       finalizados: baseStats.finalizados + expiredCount
     };
 
-    console.log('📊 Estadísticas actualizadas con trámites vencidos:', {
-      vencidos: expiredCount,
-      estadisticas: this.estadisticas
-    });
   }
 
   getTramitesVencidos(): number {
@@ -352,7 +337,7 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
   }
 
   onSearch(term: string) {
-    console.log('⌨️ onSearch llamado con:', term);
+
     this.searchTerm = term;
     this.searchSubject.next(term);
   }
@@ -427,7 +412,6 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
     return this.tramites;
   }
 
-
   exportarSeleccionados() {
     if (this.selectedTramites.length === 0) {
       this.toastService.warning('Sin selección', 'Debe seleccionar al menos un trámite para exportar');
@@ -446,7 +430,6 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
           this.selectedTramites = [];
         },
         error: (error) => {
-          console.error('Error al exportar trámites:', error);
           this.toastService.error('Error al exportar', 'No se pudieron exportar los trámites');
         }
       })
@@ -470,7 +453,6 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
           this.cargarTramites(); // Recargar la lista
         },
         error: (error) => {
-          console.error('Error al archivar trámites:', error);
           this.toastService.error('Error al archivar', 'No se pudieron archivar los trámites');
         }
       })
@@ -494,7 +476,6 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
           this.cargarTramites(); // Recargar la lista
         },
         error: (error) => {
-          console.error('Error al desarchivar trámites:', error);
           this.toastService.error('Error al desarchivar', 'No se pudieron desarchivar los trámites');
         }
       })
@@ -520,7 +501,6 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
           this.cargarTramites();
         },
         error: (error) => {
-          console.error('Error al desarchivar todos los trámites:', error);
           this.toastService.error('Error al desarchivar', 'No se pudieron desarchivar todos los trámites');
         }
       })
@@ -550,7 +530,6 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
     
     return pages;
   }
-
 
   cambiarPagina(page: number) {
     if (page >= 0 && page < this.totalPages) {
@@ -704,7 +683,6 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
       error: (error) => {
         this.procesandoCambioEstado = false;
         this.toastService.error('Error', 'No se pudo cambiar el estado del trámite.');
-        console.error('Error al cambiar estado:', error);
       }
     });
   }
@@ -961,7 +939,6 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
             }
           },
           error: (error: any) => {
-            console.error('Error al eliminar trámite:', error);
             this.toastService.error(
               'Error al eliminar',
               'No se pudo eliminar el trámite. Intente nuevamente.'

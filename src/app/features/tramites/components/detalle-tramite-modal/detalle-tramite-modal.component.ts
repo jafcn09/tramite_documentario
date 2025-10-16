@@ -56,24 +56,18 @@ export class DetalleTramiteModalComponent implements OnInit, OnDestroy, OnChange
   ) {}
 
   ngOnChanges(changes: SimpleChanges) {
-    console.log('🔄 MODAL DEBUG: ngOnChanges - changes:', changes);
-
     // Si el modal se acaba de abrir y tenemos un trámite, cargar los datos
     if (changes['show'] && changes['show'].currentValue === true && this.tramite?.id) {
-      console.log('🎯 MODAL DEBUG: Modal abierto, cargando datos del trámite ID:', this.tramite.id);
       this.cargarDatosDetalle();
     }
 
     // Si cambia el trámite y el modal está abierto, recargar datos
     if (changes['tramite'] && this.show && this.tramite?.id) {
-      console.log('🔄 MODAL DEBUG: Trámite cambiado, recargando datos');
       this.cargarDatosDetalle();
     }
   }
 
   ngOnInit() {
-    console.log('🚀 MODAL DEBUG: ngOnInit - show:', this.show, 'tramite:', this.tramite);
-
     // Solo cargar datos si ya está visible en la inicialización
     if (this.show && this.tramite) {
       this.cargarDatosDetalle();
@@ -87,25 +81,15 @@ export class DetalleTramiteModalComponent implements OnInit, OnDestroy, OnChange
   private cargarDatosDetalle() {
     if (!this.tramite?.id) return;
 
-    console.log('🔍 MODAL DEBUG: Cargando datos del trámite ID:', this.tramite.id);
-    console.log('🔍 MODAL DEBUG: Trámite inicial:', this.tramite);
-
     this.loading = true;
 
     // Cargar datos completos del trámite desde mis-tramites
     this.subscriptions.add(
       this.misTramitesService.getMiTramiteById(this.tramite.id).subscribe({
         next: (tramiteCompleto) => {
-          console.log('✅ MODAL DEBUG: Respuesta del servicio getMiTramiteById:', tramiteCompleto);
-          console.log('📄 MODAL DEBUG: Documentos en la respuesta:', tramiteCompleto.documentos);
-          console.log('📄 MODAL DEBUG: Cantidad de documentos:', tramiteCompleto.documentos?.length || 0);
-
           this.tramiteCompleto = tramiteCompleto;
           this.documentos = tramiteCompleto.documentos || [];
           this.historial = tramiteCompleto.historial || [];
-
-          console.log('📄 MODAL DEBUG: Documentos asignados al componente:', this.documentos);
-          console.log('📄 MODAL DEBUG: Historial asignado:', this.historial);
 
           // Cargar historial con conteo de modificaciones
           this.cargarHistorialConConteo();
@@ -113,18 +97,10 @@ export class DetalleTramiteModalComponent implements OnInit, OnDestroy, OnChange
           this.loading = false;
         },
         error: (error) => {
-          console.error('❌ MODAL DEBUG: Error al cargar detalles del trámite:', error);
-          console.error('❌ MODAL DEBUG: Status del error:', error.status);
-          console.error('❌ MODAL DEBUG: Mensaje del error:', error.message);
-          console.log('🔄 MODAL DEBUG: Usando datos iniciales como fallback:', this.tramite);
-
           // Si falla, usar los datos que ya tenemos
           this.tramiteCompleto = this.tramite as MiTramite;
           this.documentos = (this.tramite as MiTramite).documentos || [];
           this.historial = (this.tramite as MiTramite).historial || [];
-
-          console.log('📄 MODAL DEBUG: Documentos del fallback:', this.documentos);
-          console.log('📄 MODAL DEBUG: Longitud documentos fallback:', this.documentos?.length || 0);
 
           this.loading = false;
         }
@@ -137,10 +113,7 @@ export class DetalleTramiteModalComponent implements OnInit, OnDestroy, OnChange
 
     this.tramiteService.getHistorialConConteo(this.tramite.id).subscribe({
       next: (response) => {
-        console.log('✅ Historial con conteo cargado:', response);
         this.totalModificaciones = response.totalModificaciones || 0;
-
-        // Mapear el historial del nuevo formato al formato esperado por el template
         if (response.historial && response.historial.length > 0) {
           this.historial = response.historial.map((evento: any) => ({
             id: evento.id,
@@ -155,11 +128,9 @@ export class DetalleTramiteModalComponent implements OnInit, OnDestroy, OnChange
             observaciones: evento.observaciones || evento.motivo || '',
             accion: evento.accion
           }));
-          console.log('📜 Historial mapeado:', this.historial);
         }
       },
       error: (error) => {
-        console.error('❌ Error al cargar historial con conteo:', error);
         // No es crítico, continuamos sin el conteo
         this.totalModificaciones = 0;
       }
@@ -184,10 +155,6 @@ export class DetalleTramiteModalComponent implements OnInit, OnDestroy, OnChange
   }
 
   cambiarTab(tab: 'info' | 'documentos' | 'historial') {
-    console.log('🔄 MODAL DEBUG: Cambiando a tab:', tab);
-    console.log('📄 MODAL DEBUG: Documentos actuales al cambiar tab:', this.documentos);
-    console.log('📄 MODAL DEBUG: Longitud de documentos:', this.documentos?.length || 0);
-
     this.activeTab = tab;
   }
 
@@ -375,72 +342,57 @@ export class DetalleTramiteModalComponent implements OnInit, OnDestroy, OnChange
 
   // Métodos para previsualización de documentos
   previsualizarDocumento(documento: DocumentoMiTramite) {
-    console.log('👁️ PREVIEW DEBUG: Iniciando previsualización');
-    console.log('👁️ PREVIEW DEBUG: Documento:', documento);
-    console.log('👁️ PREVIEW DEBUG: Tipo de documento:', documento.tipo);
-    console.log('👁️ PREVIEW DEBUG: Es documento Office?:', this.isOfficeDocument(documento.tipo || ''));
-    console.log('👁️ PREVIEW DEBUG: showDocumentPreview ANTES:', this.showDocumentPreview);
 
     if (!this.tramite?.id || !documento.nombre) {
-      console.log('❌ PREVIEW DEBUG: Error - falta tramite.id o documento.nombre');
+
       this.toastService.warning('Advertencia', 'No se puede previsualizar el documento');
       return;
     }
 
     // Si es un archivo de Office, mostrar mensaje
     if (this.isOfficeDocument(documento.tipo || '')) {
-      console.log('📄 PREVIEW DEBUG: Es documento Office, asignando valores...');
+      
       this.documentoPreview = documento;
       this.showDocumentPreview = true;
-      console.log('📄 PREVIEW DEBUG: documentoPreview asignado:', this.documentoPreview);
-      console.log('📄 PREVIEW DEBUG: showDocumentPreview DESPUÉS:', this.showDocumentPreview);
 
       // Forzar detección de cambios
       this.cdr.detectChanges();
 
       setTimeout(() => {
-        console.log('📄 PREVIEW DEBUG: Verificando estado después de setTimeout');
-        console.log('📄 PREVIEW DEBUG: showDocumentPreview final:', this.showDocumentPreview);
-        console.log('📄 PREVIEW DEBUG: documentoPreview final:', this.documentoPreview);
+
       }, 100);
 
       return;
     }
 
-    // Para PDFs e imágenes, generar la URL de previsualización
-    console.log('📄 PREVIEW DEBUG: Descargando blob para PDF/imagen');
     this.loading = true;
 
     this.subscriptions.add(
       this.misTramitesService.descargarDocumento(this.tramite.id, documento.nombre!).subscribe({
         next: (blob: Blob) => {
-          console.log('📄 PREVIEW DEBUG: Blob recibido:', blob);
-          console.log('📄 PREVIEW DEBUG: Tamaño del blob:', blob.size);
-          console.log('📄 PREVIEW DEBUG: Tipo del blob:', blob.type);
 
           if (blob.size === 0) {
-            console.log('❌ PREVIEW DEBUG: Blob vacío recibido');
+            
             this.loading = false;
             this.toastService.error('Error', 'El documento está vacío');
             return;
           }
 
           const url = window.URL.createObjectURL(blob);
-          console.log('📄 PREVIEW DEBUG: URL generada:', url);
+         
 
           this.previewUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
           this.documentoPreview = documento;
           this.showDocumentPreview = true;
           this.loading = false;
 
-          console.log('📄 PREVIEW DEBUG: Preview URL asignada:', this.previewUrl);
-          console.log('📄 PREVIEW DEBUG: Modal debería estar visible');
+  
 
           // Forzar detección de cambios
           this.cdr.detectChanges();
         },
         error: (error) => {
-          console.log('❌ PREVIEW DEBUG: Error al descargar documento:', error);
+
           this.loading = false;
           this.toastService.error('Error', 'No se pudo cargar la vista previa del documento');
         }
@@ -449,8 +401,6 @@ export class DetalleTramiteModalComponent implements OnInit, OnDestroy, OnChange
   }
 
   cerrarPreview() {
-    console.log('🚪 PREVIEW DEBUG: Cerrando preview modal');
-    console.log('🚪 PREVIEW DEBUG: showDocumentPreview antes:', this.showDocumentPreview);
 
     this.showDocumentPreview = false;
     this.documentoPreview = null;
@@ -464,7 +414,6 @@ export class DetalleTramiteModalComponent implements OnInit, OnDestroy, OnChange
       this.previewUrl = null;
     }
 
-    console.log('🚪 PREVIEW DEBUG: showDocumentPreview después:', this.showDocumentPreview);
   }
 
   descargarDesdePreview() {

@@ -51,7 +51,6 @@ export class OrganigramaComponent implements OnInit {
           this.cargando = false;
         },
         error: (error) => {
-          console.error('Error al cargar organigrama:', error);
           this.cargando = false;
         }
       });
@@ -61,11 +60,9 @@ export class OrganigramaComponent implements OnInit {
           this.areasPlanas = areasData || [];
         },
         error: (error) => {
-          console.error('Error al cargar áreas planas:', error);
         }
       });
     } catch (error) {
-      console.error('Error al cargar datos del organigrama:', error);
       this.cargando = false;
     }
   }
@@ -165,11 +162,9 @@ export class OrganigramaComponent implements OnInit {
           this.cargarDatos();
         },
         error: (error) => {
-          console.error('Error al inicializar estructura:', error);
         }
       });
     } catch (error) {
-      console.error('Error al inicializar estructura:', error);
     }
   }
 

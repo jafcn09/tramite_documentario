@@ -746,16 +746,12 @@ export class ChangePasswordComponent implements OnInit {
   }
 
   private handleError(error: any) {
-    console.error('Error completo:', error);
-    console.error('Status:', error.status);
-    console.error('Error body:', error.error);
 
     if (error.status === 400) {
       const message = error.error.error || error.error.message || 'Error al cambiar contraseña';
       this.setError('general', message);
     } else if (error.status === 401) {
       this.setError('general', 'No autorizado. Verifique sus permisos');
-      console.error('Error 401:', error);
     } else if (error.status === 422) {
       this.setError('newPassword', 'La contraseña no cumple con los requisitos de seguridad');
     } else if (error.status === 429) {

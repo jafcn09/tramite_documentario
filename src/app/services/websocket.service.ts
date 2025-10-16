@@ -53,12 +53,11 @@ export class WebSocketService implements OnDestroy {
     this.stompClient.connect(
       headers,
       (frame: any) => {
-        console.log('WebSocket conectado:', frame);
+
         this.connectionSubject.next(true);
         this.suscribirseANotificaciones();
       },
       (error: any) => {
-        console.error('Error de conexión WebSocket:', error);
         this.connectionSubject.next(false);
         this.intentarReconectar();
       }
@@ -67,7 +66,7 @@ export class WebSocketService implements OnDestroy {
     // Configurar debug (desactivar en producción)
     if (!environment.production) {
       this.stompClient.debug = (str: string) => {
-        console.log('STOMP: ' + str);
+
       };
     } else {
       this.stompClient.debug = null;
@@ -77,7 +76,7 @@ export class WebSocketService implements OnDestroy {
   private desconectar(): void {
     if (this.stompClient && this.stompClient.connected) {
       this.stompClient.disconnect(() => {
-        console.log('WebSocket desconectado');
+
         this.connectionSubject.next(false);
       });
     }
@@ -118,12 +117,10 @@ export class WebSocketService implements OnDestroy {
       }
     );
 
-    console.log('Suscrito a notificaciones WebSocket para usuario:', userId);
   }
 
   private manejarNuevaNotificacion(notificacion: Notificacion): void {
-    console.log('Nueva notificación recibida:', notificacion);
-    
+
     // Agregar a la lista de notificaciones
     this.notificacionService.agregarNuevaNotificacion(notificacion);
     
@@ -138,12 +135,12 @@ export class WebSocketService implements OnDestroy {
   }
 
   private manejarNotificacionLeida(notificacionId: number): void {
-    console.log('Notificación marcada como leída:', notificacionId);
+
     // El NotificacionService ya maneja esto localmente
   }
 
   private manejarTodasLeidas(): void {
-    console.log('Todas las notificaciones marcadas como leídas');
+
     this.notificacionService.actualizarContadorNoLeidas();
   }
 
@@ -179,10 +176,10 @@ export class WebSocketService implements OnDestroy {
         const audio = new Audio('/assets/sounds/notification.mp3');
         audio.volume = 0.5;
         audio.play().catch(e => {
-          console.log('No se pudo reproducir el sonido de notificación:', e);
+
         });
       } catch (error) {
-        console.log('Error reproduciendo sonido:', error);
+
       }
     }
   }
@@ -233,8 +230,6 @@ export class WebSocketService implements OnDestroy {
       return; // No reconectar si no está autenticado
     }
 
-    console.log('Intentando reconectar WebSocket...');
-    
     setTimeout(() => {
       this.conectar();
     }, 5000); // Esperar 5 segundos antes de reconectar
@@ -245,7 +240,6 @@ export class WebSocketService implements OnDestroy {
     if (this.stompClient && this.stompClient.connected) {
       this.stompClient.send(destino, {}, JSON.stringify(mensaje));
     } else {
-      console.error('WebSocket no está conectado');
     }
   }
 
@@ -256,7 +250,6 @@ export class WebSocketService implements OnDestroy {
         callback(JSON.parse(message.body));
       });
     } else {
-      console.error('WebSocket no está conectado');
     }
   }
 

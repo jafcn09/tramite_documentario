@@ -207,7 +207,6 @@ export class NuevoTramiteModalComponent implements OnInit, OnDestroy {
             this.onClose();
           },
           error: (error) => {
-            console.error('Error al crear trámite:', error);
             this.toastService.error(
               'Error',
               'No se pudo crear el trámite con los archivos. Inténtelo nuevamente.'
@@ -219,7 +218,6 @@ export class NuevoTramiteModalComponent implements OnInit, OnDestroy {
         })
       );
     } catch (error) {
-      console.error('Error en onSubmit:', error);
       this.toastService.error('Error', 'Ocurrió un error inesperado al procesar los archivos');
     } finally {
       this.loading = false;
@@ -234,7 +232,6 @@ export class NuevoTramiteModalComponent implements OnInit, OnDestroy {
     try {
       await Promise.all(promesasSubida);
     } catch (error) {
-      console.error('Error al subir archivos:', error);
       this.toastService.warning(
         'Archivos no subidos',
         'El trámite fue creado pero algunos archivos no pudieron subirse'
@@ -293,7 +290,6 @@ export class NuevoTramiteModalComponent implements OnInit, OnDestroy {
           descripcion: descripcion
         });
       } catch (error) {
-        console.error(`Error al procesar archivo ${archivo.name}:`, error);
         throw new Error(`No se pudo procesar el archivo ${archivo.name}`);
       }
     }

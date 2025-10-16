@@ -1,10 +1,7 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
 
-/**
- * Servicio de protección contra DevTools
- * Detecta cuando se abren las herramientas de desarrollo y toma acciones
- */
+
 @Injectable({
   providedIn: 'root'
 })
@@ -19,9 +16,7 @@ export class DevToolsProtectionService {
     }
   }
 
-  /**
-   * Inicializa la protección contra DevTools
-   */
+  // Inicializa las protecciones
   private initProtection(): void {
     // Detectar DevTools por diferencia de tamaño de ventana
     this.detectDevToolsByWindowSize();
@@ -41,9 +36,7 @@ export class DevToolsProtectionService {
     this.antiDebugger();
   }
 
-  /**
-   * Detecta DevTools comparando tamaño de ventana con viewport
-   */
+
   private detectDevToolsByWindowSize(): void {
     const widthThreshold = window.outerWidth - window.innerWidth > this.threshold;
     const heightThreshold = window.outerHeight - window.innerHeight > this.threshold;
@@ -58,9 +51,8 @@ export class DevToolsProtectionService {
     }
   }
 
-  /**
-   * Acción cuando se detecta DevTools abierto
-   */
+
+  // Acción a tomar cuando se detectan DevTools abiertas
   private onDevToolsOpen(): void {
     // Oscurecer contenido
     document.body.style.filter = 'blur(5px)';
@@ -88,7 +80,6 @@ export class DevToolsProtectionService {
     `;
     document.body.appendChild(message);
 
-    // Remover mensaje cuando se cierran las DevTools
     setTimeout(() => {
       if (!this.devtoolsOpen) {
         document.body.style.filter = '';
@@ -107,9 +98,8 @@ export class DevToolsProtectionService {
     });
   }
 
-  /**
-   * Deshabilita atajos de teclado comunes para DevTools
-   */
+
+  // Deshabilita atajos comunes para abrir DevTools
   private disableKeyboardShortcuts(): void {
     document.addEventListener('keydown', (e) => {
       // F12
@@ -146,9 +136,8 @@ export class DevToolsProtectionService {
     });
   }
 
-  /**
-   * Protección anti-debugger
-   */
+
+  // Protección contra el uso del debugger
   private antiDebugger(): void {
     setInterval(() => {
       const startTime = performance.now();
@@ -163,11 +152,13 @@ export class DevToolsProtectionService {
     }, 1000);
   }
 
-  /**
-   * Ofusca texto sensible en el DOM
-   */
+ 
+  // Ofusca datos sensibles en el DOM
   public obfuscateSensitiveData(): void {
-    // Implementar lógica para ofuscar datos sensibles en el DOM
-    // Por ejemplo, encriptar valores de inputs, etc.
+    const sensitiveElements = document.querySelectorAll('.sensitive');
+    sensitiveElements.forEach(el => {
+      el.textContent = '****';
+    });
+    
   }
 }

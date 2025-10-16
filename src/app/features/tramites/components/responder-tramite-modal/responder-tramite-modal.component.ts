@@ -99,7 +99,6 @@ export class ResponderTramiteModalComponent implements OnInit {
         this.closeModal();
       },
       error: (error) => {
-        console.error('Error al responder trámite:', error);
         this.toastService.error('Error al responder', 'No se pudo responder el trámite. Intente nuevamente.');
         this.loading = false;
       }

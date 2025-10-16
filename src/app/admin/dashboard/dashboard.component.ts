@@ -610,7 +610,6 @@ export class DashboardComponent implements OnInit {
   loadUserCount() {
     this.loadingUserCount = true;
 
-
     // Use the proper endpoint to get the user count
     const countUrl = environment.apiUrl ? `${environment.apiUrl}/api/usuarios/count` : '/api/usuarios/count';
     this.http.get<{totalUsers: number}>(countUrl).subscribe({
@@ -620,7 +619,6 @@ export class DashboardComponent implements OnInit {
         this.loadingUserCount = false;
       },
       error: (error) => {
-        console.error('❌ Error loading user count:', error);
 
         const recentUrl = environment.apiUrl ? `${environment.apiUrl}/api/usuarios/public/recent?limit=1000` : '/api/usuarios/public/recent?limit=1000';
         this.http.get<any[]>(recentUrl).subscribe({
@@ -630,7 +628,6 @@ export class DashboardComponent implements OnInit {
             this.loadingUserCount = false;
           },
           error: (fallbackError) => {
-            console.error('❌ All user count methods failed:', fallbackError);
             this.stats.totalUsers = 0;
             this.loadingUserCount = false;
           }
@@ -650,7 +647,6 @@ export class DashboardComponent implements OnInit {
         this.loadPermissionsForTramites();
       },
       error: (error) => {
-        console.error('❌ Error al cargar trámites desde bandeja-tramites:', error);
 
         this.loadTramitesStatistics();
       }
@@ -667,7 +663,6 @@ export class DashboardComponent implements OnInit {
           return permisos;
         })
         .catch(error => {
-          console.error(`❌ Error al cargar permisos para trámite ${tramite.codigo}:`, error);
           return null;
         })
     );
@@ -742,8 +737,6 @@ export class DashboardComponent implements OnInit {
                       new Date(a.fechaActualizacion || a.fechaCreacion).getTime())
       .slice(0, 5);
 
-
-
     this.recentActivities = recentTramites.map(tramite => {
       const isExpired = this.tramitePermisos.get(tramite.id)?.estaVencido || false;
 
@@ -782,7 +775,6 @@ export class DashboardComponent implements OnInit {
       };
     });
 
-
   }
 
   loadTramitesStatistics() {
@@ -796,7 +788,6 @@ export class DashboardComponent implements OnInit {
         this.stats.completedTramites = response.finalizadosHoy || 0;
       },
       error: (error) => {
-        console.error('Error loading tramites statistics:', error);
         this.stats.totalTramites = 0;
         this.stats.pendingTramites = 0;
         this.stats.completedTramites = 0;
@@ -866,7 +857,6 @@ export class DashboardComponent implements OnInit {
         this.loadingActivities = false;
       },
       error: (error) => {
-        console.error('❌ Error al cargar actividades recientes:', error);
         this.loadingActivities = false;
         // Si falla, generar actividades desde trámites locales
         if (!append) {
@@ -890,7 +880,6 @@ export class DashboardComponent implements OnInit {
         }));
       },
       error: (error) => {
-        console.error('Error loading users:', error);
         this.recentActivities = [];
       }
     });

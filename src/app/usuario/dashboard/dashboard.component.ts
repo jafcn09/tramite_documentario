@@ -658,7 +658,6 @@ export class UsuarioDashboardComponent implements OnInit {
         };
       },
       error: (error) => {
-        console.error('Error al cargar estadísticas:', error);
       }
     });
   }
@@ -711,7 +710,6 @@ export class UsuarioDashboardComponent implements OnInit {
         this.loadingActivities = false;
       },
       error: (error) => {
-        console.error('Error al cargar actividades:', error);
         this.loadingActivities = false;
       }
     });
@@ -740,7 +738,6 @@ export class UsuarioDashboardComponent implements OnInit {
         });
       },
       error: (error) => {
-        console.error('Error al cargar trámites recientes:', error);
       }
     });
   }

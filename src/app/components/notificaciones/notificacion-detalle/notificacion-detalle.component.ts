@@ -469,7 +469,6 @@ export class NotificacionDetalleComponent implements OnInit {
         }
       },
       error: (error) => {
-        console.error('Error cargando notificación:', error);
         this.error = 'Error al cargar la notificación. Por favor, intente nuevamente.';
         this.cargando = false;
       }
@@ -487,7 +486,6 @@ export class NotificacionDetalleComponent implements OnInit {
         }
       },
       error: (error) => {
-        console.error('Error marcando como leída:', error);
       }
     });
   }
@@ -501,7 +499,6 @@ export class NotificacionDetalleComponent implements OnInit {
         this.volver();
       },
       error: (error) => {
-        console.error('Error eliminando notificación:', error);
         alert('Error al eliminar la notificación');
       }
     });

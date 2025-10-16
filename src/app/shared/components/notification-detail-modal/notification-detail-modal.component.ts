@@ -552,7 +552,6 @@ export class NotificationDetailModalComponent implements OnChanges {
         this.router.navigate(['/home']);
       }
 
-      console.log('🔍 Redirigiendo usuario con rol', role, 'a su vista de trámites');
     });
   }
 

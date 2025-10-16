@@ -6,11 +6,6 @@ import { environment } from '../../../environments/environment';
 import { Role, RoleRequest } from './role.interface';
 import { catchError, finalize, of } from 'rxjs';
 
-
-
-
-
-
 @Component({
   selector: 'app-role-management',
   standalone: true,
@@ -1049,17 +1044,16 @@ export class RoleManagementComponent implements OnInit {
 
   loadRoles() {
     const token = localStorage.getItem('auth_token');
-    console.log('Loading roles with token:', token ? 'present' : 'missing');
+
     this.http.get<Role[]>(`${environment.apiUrl}/api/roles`, {
       headers: { 'Authorization': `Bearer ${token}` }
     }).pipe(
       catchError(err => {
-        console.error('Error loading roles:', err);
         this.showError('Error al cargar los roles');
         return of([]);
       })
     ).subscribe(roles => {
-      console.log('Received roles:', roles);
+
       this.roles.set(roles);
     });
   }

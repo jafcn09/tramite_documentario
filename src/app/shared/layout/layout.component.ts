@@ -79,7 +79,6 @@ import { NotificationBellComponent } from '../components/notification-bell/notif
           </ul>
         </nav>
 
-
         <div class="sidebar-footer" *ngIf="currentUser">
           <div class="user-profile" [class.collapsed]="sidebarCollapsed">
             <div class="user-avatar">
@@ -99,7 +98,6 @@ import { NotificationBellComponent } from '../components/notification-bell/notif
           </div>
         </div>
       </aside>
-
 
       <div class="main-content" [class.sidebar-collapsed]="sidebarCollapsed">
 
@@ -164,7 +162,6 @@ import { NotificationBellComponent } from '../components/notification-bell/notif
             </div>
           </div>
         </header>
-
 
         <main class="page-content">
           <router-outlet></router-outlet>
@@ -1080,7 +1077,6 @@ export class LayoutComponent implements OnInit {
       }
     });
   }
-
 
   toggleSidebar(event?: Event) {
     if (event) {

@@ -72,7 +72,6 @@ export class MisTramitesService {
         tap(() => this.loadingSubject.next(false)),
         catchError(error => {
           this.loadingSubject.next(false);
-          console.error('Error al cargar mis trámites:', error);
           this.toastService.error(
             'Error al cargar trámites',
             'No se pudieron obtener tus trámites. Inténtalo nuevamente.'
@@ -107,7 +106,6 @@ export class MisTramitesService {
           calificacionPromedio: response.calificacionPromedio || 0
         })),
         catchError(error => {
-          console.error('Error al cargar estadísticas:', error);
           this.toastService.error(
             'Error al cargar estadísticas',
             'No se pudieron obtener las estadísticas de tus trámites.'
@@ -131,24 +129,16 @@ export class MisTramitesService {
 
   // Obtener trámite por ID
   getMiTramiteById(id: number): Observable<MiTramite> {
-    console.log('🌐 SERVICE DEBUG: Solicitando trámite por ID:', id);
-    console.log('🌐 SERVICE DEBUG: URL completa:', `${this.apiUrl}/${id}`);
 
     return this.http.get<any>(`${this.apiUrl}/${id}`)
       .pipe(
         map(tramiteBackend => {
-          console.log('📨 SERVICE DEBUG: Respuesta cruda del backend:', tramiteBackend);
-          console.log('📄 SERVICE DEBUG: Documentos en respuesta backend:', tramiteBackend.documentos);
 
           const mappedTramite = this.mapSingleTramiteToFrontendFormat(tramiteBackend);
-
-          console.log('✅ SERVICE DEBUG: Trámite mapeado:', mappedTramite);
-          console.log('📄 SERVICE DEBUG: Documentos mapeados:', mappedTramite.documentos);
 
           return mappedTramite;
         }),
         catchError(error => {
-          console.error('❌ SERVICE DEBUG: Error al obtener trámite:', error);
           this.toastService.error(
             'Error al obtener trámite',
             'No se pudo obtener el detalle del trámite.'
@@ -177,7 +167,6 @@ export class MisTramitesService {
         })
       );
   }
-
 
   // Subir documento adicional a mi trámite
   subirDocumento(tramiteId: number, archivo: File, descripcion?: string): Observable<void> {
@@ -208,23 +197,14 @@ export class MisTramitesService {
   // Descargar documento específico
   descargarDocumento(tramiteId: number, nombreArchivo: string): Observable<Blob> {
     const url = `${this.apiUrl}/${tramiteId}/archivos/${nombreArchivo}`;
-    console.log('📥 SERVICE DEBUG: Descargando documento');
-    console.log('📥 SERVICE DEBUG: URL:', url);
-    console.log('📥 SERVICE DEBUG: Trámite ID:', tramiteId);
-    console.log('📥 SERVICE DEBUG: Nombre archivo:', nombreArchivo);
 
     return this.http.get(url, {
       responseType: 'blob'
     }).pipe(
       tap(blob => {
-        console.log('📥 SERVICE DEBUG: Blob recibido del backend');
-        console.log('📥 SERVICE DEBUG: Tamaño blob:', blob.size);
-        console.log('📥 SERVICE DEBUG: Tipo blob:', blob.type);
+
       }),
       catchError(error => {
-        console.error('❌ SERVICE DEBUG: Error al descargar documento:', error);
-        console.error('❌ SERVICE DEBUG: Status:', error.status);
-        console.error('❌ SERVICE DEBUG: Message:', error.message);
 
         this.toastService.error(
           'Error al descargar documento',
@@ -310,7 +290,6 @@ export class MisTramitesService {
     return this.http.get<any[]>(`${this.apiUrl}/notificaciones`)
       .pipe(
         catchError(error => {
-          console.error('Error al cargar notificaciones:', error);
           return of([]);
         })
       );
@@ -321,23 +300,16 @@ export class MisTramitesService {
     return this.http.put<void>(`${this.apiUrl}/notificaciones/${notificacionId}/leer`, {})
       .pipe(
         catchError(error => {
-          console.error('Error al marcar notificación como leída:', error);
           return of();
         })
       );
   }
 
-
   // Mapear un solo trámite con información completa (usuarioSolicitante, etc.)
   private mapSingleTramiteToFrontendFormat(tramiteBackend: any): MiTramite {
-    console.log('🧮 SERVICE DEBUG: Iniciando mapeo de trámite individual');
-    console.log('📄 SERVICE DEBUG: Documentos raw del backend:', tramiteBackend.documentos);
-    console.log('📄 SERVICE DEBUG: Tipo de documentos:', typeof tramiteBackend.documentos);
-    console.log('📄 SERVICE DEBUG: Es array?:', Array.isArray(tramiteBackend.documentos));
 
     // Mapear documentos si existen
     const documentosMapeados = this.mapDocumentos(tramiteBackend.documentos);
-    console.log('📄 SERVICE DEBUG: Documentos mapeados:', documentosMapeados);
 
     const tramiteMapeado = {
       id: tramiteBackend.id,
@@ -399,7 +371,6 @@ export class MisTramitesService {
       diasRestantes: tramiteBackend.diasRestantes
     };
 
-    console.log('✅ SERVICE DEBUG: Trámite mapeado final:', tramiteMapeado);
     return tramiteMapeado;
   }
 
@@ -590,15 +561,13 @@ export class MisTramitesService {
 
   // Nuevo método para mapear documentos
   private mapDocumentos(documentosBackend: any[]): DocumentoMiTramite[] {
-    console.log('📄 SERVICE DEBUG: Mapeando documentos, entrada:', documentosBackend);
 
     if (!documentosBackend || !Array.isArray(documentosBackend)) {
-      console.log('⚠️ SERVICE DEBUG: No hay documentos o no es un array');
+
       return [];
     }
 
     const documentosMapeados = documentosBackend.map((doc: any, index: number) => {
-      console.log(`📄 SERVICE DEBUG: Mapeando documento ${index}:`, doc);
 
       const documentoMapeado = {
         id: doc.id || 0,
@@ -611,11 +580,9 @@ export class MisTramitesService {
         descripcion: doc.descripcion || ''
       };
 
-      console.log(`📄 SERVICE DEBUG: Documento ${index} mapeado:`, documentoMapeado);
       return documentoMapeado;
     });
 
-    console.log('📄 SERVICE DEBUG: Documentos mapeados resultado:', documentosMapeados);
     return documentosMapeados;
   }
 
@@ -630,7 +597,6 @@ export class MisTramitesService {
           );
         }),
         catchError(error => {
-          console.error('Error al aprobar trámite:', error);
           this.toastService.error(
             'Error al aprobar trámite',
             'No se pudo aprobar el trámite. Inténtalo nuevamente.'
@@ -661,7 +627,6 @@ export class MisTramitesService {
         }),
         catchError(error => {
           this.loadingSubject.next(false);
-          console.error('Error al rechazar trámite:', error);
           this.toastService.error(
             'Error al rechazar trámite',
             'No se pudo rechazar el trámite. Inténtalo nuevamente.'

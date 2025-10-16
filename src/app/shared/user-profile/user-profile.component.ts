@@ -1186,31 +1186,27 @@ export class UserProfileComponent implements OnInit {
     setInterval(() => {
       const token = localStorage.getItem('token');
       if (!token) {
-        console.log('TOKEN LOST at:', new Date().toLocaleTimeString());
       }
     }, 5000);
   }
 
   toggleEditMode() {
-    console.log('toggleEditMode called, current mode:', this.isEditMode);
-    console.log('Update attempts:', this.updateAttempts);
-    
+
     // Check if limit reached
     if (this.updateAttempts >= 2) {
-      console.log('Edit limit reached, blocking toggle');
+
       this.setError('general', 'Límite de ediciones alcanzado. Solo se permiten 2 actualizaciones.');
       return;
     }
     
     const tokenAtToggle = localStorage.getItem('token');
-    console.log('Token at toggle:', tokenAtToggle ? 'Present' : 'Missing');
-    
+
     this.isEditMode = !this.isEditMode;
-    console.log('New edit mode:', this.isEditMode);
+
     this.clearMessages();
     
     if (this.isEditMode && this.currentUser) {
-      console.log('Setting form values for user:', this.currentUser);
+
       this.editForm.patchValue({
         correo: this.currentUser.correo,
         celular: this.currentUser.celular || '',
@@ -1219,7 +1215,7 @@ export class UserProfileComponent implements OnInit {
       this.editForm.markAsUntouched();
       
       const tokenAfterPatch = localStorage.getItem('token');
-      console.log('Token after form patch:', tokenAfterPatch ? 'Present' : 'Missing');
+
     }
   }
 
@@ -1238,27 +1234,17 @@ export class UserProfileComponent implements OnInit {
 
   async saveProfile() {
     try {
-      console.log('saveProfile called');
-      console.log('Form valid:', this.editForm.valid);
-      console.log('Form value:', this.editForm.value);
-      console.log('Is updating:', this.isUpdating);
-      console.log('Current user:', this.currentUser);
-      console.log('Current user ID:', this.currentUser?.id);
-      console.log('Current user role:', this.currentUser?.role);
-      
+
       // Debug localStorage
       const storedUser = localStorage.getItem('current_user');
       const storedToken = localStorage.getItem('auth_token');
-      console.log('Stored user in localStorage:', storedUser);
-      console.log('Has token in localStorage:', !!storedToken);
-      
+
       if (this.editForm.invalid || this.isUpdating) {
-        console.log('Form invalid or updating, stopping');
+
         this.editForm.markAllAsTouched();
         return;
       }
     } catch (error) {
-      console.error('Error at start of saveProfile:', error);
       return;
     }
 
@@ -1290,14 +1276,11 @@ export class UserProfileComponent implements OnInit {
       if (!token) {
         token = localStorage.getItem('token'); // Fallback
       }
-      
-      console.log('Token from localStorage:', token ? 'Present' : 'Missing');
-      console.log('Token length:', token?.length);
-      console.log('All localStorage keys:', Object.keys(localStorage));
+
       
       if (!token) {
         this.setError('general', 'No se encontró el token de autenticación. Revise la consola para más detalles.');
-        console.log('No token found in any storage');
+
         return;
       }
 
@@ -1317,19 +1300,17 @@ export class UserProfileComponent implements OnInit {
       // For debugging, let's try correo first, then celular
       if (correo && correo !== this.currentUser?.correo) {
         updateData.correo = correo.toLowerCase();
-        console.log('Sending only correo for testing:', updateData.correo);
+
       } else if (direccion && direccion !== this.currentUser?.direccion) {
         updateData.direccion = direccion;
-        console.log('Sending only direccion for testing:', updateData.direccion);
+
       } else if (celular && celular !== this.currentUser?.celular) {
         // Test with a different phone format to rule out validation issues
         const testCelular = celular;
         updateData.celular = testCelular;
-        console.log('Sending celular for testing:', updateData.celular);
+
       }
-      
-      console.log('Data to send:', updateData);
-      console.log('Fields included:', Object.keys(updateData));
+
       
       // Check if there's actually something to update
       if (Object.keys(updateData).length === 0) {
@@ -1339,20 +1320,16 @@ export class UserProfileComponent implements OnInit {
       }
 
       const apiUrl = `${environment.apiUrl}/api/usuarios/${this.currentUser.id}`;
-      console.log('Making API call to:', apiUrl);
-      console.log('With data:', updateData);
-      console.log('With headers Authorization Bearer:', token ? token.substring(0, 20) + '...' : 'No token');
+
       
       // First, let's test if we can GET the user data with this token
       try {
-        console.log('Testing GET request first...');
+
         const getUserResponse = await this.http.get<any>(apiUrl, {
           headers: { 'Authorization': `Bearer ${token}` }
         }).toPromise();
-        console.log('GET request successful:', getUserResponse);
+
       } catch (getError: any) {
-        console.error('GET request failed:', getError);
-        console.error('GET error status:', getError.status);
         if (getError.status === 401 || getError.status === 403) {
           this.setError('general', 'Token de autenticación no válido');
           return;
@@ -1371,17 +1348,15 @@ export class UserProfileComponent implements OnInit {
       ).toPromise();
 
       if (response) {
-        console.log('Update response from server:', response);
+
         this.successMessage = 'Perfil actualizado correctamente';
         
         // Use the complete user object from server response
         this.currentUser = response as User;
-        console.log('Updated currentUser:', this.currentUser);
-        
+
         // Update localStorage with the new user data
         localStorage.setItem('current_user', JSON.stringify(this.currentUser));
-        console.log('Updated localStorage with:', this.currentUser);
-        
+
         // Update the AuthService's current user subject
         (this.authService as any).currentUserSubject?.next(this.currentUser);
         
@@ -1391,12 +1366,7 @@ export class UserProfileComponent implements OnInit {
           celular: this.currentUser.celular || '',
           direccion: this.currentUser.direccion || ''
         });
-        console.log('Form updated with values:', {
-          correo: this.currentUser.correo,
-          celular: this.currentUser.celular,
-          direccion: this.currentUser.direccion
-        });
-        
+
         this.isEditMode = false;
         this.updateAttempts++;
         
@@ -1446,9 +1416,7 @@ export class UserProfileComponent implements OnInit {
 
       // Convert file to base64
       const base64Photo = await this.convertFileToBase64(this.selectedPhotoFile);
-      
-      console.log('Uploading photo for user:', this.currentUser.id);
-      
+
       // Get token
       let token = localStorage.getItem('auth_token');
       if (!token) {
@@ -1475,7 +1443,7 @@ export class UserProfileComponent implements OnInit {
       ).toPromise();
 
       if (response) {
-        console.log('Photo update response:', response);
+
         this.successMessage = 'Foto actualizada correctamente';
         
         // Update the current user with new photo
@@ -1496,7 +1464,6 @@ export class UserProfileComponent implements OnInit {
       }
 
     } catch (error: any) {
-      console.error('Error uploading photo:', error);
       this.setError('general', 'Error al actualizar la foto: ' + (error.error?.message || error.message));
     } finally {
       this.isUploadingPhoto = false;
@@ -1518,21 +1485,15 @@ export class UserProfileComponent implements OnInit {
   }
 
   private handleUpdateError(error: any) {
-    console.error('Error completo:', error);
-    console.error('Status:', error.status);
-    console.error('Error body:', error.error);
-    console.error('Error message:', error.error?.message);
-    console.error('Error details:', error.error?.error);
     
     if (error.status === 400) {
       // Try to show the specific error message from backend
       const backendMessage = error.error?.message || error.error?.error || 'Datos inválidos';
       this.setError('general', `Error del servidor: ${backendMessage}`);
       // Additional 400 error handling
-      console.log('Handling 400 error with more detail');
+
     } else if (error.status === 401) {
       this.setError('general', 'No autorizado. Verifique sus permisos');
-      console.error('Error 401:', error);
     } else if (error.status === 409) {
       this.setError('correo', 'Este correo electrónico ya está registrado');
     } else if (error.status === 422) {

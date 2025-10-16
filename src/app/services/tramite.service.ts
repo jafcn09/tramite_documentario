@@ -27,8 +27,6 @@ import { ToastService } from './toast.service';
 })
 export class TramiteService {
   private apiUrl = `${environment.apiUrl}/api/tramites`;
-  
-  // Subjects para manejar el estado
   private tramitesSubject = new BehaviorSubject<Tramite[]>([]);
   private loadingSubject = new BehaviorSubject<boolean>(false);
   
@@ -40,7 +38,6 @@ export class TramiteService {
     private toastService: ToastService
   ) {}
 
-  // Obtener todos los trámites con paginación y filtros
   getTramites(
     page: number = 1, 
     limit: number = 10, 
@@ -83,7 +80,6 @@ export class TramiteService {
       );
   }
 
-  // Obtener trámite por ID
   getTramiteById(id: number): Observable<Tramite> {
     return this.http.get<any>(`${this.apiUrl}/${id}`)
       .pipe(
@@ -98,7 +94,6 @@ export class TramiteService {
       );
   }
 
-  // Responder trámite
   responderTramite(tramiteId: number, formData: FormData): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/${tramiteId}/responder`, formData)
       .pipe(
@@ -137,11 +132,9 @@ export class TramiteService {
       );
   }
 
-  // Crear nuevo trámite
   crearTramite(tramite: CrearTramiteRequest): Observable<Tramite> {
     const formData = new FormData();
-    
-    // Agregar campos del trámite
+
     formData.append('tipoTramiteId', tramite.tipoTramiteId.toString());
     formData.append('asunto', tramite.asunto);
     formData.append('descripcion', tramite.descripcion);
@@ -155,7 +148,6 @@ export class TramiteService {
       formData.append('fechaVencimiento', tramite.fechaVencimiento.toISOString());
     }
 
-    // Agregar documentos
     if (tramite.documentos && tramite.documentos.length > 0) {
       tramite.documentos.forEach((documento, index) => {
         formData.append(`documentos`, documento, documento.name);
@@ -165,7 +157,6 @@ export class TramiteService {
     return this.http.post<Tramite>(`${this.apiUrl}`, formData)
       .pipe(
         tap(nuevoTramite => {
-          // Actualizar lista local
           const tramitesActuales = this.tramitesSubject.value;
           this.tramitesSubject.next([nuevoTramite, ...tramitesActuales]);
           
@@ -184,7 +175,6 @@ export class TramiteService {
       );
   }
 
-  // Crear trámite con archivos en base64
   crearTramiteConArchivos(tramiteData: any): Observable<Tramite> {
     const request = {
       tipoTramiteId: tramiteData.tipoTramiteId,
@@ -200,7 +190,6 @@ export class TramiteService {
     return this.http.post<Tramite>(`${this.apiUrl}/con-archivos`, request)
       .pipe(
         tap(nuevoTramite => {
-          // Actualizar lista local
           const tramitesActuales = this.tramitesSubject.value;
           this.tramitesSubject.next([nuevoTramite, ...tramitesActuales]);
         }),
@@ -214,12 +203,10 @@ export class TramiteService {
       );
   }
 
-  // Actualizar estado del trámite
   actualizarEstado(request: ActualizarEstadoRequest): Observable<Tramite> {
     return this.http.put<Tramite>(`${this.apiUrl}/${request.tramiteId}/estado`, request)
       .pipe(
         tap(tramiteActualizado => {
-          // Actualizar en lista local
           const tramitesActuales = this.tramitesSubject.value;
           const tramitesActualizados = tramitesActuales.map(t => 
             t.id === tramiteActualizado.id ? tramiteActualizado : t
@@ -242,7 +229,6 @@ export class TramiteService {
       );
   }
 
-  // Cambiar estado del trámite (usando parámetros del backend)
   cambiarEstado(tramiteId: number, nuevoEstado: string, observaciones?: string): Observable<any> {
     let params = new HttpParams().set('nuevoEstado', nuevoEstado);
     
@@ -253,7 +239,6 @@ export class TramiteService {
     return this.http.put<any>(`${this.apiUrl}/${tramiteId}/estado`, {}, { params })
       .pipe(
         tap(tramiteActualizado => {
-          // Actualizar en lista local
           const tramitesActuales = this.tramitesSubject.value;
           const tramitesActualizados = tramitesActuales.map(t => 
             t.id === tramiteActualizado.id ? this.mapTramiteFromBackend(tramiteActualizado) : t
@@ -275,7 +260,6 @@ export class TramiteService {
       );
   }
 
-  // Actualizar trámite completo
   actualizarTramite(tramiteId: number, tramiteData: any): Observable<Tramite> {
     const request = {
       titulo: tramiteData.asunto,
@@ -290,7 +274,6 @@ export class TramiteService {
     return this.http.put<Tramite>(`${this.apiUrl}/${tramiteId}`, request)
       .pipe(
         tap(tramiteActualizado => {
-          // Actualizar en lista local
           const tramitesActuales = this.tramitesSubject.value;
           const tramitesActualizados = tramitesActuales.map(t => 
             t.id === tramiteActualizado.id ? tramiteActualizado : t
@@ -312,7 +295,6 @@ export class TramiteService {
       );
   }
 
-  // Actualizar trámite con archivos en base64
   actualizarTramiteConArchivos(tramiteId: number, tramiteData: any): Observable<Tramite> {
     const request = {
       titulo: tramiteData.asunto,
@@ -329,7 +311,6 @@ export class TramiteService {
     return this.http.put<Tramite>(`${this.apiUrl}/${tramiteId}/con-archivos`, request)
       .pipe(
         tap(tramiteActualizado => {
-          // Actualizar en lista local
           const tramitesActuales = this.tramitesSubject.value;
           const tramitesActualizados = tramitesActuales.map(t =>
             t.id === tramiteActualizado.id ? tramiteActualizado : t
@@ -346,7 +327,6 @@ export class TramiteService {
       );
   }
 
-  // Subir documento adicional
   subirDocumento(tramiteId: number, archivo: File): Observable<DocumentoTramite> {
     const formData = new FormData();
     formData.append('documento', archivo, archivo.name);
@@ -369,7 +349,6 @@ export class TramiteService {
       );
   }
 
-  // Eliminar documento
   eliminarDocumento(tramiteId: number, documentoId: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${tramiteId}/documentos/${documentoId}`)
       .pipe(
@@ -389,7 +368,6 @@ export class TramiteService {
       );
   }
 
-  // Descargar documento
   descargarDocumento(tramiteId: number, nombreArchivo: string): Observable<Blob> {
     return this.http.get(`${this.apiUrl}/${tramiteId}/archivos/${nombreArchivo}`, {
       responseType: 'blob'
@@ -404,40 +382,33 @@ export class TramiteService {
     );
   }
 
-  // Obtener tipos de trámite
   getTiposTramite(): Observable<TipoTramite[]> {
     return this.http.get<TipoTramite[]>(`${this.apiUrl}/tipos`)
       .pipe(
         catchError(() => {
-          // Fallback a datos locales si falla el API
           return of(TIPOS_TRAMITE);
         })
       );
   }
 
-  // Obtener estados de trámite
   getEstadosTramite(): Observable<EstadoTramite[]> {
     return of(ESTADOS_TRAMITE);
   }
 
-  // Obtener prioridades de trámite
   getPrioridadesTramite(): Observable<PrioridadTramite[]> {
     return this.http.get<PrioridadTramite[]>(`${this.apiUrl}/prioridades`)
       .pipe(
         catchError(() => {
-          // Fallback a datos locales si falla el API
           return of(PRIORIDADES_TRAMITE);
         })
       );
   }
 
-  // Generar código de trámite automático
   generarCodigoTramite(): Observable<string> {
     return this.http.get<{codigo: string}>(`${this.apiUrl}/generar-codigo`)
       .pipe(
         map(response => response.codigo),
         catchError(() => {
-          // Generar código local como fallback
           const año = new Date().getFullYear();
           const timestamp = Date.now().toString().slice(-6);
           return of(`TR-${año}-${timestamp}`);
@@ -445,7 +416,6 @@ export class TramiteService {
       );
   }
 
-  // Validar archivo antes de subir
   validarArchivo(archivo: File): { valido: boolean; mensaje?: string } {
     const tiposPermitidos = [
       'application/pdf',
@@ -460,7 +430,7 @@ export class TramiteService {
       };
     }
 
-    const tamañoMaximo = 10 * 1024 * 1024; // 10MB
+    const tamañoMaximo = 10 * 1024 * 1024;
     if (archivo.size > tamañoMaximo) {
       return {
         valido: false,
@@ -471,7 +441,6 @@ export class TramiteService {
     return { valido: true };
   }
 
-  // Imprimir trámite (generar documento HTML para impresión)
   imprimirTramite(tramiteId: number): Observable<Blob> {
     return this.http.get(`${this.apiUrl}/${tramiteId}/imprimir`, {
       responseType: 'blob',
@@ -495,7 +464,6 @@ export class TramiteService {
     );
   }
 
-  // Obtener historial con conteo de modificaciones
   getHistorialConConteo(tramiteId: number): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/${tramiteId}/historial`).pipe(
       catchError(error => {
@@ -508,12 +476,10 @@ export class TramiteService {
     );
   }
 
-  // Eliminar trámite
   eliminarTramite(tramiteId: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${tramiteId}`)
       .pipe(
         tap(() => {
-          // Remover del estado local
           const tramitesActuales = this.tramitesSubject.value;
           const tramitesActualizados = tramitesActuales.filter(t => t.id !== tramiteId);
           this.tramitesSubject.next(tramitesActualizados);
@@ -528,7 +494,6 @@ export class TramiteService {
       );
   }
 
-  // Mapear tramite desde backend
   private mapTramiteFromBackend(tramiteBackend: any): Tramite {
     return {
       id: tramiteBackend.id,
@@ -610,7 +575,6 @@ export class TramiteService {
     };
   }
 
-  // Métodos para manejar TIPO TRAMITE desde enum backend
   private getTipoTramiteIdFromEnum(tipoEnum: string): number {
     const tiposMap: { [key: string]: number } = {
       'SOLICITUD_CERTIFICADO': 1,
@@ -647,7 +611,6 @@ export class TramiteService {
     return tiposMap[tipoEnum] || 'Solicitud de Constancia';
   }
 
-  // Métodos para manejar ESTADO desde enum backend
   private getEstadoIdFromEnum(estadoEnum: string): number {
     const estadosMap: { [key: string]: number } = {
       'BORRADOR': 1,
@@ -726,7 +689,6 @@ export class TramiteService {
     return !noPermiteEdicion.includes(estadoEnum);
   }
 
-  // Métodos para manejar PRIORIDAD desde enum backend
   private getPrioridadIdFromEnum(prioridadEnum: string): number {
     const prioridadesMap: { [key: string]: number } = {
       'BAJA': 1,
@@ -777,19 +739,16 @@ export class TramiteService {
     return iconos[prioridadEnum] || 'fas fa-minus';
   }
 
-  // Obtener nombre de tipo de trámite por ID
   private getTipoTramiteNombre(tipoId: number): string {
     const tipo = TIPOS_TRAMITE.find(t => t.id === tipoId);
     return tipo?.nombre || '';
   }
 
-  // Obtener nombre de prioridad por ID
   private getPrioridadTramiteNombre(prioridadId: number): string {
     const prioridad = PRIORIDADES_TRAMITE.find(p => p.id === prioridadId);
     return prioridad?.nombre || '';
   }
 
-  // Mapeo de frontend ID a backend enum para tipos de trámite
   private mapTipoTramiteToEnum(tipoId: number): string {
     const tipoMap: { [key: number]: string } = {
       1: 'TRAMITE_ADMINISTRATIVO',  // Resolución Rectoral
@@ -802,7 +761,6 @@ export class TramiteService {
     return tipoMap[tipoId] || 'OTRO';
   }
 
-  // Mapeo de frontend ID a backend enum para prioridades
   private mapPrioridadToEnum(prioridadId: number): string {
     const prioridadMap: { [key: number]: string } = {
       1: 'BAJA',
@@ -813,7 +771,6 @@ export class TramiteService {
     return prioridadMap[prioridadId] || 'NORMAL';
   }
 
-  // Editar trámite (Usuario)
   editarTramiteUsuario(tramiteId: number, request: any): Observable<any> {
     return this.http.put<any>(`${this.apiUrl}/${tramiteId}/editar`, request)
       .pipe(
@@ -834,7 +791,6 @@ export class TramiteService {
       );
   }
 
-  // Limpiar estado local
   clearTramites(): void {
     this.tramitesSubject.next([]);
   }

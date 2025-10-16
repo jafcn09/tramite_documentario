@@ -85,7 +85,7 @@ export class AdminLoginComponent implements OnInit {
           let redirectRoute = '/';
 
           if (response.redirectUrl) {
-            console.log('Backend redirect to:', response.redirectUrl);
+
             redirectRoute = response.redirectUrl;
           } else {
             // Fallback to manual redirect based on user role
@@ -99,7 +99,7 @@ export class AdminLoginComponent implements OnInit {
               };
 
               redirectRoute = roleRoutes[currentUser.role.name] || '/';
-              console.log('Fallback redirect to:', redirectRoute);
+
             }
           }
 

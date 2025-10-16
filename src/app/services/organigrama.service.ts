@@ -16,7 +16,6 @@ export class OrganigramaService {
   obtenerOrganigramaCompleto(): Observable<AreaJerarquica[]> {
     return this.http.get<AreaJerarquica[]>(`${this.API_URL}/completo`).pipe(
       catchError(error => {
-        console.error('Error al obtener organigrama:', error);
         return of([]);
       })
     );
@@ -25,7 +24,6 @@ export class OrganigramaService {
   obtenerAreasPlanas(): Observable<AreaJerarquica[]> {
     return this.http.get<AreaJerarquica[]>(`${this.API_URL}/areas-planas`).pipe(
       catchError(error => {
-        console.error('Error al obtener áreas planas:', error);
         return of([]);
       })
     );
@@ -34,7 +32,6 @@ export class OrganigramaService {
   obtenerSubAreas(areaId: number): Observable<AreaJerarquica> {
     return this.http.get<AreaJerarquica>(`${this.API_URL}/api/sub-areas/${areaId}`).pipe(
       catchError(error => {
-        console.error('Error al obtener sub-áreas:', error);
         throw error;
       })
     );
@@ -43,7 +40,6 @@ export class OrganigramaService {
   inicializarEstructura(): Observable<string> {
     return this.http.post<string>(`${this.API_URL}/inicializar`, {}).pipe(
       catchError(error => {
-        console.error('Error al inicializar estructura:', error);
         throw error;
       })
     );

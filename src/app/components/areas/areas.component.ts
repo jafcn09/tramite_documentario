@@ -5,8 +5,6 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { Areas, Usuario } from './areas.interface';
 
-
-
 @Component({
   selector: 'app-areas',
   standalone: true,
@@ -1191,7 +1189,6 @@ export class AreasComponent implements OnInit {
       },
       error: (error) => {
         this.showError('Error al cargar las áreas');
-        console.error('Error loading areas:', error);
       }
     });
   }
@@ -1258,7 +1255,6 @@ export class AreasComponent implements OnInit {
       },
       error: (error) => {
         this.showError('Error al cambiar el estado del área');
-        console.error('Error toggling area status:', error);
       }
     });
   }
@@ -1355,16 +1351,15 @@ export class AreasComponent implements OnInit {
 
   loadAreaUsers(areaId: number) {
     const token = localStorage.getItem('auth_token');
-    console.log('Loading users for area ID:', areaId);
+
     this.http.get<Usuario[]>(`${environment.apiUrl}/api/usuario-area/area/${areaId}/users`, {
       headers: { 'Authorization': `Bearer ${token}` }
     }).subscribe({
       next: (users) => {
-        console.log('Received area users:', users);
+
         this.areaUsers = users;
       },
       error: (error) => {
-        console.error('Error loading area users:', error);
         this.areaUsers = [];
       }
     });

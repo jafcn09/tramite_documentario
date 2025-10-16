@@ -5,8 +5,6 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { Area, Role, User } from './user.interface';
 
-
-
 @Component({
   selector: 'app-user-management',
   standalone: true,
@@ -1874,7 +1872,6 @@ export class UserManagementComponent implements OnInit {
       },
       error: (error) => {
         this.showError('Error al cargar los usuarios');
-        console.error('Error loading users:', error);
       }
     });
   }
@@ -1889,7 +1886,6 @@ export class UserManagementComponent implements OnInit {
         this.activeAreas = areas.filter(area => area.activa);
       },
       error: (error) => {
-        console.error('Error loading areas:', error);
       }
     });
   }
@@ -1995,7 +1991,6 @@ export class UserManagementComponent implements OnInit {
       },
       error: (error) => {
         this.showError('Error al cambiar el estado del usuario');
-        console.error('Error toggling user status:', error);
       }
     });
   }
@@ -2011,7 +2006,6 @@ export class UserManagementComponent implements OnInit {
       },
       error: (error) => {
         this.showError('Error al cambiar el bloqueo del usuario');
-        console.error('Error toggling user lock:', error);
       }
     });
   }
@@ -2028,7 +2022,6 @@ export class UserManagementComponent implements OnInit {
         },
         error: (error) => {
           this.showError('Error al eliminar el usuario');
-          console.error('Error deleting user:', error);
         }
       });
     }
@@ -2133,7 +2126,6 @@ export class UserManagementComponent implements OnInit {
     });
   }
 
-
   loadRoles() {
     const token = localStorage.getItem('auth_token');
     this.http.get<Role[]>(`${environment.apiUrl}/api/roles`, {
@@ -2143,7 +2135,6 @@ export class UserManagementComponent implements OnInit {
         this.roles = roles;
       },
       error: (error) => {
-        console.error('Error loading roles:', error);
       }
     });
   }

@@ -68,7 +68,6 @@ export class BandejaTramitesService {
         }),
         catchError(error => {
           this.loadingSubject.next(false);
-          console.error('Error al cargar trámites de bandeja:', error);
           this.toastService.error(
             'Error al cargar trámites',
             'No se pudieron obtener los trámites de la bandeja. Inténtalo nuevamente.'
@@ -113,7 +112,6 @@ export class BandejaTramitesService {
         tap(() => this.loadingSubject.next(false)),
         catchError(error => {
           this.loadingSubject.next(false);
-          console.error('Error al cargar trámites de bandeja:', error);
           this.toastService.error(
             'Error al cargar trámites',
             'No se pudieron obtener los trámites de la bandeja. Inténtalo nuevamente.'
@@ -126,15 +124,12 @@ export class BandejaTramitesService {
   // Obtener estadísticas de la bandeja (datos reales del backend)
   getEstadisticas(): Observable<EstadisticasBandeja> {
 
-
     return this.http.get<EstadisticasBandeja>(`${this.apiUrl}/estadisticas`)
       .pipe(
         tap(estadisticas => {
      
         }),
         catchError(error => {
-          console.error('❌ Error al cargar estadísticas del backend:', error);
-          console.error('Status:', error.status, 'Message:', error.message);
           // Re-lanzar el error en lugar de usar mock
           throw error;
         })
@@ -146,7 +141,6 @@ export class BandejaTramitesService {
     return this.http.get<NotificacionBandeja[]>(`${this.apiUrl}/notificaciones`)
       .pipe(
         catchError(error => {
-          console.error('Error al cargar notificaciones:', error);
           // Devolver notificaciones mock
           return of([
             {
@@ -335,7 +329,6 @@ export class BandejaTramitesService {
     return this.http.put<void>(`${this.apiUrl}/notificaciones/${notificacionId}/leer`, {})
       .pipe(
         catchError(error => {
-          console.error('Error al marcar notificación como leída:', error);
           return of();
         })
       );
@@ -359,7 +352,6 @@ export class BandejaTramitesService {
         })
       );
   }
-
 
   // Validar archivo antes de subir
   validarArchivo(archivo: File): { valido: boolean; mensaje?: string } {
@@ -389,7 +381,6 @@ export class BandejaTramitesService {
 
     return { valido: true };
   }
-
 
   // Exportar trámites a PDF
   exportarTramites(tramiteIds: number[]): Observable<Blob> {
@@ -467,7 +458,6 @@ export class BandejaTramitesService {
       );
   }
 
-
     cambiarEstadoTramitePorNombre(tramiteId: number, nuevoEstado: string, observaciones: string = ''): Observable<any> {
     const params = new HttpParams()
       .set('nuevoEstado', nuevoEstado)
@@ -479,7 +469,6 @@ export class BandejaTramitesService {
 
         }),
         catchError(error => {
-          console.error(`❌ Error al cambiar estado del trámite ${tramiteId}:`, error);
           throw error;
         })
       );
@@ -506,7 +495,6 @@ export class BandejaTramitesService {
 
         }),
         catchError(error => {
-          console.error(`❌ Error al obtener permisos del trámite ${tramiteId}:`, error);
           return of({
             puedeAprobar: false,
             puedeRechazar: false,

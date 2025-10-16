@@ -198,7 +198,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
     } else if (module.id === 'internal') {
       this.router.navigate(['/servicios-administrativos']);
     } else {
-      console.log(`Navigating to ${module.id}`);
+
     }
   }
   

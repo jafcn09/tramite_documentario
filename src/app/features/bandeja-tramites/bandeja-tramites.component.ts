@@ -142,15 +142,10 @@ export class BandejaTramitesComponent implements OnInit, OnDestroy {
       this.bandejaTramitesService.getTramites(this.currentPage, this.pageSize, this.filtros, this.ordenarPor, this.ordenAscendente)
         .subscribe({
           next: (response) => {
-            console.log('📋 Trámites cargados desde backend:', response.data);
 
             // Log detallado de cada trámite para debugging
             response.data.forEach(tramite => {
-              console.log(`🔍 Trámite ${tramite.codigo}:`, {
-                estado: tramite.estado.nombre,
-                puedeDerivar: tramite.puedeDerivar,
-                estadoCompleto: tramite.estado
-              });
+
             });
 
             this.tramites = response.data;
@@ -161,7 +156,6 @@ export class BandejaTramitesComponent implements OnInit, OnDestroy {
             this.autoFinalizarTramitesVencidos();
           },
           error: (error) => {
-            console.error('Error al cargar trámites:', error);
           }
         })
     );
@@ -212,7 +206,7 @@ export class BandejaTramitesComponent implements OnInit, OnDestroy {
 
   cambiarPagina(page: number) {
     if (page >= 1 && page <= this.totalPages && page !== this.currentPage) {
-      console.log(`📄 Cambiando de página ${this.currentPage} a ${page}`);
+
       this.currentPage = page;
       this.cargarTramites();
     }
@@ -296,7 +290,7 @@ export class BandejaTramitesComponent implements OnInit, OnDestroy {
   }
 
   abrirAprobar(tramite: TramiteBandeja) {
-    console.log('🔄 Abriendo modal de aprobar para trámite:', tramite.codigo);
+
     // Llamar directamente al endpoint de aprobación
     const request = {
       tramiteId: tramite.id,
@@ -307,13 +301,12 @@ export class BandejaTramitesComponent implements OnInit, OnDestroy {
       this.misTramitesService.aprobarTramite(request)
         .subscribe({
           next: (response: any) => {
-            console.log('✅ Trámite aprobado correctamente:', response);
+
             this.cargarTramites();
             this.cargarEstadisticas();
             this.toastService.success('Trámite aprobado', `El trámite ${tramite.codigo} ha sido aprobado correctamente`);
           },
           error: (error: any) => {
-            console.error('❌ Error al aprobar trámite:', error);
             this.toastService.error('Error al aprobar', 'No se pudo aprobar el trámite. Intente nuevamente.');
           }
         })
@@ -335,21 +328,18 @@ export class BandejaTramitesComponent implements OnInit, OnDestroy {
   }
 
   confirmarDerivar() {
-    console.log('🚀 Iniciando derivación del trámite:', this.derivarForm);
 
     this.subscriptions.add(
       this.bandejaTramitesService.derivarTramite(this.derivarForm)
         .subscribe({
           next: (response) => {
-            console.log('✅ Trámite derivado exitosamente:', response);
-            console.log('🔄 Recargando trámites después de derivar...');
+
             this.cargarTramites();
             this.cargarEstadisticas();
             this.cerrarModalDerivar();
             this.toastService.success('Trámite derivado', 'El trámite ha sido derivado correctamente');
           },
           error: (error) => {
-            console.error('❌ Error al derivar trámite:', error);
             this.toastService.error('Error al derivar', 'No se pudo derivar el trámite. Intente nuevamente.');
           }
         })
@@ -632,8 +622,7 @@ export class BandejaTramitesComponent implements OnInit, OnDestroy {
   }
 
   onTramiteEditado(response: any) {
-    console.log('🔄 Trámite editado - Respuesta del backend:', response);
-    
+
     // Refrescar la lista de trámites
     this.cargarTramites();
     // Actualizar estadísticas
@@ -643,7 +632,6 @@ export class BandejaTramitesComponent implements OnInit, OnDestroy {
 
   // Verificar si puede aprobar un trámite
   puedeAprobar(tramite: TramiteBandeja): boolean {
-    console.log(`🔍 puedeAprobar - Trámite ${tramite.codigo}: estado=${tramite.estado.nombre}, puedeDerivar=${tramite.puedeDerivar}`);
 
     // SIEMPRE mostrar aprobar si el trámite está DERIVADO (fue derivado para que este trabajador lo apruebe)
     // Maneja tanto formato backend (DERIVADO) como frontend (Derivado)
@@ -655,26 +643,21 @@ export class BandejaTramitesComponent implements OnInit, OnDestroy {
 
   // Verificar si puede responder un trámite
   puedeResponder(tramite: TramiteBandeja): boolean {
-    console.log(`🔍 puedeResponder - Trámite ${tramite.codigo}: estado=${tramite.estado.nombre}, puedeDerivar=${tramite.puedeDerivar}`);
 
     // Siempre mostrar responder si está DERIVADO (para dar respuesta) o APROBADO (para procesar)
     // Maneja tanto formato backend como frontend
     const estadosParaResponder = ['DERIVADO', 'Derivado', 'APROBADO', 'Aprobado', 'EN_PROCESO', 'En Proceso'];
     const puede = estadosParaResponder.includes(tramite.estado.nombre);
 
-
     return puede;
   }
 
   // Verificar si debe mostrar el botón derivar
   puedeMostrarDerivar(tramite: TramiteBandeja): boolean {
-    console.log(`🔍 puedeMostrarDerivar - Trámite ${tramite.codigo}: estado=${tramite.estado.nombre}, puedeDerivar=${tramite.puedeDerivar}`);
-
 
     const estadosDerivados = ['DERIVADO', 'Derivado'];
     const puede = tramite.puedeDerivar && !estadosDerivados.includes(tramite.estado.nombre);
 
-    console.log(`🔍 puedeMostrarDerivar resultado: ${puede} para trámite ${tramite.codigo}`);
     return puede;
   }
 
@@ -778,7 +761,6 @@ export class BandejaTramitesComponent implements OnInit, OnDestroy {
           this.toastService.success('Trámite exportado', `El trámite ${tramite.codigo} se ha exportado correctamente`);
         },
         error: (error) => {
-          console.error('Error al exportar trámite:', error);
           this.toastService.error('Error al exportar', 'No se pudo exportar el trámite');
         }
       })
@@ -803,7 +785,6 @@ export class BandejaTramitesComponent implements OnInit, OnDestroy {
           this.selectedTramites = [];
         },
         error: (error) => {
-          console.error('Error al exportar trámites:', error);
           this.toastService.error('Error al exportar', 'No se pudieron exportar los trámites');
         }
       })
@@ -819,7 +800,6 @@ export class BandejaTramitesComponent implements OnInit, OnDestroy {
           this.cargarTramites(); // Recargar la lista
         },
         error: (error) => {
-          console.error('Error al archivar trámite:', error);
           this.toastService.error('Error al archivar', 'No se pudo archivar el trámite');
         }
       })
@@ -843,7 +823,6 @@ export class BandejaTramitesComponent implements OnInit, OnDestroy {
           this.cargarTramites(); // Recargar la lista
         },
         error: (error) => {
-          console.error('Error al archivar trámites:', error);
           this.toastService.error('Error al archivar', 'No se pudieron archivar los trámites');
         }
       })
@@ -914,13 +893,13 @@ export class BandejaTramitesComponent implements OnInit, OnDestroy {
       const estaActivo = tramite.estado.nombre !== 'INACTIVO' && tramite.estado.nombre !== 'CANCELADO';
 
       if (estaVencido && noEstaFinalizado && estaActivo) {
-        console.log(`🕒 Trámite vencido detectado: ${tramite.codigo} (vencimiento: ${tramite.fechaVencimiento})`);
+
         tramitesParaFinalizar.push(tramite.id);
       }
 
       // También verificar si está marcado como dado de baja o inactivo
       if ((tramite.estado.nombre === 'INACTIVO' || tramite.estado.nombre === 'DADO_DE_BAJA') && noEstaFinalizado) {
-        console.log(`📋 Trámite inactivo/dado de baja detectado: ${tramite.codigo}`);
+
         tramitesParaFinalizar.push(tramite.id);
       }
     });
@@ -940,7 +919,7 @@ export class BandejaTramitesComponent implements OnInit, OnDestroy {
         this.bandejaTramitesService.cambiarEstadoTramitePorNombre(tramiteId, 'FINALIZADO', observaciones)
           .subscribe({
             next: () => {
-              console.log(`✅ Trámite ${tramiteId} auto-finalizado correctamente`);
+
               // Actualizar el estado en la lista local
               const tramite = this.tramites.find(t => t.id === tramiteId);
               if (tramite) {
@@ -949,7 +928,6 @@ export class BandejaTramitesComponent implements OnInit, OnDestroy {
               }
             },
             error: (error) => {
-              console.error(`❌ Error al auto-finalizar trámite ${tramiteId}:`, error);
             }
           })
       );

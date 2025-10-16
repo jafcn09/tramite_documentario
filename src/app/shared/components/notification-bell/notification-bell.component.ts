@@ -464,7 +464,6 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
       return;
     }
 
-
     // Cargar contador inicial
     this.actualizarContador();
 
@@ -515,7 +514,6 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
           this.cargando = false;
         },
         error: (error) => {
-          console.error('Error cargando notificaciones recientes:', error);
           // En caso de error, establecer valores por defecto
           this.notificacionesRecientes = [];
           this.totalNotifications = 0;
@@ -549,7 +547,6 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
           }
         },
         error: (error) => {
-          console.error('Error cargando más notificaciones:', error);
           this.loadingMore = false;
         }
       })
@@ -563,7 +560,6 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
           this.contadorNoLeidas = count || 0;
         },
         error: (error) => {
-          console.error('Error obteniendo contador:', error);
           // En caso de error, establecer contador en 0
           this.contadorNoLeidas = 0;
         }
@@ -768,7 +764,6 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
           this.notificacionService.actualizarContadorNoLeidas();
         },
         error: (error: any) => {
-          console.error('Error eliminando notificación:', error);
         }
       })
     );
@@ -790,7 +785,6 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
           this.notificacionService.actualizarContadorNoLeidas();
         },
         error: (error: any) => {
-          console.error('Error eliminando todas las notificaciones:', error);
         }
       })
     );

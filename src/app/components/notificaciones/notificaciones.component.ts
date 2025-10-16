@@ -191,32 +191,23 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
     this.subscriptions.push(
       observable.subscribe({
         next: (response: PaginatedResponse<Notificacion>) => {
-          console.log('🔍 Respuesta completa del backend:', response);
-          console.log('📋 Content de notificaciones:', response.content);
-          console.log('🔢 Cantidad de notificaciones:', response.content?.length);
-          
+
           if (this.currentPage === 0) {
             this.notificaciones = response.content;
           } else {
             this.notificaciones = [...this.notificaciones, ...response.content];
           }
-          
-          console.log('📝 Notificaciones asignadas al array:', this.notificaciones);
-          
+
           this.totalElements = response.totalElements;
           this.totalPages = response.totalPages;
           this.isLastPage = response.last;
           
           this.aplicarFiltros();
           this.agruparNotificaciones();
-          
-          console.log('🗂️ Notificaciones filtradas:', this.notificacionesFiltradas);
-          console.log('📊 Notificaciones agrupadas:', this.notificacionesAgrupadas);
-          
+
           this.cargando = false;
         },
         error: (error) => {
-          console.error('Error cargando notificaciones:', error);
           this.cargando = false;
         }
       })
@@ -329,14 +320,13 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
     this.subscriptions.push(
       this.notificacionService.crearNotificacion(request).subscribe({
         next: () => {
-          console.log('Notificación creada exitosamente');
+
           this.mostrarModalCrear = false;
           this.resetearFormulario();
           this.cargarNotificaciones(); // Recargar lista
           this.enviandoNotificacion = false;
         },
         error: (error) => {
-          console.error('Error creando notificación:', error);
           this.enviandoNotificacion = false;
         }
       })
@@ -386,8 +376,6 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
     return !notificacion.esLeida || !this.esNotificacionAntigua(notificacion);
   }
 
-
-
   esAdministrativo(): boolean {
     const userRole = this.authService.currentUserValue?.role?.name;
     return userRole === 'ADMINISTRATIVO' || userRole === 'ADMIN';
@@ -403,7 +391,7 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
           this.marcarLeida(notificacion, event);
           this.cargarNotificaciones();
         },
-        error: (error) => console.error('Error al asignarse trámite:', error)
+        error: (error) => {}
       });
     }
   }
@@ -469,10 +457,9 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
     this.subscriptions.push(
       this.notificacionService.reenviarPorEmail(notificacion.id).subscribe({
         next: () => {
-          console.log('Notificación reenviada por email');
+
         },
         error: (error) => {
-          console.error('Error reenviando notificación:', error);
         }
       })
     );
@@ -519,15 +506,13 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
 
   confirmarLimpiarAntiguas(): void {
     if (!this.esAdmin()) return;
-    
-    console.log(`🧹 Iniciando limpieza de notificaciones de más de ${this.diasAntiguedad} días...`);
+
     this.limpiandoAntiguas = true;
     
     this.subscriptions.push(
       this.notificacionService.limpiarNotificacionesAntiguas(this.diasAntiguedad).subscribe({
         next: (eliminadas) => {
-          console.log(`✅ ${eliminadas} notificaciones eliminadas exitosamente`);
-          
+
           // Mostrar resultado al usuario
           if (eliminadas > 0) {
             alert(`✅ Se eliminaron ${eliminadas} notificaciones antiguas exitosamente.`);
@@ -541,7 +526,6 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
           this.limpiandoAntiguas = false;
         },
         error: (error) => {
-          console.error('❌ Error limpiando notificaciones:', error);
           alert('❌ Error al limpiar notificaciones antiguas. Inténtalo nuevamente.');
           this.limpiandoAntiguas = false;
         }
@@ -587,13 +571,12 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
     this.subscriptions.push(
       this.notificacionService.actualizarNotificacion(this.notificacionEditando.id, request).subscribe({
         next: () => {
-          console.log('Notificación actualizada exitosamente');
+
           this.cerrarModalEditar();
           this.cargarNotificaciones(); // Recargar lista
           this.editandoNotificacion = false;
         },
         error: (error) => {
-          console.error('Error actualizando notificación:', error);
           this.editandoNotificacion = false;
         }
       })
@@ -608,7 +591,7 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
     this.subscriptions.push(
       this.notificacionService.eliminarNotificacion(this.notificacionEliminar.id).subscribe({
         next: () => {
-          console.log('Notificación eliminada exitosamente');
+
           // Actualizar la lista local inmediatamente
           this.notificaciones = this.notificaciones.filter(n => n.id !== this.notificacionEliminar!.id);
           this.aplicarFiltros();
@@ -617,7 +600,6 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
           this.eliminandoNotificacion = false;
         },
         error: (error) => {
-          console.error('Error eliminando notificación:', error);
           this.eliminandoNotificacion = false;
         }
       })
@@ -648,11 +630,10 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
     // Verificar si la notificación ya existe antes de agregarla (evitar duplicados)
     const existe = this.notificaciones.some(n => n.id === notificacion.id);
     if (existe) {
-      console.log('⚠️ Notificación duplicada detectada, ignorando:', notificacion.id);
+
       return;
     }
 
-    console.log('✅ Agregando nueva notificación:', notificacion.id);
     this.notificaciones = [notificacion, ...this.notificaciones];
     this.aplicarFiltros();
     this.agruparNotificaciones();
@@ -726,7 +707,6 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
     return fechaA.localeCompare(fechaB);
   }
 
-
   trackGroup(_index: number, grupo: NotificacionGrupo): string {
     return grupo.fecha;
   }
@@ -734,7 +714,6 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
   trackNotification(_index: number, notificacion: Notificacion): number {
     return notificacion.id;
   }
-
 
   getTipoDisplay(tipo: string): string {
     const tipos: { [key: string]: string } = {
@@ -758,19 +737,17 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
   // Métodos para el modal de crear notificación
   
   cargarUsuarios(): void {
-    console.log('🔍 cargarUsuarios() - esAdmin():', this.esAdmin());
     if (!this.esAdmin()) return;
     
     this.subscriptions.push(
       this.notificacionService.obtenerUsuarios().subscribe({
         next: (usuarios) => {
-          console.log('✅ Usuarios cargados desde backend:', usuarios);
+
           // Filtrar usuarios admin para que no aparezcan en el dropdown
           this.usuarios = usuarios.filter(usuario => usuario.role?.name !== 'ADMIN');
-          console.log('📝 Usuarios después de filtrar admin:', this.usuarios);
+
         },
         error: (error) => {
-          console.error('❌ Error cargando usuarios:', error);
           // Fallback temporal (sin admin)
           this.usuarios = [
             { id: 2, nombre: 'Usuario Demo', usuario: 'demo', role: { name: 'USUARIO' } }
@@ -788,10 +765,9 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
         next: (roles) => {
           // Filtrar roles ADMIN para que no aparezcan en el dropdown
           this.roles = roles.filter(rol => rol.name !== 'ADMIN');
-          console.log('📝 Roles después de filtrar ADMIN:', this.roles);
+
         },
         error: (error) => {
-          console.error('Error cargando roles:', error);
           // Fallback temporal (sin ADMIN)
           this.roles = [
             { id: 2, name: 'USUARIO', description: 'Usuario', userCount: 0 },
@@ -822,7 +798,6 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
     this.enviandoNotificacion = false;
   }
 
-
   validarFormulario(): boolean {
     this.validationErrors = {};
     let esValido = true;
@@ -848,7 +823,6 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
       esValido = false;
     }
 
-
     if (!this.nuevaNotificacion.mensaje || this.nuevaNotificacion.mensaje.trim().length === 0) {
       this.validationErrors.mensaje = 'El mensaje es requerido';
       esValido = false;
@@ -869,8 +843,6 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
       esValido = false;
     }
 
-
-
     return esValido;
   }
 
@@ -882,7 +854,6 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
   getError(campo: keyof NotificacionValidationErrors): string {
     return this.validationErrors[campo] || '';
   }
-
 
   onTipoDestinatarioChange(): void {
     // Limpiar campos cuando cambia el tipo
@@ -906,9 +877,7 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
     return this.usuarios.filter(u => u.role?.name === roleName).length;
   }
 
-
   abrirModalCrear(): void {
-    console.log('🎯 abrirModalCrear() llamado - esAdmin():', this.esAdmin());
     if (!this.esAdmin()) return;
     
 

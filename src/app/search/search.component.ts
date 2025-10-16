@@ -7,7 +7,6 @@ import { Subject, debounceTime, distinctUntilChanged, Subscription, catchError, 
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { environment } from '../../environments/environment';
 
-
 interface TramiteResponse {
   id: number;
   codigo: string;
@@ -133,7 +132,6 @@ export class SearchComponent implements OnInit, OnDestroy {
     this.http.get<ApiSearchResponse>(`${this.apiUrl}/api/tramites/public/buscar?${searchParam}=${encodeURIComponent(query)}&size=8`)
       .pipe(
         catchError(error => {
-          console.error('Error en búsqueda:', error);
           this.isSearching = false;
           this.possibleMatches = [];
           this.showSuccess = false;
@@ -176,7 +174,6 @@ export class SearchComponent implements OnInit, OnDestroy {
     this.http.get<ApiSearchResponse>(`${this.apiUrl}/api/tramites/public/buscar?codigo=${encodeURIComponent(this.searchQuery)}&size=1`)
       .pipe(
         catchError(error => {
-          console.error('Error en búsqueda exacta:', error);
           let errorMsg = 'Error en la búsqueda. Intente nuevamente.';
           
           if (error.status === 404) {
@@ -259,7 +256,6 @@ export class SearchComponent implements OnInit, OnDestroy {
     this.http.get<TramiteResponse>(`${this.apiUrl}/api/tramites/public/preview/${this.selectedResult.codigo}`)
     .pipe(
       catchError(error => {
-        console.error('Error al obtener datos del trámite:', error);
         this.loadingDocuments = false;
 
         // Mensajes de error personalizados
@@ -308,7 +304,6 @@ export class SearchComponent implements OnInit, OnDestroy {
     })
     .pipe(
       catchError(error => {
-        console.error('Error al descargar documento:', error);
         this.loadingDocuments = false;
 
         if (error.status === 404) {

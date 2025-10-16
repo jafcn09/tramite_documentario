@@ -90,7 +90,6 @@ export class AuthService {
     this.isBrowser = isPlatformBrowser(this.platformId);
     const storedUser = this.getStoredUser();
 
-
     // Validate token before setting user
     if (storedUser && this.isAuthenticated()) {
   
@@ -130,22 +129,14 @@ export class AuthService {
               this.startInactivityTimer();
               this.setupUserActivityListeners();
             } else {
-              console.warn('AuthService: No se recibió usuario en la respuesta');
+
             }
             // La redirección será manejada por el componente de login
           } else {
-            console.warn('AuthService: No se recibió token en la respuesta');
+
           }
         }),
         catchError(error => {
-          console.error('Login error details:', {
-            status: error.status,
-            statusText: error.statusText,
-            message: error.message,
-            error: error.error,
-            url: error.url,
-            ok: error.ok
-          });
           return throwError(() => error);
         })
       );
@@ -156,13 +147,10 @@ export class AuthService {
     this.stopInactivityTimer();
     this.removeUserActivityListeners();
 
-
     this.clearSessionData();
     this.clearAllServiceStates();
 
-
     this.currentUserSubject.next(null);
-
 
     this.modalService.confirm({
       title: 'Sesión cerrada',
@@ -173,7 +161,6 @@ export class AuthService {
     });
 
     this.router.navigate(['/servicios-administrativos']);
-
 
   }
 
@@ -218,7 +205,7 @@ export class AuthService {
       }
 
     } catch (error) {
-      console.warn('⚠️ Error al limpiar algunos estados de servicios:', error);
+
     }
   }
 
@@ -401,7 +388,6 @@ export class AuthService {
     return this.http.put(`${environment.apiUrl}/api/auth/change-password`, request)
       .pipe(
         catchError(error => {
-          console.error('Change password error:', error);
           return throwError(() => error);
         })
       );
@@ -411,7 +397,6 @@ export class AuthService {
     return this.http.get<AdministrativeUser[]>(`${environment.apiUrl}/api/usuarios/administrativos-disponibles`)
       .pipe(
         catchError(error => {
-          console.error('Error fetching administrative users:', error);
           return throwError(() => error);
         })
       );

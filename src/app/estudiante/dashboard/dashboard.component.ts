@@ -77,7 +77,6 @@ export class EstudianteDashboardComponent implements OnInit {
         this.stats = estadosCount;
       },
       error: (error) => {
-        console.error('Error al cargar estadísticas:', error);
       }
     });
   }
@@ -125,7 +124,6 @@ export class EstudianteDashboardComponent implements OnInit {
         this.loadingActivities = false;
       },
       error: (error) => {
-        console.error('Error al cargar actividades:', error);
         this.loadingActivities = false;
       }
     });
@@ -151,7 +149,6 @@ export class EstudianteDashboardComponent implements OnInit {
         });
       },
       error: (error) => {
-        console.error('Error al cargar trámites recientes:', error);
       }
     });
   }
