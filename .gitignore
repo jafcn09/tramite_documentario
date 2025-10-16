@@ -52,3 +52,6 @@ Thumbs.db
 ### Logs ###
 logs/
 *.log
+.run-debug.sh
+.run.sh 
+.start.sh
