@@ -30,7 +30,7 @@ export class DetalleTramiteModalComponent implements OnInit, OnDestroy, OnChange
   @Input() tramite: Tramite | MiTramite | null = null;
   @Output() close = new EventEmitter<void>();
 
-  // Datos completos del trámite
+
   tramiteCompleto: MiTramite | null = null;
   documentos: DocumentoMiTramite[] = [];
   historial: HistorialMiTramite[] = [];
@@ -56,19 +56,18 @@ export class DetalleTramiteModalComponent implements OnInit, OnDestroy, OnChange
   ) {}
 
   ngOnChanges(changes: SimpleChanges) {
-    // Si el modal se acaba de abrir y tenemos un trámite, cargar los datos
+    
     if (changes['show'] && changes['show'].currentValue === true && this.tramite?.id) {
       this.cargarDatosDetalle();
     }
 
-    // Si cambia el trámite y el modal está abierto, recargar datos
     if (changes['tramite'] && this.show && this.tramite?.id) {
       this.cargarDatosDetalle();
     }
   }
 
   ngOnInit() {
-    // Solo cargar datos si ya está visible en la inicialización
+
     if (this.show && this.tramite) {
       this.cargarDatosDetalle();
     }
@@ -131,7 +130,6 @@ export class DetalleTramiteModalComponent implements OnInit, OnDestroy, OnChange
         }
       },
       error: (error) => {
-        // No es crítico, continuamos sin el conteo
         this.totalModificaciones = 0;
       }
     });
@@ -340,7 +338,7 @@ export class DetalleTramiteModalComponent implements OnInit, OnDestroy, OnChange
     return '#6c757d';
   }
 
-  // Métodos para previsualización de documentos
+
   previsualizarDocumento(documento: DocumentoMiTramite) {
 
     if (!this.tramite?.id || !documento.nombre) {
@@ -349,13 +347,11 @@ export class DetalleTramiteModalComponent implements OnInit, OnDestroy, OnChange
       return;
     }
 
-    // Si es un archivo de Office, mostrar mensaje
+   
     if (this.isOfficeDocument(documento.tipo || '')) {
       
       this.documentoPreview = documento;
       this.showDocumentPreview = true;
-
-      // Forzar detección de cambios
       this.cdr.detectChanges();
 
       setTimeout(() => {
@@ -385,10 +381,6 @@ export class DetalleTramiteModalComponent implements OnInit, OnDestroy, OnChange
           this.documentoPreview = documento;
           this.showDocumentPreview = true;
           this.loading = false;
-
-  
-
-          // Forzar detección de cambios
           this.cdr.detectChanges();
         },
         error: (error) => {
@@ -423,7 +415,7 @@ export class DetalleTramiteModalComponent implements OnInit, OnDestroy, OnChange
     }
   }
 
-  // Métodos auxiliares para detectar tipos de archivo
+
   isPDF(tipo: string): boolean {
     return tipo?.toLowerCase().includes('pdf') || false;
   }

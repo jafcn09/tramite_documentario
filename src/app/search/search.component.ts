@@ -155,7 +155,7 @@ export class SearchComponent implements OnInit, OnDestroy {
               `${tramite.usuarioSolicitante.nombre} ${tramite.usuarioSolicitante.apellidos}` : 'N/A',
             area: tramite.areaActual?.nombre || 'N/A'
           }));
-          this.showSuccess = false; // No mostrar como "éxito" aún, solo sugerencias
+          this.showSuccess = false; 
         } else {
           this.possibleMatches = [];
           this.showSuccess = false;
@@ -252,13 +252,12 @@ export class SearchComponent implements OnInit, OnDestroy {
     this.loadingDocuments = true;
     this.errorMessage = '';
 
-    // Obtener los detalles del trámite incluyendo documentos
     this.http.get<TramiteResponse>(`${this.apiUrl}/api/tramites/public/preview/${this.selectedResult.codigo}`)
     .pipe(
       catchError(error => {
         this.loadingDocuments = false;
 
-        // Mensajes de error personalizados
+    
         if (error.status === 404) {
           this.errorMessage = '❌ Trámite no encontrado. El expediente podría no existir o no está disponible públicamente.';
         } else if (error.status === 403) {
@@ -298,7 +297,7 @@ export class SearchComponent implements OnInit, OnDestroy {
     this.currentDocument = documento;
     this.loadingDocuments = true;
 
-    // Descargar el documento específico
+
     this.http.get(`${this.apiUrl}/api/tramites/public/${this.selectedResult.codigo}/archivo/${documento.nombre}`, {
       responseType: 'blob'
     })

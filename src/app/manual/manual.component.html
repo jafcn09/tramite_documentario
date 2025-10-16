@@ -20,22 +20,19 @@
         </button>
 
         <div class="grid md:grid-cols-4 gap-8">
-          <!-- Índice lateral - Oculto en móvil por defecto -->
           <div class="md:col-span-1">
-            <!-- Overlay para cerrar el menú en móvil -->
             <div
               *ngIf="showIndex"
               (click)="toggleIndex()"
               class="md:hidden fixed inset-0 bg-black bg-opacity-50 z-40 animate-fade-in">
             </div>
 
-            <!-- Panel del índice -->
             <div
               [class.translate-x-0]="showIndex"
               [class.-translate-x-full]="!showIndex"
               class="fixed md:relative md:translate-x-0 top-0 left-0 h-full md:h-auto w-72 md:w-auto bg-white md:bg-transparent z-50 md:z-auto transition-transform duration-300 shadow-2xl md:shadow-none overflow-y-auto md:overflow-visible p-6 md:p-0">
 
-              <!-- Header del menú móvil -->
+           
               <div class="md:hidden flex justify-between items-center mb-6 pb-4 border-b border-gray-200">
                 <h3 class="font-bold text-university-700 text-lg flex items-center">
                   <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

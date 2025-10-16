@@ -1,5 +1,4 @@
 <div class="org-container">
-  <!-- Header mejorado -->
   <div class="header">
     <div class="header-content">
       <div class="header-text">
@@ -7,7 +6,7 @@
         <p>Universidad Nacional de Tumbes</p>
       </div>
 
-      <!-- Búsqueda mejorada -->
+
       <div class="search-controls">
         <div class="search-box">
           <svg class="search-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -38,21 +37,21 @@
     </div>
   </div>
 
-  <!-- Loading -->
+
   <div *ngIf="cargando" class="loading">
     <div class="spinner"></div>
     <p>Cargando...</p>
   </div>
 
-  <!-- Empty -->
+
   <div *ngIf="!cargando && noResultados" class="empty">
     <p>No se encontraron resultados</p>
   </div>
 
-  <!-- Organigrama -->
+
   <div *ngIf="!cargando && !noResultados" class="org-chart">
     <ng-container *ngFor="let area of organigramaFiltrado; trackBy: trackByAreaId">
-      <!-- Nodo raíz -->
+ 
       <div class="org-level">
         <div class="org-box" (click)="toggleExpansion(area)">
           <h3>{{ area.nombre }}</h3>
@@ -62,7 +61,7 @@
           </span>
         </div>
 
-        <!-- Hijos nivel 1 -->
+       
         <div *ngIf="area.expanded && area.subAreas && area.subAreas.length > 0" class="children">
           <div class="connector-line"></div>
           <div class="children-row">
@@ -77,7 +76,7 @@
                   </span>
                 </div>
 
-                <!-- Hijos nivel 2 -->
+     
                 <div *ngIf="child.expanded && child.subAreas && child.subAreas.length > 0" class="grandchildren">
                   <div class="connector-line-sm"></div>
                   <div class="grandchildren-row">
@@ -92,7 +91,6 @@
                           </span>
                         </div>
 
-                        <!-- Hijos nivel 3 -->
                         <div *ngIf="grandchild.expanded && grandchild.subAreas && grandchild.subAreas.length > 0" class="greatgrandchildren">
                           <div class="connector-line-xs"></div>
                           <div class="greatgrandchildren-row">

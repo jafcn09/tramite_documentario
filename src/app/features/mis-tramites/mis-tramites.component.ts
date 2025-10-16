@@ -22,7 +22,7 @@ import { ResponderTramiteModalComponent } from '../tramites/components/responder
   selector: 'app-mis-tramites',
   standalone: true,
   imports: [CommonModule, FormsModule, RouterModule, ResponderTramiteModalComponent],
-  // EditarTramiteModalComponent removido - función deshabilitada
+
   templateUrl: './mis-tramites.component.html',
   styleUrl: './mis-tramites.component.css'
 })
@@ -31,7 +31,7 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
   estadisticas: EstadisticasMisTramites | null = null;
   loading$ = this.misTramitesService.loading$;
 
-  // Cache for tramite permissions
+
   tramitePermisos: Map<number, {
     puedeAprobar: boolean;
     puedeRechazar: boolean;
@@ -40,7 +40,7 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
     estaVencido: boolean;
   }> = new Map();
   
-  // Paginación
+
   currentPage = 1;
   pageSize = 12;
   totalItems = 0;
@@ -77,7 +77,7 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute
   ) {}
 
-  // Getters para lógica condicional basada en rol
+
   get userRole(): string {
     return this.authService.currentUserValue?.role?.name || '';
   }
@@ -91,7 +91,7 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
   }
 
   get shouldShowCreateButton(): boolean {
-    // Usar método directo del AuthService para mayor confiabilidad
+
     return this.authService.hasRole('USUARIO');
   }
 
@@ -197,7 +197,7 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
       if (isVencido) {
         completados++;
       }
-      // Si no está vencido, usar el estado original
+
       else if (['Finalizado', 'Archivado', 'Cancelado', 'Dado de Baja'].includes(estado)) {
         completados++;
       } else if (['Observado', 'Rechazado'].includes(estado)) {
@@ -215,7 +215,7 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
       }
     });
 
-    // Actualizar las estadísticas con los valores calculados localmente
+
     this.estadisticas = {
       ...this.estadisticas,
       finalizado: completados,
@@ -253,9 +253,6 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
             },
             error: (error) => {
 
-              // En lugar de desactivar todos los permisos, usar la lógica de fallback
-
-              // No establecer permisos en el cache para que use el fallback local
               permisosCompletados++;
 
               if (permisosCompletados === totalTramites) {
@@ -293,7 +290,7 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
       this.showSearchDropdown = false;
     }
     
-    // Apply all filters including search
+   
     this.applyDynamicFilters();
     
     this.isSearching = false;
@@ -369,76 +366,70 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
       filtered = filtered.filter(tramite => this.matchesSearchTerm(tramite, this.searchTerm));
     }
 
-    // Ordenar por prioridad: activos primero, finalizados/vencidos al final
     filtered = this.sortTramitesByPriority(filtered);
 
     this.filteredTramites = filtered;
   }
 
-  // Ordenar trámites por prioridad: activos primero, finalizados/vencidos al final
+ 
   private sortTramitesByPriority(tramites: MiTramite[]): MiTramite[] {
     return tramites.sort((a, b) => {
       const priorityA = this.getTramitePriority(a);
       const priorityB = this.getTramitePriority(b);
 
-      // Ordenar por prioridad (menor número = mayor prioridad)
+
       if (priorityA !== priorityB) {
         return priorityA - priorityB;
       }
 
-      // Si tienen la misma prioridad, ordenar por urgencia (si no están vencidos)
+     
       if (!this.estaVencido(a) && !this.estaVencido(b)) {
         const urgenciaA = a.prioridad?.nivel || 0;
         const urgenciaB = b.prioridad?.nivel || 0;
         if (urgenciaA !== urgenciaB) {
-          return urgenciaB - urgenciaA; // Mayor urgencia primero
+          return urgenciaB - urgenciaA; 
         }
       }
 
-      // Por último, ordenar por fecha de creación (más recientes primero)
       const fechaA = new Date(a.fechaCreacion).getTime();
       const fechaB = new Date(b.fechaCreacion).getTime();
       return fechaB - fechaA;
     });
   }
 
-  // Obtener prioridad numérica del trámite (menor número = mayor prioridad)
+
   private getTramitePriority(tramite: MiTramite): number {
     const estado = tramite.estado?.nombre || '';
     const isVencido = this.estaVencido(tramite);
 
-    // Prioridad 1: Urgentes activos (no vencidos)
+
     if (!isVencido && tramite.prioridad?.nivel >= 4) {
       if (['En Revisión', 'Enviado'].includes(estado)) return 1;
       if (['Aprobado', 'Derivado'].includes(estado)) return 2;
     }
 
-    // Prioridad 2: En revisión activos (no vencidos)
+
     if (!isVencido && ['En Revisión', 'Enviado'].includes(estado)) {
       return 3;
     }
 
-    // Prioridad 3: En proceso activos (no vencidos)
+ 
     if (!isVencido && ['Aprobado', 'Derivado'].includes(estado)) {
       return 4;
     }
 
-    // Prioridad 4: Observados activos (no vencidos)
     if (!isVencido && ['Observado', 'Rechazado'].includes(estado)) {
       return 5;
     }
 
-    // Prioridad 5: Borradores y enviados normales (no vencidos)
+
     if (!isVencido && ['Borrador'].includes(estado)) {
       return 6;
     }
-
-    // Prioridad 6: Finalizados naturalmente
     if (['Finalizado', 'Archivado'].includes(estado)) {
       return 7;
     }
 
-    // ÚLTIMA PRIORIDAD: Vencidos, dados de baja, cancelados
     if (isVencido || ['Dado de Baja', 'Cancelado'].includes(estado)) {
       return 8;
     }
@@ -1116,7 +1107,7 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
   }
 
   seleccionarTrabajador(trabajador: AdministrativeUser) {
-    // Check if user has too many assignments (you can set a limit, e.g., 5)
+
     const maxWorkload = 5;
     if (trabajador.workloadCount >= maxWorkload) {
       this.toastService.error(
@@ -1126,7 +1117,7 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
       return;
     }
     
-    // Si el trabajador ya está seleccionado, deseleccionarlo
+
     if (this.trabajadorSeleccionado?.id === trabajador.id) {
       this.trabajadorSeleccionado = null;
       this.toastService.info('Trabajador deseleccionado', 'Puedes seleccionar otro trabajador');
@@ -1147,7 +1138,6 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Asegurarse de que el ID del trabajador sea válido
     if (!this.trabajadorSeleccionado.id) {
       this.toastService.error('Error', 'El trabajador seleccionado no tiene un ID válido');
       return;
@@ -1155,7 +1145,7 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
 
     const request = {
       tramiteId: this.tramiteSeleccionado.id,
-      areaDestinoId: 1, // Área administrativa por defecto
+      areaDestinoId: 1, 
       trabajadorAsignadoId: this.trabajadorSeleccionado.id,
       observaciones: this.observacionesDerivacion || `Trámite derivado a ${this.trabajadorSeleccionado.nombre} ${this.trabajadorSeleccionado.apellidos}`,
       mantenerEstado: false
@@ -1177,7 +1167,7 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
             this.cargarMisTramites();
             this.cargarEstadisticas();
 
-            // Enviar notificación al trabajador asignado
+ 
             this.enviarNotificacionDerivacion();
           },
           error: (error) => {
@@ -1230,7 +1220,7 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
     ).subscribe({
       next: (response) => {
         this.cargandoRechazo = false;
-        // Recargar datos después del rechazo exitoso
+   
         this.cargarMisTramites();
         this.cargarEstadisticas();
         this.cerrarModalRechazo();
@@ -1250,7 +1240,7 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
   }
 
   getProgressoPorcentaje(estado: string, tramite?: MiTramite): number {
-    // Si el trámite está vencido, siempre mostrar como completado (100%)
+
     if (tramite && this.estaVencido(tramite)) {
       return 100;
     }
@@ -1271,7 +1261,6 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
     return tramite.id;
   }
 
-  // Métodos para estadísticas que consideran trámites vencidos como procesados
   getTramitesVencidos(): number {
     if (!this.isAdministrativo) return 0;
     return this.misTramites.filter(tramite => this.estaVencido(tramite)).length;
@@ -1282,8 +1271,6 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
 
     const vencidos = this.getTramitesVencidos();
     const enProceso = this.estadisticas.aprobado + this.estadisticas.enRevision + this.estadisticas.derivado;
-
-    // Restar los vencidos del total en proceso ya que los consideramos procesados
     return Math.max(0, enProceso - vencidos);
   }
 
@@ -1297,7 +1284,7 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
     return finalizados + vencidos;
   }
 
-  // Método para buscar y mostrar trámite específico desde notificación
+
   private buscarYMostrarTramite(tramiteId: number, action?: string): void {
     setTimeout(() => {
       const tramiteEncontrado = this.misTramites.find(t => t.id === tramiteId);
@@ -1322,7 +1309,6 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
     }, 1000);
   }
 
-  // Métodos auxiliares para manejo de clicks con verificación de vencimiento
   handleDescargarClick(event: Event, tramite: MiTramite): void {
     event.stopPropagation();
     this.descargarTodosDocumentos(tramite);
@@ -1350,21 +1336,21 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
     this.subscriptions.add(
       this.tramiteService.imprimirTramite(tramite.id).subscribe({
         next: (blob) => {
-          // Convertir blob a texto
+       
           blob.text().then((htmlContent: string) => {
-            // Crear una nueva ventana para la impresión
+
             const printWindow = window.open('', '_blank', 'width=800,height=600');
 
             if (printWindow) {
-              // Escribir el contenido HTML en la nueva ventana
+   
               printWindow.document.write(htmlContent);
               printWindow.document.close();
 
-              // Esperar a que se cargue el contenido y luego imprimir
+            
               printWindow.onload = () => {
                 setTimeout(() => {
                   printWindow.print();
-                  // Cerrar la ventana después de imprimir
+ 
                   printWindow.onafterprint = () => {
                     printWindow.close();
                   };
@@ -1388,19 +1374,18 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
     );
   }
 
-  // Verificar si el usuario puede imprimir el trámite
   puedeImprimirTramite(tramite: MiTramite): boolean {
-    // Solo usuarios pueden usar esta funcionalidad
+
     if (!this.isUsuario) {
       return false;
     }
 
-    // No se puede imprimir si está finalizado o dado de baja
+
     const estadosNoImprimibles = ['Finalizado', 'Dado de Baja', 'Cancelado', 'Archivado'];
     return !estadosNoImprimibles.includes(tramite.estado?.nombre);
   }
 
-  // Obtener tooltip dinámico para el botón de descarga
+
   getDownloadTooltip(tramite: MiTramite): string {
     if (this.estaVencido(tramite)) {
       return 'Trámite finalizado - Descarga no disponible';

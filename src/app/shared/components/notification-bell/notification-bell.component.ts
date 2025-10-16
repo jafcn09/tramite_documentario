@@ -15,16 +15,16 @@ import { NotificationDetailModalComponent } from '../notification-detail-modal/n
   imports: [CommonModule, NotificationDetailModalComponent],
   template: `
     <div class="relative inline-block" *ngIf="usuarioAutenticado">
-      <!-- Bell Icon -->
+
       <div class="bell-btn" (click)="toggleDropdown()">
         <i class="fas fa-bell"></i>
         <span class="badge" *ngIf="contadorNoLeidas > 0">{{ contadorNoLeidas }}</span>
       </div>
     </div>
 
-    <!-- Simple Dropdown -->
+ 
     <div *ngIf="mostrarDropdown" class="dropdown">
-      <!-- Header -->
+
       <div class="header">
         <span>Notificaciones ({{ contadorNoLeidas }})</span>
         <div class="header-actions">
@@ -38,16 +38,15 @@ import { NotificationDetailModalComponent } from '../notification-detail-modal/n
         </div>
       </div>
 
-      <!-- Notifications List -->
       <div class="list" #notificationsList (scroll)="onScroll($event)">
 
-        <!-- Loading -->
+ 
         <div *ngIf="cargando && notificacionesRecientes.length === 0" class="loading">
           <div class="spinner"></div>
           <span>Cargando...</span>
         </div>
 
-        <!-- Notification Items -->
+   
         <div *ngFor="let notif of notificacionesRecientes; trackBy: trackNotification"
              class="item"
              [class.unread]="!notif.esLeida">
@@ -66,27 +65,25 @@ import { NotificationDetailModalComponent } from '../notification-detail-modal/n
           </div>
         </div>
 
-        <!-- Loading More -->
+        
         <div *ngIf="loadingMore" class="loading-more">
           <div class="spinner-sm"></div>
           <span>Cargando más...</span>
         </div>
 
-        <!-- End Message -->
         <div *ngIf="showEndMessage && !hasMoreNotifications && notificacionesRecientes.length > 0"
              class="end">
           <i class="fas fa-check"></i>
           <span>No hay más notificaciones</span>
         </div>
 
-        <!-- Empty State -->
         <div *ngIf="notificacionesRecientes.length === 0 && !cargando" class="empty">
           <i class="fas fa-bell-slash"></i>
           <span>Sin notificaciones</span>
         </div>
       </div>
 
-      <!-- Footer -->
+ 
       <div class="footer">
         <button class="view-all" (click)="verTodasNotificaciones()">
           Ver todas
@@ -94,7 +91,6 @@ import { NotificationDetailModalComponent } from '../notification-detail-modal/n
       </div>
     </div>
 
-    <!-- Modal -->
     <app-notification-detail-modal
       [isVisible]="modalVisible"
       [notificationId]="selectedNotificationId"
@@ -102,7 +98,7 @@ import { NotificationDetailModalComponent } from '../notification-detail-modal/n
     </app-notification-detail-modal>
   `,
   styles: [`
-    /* Bell Button - Simple */
+ 
     .bell-btn {
       position: relative;
       cursor: pointer;
@@ -128,7 +124,7 @@ import { NotificationDetailModalComponent } from '../notification-detail-modal/n
       text-align: center;
     }
 
-    /* Dropdown - Clean */
+
     .dropdown {
       position: fixed;
       top: 60px;
@@ -142,7 +138,7 @@ import { NotificationDetailModalComponent } from '../notification-detail-modal/n
       z-index: 1000;
     }
 
-    /* Header - Simple */
+    
     .header {
       padding: 12px 16px;
       border-bottom: 1px solid #eee;
@@ -192,13 +188,12 @@ import { NotificationDetailModalComponent } from '../notification-detail-modal/n
       background: #f5f5f5;
     }
 
-    /* List - Clean */
     .list {
       max-height: 300px;
       overflow-y: auto;
     }
 
-    /* Item - Minimal */
+
     .item {
       padding: 12px 16px;
       border-bottom: 1px solid #f5f5f5;
@@ -288,7 +283,7 @@ import { NotificationDetailModalComponent } from '../notification-detail-modal/n
       color: #999;
     }
 
-    /* Loading States */
+
     .loading, .loading-more {
       padding: 20px;
       text-align: center;
@@ -314,7 +309,6 @@ import { NotificationDetailModalComponent } from '../notification-detail-modal/n
       height: 16px;
     }
 
-    /* End & Empty States */
     .end, .empty {
       padding: 20px;
       text-align: center;
@@ -328,7 +322,6 @@ import { NotificationDetailModalComponent } from '../notification-detail-modal/n
       font-size: 16px;
     }
 
-    /* Footer */
     .footer {
       padding: 12px 16px;
       border-top: 1px solid #eee;
@@ -354,7 +347,6 @@ import { NotificationDetailModalComponent } from '../notification-detail-modal/n
       100% { transform: rotate(360deg); }
     }
 
-    /* Mobile */
     @media (max-width: 480px) {
       .dropdown {
         right: 10px;
@@ -415,7 +407,7 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
   modalVisible = false;
   selectedNotificationId: number | null = null;
   
-  // Nuevas propiedades para scroll infinito
+
   currentPage = 0;
   pageSize = 10;
   totalNotifications = 0;
@@ -436,7 +428,7 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    // Verificar autenticación
+
     this.subscriptions.push(
       this.authService.currentUser.subscribe(user => {
         this.usuarioAutenticado = !!user;
@@ -458,32 +450,30 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
   }
 
   private inicializarNotificaciones(): void {
-    // Solo cargar si el usuario está autenticado
+
     if (!this.usuarioAutenticado) {
 
       return;
     }
 
-    // Cargar contador inicial
+
     this.actualizarContador();
 
-    // Cargar notificaciones recientes
     this.cargarNotificacionesRecientes();
     
-    // Suscribirse al contador de no leídas
+    
     this.subscriptions.push(
       this.notificacionService.contadorNoLeidas$.subscribe(count => {
         const anteriorContador = this.contadorNoLeidas;
         this.contadorNoLeidas = count;
         
-        // Activar animación de campana si hay nuevas notificaciones
+
         if (count > anteriorContador && count > 0) {
           this.activarAnimacionCampana();
         }
       })
     );
     
-    // Suscribirse a nuevas notificaciones
     this.subscriptions.push(
       this.notificacionService.nuevaNotificacion$.subscribe(notificacion => {
         this.agregarNotificacionReciente(notificacion);
@@ -491,7 +481,7 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
       })
     );
     
-    // Suscribirse al estado de conexión WebSocket
+
     this.subscriptions.push(
       this.webSocketService.connected$.subscribe(conectado => {
         this.estaConectado = conectado;
@@ -514,7 +504,7 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
           this.cargando = false;
         },
         error: (error) => {
-          // En caso de error, establecer valores por defecto
+ 
           this.notificacionesRecientes = [];
           this.totalNotifications = 0;
           this.hasMoreNotifications = false;
@@ -539,7 +529,7 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
           this.hasMoreNotifications = this.notificacionesRecientes.length < this.totalNotifications;
           this.loadingMore = false;
           
-          // Mostrar mensaje de fin si ya no hay más notificaciones
+        
           if (!this.hasMoreNotifications && this.notificacionesRecientes.length > 0) {
             setTimeout(() => {
               this.showEndMessage = true;
@@ -560,20 +550,17 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
           this.contadorNoLeidas = count || 0;
         },
         error: (error) => {
-          // En caso de error, establecer contador en 0
           this.contadorNoLeidas = 0;
         }
       })
     );
 
-    // También hacer una llamada inicial para actualizar el contador
+
     this.notificacionService.actualizarContadorNoLeidas();
   }
 
   private agregarNotificacionReciente(notificacion: Notificacion): void {
-    // Agregar al inicio de la lista sin limitar - el scroll infinito maneja el tamaño
     this.notificacionesRecientes = [notificacion, ...this.notificacionesRecientes];
-    // Actualizar el contador total
     this.totalNotifications += 1;
   }
 
@@ -603,14 +590,12 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
 
   toggleDropdown(): void {
     this.mostrarDropdown = !this.mostrarDropdown;
-    
-    // Ignorar el próximo click del documento para evitar cerrar inmediatamente
+
     this.ignoreNextClick = true;
     setTimeout(() => {
       this.ignoreNextClick = false;
     }, 100);
-    
-    // Forzar detección de cambios
+ 
     this.cdr.detectChanges();
     
     if (this.mostrarDropdown) {
@@ -628,8 +613,7 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
     if (notificacion.esLeida) return;
     
     this.notificacionService.marcarLeidaLocal(notificacion.id);
-    
-    // Actualizar localmente
+
     notificacion.esLeida = true;
     notificacion.fechaLectura = new Date();
   }
@@ -638,8 +622,7 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
     if (this.contadorNoLeidas === 0) return;
     
     this.notificacionService.marcarTodasLeidasLocal();
-    
-    // Actualizar notificaciones recientes localmente
+
     this.notificacionesRecientes = this.notificacionesRecientes.map(n => ({
       ...n,
       esLeida: true,
@@ -648,13 +631,11 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
   }
 
   abrirNotificacion(notificacion: Notificacion): void {
-    // Marcar como leída
     this.marcarLeida(notificacion, new Event('click'));
-    
-    // Cerrar el dropdown
+
     this.cerrarDropdown();
     
-    // Abrir modal con el detalle de la notificación
+
     this.selectedNotificationId = notificacion.id;
     this.modalVisible = true;
   }
@@ -666,10 +647,9 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
 
   verTodasNotificaciones(): void {
     this.cerrarDropdown();
-    
-    // Determinar la ruta base según el rol del usuario
+
     this.authService.currentUser.subscribe(user => {
-      let baseRoute = '/admin'; // default
+      let baseRoute = '/admin'; 
       
       if (user?.role?.name === 'ADMIN') {
         baseRoute = '/admin';
@@ -725,17 +705,17 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
 
   onScroll(event: Event): void {
     const element = event.target as HTMLElement;
-    const threshold = 100; // Pixels before reaching the bottom
+    const threshold = 100; 
     
     if (element.scrollTop + element.clientHeight >= element.scrollHeight - threshold) {
       this.cargarMasNotificaciones();
     }
   }
 
-  // Cerrar dropdown al hacer click fuera
+
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: Event): void {
-    // Si debemos ignorar este click, salir
+
     if (this.ignoreNextClick) {
       return;
     }
@@ -747,7 +727,7 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Cerrar dropdown con tecla Escape
+
   @HostListener('document:keydown.escape')
   onEscapeKey(): void {
     this.cerrarDropdown();

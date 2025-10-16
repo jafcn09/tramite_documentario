@@ -34,7 +34,7 @@ export class ToastService {
       showCloseButton: toast.showCloseButton ?? true
     };
 
-    // Prevenir duplicados si está habilitado
+
     if (this.config.preventDuplicates && this.isDuplicate(newToast)) {
       return;
     }
@@ -42,14 +42,13 @@ export class ToastService {
     const currentToasts = this.toasts.value;
     let updatedToasts = [...currentToasts, newToast];
 
-    // Limitar número máximo de toasts
     if (this.config.maxToasts && updatedToasts.length > this.config.maxToasts) {
       updatedToasts = updatedToasts.slice(-this.config.maxToasts);
     }
 
     this.toasts.next(updatedToasts);
 
-    // Auto-remove toast después del duration
+    
     if (newToast.duration && newToast.duration > 0) {
       timer(newToast.duration).subscribe(() => {
         this.remove(newToast.id!);
@@ -71,7 +70,7 @@ export class ToastService {
       type: 'error',
       title,
       message,
-      duration: duration ?? 8000 // Errores duran más tiempo
+      duration: duration ?? 8000 
     });
   }
 

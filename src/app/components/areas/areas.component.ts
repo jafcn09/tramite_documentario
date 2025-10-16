@@ -22,7 +22,7 @@ import { Areas, Usuario } from './areas.interface';
         </button>
       </div>
 
-      <!-- Search Bar -->
+ 
       <div class="search-container">
         <div class="search-box">
           <i class="fas fa-search"></i>
@@ -40,7 +40,7 @@ import { Areas, Usuario } from './areas.interface';
         </div>
       </div>
 
-      <!-- Search Results Message -->
+
       <div class="search-results" *ngIf="searchTerm && filteredAreas.length === 0">
         <div class="no-results">
           <i class="fas fa-search"></i>
@@ -95,7 +95,7 @@ import { Areas, Usuario } from './areas.interface';
         </div>
       </div>
 
-      <!-- Pagination -->
+
       <div class="pagination" *ngIf="totalPages > 1">
         <button class="pagination-btn" 
                 (click)="goToPage(currentPage - 1)" 
@@ -114,7 +114,7 @@ import { Areas, Usuario } from './areas.interface';
         </button>
       </div>
 
-      <!-- Modal for Create/Edit Area -->
+
       <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
         <div class="modal" (click)="$event.stopPropagation()">
           <div class="modal-header">
@@ -276,7 +276,7 @@ import { Areas, Usuario } from './areas.interface';
         </div>
       </div>
 
-      <!-- Alert Messages -->
+
       <div class="alert alert-success" *ngIf="successMessage">
         <i class="fas fa-check-circle"></i>
         {{ successMessage }}
@@ -779,7 +779,7 @@ import { Areas, Usuario } from './areas.interface';
       color: #5a67d8;
     }
 
-    /* Pagination Styles */
+   
     .pagination {
       display: flex;
       justify-content: center;
@@ -820,7 +820,7 @@ import { Areas, Usuario } from './areas.interface';
       font-size: 14px;
     }
 
-    /* Area Card Hover Effect */
+
     .area-info {
       cursor: pointer;
     }

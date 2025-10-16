@@ -26,7 +26,7 @@ export class NuevoTramiteModalComponent implements OnInit, OnDestroy {
   @Output() close = new EventEmitter<void>();
   @Output() tramiteCreado = new EventEmitter<Tramite>();
 
-  // Formulario
+ 
   nuevoTramite: Partial<Tramite> & { tipoId?: number; prioridadId?: number } = {
     asunto: '',
     descripcion: '',
@@ -34,16 +34,15 @@ export class NuevoTramiteModalComponent implements OnInit, OnDestroy {
     fechaVencimiento: undefined
   };
 
-  // Datos de catálogo
+  
   tiposTramite: TipoTramite[] = [];
   prioridadesTramite: PrioridadTramite[] = [];
 
-  // Estados del componente
   loading = false;
   archivosSeleccionados: File[] = [];
   documentosAdjuntos: Partial<DocumentoTramite>[] = [];
 
-  // Validaciones
+
   errors: { [key: string]: string } = {};
 
   private subscriptions = new Subscription();
@@ -93,7 +92,7 @@ export class NuevoTramiteModalComponent implements OnInit, OnDestroy {
     if (input.files) {
       const nuevosArchivos = Array.from(input.files);
 
-      // Validar cada archivo
+
       for (const archivo of nuevosArchivos) {
         if (this.validarArchivo(archivo)) {
           this.archivosSeleccionados.push(archivo);
@@ -105,15 +104,13 @@ export class NuevoTramiteModalComponent implements OnInit, OnDestroy {
           });
         }
       }
-
-      // Reset del input para permitir seleccionar los mismos archivos nuevamente
       input.value = '';
     }
   }
 
   private validarArchivo(archivo: File): boolean {
     const tiposPermitidos = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-    const tamanioMaximo = 10 * 1024 * 1024; // 10MB
+    const tamanioMaximo = 10 * 1024 * 1024; 
 
     if (!tiposPermitidos.includes(archivo.type)) {
       this.toastService.error('Tipo de archivo no válido', 'Solo se permiten archivos PDF y DOCX');
@@ -180,10 +177,10 @@ export class NuevoTramiteModalComponent implements OnInit, OnDestroy {
     this.loading = true;
 
     try {
-      // Procesar archivos a base64
+   
       const archivosBase64 = await this.procesarArchivosABase64();
 
-      // Preparar datos del trámite incluyendo archivos
+
       const tramiteData: any = {
         tipoTramiteId: Number(this.nuevoTramite.tipoId!),
         asunto: this.nuevoTramite.asunto!,
@@ -194,7 +191,7 @@ export class NuevoTramiteModalComponent implements OnInit, OnDestroy {
         documentos: archivosBase64
       };
 
-      // Crear trámite con archivos
+      
       this.subscriptions.add(
         this.tramiteService.crearTramiteConArchivos(tramiteData).subscribe({
           next: (tramiteCreado) => {
@@ -248,7 +245,6 @@ export class NuevoTramiteModalComponent implements OnInit, OnDestroy {
     this.onClose();
   }
 
-  // Utilidades para el template
   getTipoTramiteNombre(tipoId: number): string {
     const tipo = this.tiposTramite.find(t => t.id === tipoId);
     return tipo?.nombre || '';
@@ -297,13 +293,12 @@ export class NuevoTramiteModalComponent implements OnInit, OnDestroy {
     return archivosBase64;
   }
 
-  // Método para convertir archivo a base64
   private convertirArchivoABase64(archivo: File): Promise<string> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
 
       reader.onload = () => {
-        // Remover el prefijo data:type;base64, para obtener solo el base64
+        
         const base64 = (reader.result as string).split(',')[1];
         resolve(base64);
       };

@@ -66,7 +66,7 @@ export class ReportesService {
 
   constructor(private http: HttpClient) {}
 
-  // Obtener reporte completo
+
   obtenerReporteCompleto(fechaInicio?: Date, fechaFin?: Date): Observable<ReporteCompleto> {
     let params: any = {};
     if (fechaInicio) {
@@ -79,32 +79,31 @@ export class ReportesService {
     return this.http.get<ReporteCompleto>(this.apiUrl, { params });
   }
 
-  // Obtener solo resumen general
+
   obtenerResumenGeneral(): Observable<ResumenGeneral> {
     return this.http.get<ResumenGeneral>(`${this.apiUrl}/resumen`);
   }
 
-  // Obtener trámites por tipo
+
   obtenerTramitesPorTipo(): Observable<TramitePorTipo[]> {
     return this.http.get<TramitePorTipo[]>(`${this.apiUrl}/por-tipo`);
   }
 
-  // Obtener trámites urgentes
+
   obtenerTramitesUrgentes(): Observable<TramiteUrgente[]> {
     return this.http.get<TramiteUrgente[]>(`${this.apiUrl}/urgentes`);
   }
 
-  // Obtener trámites por área
+
   obtenerTramitesPorArea(): Observable<TramitePorArea[]> {
     return this.http.get<TramitePorArea[]>(`${this.apiUrl}/por-area`);
   }
 
-  // Obtener trámites por usuario
+
   obtenerTramitesPorUsuario(): Observable<TramitePorUsuario[]> {
     return this.http.get<TramitePorUsuario[]>(`${this.apiUrl}/por-usuario`);
   }
 
-  // Exportar reporte a Excel
   exportarReporteExcel(fechaInicio?: Date, fechaFin?: Date): Observable<Blob> {
     let params: any = {};
     if (fechaInicio) {
@@ -120,7 +119,7 @@ export class ReportesService {
     });
   }
 
-  // Exportar reporte a PDF
+  
   exportarReportePDF(fechaInicio?: Date, fechaFin?: Date): Observable<Blob> {
     let params: any = {};
     if (fechaInicio) {

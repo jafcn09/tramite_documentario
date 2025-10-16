@@ -1,10 +1,7 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
 
-/**
- * Servicio de ofuscación de HTML
- * Cifra y ofusca el contenido HTML para dificultar la inspección
- */
+
 @Injectable({
   providedIn: 'root'
 })
@@ -28,37 +25,31 @@ export class HtmlObfuscatorService {
     }
   }
 
-  /**
-   * Inicia la ofuscación del HTML
-   */
+
+  // Inicia el proceso de ofuscación
   private startObfuscation(): void {
-    // 1. Remover comentarios HTML
     this.removeComments();
 
-    // 2. Ofuscar nombres de clases
+   
     this.obfuscateClassNames();
 
-    // 3. Remover atributos data-*
+
     this.removeDataAttributes();
 
-    // 4. Ofuscar IDs
-    this.obfuscateIds();
 
-    // 5. Remover espacios innecesarios
+    this.obfuscateIds();
     this.minifyHTML();
 
-    // 6. Proteger contra copy del HTML
+ 
     this.preventHTMLCopy();
 
-    // 7. Detectar cuando inspeccionan elementos
     this.detectElementInspection();
 
     this.isObfuscated = true;
   }
 
-  /**
-   * Remueve todos los comentarios HTML
-   */
+
+  // Remueve comentarios del HTML
   private removeComments(): void {
     const iterator = document.createNodeIterator(
       document.documentElement,
@@ -75,9 +66,8 @@ export class HtmlObfuscatorService {
     comments.forEach(comment => comment.parentNode?.removeChild(comment));
   }
 
-  /**
-   * Ofusca nombres de clases CSS a hash
-   */
+
+  // Ofusca nombres de clases CSS
   private obfuscateClassNames(): void {
     const elements = document.querySelectorAll('[class]');
     const classMap = new Map<string, string>();
@@ -88,13 +78,12 @@ export class HtmlObfuscatorService {
       const newClassList: string[] = [];
 
       classList.forEach(className => {
-        // No ofuscar clases de Tailwind y Angular
         if (this.shouldPreserveClass(className)) {
           newClassList.push(className);
           return;
         }
 
-        // Generar hash para la clase
+    
         let obfuscatedClass = classMap.get(className);
         if (!obfuscatedClass) {
           obfuscatedClass = this.generateHash(className, counter++);
@@ -109,32 +98,30 @@ export class HtmlObfuscatorService {
     });
   }
 
-  /**
-   * Verifica si una clase debe preservarse
-   */
+
+  // Verifica si una clase debe preservarse
   private shouldPreserveClass(className: string): boolean {
     const preservePatterns = [
-      /^ng-/, // Angular
-      /^fa-/, // FontAwesome
-      /^text-/, // Tailwind
-      /^bg-/, // Tailwind
-      /^flex/, // Tailwind
-      /^grid/, // Tailwind
-      /^w-/, // Tailwind
-      /^h-/, // Tailwind
-      /^p-/, // Tailwind
-      /^m-/, // Tailwind
-      /^antialiased$/, // Tailwind
+      /^ng-/,
+      /^fa-/,
+      /^text-/,
+      /^bg-/,
+      /^flex/, 
+      /^grid/, 
+      /^w-/, 
+      /^h-/, 
+      /^p-/, 
+      /^m-/, 
+      /^antialiased$/,
     ];
 
     return preservePatterns.some(pattern => pattern.test(className));
   }
 
-  /**
-   * Genera un hash ofuscado para un nombre
-   */
+
+  // Genera un hash simple para ofuscar nombres de clases 
   private generateHash(input: string, counter: number): string {
-    // Generar hash simple basado en el input
+
     let hash = 0;
     for (let i = 0; i < input.length; i++) {
       const char = input.charCodeAt(i);
@@ -146,9 +133,8 @@ export class HtmlObfuscatorService {
     return '_' + Math.abs(hash).toString(36) + counter.toString(36);
   }
 
-  /**
-   * Remueve atributos data-* que puedan exponer información
-   */
+
+  // Remueve atributos data-*
   private removeDataAttributes(): void {
     const elements = document.querySelectorAll('[data-*]');
 
@@ -162,7 +148,7 @@ export class HtmlObfuscatorService {
       });
     });
 
-    // También remover atributos específicos de Angular en producción
+
     const angularAttributes = [
       'ng-version',
       'ng-reflect-',
@@ -181,9 +167,7 @@ export class HtmlObfuscatorService {
     });
   }
 
-  /**
-   * Verifica si un atributo debe preservarse
-   */
+  // Verifica si un atributo debe preservarse
   private shouldPreserveAttribute(attrName: string): boolean {
     const preserveAttributes = [
       'data-bs-', // Bootstrap
@@ -194,9 +178,7 @@ export class HtmlObfuscatorService {
     return preserveAttributes.some(prefix => attrName.startsWith(prefix));
   }
 
-  /**
-   * Ofusca IDs de elementos
-   */
+  // Ofusca IDs de elementos
   private obfuscateIds(): void {
     const elements = document.querySelectorAll('[id]');
     const idMap = new Map<string, string>();
@@ -210,7 +192,6 @@ export class HtmlObfuscatorService {
         return;
       }
 
-      // Generar nuevo ID
       let newId = idMap.get(currentId);
       if (!newId) {
         newId = 'x' + counter.toString(36);
@@ -222,9 +203,8 @@ export class HtmlObfuscatorService {
     });
   }
 
-  /**
-   * Verifica si un ID debe preservarse
-   */
+  
+  // Verifica si un ID debe preservarse
   private shouldPreserveId(id: string): boolean {
     const preserveIds = [
       'app-root',
@@ -234,11 +214,10 @@ export class HtmlObfuscatorService {
     return preserveIds.includes(id);
   }
 
-  /**
-   * Minifica el HTML removiendo espacios
-   */
+
+  // Minifica el HTML removiendo espacios en blanco innecesarios
   private minifyHTML(): void {
-    // Remover espacios en blanco innecesarios en text nodes
+
     const walker = document.createTreeWalker(
       document.body,
       NodeFilter.SHOW_TEXT,
@@ -265,9 +244,7 @@ export class HtmlObfuscatorService {
     });
   }
 
-  /**
-   * Previene copiar el HTML
-   */
+  // Previene copiar HTML desde el inspector
   private preventHTMLCopy(): void {
     // Prevenir copiar HTML desde el inspector
     document.addEventListener('copy', (e) => {
@@ -285,19 +262,17 @@ export class HtmlObfuscatorService {
     });
   }
 
-  /**
-   * Detecta cuando inspeccionan elementos específicos
-   */
+  
+  // Detecta intentos de inspección de elementos
   private detectElementInspection(): void {
-    // Crear un MutationObserver para detectar cambios
+
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
-        // Detectar si están agregando atributos desde DevTools
+  
         if (mutation.type === 'attributes') {
           const target = mutation.target as Element;
           const attrName = mutation.attributeName || '';
 
-          // Si agregan atributos sospechosos
           if (attrName.startsWith('data-devtools-') ||
               attrName.startsWith('__vue') ||
               attrName.startsWith('__react')) {
@@ -313,24 +288,20 @@ export class HtmlObfuscatorService {
       subtree: true
     });
 
-    // Detectar cuando seleccionan elementos con click derecho
+
     document.addEventListener('contextmenu', (e) => {
       const target = e.target as HTMLElement;
 
-      // Agregar marca temporal para detectar inspección
+
       const timestamp = Date.now();
       target.setAttribute('data-inspect-attempt', timestamp.toString());
-
-      // Remover después de 100ms
       setTimeout(() => {
         target.removeAttribute('data-inspect-attempt');
       }, 100);
     });
   }
 
-  /**
-   * Cifra un string usando XOR simple
-   */
+// Cifra un string
   private xorEncrypt(text: string, key: string): string {
     let result = '';
     for (let i = 0; i < text.length; i++) {
@@ -338,14 +309,12 @@ export class HtmlObfuscatorService {
         text.charCodeAt(i) ^ key.charCodeAt(i % key.length)
       );
     }
-    return btoa(result); // Base64 encode
+    return btoa(result); 
   }
 
-  /**
-   * Descifra un string
-   */
+ 
   private xorDecrypt(encrypted: string, key: string): string {
-    const decoded = atob(encrypted); // Base64 decode
+    const decoded = atob(encrypted); 
     let result = '';
     for (let i = 0; i < decoded.length; i++) {
       result += String.fromCharCode(

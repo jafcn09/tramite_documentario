@@ -81,14 +81,14 @@ export class AdminLoginComponent implements OnInit {
             this.clearSavedCredentials();
           }
           
-          // Use redirectUrl from backend response or determine from user role
+
           let redirectRoute = '/';
 
           if (response.redirectUrl) {
 
             redirectRoute = response.redirectUrl;
           } else {
-            // Fallback to manual redirect based on user role
+
             const currentUser = this.authService.currentUserValue;
             if (currentUser && currentUser.role) {
               const roleRoutes: { [key: string]: string } = {
@@ -103,13 +103,13 @@ export class AdminLoginComponent implements OnInit {
             }
           }
 
-          // Navigate immediately without timeout
+      
           this.router.navigate([redirectRoute]);
         },
         error: (error) => {
           this.isLoading = false;
           
-          if (error.status === 428) { // Precondition Required
+          if (error.status === 428) { 
             this.mustChangePassword = true;
             this.loginError = 'Debes cambiar tu contraseña temporal';
           } else if (error.status === 403) {

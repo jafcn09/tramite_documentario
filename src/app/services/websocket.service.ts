@@ -23,7 +23,7 @@ export class WebSocketService implements OnDestroy {
     private notificacionService: NotificacionService,
     private toastService: ToastService
   ) {
-    // Conectar automáticamente si el usuario está autenticado
+
     this.authService.currentUser.subscribe(user => {
       if (user) {
         this.conectar();
@@ -39,14 +39,14 @@ export class WebSocketService implements OnDestroy {
 
   private conectar(): void {
     if (this.stompClient && this.stompClient.connected) {
-      return; // Ya está conectado
+      return; 
     }
 
     const serverUrl = environment.apiUrl || `${environment.apiUrl}/ws`;
     const socket = new SockJS(serverUrl);
     this.stompClient = Stomp.over(socket);
     
-    // Configurar headers con token de autenticación
+   
     const token = this.authService.getToken();
     const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
     
@@ -63,7 +63,6 @@ export class WebSocketService implements OnDestroy {
       }
     );
 
-    // Configurar debug (desactivar en producción)
     if (!environment.production) {
       this.stompClient.debug = (str: string) => {
 
@@ -93,7 +92,6 @@ export class WebSocketService implements OnDestroy {
       return;
     }
 
-    // Suscribirse a notificaciones de usuario específico (solo una suscripción)
     this.stompClient.subscribe(
       `/user/queue/notificaciones`,
       (message: any) => {
@@ -101,7 +99,7 @@ export class WebSocketService implements OnDestroy {
       }
     );
 
-    // Suscribirse a actualizaciones de lectura
+
     this.stompClient.subscribe(
       `/user/queue/notificaciones/leida`,
       (message: any) => {
@@ -109,7 +107,6 @@ export class WebSocketService implements OnDestroy {
       }
     );
 
-    // Suscribirse a marcar todas como leídas
     this.stompClient.subscribe(
       `/user/queue/notificaciones/todas-leidas`,
       (message: any) => {
@@ -121,22 +118,18 @@ export class WebSocketService implements OnDestroy {
 
   private manejarNuevaNotificacion(notificacion: Notificacion): void {
 
-    // Agregar a la lista de notificaciones
     this.notificacionService.agregarNuevaNotificacion(notificacion);
-    
-    // Mostrar toast de notificación
+
     this.mostrarToastNotificacion(notificacion);
     
-    // Reproducir sonido de notificación (opcional)
     this.reproducirSonidoNotificacion(notificacion);
     
-    // Mostrar notificación del navegador (si están permitidas)
+  
     this.mostrarNotificacionNavegador(notificacion);
   }
 
   private manejarNotificacionLeida(notificacionId: number): void {
 
-    // El NotificacionService ya maneja esto localmente
   }
 
   private manejarTodasLeidas(): void {
@@ -170,7 +163,7 @@ export class WebSocketService implements OnDestroy {
   }
 
   private reproducirSonidoNotificacion(notificacion: Notificacion): void {
-    // Solo reproducir sonido para prioridad ALTA
+
     if (notificacion.prioridad === 'ALTA') {
       try {
         const audio = new Audio('/assets/sounds/notification.mp3');
@@ -185,7 +178,7 @@ export class WebSocketService implements OnDestroy {
   }
 
   private mostrarNotificacionNavegador(notificacion: Notificacion): void {
-    // Solo para notificaciones de prioridad alta
+
     if (notificacion.prioridad !== 'ALTA') {
       return;
     }
@@ -204,14 +197,14 @@ export class WebSocketService implements OnDestroy {
           window.focus();
           notification.close();
           
-          // Navegar a la notificación si tiene ruta
+
           if (notificacion.rutaDestino) {
-            // Aquí podrías usar Router para navegar
+        
             window.location.href = notificacion.rutaDestino;
           }
         };
 
-        // Auto cerrar después de 10 segundos
+
         setTimeout(() => {
           notification.close();
         }, 10000);
@@ -227,15 +220,14 @@ export class WebSocketService implements OnDestroy {
 
   private intentarReconectar(): void {
     if (!this.authService.isAuthenticated()) {
-      return; // No reconectar si no está autenticado
+      return;
     }
 
     setTimeout(() => {
       this.conectar();
-    }, 5000); // Esperar 5 segundos antes de reconectar
+    }, 5000); 
   }
 
-  // Método público para enviar mensajes (si es necesario)
   public enviarMensaje(destino: string, mensaje: any): void {
     if (this.stompClient && this.stompClient.connected) {
       this.stompClient.send(destino, {}, JSON.stringify(mensaje));
@@ -243,7 +235,7 @@ export class WebSocketService implements OnDestroy {
     }
   }
 
-  // Método público para suscribirse a canales adicionales
+  
   public suscribirse(canal: string, callback: (mensaje: any) => void): void {
     if (this.stompClient && this.stompClient.connected) {
       this.stompClient.subscribe(canal, (message: any) => {
@@ -253,7 +245,7 @@ export class WebSocketService implements OnDestroy {
     }
   }
 
-  // Método público para solicitar permisos de notificación
+ 
   public solicitarPermisosNotificacion(): Promise<NotificationPermission> {
     if ('Notification' in window) {
       return Notification.requestPermission();
@@ -262,7 +254,7 @@ export class WebSocketService implements OnDestroy {
     }
   }
 
-  // Método público para verificar estado de conexión
+  
   public estaConectado(): boolean {
     return this.stompClient && this.stompClient.connected;
   }

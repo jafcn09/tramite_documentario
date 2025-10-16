@@ -13,7 +13,7 @@ import { environment } from '../../../environments/environment';
   template: `
     <div class="change-password-container">
       <div class="change-password-card">
-        <!-- Header minimalista -->
+  
         <div class="card-header">
           <button class="back-btn" (click)="goBack()" type="button">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -26,11 +26,10 @@ import { environment } from '../../../environments/environment';
           </div>
         </div>
 
-        <!-- Formulario -->
         <div class="card-body">
           <form [formGroup]="changePasswordForm" (ngSubmit)="onSubmit()">
 
-            <!-- Nueva Contraseña -->
+
             <div class="form-group">
               <label for="newPassword">Nueva Contraseña</label>
               <div class="input-wrapper">
@@ -59,7 +58,7 @@ import { environment } from '../../../environments/environment';
                 </button>
               </div>
 
-              <!-- Requisitos de contraseña -->
+
               <div class="password-requirements">
                 <div class="requirement" [class.valid]="passwordRequirements.length">
                   <span class="icon">{{ passwordRequirements.length ? '✓' : '○' }}</span>
@@ -88,7 +87,7 @@ import { environment } from '../../../environments/environment';
               </div>
             </div>
 
-            <!-- Confirmar Contraseña -->
+      
             <div class="form-group">
               <label for="confirmPassword">Confirmar Contraseña</label>
               <div class="input-wrapper">
@@ -121,12 +120,11 @@ import { environment } from '../../../environments/environment';
               </div>
             </div>
 
-            <!-- Error general -->
             <div class="alert alert-error" *ngIf="errorMessages['general']">
               {{ errorMessages['general'] }}
             </div>
 
-            <!-- Botones -->
+         
             <div class="form-actions">
               <button
                 type="button"
@@ -149,7 +147,7 @@ import { environment } from '../../../environments/environment';
         </div>
       </div>
 
-      <!-- Consejos de seguridad -->
+
       <div class="security-tips">
         <h3>Consejos de Seguridad</h3>
         <ul>
@@ -161,7 +159,7 @@ import { environment } from '../../../environments/environment';
       </div>
     </div>
 
-    <!-- Modal de éxito -->
+
     <div class="modal-overlay" *ngIf="showSuccessModalFlag" (click)="closeSuccessModal()">
       <div class="modal-content" (click)="$event.stopPropagation()">
         <div class="success-icon">
@@ -242,7 +240,7 @@ import { environment } from '../../../environments/environment';
       margin: 0;
     }
 
-    /* Formulario */
+
     .card-body {
       padding: 32px 24px;
     }
@@ -373,7 +371,7 @@ import { environment } from '../../../environments/environment';
       color: #dc2626;
     }
 
-    /* Botones */
+
     .form-actions {
       display: flex;
       gap: 12px;
@@ -436,7 +434,7 @@ import { environment } from '../../../environments/environment';
       to { transform: rotate(360deg); }
     }
 
-    /* Consejos de seguridad */
+
     .security-tips {
       background: white;
       border-radius: 16px;
@@ -475,8 +473,6 @@ import { environment } from '../../../environments/environment';
       left: 6px;
       color: #9ca3af;
     }
-
-    /* Modal */
     .modal-overlay {
       position: fixed;
       top: 0;
@@ -540,7 +536,6 @@ import { environment } from '../../../environments/environment';
       }
     }
 
-    /* Responsive */
     @media (max-width: 640px) {
       .change-password-container {
         padding: 16px 12px;
@@ -593,8 +588,6 @@ export class ChangePasswordComponent implements OnInit {
     private router: Router,
     private http: HttpClient
   ) {
-    // No pedimos contraseña actual porque el usuario ya está autenticado con JWT
-    // Mejor UX: el token ya valida su identidad
     this.changePasswordForm = this.fb.group({
       newPassword: ['', [
         Validators.required,
@@ -631,7 +624,7 @@ export class ChangePasswordComponent implements OnInit {
     return valid ? null : { passwordWeak: true };
   }
 
-  // Ya no necesitamos este validator porque no pedimos contraseña actual
+
 
   private passwordMatchValidator(group: AbstractControl): { [key: string]: any } | null {
     const newPassword = group.get('newPassword')?.value;

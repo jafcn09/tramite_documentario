@@ -88,7 +88,7 @@ import { environment } from '../../../environments/environment';
                   </div>
                 </div>
                 
-                <!-- Loading indicator -->
+
                 <div *ngIf="loadingActivities" class="activity-item loading-item">
                   <div class="activity-icon loading">
                     <i class="fas fa-spinner fa-spin"></i>
@@ -98,7 +98,7 @@ import { environment } from '../../../environments/environment';
                   </div>
                 </div>
                 
-                <!-- Load more button -->
+            
                 <div *ngIf="canLoadMore && !loadingActivities && recentActivities.length > 0" 
                      class="activity-item load-more-item">
                   <button class="load-more-btn" (click)="loadMoreActivities()">
@@ -107,7 +107,7 @@ import { environment } from '../../../environments/environment';
                   </button>
                 </div>
                 
-                <!-- Empty state -->
+         
                 <div *ngIf="recentActivities.length === 0 && !loadingActivities" class="activity-item empty-state">
                   <div class="activity-icon empty">
                     <i class="fas fa-inbox"></i>
@@ -603,14 +603,13 @@ export class DashboardComponent implements OnInit {
   ngOnInit() {
     this.currentUser = this.authService.currentUserValue;
     this.loadAllTramitesAndPermissions();
-    this.loadUserCount(); // Cargar el contador de usuarios
-    this.loadRecentActivities(); // Cargar actividades recientes del sistema
+    this.loadUserCount(); 
+    this.loadRecentActivities(); 
   }
 
   loadUserCount() {
     this.loadingUserCount = true;
 
-    // Use the proper endpoint to get the user count
     const countUrl = environment.apiUrl ? `${environment.apiUrl}/api/usuarios/count` : '/api/usuarios/count';
     this.http.get<{totalUsers: number}>(countUrl).subscribe({
       next: (response) => {
@@ -636,14 +635,13 @@ export class DashboardComponent implements OnInit {
     });
   }
 
-  // Load all tramites and their permissions for accurate statistics
+
   loadAllTramitesAndPermissions() {
     this.bandejaTramitesService.getTramites(1, 1000).subscribe({
       next: (response) => {
         this.allTramites = response.data || [];
      
 
-        // Load permissions for each tramite
         this.loadPermissionsForTramites();
       },
       error: (error) => {
@@ -675,15 +673,14 @@ export class DashboardComponent implements OnInit {
   }
 
   private calculateStatsWithExpiredTramites() {
-    // Get expired tramites count
+
     const expiredCount = this.getTramitesVencidos();
 
-    // Calculate base statistics
+
     const baseStats = this.getBaseStatistics();
 
-    // Only estimate users if we don't have a real count yet
     if (this.stats.totalUsers === 0) {
-      // Estimate unique users from tramites (as fallback)
+
       const uniqueUserEmails = new Set();
       this.allTramites.forEach(tramite => {
         if (tramite.usuario?.email) {
@@ -696,7 +693,6 @@ export class DashboardComponent implements OnInit {
       this.stats.totalUsers = uniqueUserEmails.size || 0;
     }
 
-    // Update stats WITHOUT overwriting totalUsers if it already has a value
     this.stats.totalTramites = this.allTramites.length;
     this.stats.pendingTramites = baseStats.pending;
     this.stats.completedTramites = baseStats.completed + expiredCount;
@@ -731,7 +727,7 @@ export class DashboardComponent implements OnInit {
   }
 
   private generateRecentActivitiesFromTramites() {
-    // Generate activities from recent tramites
+  
     const recentTramites = this.allTramites
       .sort((a, b) => new Date(b.fechaActualizacion || b.fechaCreacion).getTime() -
                       new Date(a.fechaActualizacion || a.fechaCreacion).getTime())
@@ -740,7 +736,6 @@ export class DashboardComponent implements OnInit {
     this.recentActivities = recentTramites.map(tramite => {
       const isExpired = this.tramitePermisos.get(tramite.id)?.estaVencido || false;
 
-      // Better user name handling
       let userName = 'Usuario Desconocido';
       if (tramite.usuario && tramite.usuario.nombre && tramite.usuario.apellidos) {
         userName = `${tramite.usuario.nombre} ${tramite.usuario.apellidos}`;
@@ -748,7 +743,7 @@ export class DashboardComponent implements OnInit {
         userName = `${tramite.trabajadorAsignado.nombre} ${tramite.trabajadorAsignado.apellidos || ''}`.trim();
       }
 
-      // Better tramite description
+    
       const tramiteTitle = tramite.asunto || tramite.tipoTramite?.nombre || 'Trámite sin título';
       const estadoNombre = tramite.estado?.nombre || 'Sin estado';
 
@@ -783,7 +778,7 @@ export class DashboardComponent implements OnInit {
       next: (response) => {
         
         this.stats.totalTramites = response.totalAsignados || 0;
-        // Pendientes = En Revisión + Por Procesar (incluye aprobados)
+
         this.stats.pendingTramites = (response.pendientesRevision || 0) + (response.enProceso || 0);
         this.stats.completedTramites = response.finalizadosHoy || 0;
       },
@@ -809,7 +804,7 @@ export class DashboardComponent implements OnInit {
           let roleColor = activity.userRole || 'SISTEMA';
           let statusLabel = '';
 
-          // Personalizar según el tipo de actividad
+
           switch(activity.type) {
             case 'user':
               activity.icon = activity.icon || 'fas fa-user-plus';
@@ -858,7 +853,7 @@ export class DashboardComponent implements OnInit {
       },
       error: (error) => {
         this.loadingActivities = false;
-        // Si falla, generar actividades desde trámites locales
+ 
         if (!append) {
           this.generateRecentActivitiesFromTramites();
         }
@@ -907,14 +902,13 @@ export class DashboardComponent implements OnInit {
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-    if (diffMs < 0) return 'Ahora mismo'; // Para fechas futuras o muy recientes
+    if (diffMs < 0) return 'Ahora mismo'; 
     if (diffMins < 1) return 'Ahora mismo';
     if (diffMins < 60) return `Hace ${diffMins} minuto${diffMins > 1 ? 's' : ''}`;
     if (diffHours < 24) return `Hace ${diffHours} hora${diffHours > 1 ? 's' : ''}`;
     if (diffDays < 7) return `Hace ${diffDays} día${diffDays > 1 ? 's' : ''}`;
     if (diffDays < 30) return `Hace ${Math.floor(diffDays / 7)} semana${Math.floor(diffDays / 7) > 1 ? 's' : ''}`;
-    
-    // Para fechas más antiguas, mostrar la fecha completa
+   
     return date.toLocaleDateString('es-PE', {
       day: 'numeric',
       month: 'short',

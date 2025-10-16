@@ -49,11 +49,11 @@ export class ReportesComponent implements OnInit {
       return;
     }
 
-    // Crear contenido CSV con datos reales
+
     let csvContent = 'REPORTE DE TRAMITES - UNIVERSIDAD NACIONAL DE TUMBES\n';
     csvContent += 'Fecha de generacion: ' + this.fechaGeneracion.toLocaleDateString('es-PE') + '\n\n';
 
-    // Resumen General
+  
     csvContent += 'RESUMEN GENERAL\n';
     csvContent += `Total Tramites,${this.resumenGeneral.totalTramites}\n`;
     csvContent += `Completados,${this.resumenGeneral.completados}\n`;
@@ -62,7 +62,7 @@ export class ReportesComponent implements OnInit {
     csvContent += `Rechazados,${this.resumenGeneral.rechazados}\n`;
     csvContent += `Observados,${this.resumenGeneral.observados}\n\n`;
 
-    // Tramites por Tipo
+ 
     csvContent += 'TRAMITES POR TIPO DE DOCUMENTO\n';
     csvContent += 'Tipo,Cantidad,Completados,Pendientes\n';
     this.tramitesPorTipo.forEach(tipo => {
@@ -70,14 +70,14 @@ export class ReportesComponent implements OnInit {
     });
     csvContent += '\n';
 
-    // Tramites Urgentes
+
     csvContent += 'TRAMITES QUE REQUIEREN ATENCION URGENTE\n';
     csvContent += 'Codigo,Asunto,Estado,Area Responsable,Responsable,Dias Vencido\n';
     this.tramitesUrgentes.forEach(tramite => {
       csvContent += `${tramite.codigo},${tramite.asunto},${tramite.estado},${tramite.areaResponsable},${tramite.responsable},${tramite.diasVencido}\n`;
     });
 
-    // Crear blob y descargar
+
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);

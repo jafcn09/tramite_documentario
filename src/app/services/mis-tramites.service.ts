@@ -22,7 +22,7 @@ import { AuthService } from './auth.service';
 export class MisTramitesService {
   private apiUrl = `${environment.apiUrl}/api/tramites`;
   
-  // Subjects para manejar el estado
+
   private misTramitesSubject = new BehaviorSubject<MiTramite[]>([]);
   private loadingSubject = new BehaviorSubject<boolean>(false);
   
@@ -34,8 +34,6 @@ export class MisTramitesService {
     private toastService: ToastService,
     private authService: AuthService
   ) {}
-
-  // Obtener mis trámites con paginación y filtros
   getMisTramites(
     page: number = 1, 
     limit: number = 12, 
@@ -44,8 +42,8 @@ export class MisTramitesService {
     this.loadingSubject.next(true);
     
     let params = new HttpParams()
-      .set('page', (page - 1).toString()) // Backend usa 0-indexed
-      .set('size', limit.toString()); // Backend usa 'size' no 'limit'
+      .set('page', (page - 1).toString()) 
+      .set('size', limit.toString());
 
     if (filtros) {
       Object.keys(filtros).forEach(key => {
@@ -76,8 +74,7 @@ export class MisTramitesService {
             'Error al cargar trámites',
             'No se pudieron obtener tus trámites. Inténtalo nuevamente.'
           );
-          
-          // Devolver respuesta vacía en lugar de mock
+       
           return of({
             data: [],
             total: 0,
@@ -89,7 +86,7 @@ export class MisTramitesService {
       );
   }
 
-  // Obtener estadísticas de mis trámites
+
   getEstadisticas(): Observable<EstadisticasMisTramites> {
     return this.http.get<any>(`${this.apiUrl}/mis-tramites/estadisticas`)
       .pipe(
@@ -110,7 +107,7 @@ export class MisTramitesService {
             'Error al cargar estadísticas',
             'No se pudieron obtener las estadísticas de tus trámites.'
           );
-          // Devolver estadísticas vacías en lugar de mock
+
           return of({
             total: 0,
             borrador: 0,
@@ -127,7 +124,7 @@ export class MisTramitesService {
       );
   }
 
-  // Obtener trámite por ID
+
   getMiTramiteById(id: number): Observable<MiTramite> {
 
     return this.http.get<any>(`${this.apiUrl}/${id}`)
@@ -148,7 +145,6 @@ export class MisTramitesService {
       );
   }
 
-  // Editar mi trámite (método con soporte para FormData - archivos y datos)
   editarMiTramite(tramiteId: number, request: EditarMiTramiteRequest | FormData): Observable<MiTramite> {
     return this.http.put<MiTramite>(`${this.apiUrl}/${tramiteId}/editar`, request)
       .pipe(
@@ -168,7 +164,7 @@ export class MisTramitesService {
       );
   }
 
-  // Subir documento adicional a mi trámite
+
   subirDocumento(tramiteId: number, archivo: File, descripcion?: string): Observable<void> {
     const formData = new FormData();
     formData.append('documento', archivo, archivo.name);
@@ -194,7 +190,6 @@ export class MisTramitesService {
       );
   }
 
-  // Descargar documento específico
   descargarDocumento(tramiteId: number, nombreArchivo: string): Observable<Blob> {
     const url = `${this.apiUrl}/${tramiteId}/archivos/${nombreArchivo}`;
 
@@ -215,7 +210,7 @@ export class MisTramitesService {
     );
   }
 
-  // Descargar todos los documentos de un trámite (ZIP)
+
   descargarTodosDocumentos(tramiteId: number): Observable<Blob> {
     return this.http.get(`${this.apiUrl}/${tramiteId}/documentos/descargar-todos`, {
       responseType: 'blob'
@@ -256,7 +251,7 @@ export class MisTramitesService {
       );
   }
 
-  // Validar archivo antes de subir
+
   validarArchivo(archivo: File): { valido: boolean; mensaje?: string } {
     const tiposPermitidos = [
       'application/pdf',
@@ -285,7 +280,7 @@ export class MisTramitesService {
     return { valido: true };
   }
 
-  // Obtener notificaciones de mis trámites
+
   getNotificaciones(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/notificaciones`)
       .pipe(
@@ -295,7 +290,6 @@ export class MisTramitesService {
       );
   }
 
-  // Marcar notificación como leída
   marcarNotificacionLeida(notificacionId: number): Observable<void> {
     return this.http.put<void>(`${this.apiUrl}/notificaciones/${notificacionId}/leer`, {})
       .pipe(
@@ -305,7 +299,7 @@ export class MisTramitesService {
       );
   }
 
-  // Mapear un solo trámite con información completa (usuarioSolicitante, etc.)
+
   private mapSingleTramiteToFrontendFormat(tramiteBackend: any): MiTramite {
 
     // Mapear documentos si existen
@@ -353,7 +347,7 @@ export class MisTramitesService {
         nombre: tramiteBackend.usuarioRespondio.nombre || '',
         apellidos: tramiteBackend.usuarioRespondio.apellidos || ''
       } : undefined,
-      // Información del usuario solicitante (disponible en endpoint individual)
+   
       usuarioSolicitante: tramiteBackend.usuarioSolicitante ? {
         id: tramiteBackend.usuarioSolicitante.id || 0,
         nombre: tramiteBackend.usuarioSolicitante.nombre || '',
@@ -374,7 +368,6 @@ export class MisTramitesService {
     return tramiteMapeado;
   }
 
-  // Mapear trámites del formato del backend al formato del frontend
   private mapTramitesToFrontendFormat(tramitesBackend: any[]): MiTramite[] {
     return tramitesBackend.map(tramiteBackend => ({
       id: tramiteBackend.id,
@@ -430,7 +423,7 @@ export class MisTramitesService {
     }));
   }
 
-  // Métodos de mapeo para tipos de trámite
+
   private mapTipoTramiteStringToId(tipo: string): number {
     const tipoMap: { [key: string]: number } = {
       'SOLICITUD_CONSTANCIA': 1,
@@ -455,7 +448,6 @@ export class MisTramitesService {
     return tipoMap[tipo] || tipo;
   }
 
-  // Métodos de mapeo para estados
   private mapEstadoStringToId(estado: string): number {
     const estadoMap: { [key: string]: number } = {
       'BORRADOR': 1,
@@ -508,7 +500,7 @@ export class MisTramitesService {
     return iconMap[estado] || 'fas fa-file';
   }
 
-  // Métodos de mapeo para prioridades
+
   private mapPrioridadStringToId(prioridad: string): number {
     const prioridadMap: { [key: string]: number } = {
       'BAJA': 1,
@@ -559,7 +551,6 @@ export class MisTramitesService {
     return iconMap[prioridad] || 'fas fa-minus';
   }
 
-  // Nuevo método para mapear documentos
   private mapDocumentos(documentosBackend: any[]): DocumentoMiTramite[] {
 
     if (!documentosBackend || !Array.isArray(documentosBackend)) {
@@ -606,7 +597,7 @@ export class MisTramitesService {
       );
   }
 
-  // Rechazar trámite
+  
   rechazarTramite(tramiteId: number, motivoRechazo: string, observaciones?: string): Observable<any> {
     this.loadingSubject.next(true);
 

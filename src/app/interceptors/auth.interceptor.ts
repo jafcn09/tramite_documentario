@@ -12,7 +12,6 @@ export class AuthInterceptor implements HttpInterceptor {
   constructor(private authService: AuthService) {}
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    // No agregar token a las peticiones de autenticación
     const token = this.authService.getToken();
     
     if (token && !request.url.includes('/auth/')) {

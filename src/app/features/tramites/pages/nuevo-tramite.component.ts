@@ -85,7 +85,7 @@ export class NuevoTramitePageComponent {
   constructor(private router: Router) {}
   
   goBack() {
-    // Navegar de vuelta según el rol del usuario
+
     const currentPath = this.router.url;
     if (currentPath.includes('/admin/')) {
       this.router.navigate(['/admin/tramites']);

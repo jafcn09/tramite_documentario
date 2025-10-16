@@ -7,7 +7,6 @@
   (close)="onClose()">
   
   <div class="modal-content" *ngIf="tramite">
-    <!-- Header con información básica -->
     <div class="tramite-header">
       <div class="header-main">
         <div class="tramite-info">
@@ -35,7 +34,7 @@
       </div>
     </div>
 
-    <!-- Tabs de navegación -->
+ 
     <div class="tabs-container">
       <div class="tabs-nav">
         <button 
@@ -64,9 +63,9 @@
       </div>
     </div>
 
-    <!-- Contenido de tabs -->
+
     <div class="tab-content">
-      <!-- Tab de Información -->
+
       <div class="tab-pane" [class.active]="activeTab === 'info'" *ngIf="activeTab === 'info'">
         <div class="info-grid">
           <div class="info-section">
@@ -126,7 +125,7 @@
             </div>
           </div>
 
-          <!-- Usuario Responsable/Asignado -->
+
           <div class="info-section" *ngIf="tramiteCompleto?.trabajadorAsignado">
             <h3 class="section-title">👨‍💼 Usuario Responsable</h3>
             <div class="usuario-info">
@@ -135,7 +134,7 @@
             </div>
           </div>
 
-          <!-- Respuesta del Administrativo (solo si el trámite está finalizado) -->
+
           <div class="info-section" *ngIf="tramiteCompleto?.respuesta && tramiteCompleto?.estado?.nombre === 'FINALIZADO'">
             <h3 class="section-title">📝 Respuesta del Administrativo</h3>
             <div class="respuesta-content">
@@ -157,7 +156,7 @@
         </div>
       </div>
 
-      <!-- Tab de Documentos -->
+     
       <div class="tab-pane" [class.active]="activeTab === 'documentos'" *ngIf="activeTab === 'documentos'">
         <div class="documentos-container">
           <div class="documentos-header">
@@ -211,7 +210,7 @@
         </div>
       </div>
 
-      <!-- Tab de Historial -->
+   
       <div class="tab-pane" [class.active]="activeTab === 'historial'" *ngIf="activeTab === 'historial'">
         <div class="historial-container">
           <div class="historial-header">
@@ -313,7 +312,7 @@
   </div>
 </app-modal-base>
 
-<!-- Modal de previsualización de documentos -->
+
 <div class="document-preview-modal" *ngIf="showDocumentPreview">
   <div class="modal-backdrop-custom" (click)="cerrarPreview()"></div>
   <div class="modal-dialog-custom">
@@ -328,21 +327,21 @@
         </button>
       </div>
       <div class="modal-body-custom">
-        <!-- Vista previa para PDFs -->
+       
         <iframe
           *ngIf="documentoPreview && isPDF(documentoPreview.tipo!)"
           [src]="previewUrl"
           class="document-preview-iframe">
         </iframe>
 
-        <!-- Vista previa para imágenes -->
+
         <img
           *ngIf="documentoPreview && isImage(documentoPreview.tipo!)"
           [src]="previewUrl"
           class="document-preview-image"
           [alt]="documentoPreview.nombre">
 
-        <!-- Mensaje para archivos Word/Excel -->
+
         <div *ngIf="documentoPreview && isOfficeDocument(documentoPreview.tipo!)" class="preview-message">
           <i class="fas fa-file-word fa-5x mb-3 text-primary"></i>
           <h4>Documento de Office</h4>

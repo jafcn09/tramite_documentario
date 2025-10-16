@@ -5,7 +5,7 @@ export interface TramiteBandeja {
     id: number;
     nombre: string;
     descripcion: string;
-    tiempoEstimado: number; // días
+    tiempoEstimado: number;
   };
   asunto: string;
   descripcion: string;
@@ -60,7 +60,6 @@ export interface TramiteBandeja {
   puedeReasignar: boolean;
   ultimaActividad: Date;
   
-  // Nuevos campos para respuesta
   respuesta?: string;
   fechaRespuesta?: Date;
   usuarioRespondio?: {
@@ -87,7 +86,7 @@ export interface DocumentoBandeja {
     tipo: 'solicitante' | 'trabajador';
   };
   descripcion?: string;
-  esActualizado?: boolean; // Indica si es una nueva versión
+  esActualizado?: boolean; 
   version: number;
 }
 
@@ -166,7 +165,7 @@ export interface EstadisticasBandeja {
   enProceso: number;
   finalizadosHoy: number;
   vencidos: number;
-  promedioAtencion: number; // días
+  promedioAtencion: number; 
   calificacionPromedio: number;
   productividadSemanal: {
     fecha: string;
@@ -195,7 +194,7 @@ export interface ConfiguracionBandeja {
     calificaciones: boolean;
   };
   autoAsignacion: boolean;
-  tiempoRecordatorio: number; // horas
+  tiempoRecordatorio: number; 
   vistaDefecto: 'lista' | 'kanban' | 'calendario';
 }
 
@@ -213,5 +212,5 @@ export interface MetricasTrabajador {
   promedioAtencion: number;
   calificacionPromedio: number;
   tramitesVencidos: number;
-  eficiencia: number; // porcentaje
+  eficiencia: number; 
 }

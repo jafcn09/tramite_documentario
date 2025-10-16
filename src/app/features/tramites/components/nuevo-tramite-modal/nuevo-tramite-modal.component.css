@@ -87,7 +87,7 @@
   margin-top: 0.25rem;
 }
 
-/* File Upload Styles */
+
 .file-upload-area {
   position: relative;
   margin-bottom: 1rem;
@@ -136,7 +136,7 @@
   color: #6c757d;
 }
 
-/* Selected Files Styles */
+
 .selected-files {
   border: 1px solid #dee2e6;
   border-radius: 0.375rem;
@@ -277,7 +277,6 @@
   cursor: not-allowed;
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
   .modal-content {
     padding: 1rem;

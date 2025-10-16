@@ -20,30 +20,28 @@ export class HttpErrorInterceptor implements HttpInterceptor {
       catchError((error: HttpErrorResponse) => {
 
         if (error.status === 0) {
-          // Network error - no connection to server
-          // NO hacer logout si es una petición de login
+      
           if (!error.url?.includes('/api/auth/login')) {
             this.toastService.error('Sin conexión al servidor', 'Error de Conexión');
             this.redirectToHome();
           }
         } else if (error.status === 401) {
-          // Unauthorized - handled by auth interceptor
-          // No need to redirect here as auth interceptor will handle it
+    
         } else if (error.status === 403) {
-          // Forbidden - No redirigir en llamadas de dashboard
+       
           if (!error.url?.includes('/usuarios/recent') && !error.url?.includes('/usuarios/stats')) {
             this.toastService.error('No tienes permisos para realizar esta acción', 'Acceso Denegado');
             this.router.navigate(['/access-denied']);
           }
         } else if (error.status === 404) {
-          // Not Found
+
           this.toastService.error('Recurso no encontrado', 'Error 404');
         } else if (error.status >= 500) {
-          // Server Error
+        
           this.toastService.error('Error interno del servidor', 'Error del Servidor');
           this.redirectToHome();
         } else if (error.status === -1 || error instanceof TimeoutError) {
-          // Timeout or network error
+     
           this.toastService.error('Tiempo de espera agotado', 'Error de Conexión');
           this.redirectToHome();
         }
@@ -54,7 +52,7 @@ export class HttpErrorInterceptor implements HttpInterceptor {
   }
 
   private redirectToHome(): void {
-    // Clear session if there's a connection issue
+
     this.authService.logout();
   }
 }

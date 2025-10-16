@@ -62,19 +62,19 @@ export class TramitePublicoService {
     return this.http.get<PaginatedResponse<TramitePublico>>(`${this.apiUrl}/buscar`, { params });
   }
 
-  // Obtener trámite público por código para previsualización
+
   previsualizarTramite(codigo: string): Observable<TramitePublico> {
     return this.http.get<TramitePublico>(`${this.apiUrl}/preview/${codigo}`);
   }
 
-  // Descargar archivo público de trámite
+
   descargarArchivo(codigo: string, nombreArchivo: string): Observable<Blob> {
     return this.http.get(`${this.apiUrl}/${codigo}/archivo/${nombreArchivo}`, {
       responseType: 'blob'
     });
   }
 
-  // Verificar si un código de trámite existe
+
   verificarCodigo(codigo: string): Observable<boolean> {
     return new Observable(observer => {
       this.previsualizarTramite(codigo).subscribe({
@@ -90,7 +90,7 @@ export class TramitePublicoService {
     });
   }
 
-  // Obtener tipos de trámite disponibles para filtros
+
   obtenerTiposTramite(): string[] {
     return [
       'SOLICITUD',
@@ -104,7 +104,7 @@ export class TramitePublicoService {
     ];
   }
 
-  // Obtener estados de trámite para filtros
+
   obtenerEstadosTramite(): string[] {
     return [
       'ENVIADO',
@@ -117,7 +117,6 @@ export class TramitePublicoService {
     ];
   }
 
-  // Formatear estado para mostrar
   formatearEstado(estado: string): string {
     const estados: { [key: string]: string } = {
       'ENVIADO': 'Enviado',
@@ -131,7 +130,7 @@ export class TramitePublicoService {
     return estados[estado] || estado;
   }
 
-  // Formatear tipo para mostrar
+
   formatearTipo(tipo: string): string {
     const tipos: { [key: string]: string } = {
       'SOLICITUD': 'Solicitud',
@@ -146,7 +145,7 @@ export class TramitePublicoService {
     return tipos[tipo] || tipo;
   }
 
-  // Formatear prioridad para mostrar
+  
   formatearPrioridad(prioridad: string): string {
     const prioridades: { [key: string]: string } = {
       'BAJA': 'Baja',
@@ -157,7 +156,7 @@ export class TramitePublicoService {
     return prioridades[prioridad] || prioridad;
   }
 
-  // Obtener clase CSS para estado
+ 
   getClaseEstado(estado: string): string {
     const clases: { [key: string]: string } = {
       'ENVIADO': 'badge-secondary',
@@ -171,7 +170,7 @@ export class TramitePublicoService {
     return clases[estado] || 'badge-secondary';
   }
 
-  // Obtener clase CSS para prioridad
+
   getClasePrioridad(prioridad: string): string {
     const clases: { [key: string]: string } = {
       'BAJA': 'prioridad-baja',
@@ -182,7 +181,6 @@ export class TramitePublicoService {
     return clases[prioridad] || 'prioridad-normal';
   }
 
-  // Obtener icono para estado
   getIconoEstado(estado: string): string {
     const iconos: { [key: string]: string } = {
       'ENVIADO': 'fas fa-paper-plane',
@@ -196,7 +194,6 @@ export class TramitePublicoService {
     return iconos[estado] || 'fas fa-file';
   }
 
-  // Obtener icono para tipo
   getIconoTipo(tipo: string): string {
     const iconos: { [key: string]: string } = {
       'SOLICITUD': 'fas fa-file-alt',
@@ -211,7 +208,7 @@ export class TramitePublicoService {
     return iconos[tipo] || 'fas fa-file';
   }
 
-  // Calcular días transcurridos
+
   calcularDiasTranscurridos(fechaCreacion: Date | string): number {
     const ahora = new Date();
     const fecha = new Date(fechaCreacion);
@@ -219,7 +216,7 @@ export class TramitePublicoService {
     return Math.floor(diff / (1000 * 60 * 60 * 24));
   }
 
-  // Verificar si está vencido
+
   estaVencido(fechaVencimiento?: Date | string): boolean {
     if (!fechaVencimiento) return false;
     const ahora = new Date();

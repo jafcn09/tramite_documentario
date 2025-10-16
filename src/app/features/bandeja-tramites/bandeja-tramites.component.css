@@ -1,4 +1,3 @@
-/* DISEÑO MINIMALISTA PARA BANDEJA DE TRÁMITES - ABOGADOS */
 
 .bandeja-tramites-container {
   padding: 20px;
@@ -7,8 +6,6 @@
   background: #f8fafc;
   min-height: 100vh;
 }
-
-/* Header */
 .header-section {
   display: flex;
   justify-content: space-between;
@@ -189,7 +186,7 @@
   font-weight: 500;
 }
 
-/* Toolbar */
+
 .toolbar {
   background: white;
   border-radius: 12px;
@@ -374,7 +371,7 @@
   color: #4a5568;
 }
 
-/* Acciones masivas */
+
 .bulk-actions {
   background: #667eea;
   color: white;
@@ -420,7 +417,6 @@
   background: rgba(255, 255, 255, 0.3);
 }
 
-/* Estados de carga y vacío */
 .loading-state, .empty-state {
   text-align: center;
   padding: 60px 20px;
@@ -445,7 +441,7 @@
   margin: 0 0 12px 0;
 }
 
-/* Vista de lista */
+
 .tramites-lista {
   background: white;
   border-radius: 12px;
@@ -624,7 +620,7 @@
   font-weight: 600;
 }
 
-/* Estilos para columna responsable */
+
 .responsable-info {
   display: flex;
   flex-direction: column;
@@ -994,8 +990,6 @@
   color: #718096;
   font-weight: 500;
 }
-
-/* Modales */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -1129,8 +1123,6 @@
   opacity: 0.6;
   cursor: not-allowed;
 }
-
-/* Notificaciones */
 .empty-notifications {
   text-align: center;
   padding: 40px 20px;
@@ -1211,7 +1203,7 @@
   border-radius: 50%;
 }
 
-/* Responsive */
+
 @media (max-width: 1024px) {
   .bandeja-tramites-container {
     padding: 15px;

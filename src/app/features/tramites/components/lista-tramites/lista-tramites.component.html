@@ -293,7 +293,7 @@
     </div>
   </div>
 
-  <!-- Vista de tarjetas -->
+
   <div class="cards-container" *ngIf="vistaActual === 'tarjetas' && !(loading$ | async)">
     <div class="tramite-card" 
          *ngFor="let tramite of getTramitesParaMostrar(); trackBy: trackByTramiteId"
@@ -438,7 +438,7 @@
   </div>
 </div>
 
-<!-- Modales -->
+
 <app-nuevo-tramite-modal 
   [show]="showNuevoTramiteModal"
   (close)="cerrarModalNuevo()"

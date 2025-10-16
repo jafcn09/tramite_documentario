@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
 
 
-// Servicio avanzado de protección contra manipulación y tampering
+
 @Injectable({
   providedIn: 'root'
 })
@@ -38,9 +38,8 @@ export class AntiTamperingService {
   }
 
 
-  // Deshabilita la consola para prevenir inspecciónn
   private disableConsole(): void {
-    // Guardar referencia original
+  
     this.originalConsole = {
       log: console.log,
       warn: console.warn,
@@ -50,7 +49,7 @@ export class AntiTamperingService {
       trace: console.trace
     };
 
-    // Sobrescribir todos los métodos
+
     const noop = () => {};
     console.log = noop;
     console.warn = noop;
@@ -63,30 +62,29 @@ export class AntiTamperingService {
     console.groupCollapsed = noop;
     console.clear = noop;
 
-    // Solo mantener error para casos críticos
+
     console.error = (...args: any[]) => {
-      // Logs internos solamente, no visibles para el usuario
+      this.originalConsole.error('[SECURITY]', ...args);
     };
 
-    // Congelar el objeto console para prevenir restauración
     Object.freeze(console);
   }
 
   
-  // Anti-debugging agresivo
+
   private aggressiveAntiDebug(): void {
-    // Técnica 1: debugger infinito
+
     setInterval(() => {
       const startTime = performance.now();
       const endTime = performance.now();
 
-      // Si se detectó pausa (debugger activo)
+
       if (endTime - startTime > 100) {
         this.onTamperingDetected('Debugger detectado');
       }
     }, 1000);
 
-    // Técnica 2: Detectar toString() hook
+
     const element = new Image();
     Object.defineProperty(element, 'id', {
       get: () => {
@@ -95,7 +93,6 @@ export class AntiTamperingService {
       }
     });
 
-    // Técnica 3: Monitorear performance
     this.checkInterval = setInterval(() => {
       const threshold = 100;
       const start = performance.now();
@@ -135,11 +132,11 @@ export class AntiTamperingService {
  
   // Ofusca variables globales y objetos sensibles
   private obfuscateRuntime(): void {
-    // Ofuscar window.location
+ 
     const originalLocation = window.location.toString;
     Object.defineProperty(window, 'location', {
       get: () => {
-        // Retornar valor ofuscado si se accede desde consola
+      
         return new Proxy(originalLocation, {
           get: (target, prop) => {
             if (prop === 'toString') {
@@ -158,9 +155,9 @@ export class AntiTamperingService {
   }
 
  
-  // Previene copy-paste de código
+
   private preventCodeCopy(): void {
-    // Prevenir selección de texto en elementos sensibles
+  
     document.addEventListener('selectstart', (e) => {
       const target = e.target as HTMLElement;
       if (target.tagName === 'SCRIPT' || target.tagName === 'STYLE') {
@@ -185,7 +182,7 @@ export class AntiTamperingService {
   
   // Detecta herramientas de desarrollo avanzadas
   private detectDevToolsAdvanced(): void {
-    // Método 1: Diferencia de tamaño
+
     const checkDevTools = () => {
       const widthThreshold = window.outerWidth - window.innerWidth > 160;
       const heightThreshold = window.outerHeight - window.innerHeight > 160;
@@ -198,7 +195,7 @@ export class AntiTamperingService {
 
     setInterval(checkDevTools, 500);
 
-    // Método 2: console.profile timing
+
     let devtools = { open: false, orientation: null as any };
     const threshold = 160;
 
@@ -225,14 +222,13 @@ export class AntiTamperingService {
   }
 
 
-  // Acción cuando se detectan DevTools abiertas
+
   private onDevToolsDetected(orientation: string): void {
-    // Ofuscar todo el contenido
     document.body.style.filter = 'blur(10px) grayscale(100%)';
     document.body.style.userSelect = 'none';
     document.body.style.pointerEvents = 'none';
 
-    // Crear overlay de advertencia
+
     const overlay = document.createElement('div');
     overlay.id = 'security-warning-overlay';
     overlay.style.cssText = `
@@ -277,12 +273,11 @@ export class AntiTamperingService {
       </div>
     `;
 
-    // Solo agregar si no existe
     if (!document.getElementById('security-warning-overlay')) {
       document.body.appendChild(overlay);
     }
 
-    // Limpiar si DevTools se cierra
+
     setTimeout(() => {
       const widthOk = window.outerWidth - window.innerWidth <= 160;
       const heightOk = window.outerHeight - window.innerHeight <= 160;
@@ -296,16 +291,15 @@ export class AntiTamperingService {
     }, 3000);
   }
 
-  // Acción a tomar cuando se detecta tampering
+  
   private onTamperingDetected(reason: string): void {
-    // Log interno (no visible)
+
     this.originalConsole?.error?.('[SECURITY]', reason);
 
 
   }
 
 
-  // Limpiar intervalos al destruir el servicio
   ngOnDestroy(): void {
     if (this.checkInterval) {
       clearInterval(this.checkInterval);

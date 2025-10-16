@@ -161,8 +161,6 @@
     width: 0%;
   }
 }
-
-/* Toast específicos por tipo */
 .toast-success .toast-progress {
   background: linear-gradient(90deg, #28a745, #1e7e34);
 }
@@ -178,8 +176,6 @@
 .toast-info .toast-progress {
   background: linear-gradient(90deg, #17a2b8, #138496);
 }
-
-/* Responsive */
 @media (max-width: 768px) {
   .toast-container {
     top: 10px;
@@ -241,8 +237,6 @@
     font-size: 11px;
   }
 }
-
-/* Animaciones adicionales */
 @keyframes slideInRight {
   from {
     transform: translateX(100%);
@@ -265,12 +259,11 @@
   }
 }
 
-/* Estados de hover más sutiles */
+
 .toast:hover .toast-progress {
   animation-play-state: paused;
 }
 
-/* Mejoras de accesibilidad */
 @media (prefers-reduced-motion: reduce) {
   .toast {
     transition: none;

@@ -82,7 +82,7 @@ export class NotificacionService {
     return this.http.put<void>(`${this.apiUrl}/marcar-todas-leidas`, {});
   }
 
-  // Obtener notificaciones filtradas
+
   obtenerNotificacionesFiltradas(
     filtros: NotificacionFiltro,
     page: number = 0,
@@ -112,7 +112,6 @@ export class NotificacionService {
     return this.http.get<PaginatedResponse<Notificacion>>(`${this.apiUrl}/filtradas`, { params });
   }
 
-  // Obtener notificaciones por trámite
   obtenerNotificacionesPorTramite(
     tramiteId: number,
     page: number = 0,
@@ -125,24 +124,19 @@ export class NotificacionService {
     return this.http.get<PaginatedResponse<Notificacion>>(`${this.apiUrl}/tramite/${tramiteId}`, { params });
   }
 
-  // Reenviar notificación por email
+
   reenviarPorEmail(id: number): Observable<void> {
     return this.http.post<void>(`${this.apiUrl}/${id}/reenviar-email`, {});
   }
 
-  // Obtener configuración de notificaciones
   obtenerConfiguracion(): Observable<NotificacionConfiguracion> {
     return this.http.get<NotificacionConfiguracion>(`${this.apiUrl}/configuracion`);
   }
 
-  // Actualizar configuración de notificaciones
+
   actualizarConfiguracion(configuracion: NotificacionConfiguracion): Observable<void> {
     return this.http.put<void>(`${this.apiUrl}/configuracion`, configuracion);
   }
-
-  // MÉTODOS PARA ADMIN
-
-  // Obtener todas las notificaciones (solo ADMIN)
   obtenerTodasNotificaciones(
     page: number = 0,
     size: number = 10,
@@ -158,32 +152,30 @@ export class NotificacionService {
     return this.http.get<PaginatedResponse<Notificacion>>(`${this.apiUrl}/admin/todas`, { params });
   }
 
-  // Crear notificación (solo ADMIN)
+
   crearNotificacion(request: NotificacionRequest): Observable<Notificacion> {
     return this.http.post<Notificacion>(`${this.apiUrl}/admin`, request);
   }
 
-  // Actualizar notificación (solo ADMIN)
   actualizarNotificacion(id: number, request: NotificacionRequest): Observable<Notificacion> {
     return this.http.put<Notificacion>(`${this.apiUrl}/admin/${id}`, request);
   }
 
-  // Eliminar notificación (solo ADMIN)
   eliminarNotificacion(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/admin/${id}`);
   }
 
-  // Eliminar notificación (usuario)
+  
   eliminarNotificacionUsuario(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
-  // Eliminar todas las notificaciones del usuario
+ 
   eliminarTodasNotificaciones(): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/eliminar-todas`);
   }
 
-  // Limpiar notificaciones antiguas (solo ADMIN)
+
   limpiarNotificacionesAntiguas(diasAntiguedad: number = 30): Observable<number> {
     const params = new HttpParams().set('diasAntiguedad', diasAntiguedad.toString());
     const url = `${this.apiUrl}/limpiar-antiguas`;
@@ -191,13 +183,13 @@ export class NotificacionService {
     return this.http.delete<number>(url, { params });
   }
 
-  // Previsualizar notificaciones que serán eliminadas
+
   previsualizarNotificacionesAntiguas(diasAntiguedad: number = 30): Observable<any> {
     const params = new HttpParams().set('diasAntiguedad', diasAntiguedad.toString());
     return this.http.get<any>(`${this.apiUrl}/admin/preview-antiguas`, { params });
   }
 
-  // Obtener estadísticas de notificaciones (solo ADMIN)
+
   obtenerEstadisticas(): Observable<NotificacionEstadisticas> {
     return this.http.get<NotificacionEstadisticas>(`${this.apiUrl}/admin/estadisticas`);
   }
@@ -214,24 +206,24 @@ export class NotificacionService {
     });
   }
 
-  // Agregar nueva notificación en tiempo real
+  
   agregarNuevaNotificacion(notificacion: Notificacion): void {
     const notificacionesActuales = this.notificacionesSubject.value;
     this.notificacionesSubject.next([notificacion, ...notificacionesActuales]);
     
-    // Actualizar contador si no está leída
+
     if (!notificacion.esLeida) {
       const contadorActual = this.contadorNoLeidasSubject.value;
       this.contadorNoLeidasSubject.next(contadorActual + 1);
     }
     
-    // Emitir evento de nueva notificación
+
     this.nuevaNotificacionSubject.next(notificacion);
   }
 
   marcarLeidaLocal(id: number): void {
     this.marcarComoLeida(id).subscribe(() => {
-      // Actualizar en la lista local
+
       const notificaciones = this.notificacionesSubject.value;
       const index = notificaciones.findIndex(n => n.id === id);
       if (index >= 0 && !notificaciones[index].esLeida) {
@@ -239,17 +231,16 @@ export class NotificacionService {
         notificaciones[index].fechaLectura = new Date();
         this.notificacionesSubject.next([...notificaciones]);
         
-        // Decrementar contador
+       
         const contadorActual = this.contadorNoLeidasSubject.value;
         this.contadorNoLeidasSubject.next(Math.max(0, contadorActual - 1));
       }
     });
   }
 
-  // Marcar todas como leídas y actualizar estado local
   marcarTodasLeidasLocal(): void {
     this.marcarTodasComoLeidas().subscribe(() => {
-      // Actualizar en la lista local
+
       const notificaciones = this.notificacionesSubject.value;
       const notificacionesActualizadas = notificaciones.map(n => ({
         ...n,
@@ -262,7 +253,7 @@ export class NotificacionService {
     });
   }
 
-  // Obtener icono según tipo de notificación
+
   getIcono(tipo: string): string {
     const iconos: { [key: string]: string } = {
       'TRAMITE_CREADO': 'fas fa-plus-circle',
@@ -275,7 +266,7 @@ export class NotificacionService {
     return iconos[tipo] || 'fas fa-bell';
   }
 
-  // Obtener clase CSS según tipo
+
   getClaseTipo(tipo: string): string {
     const clases: { [key: string]: string } = {
       'TRAMITE_CREADO': 'nuevo',
@@ -288,7 +279,7 @@ export class NotificacionService {
     return clases[tipo] || 'nuevo';
   }
 
-  // Obtener clase CSS según prioridad
+  
   getClasePrioridad(prioridad: string): string {
     const clases: { [key: string]: string } = {
       'ALTA': 'prioridad-alta',
@@ -298,18 +289,18 @@ export class NotificacionService {
     return clases[prioridad] || 'prioridad-normal';
   }
 
-  // Obtener usuarios (solo ADMIN)
+
   obtenerUsuarios(): Observable<any[]> {
 
     return this.http.get<any[]>(`${environment.apiUrl}/api/usuarios`);
   }
 
-  // Obtener roles (solo ADMIN)
+
   obtenerRoles(): Observable<RoleInfo[]> {
     return this.http.get<RoleInfo[]>(`${environment.apiUrl}/api/roles`);
   }
 
-  // Limpiar estado al cerrar sesión
+ 
   limpiarEstado(): void {
     this.notificacionesSubject.next([]);
     this.contadorNoLeidasSubject.next(0);

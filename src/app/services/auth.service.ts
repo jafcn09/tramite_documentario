@@ -78,8 +78,8 @@ export class AuthService {
   private isBrowser: boolean;
   private inactivityTimer: Subscription | null = null;
   private warningTimer: Subscription | null = null;
-  private readonly INACTIVITY_TIME = 20 * 60 * 1000; // 20 minutes
-  private readonly WARNING_TIME = 18 * 60 * 1000; // 18 minutes (2 minutes before logout)
+  private readonly INACTIVITY_TIME = 20 * 60 * 1000; 
+  private readonly WARNING_TIME = 18 * 60 * 1000;
 
   constructor(
     private http: HttpClient,
@@ -90,7 +90,7 @@ export class AuthService {
     this.isBrowser = isPlatformBrowser(this.platformId);
     const storedUser = this.getStoredUser();
 
-    // Validate token before setting user
+
     if (storedUser && this.isAuthenticated()) {
   
       this.currentUserSubject = new BehaviorSubject<User | null>(storedUser);
@@ -98,7 +98,7 @@ export class AuthService {
       this.setupUserActivityListeners();
     } else {
 
-      // Clear invalid session data
+
       this.clearSessionData();
       this.currentUserSubject = new BehaviorSubject<User | null>(null);
     }
@@ -117,7 +117,7 @@ export class AuthService {
         tap(response => {
 
           if (response.token) {
-            // Clear any remaining modals from previous sessions
+          
             this.modalService.clearAllModals();
 
             this.storeTokens(response.token, response.refreshToken);
@@ -131,7 +131,7 @@ export class AuthService {
             } else {
 
             }
-            // La redirección será manejada por el componente de login
+           
           } else {
 
           }
@@ -165,20 +165,16 @@ export class AuthService {
   }
 
   private clearSessionData(): void {
-
-    // Clear all modals first
     this.modalService.clearAllModals();
 
     if (this.isBrowser) {
-      // Limpiar localStorage
+   
       localStorage.removeItem(this.tokenKey);
       localStorage.removeItem(this.refreshTokenKey);
       localStorage.removeItem(this.userKey);
 
-      // Limpiar sessionStorage también
       sessionStorage.clear();
 
-      // Limpiar cualquier otro dato relacionado con la sesión
       const keysToRemove = [];
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
@@ -194,12 +190,12 @@ export class AuthService {
 
   private clearAllServiceStates(): void {
     try {
-      // Limpiar servicio de notificaciones si está disponible
+     
       if (typeof window !== 'undefined' && (window as any).notificacionService) {
         (window as any).notificacionService.limpiarEstado();
       }
 
-      // Limpiar servicio de bandeja de trámites si está disponible
+
       if (typeof window !== 'undefined' && (window as any).bandejaTramitesService) {
         (window as any).bandejaTramitesService.clearTramites();
       }
@@ -313,13 +309,12 @@ export class AuthService {
     if (!this.isBrowser) return;
     
     this.stopInactivityTimer();
-    
-    // Warning timer (2 minutes before logout)
+  
     this.warningTimer = timer(this.WARNING_TIME).subscribe(() => {
       this.showSessionWarning();
     });
     
-    // Logout timer
+
     this.inactivityTimer = timer(this.INACTIVITY_TIME).subscribe(() => {
 
       this.logout();
@@ -348,10 +343,9 @@ export class AuthService {
     });
 
     if (result) {
-      // User wants to continue, reset the timer
       this.resetInactivityTimer();
     } else {
-      // User chose to logout or didn't respond
+
       this.logout();
     }
   }

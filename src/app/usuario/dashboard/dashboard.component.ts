@@ -12,7 +12,6 @@ import { environment } from '../../../environments/environment';
   imports: [CommonModule, RouterModule],
   template: `
     <div class="dashboard-container">
-      <!-- Stats Grid con tarjetas de estadísticas -->
       <div class="stats-grid">
         <div class="stat-card">
           <div class="stat-icon pending">
@@ -55,9 +54,9 @@ import { environment } from '../../../environments/environment';
         </div>
       </div>
 
-      <!-- Content Grid -->
+   
       <div class="content-grid">
-        <!-- Actividad Reciente -->
+
         <div class="card recent-activity">
           <div class="card-header">
             <h3>Actividad Reciente</h3>
@@ -82,7 +81,7 @@ import { environment } from '../../../environments/environment';
                   </div>
                 </div>
 
-                <!-- Empty state -->
+      
                 <div *ngIf="recentActivities.length === 0 && !loadingActivities" class="activity-item empty-state">
                   <div class="activity-icon empty">
                     <i class="fas fa-inbox"></i>
@@ -92,7 +91,7 @@ import { environment } from '../../../environments/environment';
                   </div>
                 </div>
 
-                <!-- Loading indicator -->
+
                 <div *ngIf="loadingActivities" class="activity-item loading-item">
                   <div class="activity-icon loading">
                     <i class="fas fa-spinner fa-spin"></i>
@@ -106,7 +105,7 @@ import { environment } from '../../../environments/environment';
           </div>
         </div>
 
-        <!-- Panel de Acciones Rápidas -->
+      
         <div class="card quick-actions">
           <div class="card-header">
             <h3>Acciones Rápidas</h3>
@@ -130,7 +129,6 @@ import { environment } from '../../../environments/environment';
         </div>
       </div>
 
-      <!-- Mis Últimos Trámites -->
       <div class="card my-recent-tramites">
         <div class="card-header">
           <h3>Mis Últimos Trámites</h3>
@@ -628,23 +626,22 @@ export class UsuarioDashboardComponent implements OnInit {
         tramites.forEach((t: any) => {
           const estado = t.estado?.nombre || '';
 
-          // Usar el campo estaVencido del backend (prioridad 1)
-          // Si no existe, calcular manualmente (fallback)
+
           const estaVencido = t.estaVencido !== undefined ? t.estaVencido :
                               (t.fechaVencimiento ? new Date(t.fechaVencimiento) < now : false);
 
-          // Si está vencido, contar como completado automáticamente
+
           if (estaVencido) {
             estadosCount.completados++;
           }
-          // Si NO está vencido, contar según el estado
+    
           else if (['En Revisión', 'Enviado'].includes(estado)) {
             estadosCount.enRevision++;
           }
           else if (['En Proceso', 'Aprobado', 'Derivado'].includes(estado)) {
             estadosCount.enProceso++;
           }
-          // Estados finales naturales
+          
           else if (['Finalizado', 'Archivado', 'Cancelado', 'Rechazado'].includes(estado)) {
             estadosCount.completados++;
           }
@@ -665,26 +662,25 @@ export class UsuarioDashboardComponent implements OnInit {
   loadRecentActivities() {
     this.loadingActivities = true;
 
-    // Obtener actividades recientes del usuario
+
     this.misTramitesService.getMisTramites(1, 10).subscribe({
       next: (response) => {
         const tramites = response.data || [];
 
-        // Convertir trámites en actividades
         this.recentActivities = tramites.slice(0, 5).map((tramite: any) => {
           let icon = 'fas fa-file-alt';
           let type = 'tramite';
           let status = 'pending';
 
-          // Verificar si está vencido usando el campo del backend
+
           const estaVencido = tramite.estaVencido || false;
 
-          // Si está vencido, mostrar como completado
+
           if (estaVencido) {
             icon = 'fas fa-check-circle';
             status = 'completed';
           } else {
-            // Determinar icono y estado según el estado del trámite
+    
             const estadoNombre = tramite.estado?.nombre || '';
             if (estadoNombre === 'Finalizado') {
               icon = 'fas fa-check-circle';
@@ -721,18 +717,18 @@ export class UsuarioDashboardComponent implements OnInit {
         const tramites = response.data || [];
 
         this.myRecentTramites = tramites.map((tramite: any) => {
-          // Verificar si está vencido usando el campo del backend
+
           const estaVencido = tramite.estaVencido || false;
 
           return {
             id: tramite.id,
             codigo: tramite.codigo,
             titulo: tramite.asunto || `${tramite.tipoTramite?.nombre}`,
-            // Si está vencido, mostrar como "Finalizado", sino usar el estado original
+  
             estado: estaVencido ? 'Finalizado' : (tramite.estado?.nombre || 'Sin estado'),
             fecha: this.formatDate(tramite.fechaCreacion),
             tipo: tramite.tipoTramite?.nombre || 'Sin tipo',
-            // Si está vencido, progreso 100%, sino calculado por estado
+        
             progreso: estaVencido ? 100 : this.calculateProgreso(tramite.estado?.nombre)
           };
         });

@@ -12,8 +12,6 @@ import { ReportesService } from '../../services/reportes.service';
   imports: [CommonModule],
   template: `
     <div class="dashboard-container">
-
-      <!-- Stats Grid - Different for each role -->
       <div class="stats-grid" *ngIf="isAdministrativo">
         <div class="stat-card">
           <div class="stat-icon pending">
@@ -59,7 +57,7 @@ import { ReportesService } from '../../services/reportes.service';
         </div>
       </div>
 
-      <!-- Stats Grid for USUARIO role -->
+
       <div class="stats-grid" *ngIf="isUsuario">
         <div class="stat-card">
           <div class="stat-icon pending">
@@ -102,7 +100,6 @@ import { ReportesService } from '../../services/reportes.service';
         </div>
       </div>
 
-      <!-- Content Grid for ADMINISTRATIVO role -->
       <div class="content-grid" *ngIf="isAdministrativo">
         <div class="card pending-tramites">
           <div class="card-header">
@@ -124,7 +121,6 @@ import { ReportesService } from '../../services/reportes.service';
               </div>
             </div>
 
-            <!-- Show expired tramites summary if any -->
             <div *ngIf="getTramitesVencidos() > 0" class="expired-summary">
               <div class="expired-info">
                 <i class="fas fa-exclamation-triangle"></i>
@@ -157,7 +153,6 @@ import { ReportesService } from '../../services/reportes.service';
         </div>
       </div>
 
-      <!-- Content Grid for USUARIO role -->
       <div class="content-grid usuario-content" *ngIf="isUsuario">
         <div class="card my-tramites">
           <div class="card-header">
@@ -575,7 +570,7 @@ import { ReportesService } from '../../services/reportes.service';
 export class DashboardComponent implements OnInit {
   currentUser: User | null = null;
 
-  // Getters para lógica condicional basada en rol
+
   get userRole(): string {
     return this.currentUser?.role?.name || '';
   }
@@ -602,10 +597,8 @@ export class DashboardComponent implements OnInit {
 
   loading = true;
 
-  // Lista de trámites para calcular vencidos
   allTramites: any[] = [];
 
-  // Cache for tramite permissions
   tramitePermisos: Map<number, {
     puedeAprobar: boolean;
     puedeRechazar: boolean;
@@ -623,11 +616,9 @@ export class DashboardComponent implements OnInit {
   };
 
   pendingTramites: any[] = [];
-
-  // Tramites for USUARIO role
   userTramites: any[] = [];
 
-  // Document status for USUARIO role
+
   documentStatus: any[] = [];
 
   constructor(
@@ -650,19 +641,18 @@ export class DashboardComponent implements OnInit {
     }
   }
 
-  // Load all tramites and their permissions for accurate statistics
   private loadAllTramitesAndPermissions() {
     this.loading = true;
     this.misTramitesService.getMisTramites(1, 1000).subscribe({
       next: (response) => {
         this.allTramites = response.data || [];
 
-        // Load permissions for each tramite
+
         this.loadPermissionsForTramites();
       },
       error: (error) => {
         this.loading = false;
-        // Fallback to basic stats
+
         this.loadBasicStats();
       }
     });
@@ -691,13 +681,12 @@ export class DashboardComponent implements OnInit {
   }
 
   private calculateStatsWithExpiredTramites() {
-    // Get expired tramites count
+
     const expiredCount = this.getTramitesVencidos();
 
-    // Calculate base statistics
+
     const baseStats = this.getBaseStatistics();
 
-    // Update stats considering expired tramites as processed
     this.stats = {
       pendingTramites: baseStats.pending,
       processingTramites: Math.max(0, baseStats.processing - expiredCount),
@@ -759,7 +748,7 @@ export class DashboardComponent implements OnInit {
   private loadUserStats() {
     if (!this.isUsuario) return;
     
-    // Para USUARIO, obtenemos sus trámites
+
     this.misTramitesService.getMisTramites(1, 100).subscribe({
       next: (response) => {
        
@@ -769,8 +758,7 @@ export class DashboardComponent implements OnInit {
          
           
         }
-        
-        // Contar por estados
+
         const estadosCount = {
           enRevision: 0,
           enProceso: 0,
@@ -839,8 +827,6 @@ export class DashboardComponent implements OnInit {
     this.misTramitesService.getMisTramites(1, 100).subscribe({
       next: (response) => {
         const tramites = response.data || [];
-        
-        // Mostrar solo los estados con documentos
         const estadosConDocumentos = [];
         
         const aprobados = tramites.filter((t: any) => t.estado?.nombre === 'Aprobado').length;
@@ -961,7 +947,6 @@ export class DashboardComponent implements OnInit {
 
     this.misTramitesService.getMisTramites(1, 5).subscribe({
       next: (response) => {
-        // Filtrar solo trámites pendientes para mostrar en dashboard
         this.pendingTramites = response.data
           .filter(tramite => ['En Revisión', 'Aprobado', 'Derivado', 'Enviado'].includes(tramite.estado.nombre))
           .slice(0, 3)
@@ -993,12 +978,11 @@ export class DashboardComponent implements OnInit {
   }
 
   reviewTramite(id: number) {
-    // Redirigir a la página de mis-tramites donde puede revisar el trámite
     this.router.navigate(['/administrativo/mis-tramites']);
   }
 
   generateReport() {
-    // Navegar a la página de reportes
+
     this.router.navigate(['/administrativo/reportes']);
   }
 
@@ -1007,17 +991,16 @@ export class DashboardComponent implements OnInit {
   }
 
   viewExpiredTramites() {
-    // Navigate to mis-tramites with a filter for expired tramites
     this.router.navigate(['/administrativo/mis-tramites'], {
       queryParams: { showExpired: true }
     });
   }
 
   manageTemplates() {
-    // Navigate to templates management
+  
   }
 
-  // Methods for USUARIO role
+
   viewAllMyTramites() {
     const userRole = this.userRole;
     if (userRole === 'USUARIO') {

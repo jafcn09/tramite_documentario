@@ -169,7 +169,7 @@
       <p>Cargando trámites...</p>
     </div>
 
-    <!-- Sin trámites -->
+  
     <div *ngIf="!(loading$ | async) && misTramites && misTramites.length === 0" class="empty-state">
       <i class="fas fa-file-alt"></i>
       <h3>No tienes trámites</h3>
@@ -177,7 +177,7 @@
       
     </div>
 
-    <!-- Vista de tarjetas -->
+
     <div *ngIf="!(loading$ | async) && filteredTramites.length > 0 && vistaActual === 'tarjetas'" class="tramites-grid">
       <div 
         *ngFor="let tramite of filteredTramites; trackBy: trackByTramiteId" 
@@ -267,7 +267,7 @@
           </div>
 
           <ng-container *ngIf="isAdministrativo && canProcessTramites && tramite.estado.id !== 7">
-            <!-- Botón Aprobar - Para trámites en revisión y derivados -->
+       
             <button
               *ngIf="isAdministrativo"
               [class]="'btn-action approve ' + (estaVencido(tramite) || !puedeAprobar(tramite) ? 'disabled' : '')"
@@ -296,7 +296,7 @@
               <i class="fas fa-route"></i>
             </button>
 
-            <!-- Botón Responder - Para trámites aprobados y derivados -->
+       
             <button
               *ngIf="isAdministrativo"
               [class]="'btn-action respond ' + (estaVencido(tramite) || !puedeResponder(tramite) ? 'disabled' : '')"
@@ -397,9 +397,7 @@
                   <span *ngIf="tramite.documentos && tramite.documentos.length > 0" class="badge">{{ tramite.documentos.length }}</span>
                 </button>
                 
-                <!-- Botones administrativos en vista de tabla -->
-
-                <!-- Botón Aprobar - Para trámites en revisión y derivados -->
+         
                 <button
                   *ngIf="isAdministrativo"
                   [class]="'btn-mini approve ' + (estaVencido(tramite) || !puedeAprobar(tramite) ? 'disabled' : '')"
@@ -430,7 +428,7 @@
                   <i class="fas fa-route"></i>
                 </button>
 
-                <!-- Botón Responder - Para trámites aprobados y derivados -->
+
                 <button
                   *ngIf="isAdministrativo"
                   [class]="'btn-mini respond ' + (estaVencido(tramite) || !puedeResponder(tramite) ? 'disabled' : '')"
@@ -449,7 +447,7 @@
     </div>
   </div>
 
-  <!-- Paginación -->
+
   <div *ngIf="totalPages > 1" class="pagination">
     <button 
       class="page-btn" 
@@ -473,7 +471,7 @@
 
 </div>
 
-<!-- Modal de aprobación de trámite -->
+
 <div *ngIf="showAprobarModal && tramiteSeleccionado" class="modal-overlay" (click)="cerrarModalAprobar()">
   <div class="modal-content aprobar-modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
@@ -558,7 +556,7 @@
   </div>
 </div>
 
-<!-- Modal de detalle de trámite -->
+
 <div *ngIf="showDetalleTramiteModal && tramiteSeleccionado" class="modal-overlay" (click)="cerrarModalDetalle()">
   <div class="modal-content detalle-modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
@@ -625,14 +623,12 @@
           </div>
         </div>
       </div>
-
-      <!-- Descripción -->
       <div class="descripcion-section" *ngIf="tramiteSeleccionado.descripcion">
         <h4>Descripción</h4>
         <p class="descripcion-text">{{ tramiteSeleccionado.descripcion }}</p>
       </div>
 
-      <!-- Documentos -->
+    
       <div class="documentos-section" *ngIf="tramiteSeleccionado.documentos && tramiteSeleccionado.documentos.length > 0">
         <h4>Documentos Adjuntos ({{ tramiteSeleccionado.documentos.length }})</h4>
         <div class="documentos-list">
@@ -664,7 +660,7 @@
       </div>
 
 
-      <!-- Progreso -->
+
       <div class="progreso-section">
         <h4>Progreso</h4>
         <div class="progress-bar-detail">
@@ -703,7 +699,6 @@
 </div>
 
 
-<!-- Modal para Derivar Trámite -->
 <div *ngIf="mostrarModalDerivacion" class="modal-overlay" (click)="cerrarModalDerivacion()">
   <div class="modal-content-large" (click)="$event.stopPropagation()">
     <div class="modal-header">
@@ -805,7 +800,7 @@
   </div>
 </div>
 
-<!-- Modal de Rechazo -->
+
 <div *ngIf="mostrarModalRechazo" class="modal-overlay" (click)="cerrarModalRechazo()">
   <div class="modal-content-large" (click)="$event.stopPropagation()">
     <div class="modal-header">
@@ -898,7 +893,7 @@
   (tramiteRespondido)="onTramiteRespondido($event)">
 </app-responder-tramite-modal>
 
-<!-- Modal de Edición de Trámite -->
+
 <div *ngIf="showEditarTramiteModal && tramiteSeleccionado" class="modal-overlay" (click)="cerrarModalEditar()">
   <div class="modal-content-large" (click)="$event.stopPropagation()">
     <div class="modal-header">
@@ -922,7 +917,7 @@
       </div>
 
       <form class="edit-form">
-        <!-- Descripción con mejor diseño -->
+ 
         <div class="form-group">
           <label for="editDescripcion">
             <i class="fas fa-align-left"></i>
@@ -940,7 +935,7 @@
           <small class="char-counter">{{ (formEditar.descripcion || '').length }}/1000 caracteres</small>
         </div>
 
-        <!-- Observaciones -->
+  
         <div class="form-group">
           <label for="editObservaciones">
             <i class="fas fa-comment"></i>
@@ -982,7 +977,7 @@
           </div>
         </div>
 
-        <!-- Sección para subir nuevos archivos -->
+  
         <div class="upload-section">
           <h4>
             <i class="fas fa-upload"></i>
@@ -1006,7 +1001,7 @@
               style="display: none;">
           </div>
 
-          <!-- Lista de archivos nuevos seleccionados -->
+   
           <div *ngIf="archivosNuevos.length > 0" class="archivos-nuevos-list">
             <h5>Archivos por subir ({{ archivosNuevos.length }})</h5>
             <div *ngFor="let archivo of archivosNuevos; let i = index" class="archivo-nuevo-item">
@@ -1026,7 +1021,6 @@
           </div>
         </div>
 
-        <!-- Mensaje de notificación mejorado -->
         <div class="info-message">
           <div class="info-icon">
             <i class="fas fa-envelope"></i>

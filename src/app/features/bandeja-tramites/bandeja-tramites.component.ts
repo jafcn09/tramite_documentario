@@ -11,7 +11,7 @@ import { MisTramitesService } from '../../services/mis-tramites.service';
 import { ToastService } from '../../services/toast.service';
 import { AuthService } from '../../services/auth.service';
 import { ResponderTramiteModalComponent } from '../tramites/components/responder-tramite-modal/responder-tramite-modal.component';
-// import { EditarTramiteModalComponent } from '../tramites/components/editar-tramite-modal/editar-tramite-modal.component'; // Component deleted
+
 import { Tramite } from '../../shared/interfaces/tramite.interface';
 import { 
   TramiteBandeja, 
@@ -26,7 +26,7 @@ import {
 @Component({
   selector: 'app-bandeja-tramites',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, ResponderTramiteModalComponent], // EditarTramiteModalComponent removed
+  imports: [CommonModule, FormsModule, RouterModule, ResponderTramiteModalComponent], 
   templateUrl: './bandeja-tramites.component.html',
   styleUrl: './bandeja-tramites.component.css'
 })
@@ -36,30 +36,27 @@ export class BandejaTramitesComponent implements OnInit, OnDestroy {
   notificaciones: NotificacionBandeja[] = [];
   loading$ = this.bandejaTramitesService.loading$;
   
-  // Paginación
+
   currentPage = 1;
   pageSize = 15;
   totalItems = 0;
   totalPages = 0;
   
-  // Filtros
   filtros: FiltrosBandeja = {};
   searchTerm = '';
   private searchSubject = new Subject<string>();
   
-  // Estados UI
+
   showFilters = false;
   vistaActual: 'lista' | 'kanban' | 'calendario' = 'lista';
   ordenarPor: 'fecha' | 'vencimiento' | 'prioridad' | 'estado' = 'vencimiento';
   ordenAscendente = false;
   
-  // Helper for template access
   Math = Math;
   
-  // Selección múltiple
+
   selectedTramites: number[] = [];
   
-  // Modales
   showDetalleTramiteModal = false;
   showCambiarEstadoModal = false;
   showDerivarModal = false;
@@ -70,7 +67,7 @@ export class BandejaTramitesComponent implements OnInit, OnDestroy {
   tramiteSeleccionado: TramiteBandeja | null = null;
   tramiteParaEditar: Tramite | null = null;
   
-  // Formularios de modales
+
   cambiarEstadoForm: CambiarEstadoRequest = {
     tramiteId: 0,
     nuevoEstadoId: 0,
@@ -90,7 +87,7 @@ export class BandejaTramitesComponent implements OnInit, OnDestroy {
     observaciones: ''
   };
   
-  // Opciones para formularios
+
   estadosDisponibles: any[] = [];
   areasDisponibles: any[] = [];
   trabajadoresDisponibles: any[] = [];
@@ -111,7 +108,6 @@ export class BandejaTramitesComponent implements OnInit, OnDestroy {
     this.cargarNotificaciones();
     this.cargarOpcionesFormulario();
     
-    // Auto-refresh cada 30 segundos
     setInterval(() => {
       if (!document.hidden) {
         this.cargarTramites();
@@ -142,8 +138,6 @@ export class BandejaTramitesComponent implements OnInit, OnDestroy {
       this.bandejaTramitesService.getTramites(this.currentPage, this.pageSize, this.filtros, this.ordenarPor, this.ordenAscendente)
         .subscribe({
           next: (response) => {
-
-            // Log detallado de cada trámite para debugging
             response.data.forEach(tramite => {
 
             });
@@ -151,8 +145,6 @@ export class BandejaTramitesComponent implements OnInit, OnDestroy {
             this.tramites = response.data;
             this.totalItems = response.total;
             this.totalPages = response.totalPages;
-
-            // Auto-finalizar trámites vencidos
             this.autoFinalizarTramitesVencidos();
           },
           error: (error) => {
@@ -178,7 +170,6 @@ export class BandejaTramitesComponent implements OnInit, OnDestroy {
   }
 
   cargarOpcionesFormulario() {
-    // Cargar estados, áreas y trabajadores para los formularios
     this.subscriptions.add(
       this.bandejaTramitesService.getEstadosDisponibles()
         .subscribe(estados => this.estadosDisponibles = estados)
@@ -230,7 +221,6 @@ export class BandejaTramitesComponent implements OnInit, OnDestroy {
     this.showFilters = !this.showFilters;
   }
 
-  // Selección múltiple
   toggleSelectTramite(tramiteId: number) {
     const index = this.selectedTramites.indexOf(tramiteId);
     if (index > -1) {
@@ -252,7 +242,7 @@ export class BandejaTramitesComponent implements OnInit, OnDestroy {
     return this.selectedTramites.includes(tramiteId);
   }
 
-  // Acciones de trámites
+
   verDetalle(tramite: TramiteBandeja) {
     this.tramiteSeleccionado = tramite;
     this.showDetalleTramiteModal = true;
@@ -313,7 +303,7 @@ export class BandejaTramitesComponent implements OnInit, OnDestroy {
     );
   }
 
-  // Acciones de modal
+
   confirmarCambiarEstado() {
     this.subscriptions.add(
       this.bandejaTramitesService.cambiarEstado(this.cambiarEstadoForm)
@@ -358,7 +348,7 @@ export class BandejaTramitesComponent implements OnInit, OnDestroy {
     );
   }
 
-  // Gestión de documentos
+
   descargarDocumento(tramiteId: number, nombreArchivo: string) {
     this.subscriptions.add(
       this.bandejaTramitesService.descargarDocumento(tramiteId, nombreArchivo)
@@ -410,7 +400,7 @@ export class BandejaTramitesComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Notificaciones
+
   marcarNotificacionLeida(notificacion: NotificacionBandeja) {
     if (!notificacion.leida) {
       this.subscriptions.add(
@@ -432,7 +422,7 @@ export class BandejaTramitesComponent implements OnInit, OnDestroy {
     return this.notificaciones.filter(n => !n.leida).length;
   }
 
-  // Modales
+
   cerrarModalDetalle() {
     this.showDetalleTramiteModal = false;
     this.tramiteSeleccionado = null;
@@ -506,7 +496,7 @@ export class BandejaTramitesComponent implements OnInit, OnDestroy {
         nombre: tramiteBandeja.solicitante.nombre,
         apellidos: tramiteBandeja.solicitante.apellidos,
         correo: tramiteBandeja.solicitante.correo,
-        usuario: tramiteBandeja.solicitante.correo, // Usando correo como usuario
+        usuario: tramiteBandeja.solicitante.correo, 
         area: {
           id: 0,
           nombre: tramiteBandeja.solicitante.area || 'Sin área',
@@ -633,8 +623,6 @@ export class BandejaTramitesComponent implements OnInit, OnDestroy {
   // Verificar si puede aprobar un trámite
   puedeAprobar(tramite: TramiteBandeja): boolean {
 
-    // SIEMPRE mostrar aprobar si el trámite está DERIVADO (fue derivado para que este trabajador lo apruebe)
-    // Maneja tanto formato backend (DERIVADO) como frontend (Derivado)
     const estadosParaAprobar = ['DERIVADO', 'Derivado'];
     const puede = estadosParaAprobar.includes(tramite.estado.nombre);
 
@@ -644,8 +632,7 @@ export class BandejaTramitesComponent implements OnInit, OnDestroy {
   // Verificar si puede responder un trámite
   puedeResponder(tramite: TramiteBandeja): boolean {
 
-    // Siempre mostrar responder si está DERIVADO (para dar respuesta) o APROBADO (para procesar)
-    // Maneja tanto formato backend como frontend
+
     const estadosParaResponder = ['DERIVADO', 'Derivado', 'APROBADO', 'Aprobado', 'EN_PROCESO', 'En Proceso'];
     const puede = estadosParaResponder.includes(tramite.estado.nombre);
 

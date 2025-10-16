@@ -22,7 +22,6 @@ import { AuthService } from './auth.service';
 export class BandejaTramitesService {
   private apiUrl = `${environment.apiUrl}/api/bandeja-tramites`;
   
-  // Subjects para manejar el estado
   private tramitesSubject = new BehaviorSubject<TramiteBandeja[]>([]);
   private loadingSubject = new BehaviorSubject<boolean>(false);
   
@@ -35,7 +34,7 @@ export class BandejaTramitesService {
     private authService: AuthService
   ) {}
 
-  // Obtener trámites de la bandeja con paginación y filtros (nuevo método compatible con el componente)
+ 
   obtenerTramitesBandeja(
     page: number = 1, 
     limit: number = 15, 
@@ -61,7 +60,7 @@ export class BandejaTramitesService {
       .pipe(
         tap((response) => {
           this.loadingSubject.next(false);
-          // Actualizar el subject con los trámites recibidos
+     
           if (response && response.data) {
             this.tramitesSubject.next(response.data);
           }
@@ -72,13 +71,12 @@ export class BandejaTramitesService {
             'Error al cargar trámites',
             'No se pudieron obtener los trámites de la bandeja. Inténtalo nuevamente.'
           );
-          // Propagar el error en lugar de devolver datos vacíos
+
           throw error;
         })
       );
   }
 
-  // Obtener trámites de la bandeja con paginación y filtros
   getTramites(
     page: number = 1, 
     limit: number = 15, 
@@ -121,7 +119,7 @@ export class BandejaTramitesService {
       );
   }
 
-  // Obtener estadísticas de la bandeja (datos reales del backend)
+
   getEstadisticas(): Observable<EstadisticasBandeja> {
 
     return this.http.get<EstadisticasBandeja>(`${this.apiUrl}/estadisticas`)
@@ -130,18 +128,17 @@ export class BandejaTramitesService {
      
         }),
         catchError(error => {
-          // Re-lanzar el error en lugar de usar mock
+       
           throw error;
         })
       );
   }
 
-  // Obtener notificaciones
   getNotificaciones(): Observable<NotificacionBandeja[]> {
     return this.http.get<NotificacionBandeja[]>(`${this.apiUrl}/notificaciones`)
       .pipe(
         catchError(error => {
-          // Devolver notificaciones mock
+  
           return of([
             {
               id: 1,
@@ -189,7 +186,7 @@ export class BandejaTramitesService {
       formData.append('observaciones', request.observaciones);
     }
     
-    // Documentos adicionales
+    
     if (request.documentosAdicionales && request.documentosAdicionales.length > 0) {
       request.documentosAdicionales.forEach((doc, index) => {
         formData.append('documentosAdicionales', doc, doc.name);
@@ -214,14 +211,13 @@ export class BandejaTramitesService {
       );
   }
 
-  // Derivar trámite
   derivarTramite(request: DerivarTramiteRequest): Observable<TramiteBandeja> {
-    // El backend espera estos parámetros específicos
+
     const params = new HttpParams()
       .set('trabajadorNuevoId', request.trabajadorAsignadoId?.toString() || '')
       .set('motivo', request.observaciones);
 
-    // Cambiar a la URL correcta del backend: /api/tramites (no /api/bandeja-tramites)
+ 
     const tramitesUrl = `${environment.apiUrl}/api/tramites`;
 
     return this.http.post<TramiteBandeja>(`${tramitesUrl}/${request.tramiteId}/derivar`, {}, { params })
@@ -242,7 +238,7 @@ export class BandejaTramitesService {
       );
   }
 
-  // Reasignar trámite
+  
   reasignarTramite(request: ReasignarTramiteRequest): Observable<TramiteBandeja> {
     return this.http.put<TramiteBandeja>(`${this.apiUrl}/${request.tramiteId}/reasignar`, request)
       .pipe(
@@ -262,7 +258,7 @@ export class BandejaTramitesService {
       );
   }
 
-  // Subir documento a trámite
+
   subirDocumento(tramiteId: number, archivo: File, descripcion?: string): Observable<void> {
     const formData = new FormData();
     formData.append('documento', archivo, archivo.name);
@@ -288,7 +284,6 @@ export class BandejaTramitesService {
       );
   }
 
-  // Descargar documento específico
   descargarDocumento(tramiteId: number, nombreArchivo: string): Observable<Blob> {
     return this.http.get(`${this.apiUrl}/${tramiteId}/archivos/${nombreArchivo}`, {
       responseType: 'blob'
@@ -303,7 +298,7 @@ export class BandejaTramitesService {
     );
   }
 
-  // Descargar todos los documentos de un trámite (ZIP)
+  
   descargarTodosDocumentos(tramiteId: number): Observable<Blob> {
     return this.http.get(`${this.apiUrl}/${tramiteId}/documentos/descargar-todos`, {
       responseType: 'blob'
@@ -324,7 +319,7 @@ export class BandejaTramitesService {
     );
   }
 
-  // Marcar notificación como leída
+  
   marcarNotificacionLeida(notificacionId: number): Observable<void> {
     return this.http.put<void>(`${this.apiUrl}/notificaciones/${notificacionId}/leer`, {})
       .pipe(
@@ -334,12 +329,12 @@ export class BandejaTramitesService {
       );
   }
 
-  // Obtener opciones para formularios
+
   getEstadosDisponibles(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/estados-disponibles`)
       .pipe(
         catchError(() => {
-          // Estados mock
+ 
           return of([
             { id: 2, nombre: 'Enviado', color: '#4299e1', icono: 'fas fa-paper-plane' },
             { id: 3, nombre: 'En Revisión', color: '#ed8936', icono: 'fas fa-eye' },
@@ -353,7 +348,7 @@ export class BandejaTramitesService {
       );
   }
 
-  // Validar archivo antes de subir
+
   validarArchivo(archivo: File): { valido: boolean; mensaje?: string } {
     const tiposPermitidos = [
       'application/pdf',
@@ -382,7 +377,7 @@ export class BandejaTramitesService {
     return { valido: true };
   }
 
-  // Exportar trámites a PDF
+
   exportarTramites(tramiteIds: number[]): Observable<Blob> {
     const params = { tramiteIds: tramiteIds.join(',') };
     
@@ -405,8 +400,6 @@ export class BandejaTramitesService {
       })
     );
   }
-
-  // Archivar trámites
   archivarTramites(tramiteIds: number[]): Observable<any> {
     const request = {
       tramiteIds: tramiteIds,
@@ -431,8 +424,6 @@ export class BandejaTramitesService {
         })
       );
   }
-
-  // Desarchivar trámites
   desarchivarTramites(tramiteIds: number[]): Observable<any> {
     const request = {
       tramiteIds: tramiteIds,
@@ -473,8 +464,6 @@ export class BandejaTramitesService {
         })
       );
   }
-
-  // Verificar permisos de acciones para un trámite
   verificarPermisosAcciones(tramiteId: number): Observable<{
     puedeAprobar: boolean;
     puedeRechazar: boolean;
@@ -505,8 +494,6 @@ export class BandejaTramitesService {
         })
       );
   }
-
-  // Limpiar estado local
   clearTramites(): void {
     this.tramitesSubject.next([]);
   }

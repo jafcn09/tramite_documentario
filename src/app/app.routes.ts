@@ -7,14 +7,14 @@ import { AuthGuard } from './guards/auth.guard';
 import { RoleGuard } from './guards/role.guard';
 
 export const routes: Routes = [
-  // Rutas públicas
+
   { path: '', component: HomeComponent },
   { path: 'ingresar', component: AdminLoginComponent },
-  { path: 'servicios-administrativos', component: AdminLoginComponent }, // Alias para mantener compatibilidad
+  { path: 'servicios-administrativos', component: AdminLoginComponent },
   { path: 'manual', component: ManualComponent },
   { path: 'buscar', component: SearchComponent },
 
-  // Rutas protegidas por rol ADMIN
+ 
   {
     path: 'admin',
     canActivate: [AuthGuard, RoleGuard],
@@ -77,7 +77,7 @@ export const routes: Routes = [
     ]
   },
 
-  // Rutas protegidas por rol ADMINISTRATIVO
+
   {
     path: 'administrativo',
     canActivate: [AuthGuard, RoleGuard],
@@ -120,7 +120,7 @@ export const routes: Routes = [
     ]
   },
 
-  // Rutas protegidas por rol USUARIO
+
   {
     path: 'usuario',
     canActivate: [AuthGuard, RoleGuard],
@@ -163,7 +163,7 @@ export const routes: Routes = [
     ]
   },
 
-  // Rutas protegidas por rol ESTUDIANTE
+
   {
     path: 'estudiante',
     canActivate: [AuthGuard, RoleGuard],
@@ -202,26 +202,25 @@ export const routes: Routes = [
     ]
   },
 
-  // Ruta de perfil para todos los usuarios autenticados
+
   {
     path: 'perfil',
     canActivate: [AuthGuard],
     loadComponent: () => import('./shared/user-profile/user-profile.component').then(m => m.UserProfileComponent)
   },
 
-  // Ruta de cambio de contraseña para todos los usuarios autenticados
   {
     path: 'cambiar-contrasena',
     canActivate: [AuthGuard],
     loadComponent: () => import('./shared/change-password/change-password.component').then(m => m.ChangePasswordComponent)
   },
 
-  // Página de acceso denegado
+
   {
     path: 'acceso-denegado',
     loadComponent: () => import('./shared/access-denied/access-denied.component').then(m => m.AccessDeniedComponent)
   },
 
-  // Redirección por defecto
+
   { path: '**', redirectTo: '' }
 ];

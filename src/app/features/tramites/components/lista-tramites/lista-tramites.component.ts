@@ -38,7 +38,6 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
   };
   loading$ = this.tramiteService.loading$;
 
-  // Cache for tramite permissions to check for expired tramites
   tramitePermisos: Map<number, {
     puedeAprobar: boolean;
     puedeRechazar: boolean;
@@ -47,13 +46,13 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
     estaVencido: boolean;
   }> = new Map();
   
-  // Paginación
+
   currentPage = 0;
   pageSize = 10;
   totalItems = 0;
   totalPages = 0;
   
-  // Búsqueda
+
   searchTerm = '';
   private searchSubject = new Subject<string>();
   searchResults: any[] = [];
@@ -63,23 +62,23 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
   selectedSearchIndex = -1;
   filteredTramites: any[] = [];
 
-  // Configuración de vista
+
   vistaActual: 'tabla' | 'tarjetas' = 'tabla';
   ordenarPor: 'fecha' | 'codigo' | 'estado' | 'prioridad' = 'fecha';
   ordenAscendente = false;
 
-  // Estados UI
+
   selectedTramites: number[] = [];
   mostrarArchivados = false;
   
-  // Modales
+
   showNuevoTramiteModal = false;
   showDetalleTramiteModal = false;
   showEditarTramiteModal = false;
   showCambiarEstadoModal = false;
   tramiteSeleccionado: any = null;
   
-  // Cambio de estado
+
   estadosDisponibles: string[] = [];
   nuevoEstadoSeleccionado = '';
   observacionesCambioEstado = '';
@@ -87,7 +86,7 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
   
   private subscriptions = new Subscription();
 
-  // Hacer Object y Math disponibles en el template
+ 
   Object = Object;
   Math = Math;
 
@@ -98,7 +97,7 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    // Inicializar búsqueda
+
     this.searchTerm = '';
     this.searchError = '';
     this.filteredTramites = [];
@@ -132,14 +131,14 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Buscar en tiempo real dentro de los trámites cargados
+
     const termLower = term.toLowerCase().trim();
     this.searchResults = this.tramites.filter(tramite =>
       this.matchesSearchTerm(tramite, termLower)
     );
 
     if (this.searchResults.length > 0) {
-      this.showSearchDropdown = false; // No mostrar dropdown, filtrar directamente
+      this.showSearchDropdown = false; 
       this.filteredTramites = this.searchResults;
       this.searchError = '';
 
@@ -154,7 +153,6 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
   }
 
   private matchesSearchTerm(tramite: any, searchLower: string): boolean {
-    // Función auxiliar para normalizar texto
     const normalize = (text: any): string => {
       if (!text) return '';
       return String(text).toLowerCase().trim();
@@ -168,16 +166,16 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
       normalize(tramite.tipo).includes(searchLower) ||
       normalize(tramite.estado).includes(searchLower) ||
       normalize(tramite.prioridad).includes(searchLower) ||
-      // Solicitante
+   
       normalize(tramite.usuarioSolicitante?.nombre).includes(searchLower) ||
       normalize(tramite.usuarioSolicitante?.apellidos).includes(searchLower) ||
       normalize(tramite.solicitante?.nombre).includes(searchLower) ||
       normalize(tramite.solicitante?.apellidos).includes(searchLower) ||
-      // Tipo de trámite
+     
       normalize(tramite.tipoTramite?.nombre).includes(searchLower) ||
-      // Estado
+ 
       normalize(tramite.estado?.nombre).includes(searchLower) ||
-      // Área
+ 
       normalize(tramite.areaOrigen?.nombre).includes(searchLower) ||
       normalize(tramite.area?.nombre).includes(searchLower)
     );
@@ -197,7 +195,7 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
     
     this.subscriptions.add(
       this.bandejaTramitesService.obtenerTramitesBandeja(
-        this.currentPage + 1, // bandeja usa 1-indexed
+        this.currentPage + 1, 
         this.pageSize, 
         this.ordenarPor, 
         this.ordenAscendente,
@@ -208,7 +206,7 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
           this.tramites = response.data;
           this.totalItems = response.total;
           this.totalPages = response.totalPages;
-          this.currentPage = response.currentPage - 1; // convertir a 0-indexed
+          this.currentPage = response.currentPage - 1; 
           if (!this.mostrarArchivados) {
             this.calcularEstadisticas();
           }
@@ -220,23 +218,23 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
   }
 
   private calcularEstadisticas() {
-    // Load tramites first, then calculate stats with expired logic
+
     this.loadTramitesAndPermissions();
   }
 
   private loadTramitesAndPermissions() {
 
-    // Load tramites from bandeja service
+    
     this.subscriptions.add(
       this.bandejaTramitesService.getTramites(1, 1000).subscribe({
         next: (response) => {
           this.tramites = response.data || [];
 
-          // Load permissions for each tramite
+
           this.loadPermissionsForTramites();
         },
         error: (error) => {
-          // Fallback to basic stats
+
           this.calcularEstadisticasBasicas();
         }
       })
@@ -264,13 +262,13 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
   }
 
   private calculateStatsWithExpiredTramites() {
-    // Get expired tramites count
+
     const expiredCount = this.getTramitesVencidos();
 
-    // Calculate base statistics
+
     const baseStats = this.getBaseStatistics();
 
-    // Update stats considering expired tramites as processed
+  
     this.estadisticas = {
       total: this.tramites.length,
       enRevision: baseStats.enRevision,
@@ -310,7 +308,7 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
   }
 
   private calcularEstadisticasBasicas() {
-    // Fallback: Use basic service statistics
+
     this.subscriptions.add(
       this.bandejaTramitesService.getEstadisticas().subscribe({
         next: (estadisticasBandeja) => {
@@ -322,7 +320,7 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
           };
         },
         error: () => {
-          // Final fallback
+          
           this.estadisticas = {
             total: this.tramites?.length || 0,
             enRevision: this.tramites?.filter(t =>
@@ -349,7 +347,6 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
   }
 
   onSearchInputBlur() {
-    // Delay para permitir click en dropdown
     setTimeout(() => {
       this.showSearchDropdown = false;
     }, 200);
@@ -386,7 +383,6 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
     this.filteredTramites = [tramite];
     this.searchError = '';
     
-    // Scroll to the selected tramite if in table view
     setTimeout(() => {
       const element = document.getElementById(`tramite-${tramite.id}`);
       if (element) {
@@ -403,12 +399,11 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
   }
 
   getTramitesParaMostrar(): any[] {
-    // Si hay búsqueda activa, mostrar resultados filtrados
+
     if (this.searchTerm && this.searchTerm.trim().length > 0) {
       return this.filteredTramites;
     }
 
-    // Si no hay búsqueda, mostrar todos los trámites
     return this.tramites;
   }
 
@@ -473,7 +468,7 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
             `Se han desarchivado ${this.selectedTramites.length} trámites correctamente`
           );
           this.selectedTramites = [];
-          this.cargarTramites(); // Recargar la lista
+          this.cargarTramites(); 
         },
         error: (error) => {
           this.toastService.error('Error al desarchivar', 'No se pudieron desarchivar los trámites');
@@ -551,7 +546,6 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
       this.ordenarPor = campo;
       this.ordenAscendente = true;
     }
-    // Aquí podrías aplicar el ordenamiento
     this.cargarTramites();
   }
 
@@ -559,7 +553,7 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
     this.vistaActual = this.vistaActual === 'tabla' ? 'tarjetas' : 'tabla';
   }
 
-  // Selección múltiple
+
   toggleSelectTramite(tramiteId: number) {
     const index = this.selectedTramites.indexOf(tramiteId);
     if (index > -1) {
@@ -581,7 +575,7 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
     return this.selectedTramites.includes(tramiteId);
   }
 
-  // Acciones de modales
+
   abrirModalNuevo() {
     this.showNuevoTramiteModal = true;
   }
@@ -607,7 +601,7 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
   }
 
   editarTramite(tramite: any) {
-    // Verificar si el estado del trámite permite edición
+
     if (!this.puedeEditarTramite(tramite)) {
       this.toastService.warning(
         'Acción no permitida',
@@ -643,7 +637,7 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
   }
 
   obtenerEstadosDisponibles(estadoActual: string) {
-    // Estados posibles según el estado actual
+
     const transicionesEstado: { [key: string]: string[] } = {
       'BORRADOR': ['ENVIADO', 'CANCELADO'],
       'ENVIADO': ['EN_REVISION', 'DERIVADO', 'CANCELADO'],
@@ -688,7 +682,7 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
   }
 
   seleccionarEstado(estado: string) {
-    // Si ya está seleccionado, deseleccionar; si no, seleccionar
+   
     if (this.nuevoEstadoSeleccionado === estado) {
       this.nuevoEstadoSeleccionado = '';
     } else {
@@ -759,25 +753,23 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
     this.tramiteService.imprimirTramite(tramite.id!)
       .subscribe({
         next: (blob) => {
-          // Convertir el blob a texto para leer el HTML
+
           blob.text().then(html => {
-            // Abrir una nueva ventana con el HTML
+     
             const printWindow = window.open('', '_blank', 'width=800,height=600');
 
             if (printWindow) {
               printWindow.document.write(html);
               printWindow.document.close();
 
-              // Esperar a que la ventana cargue y luego imprimir
               printWindow.onload = () => {
                 setTimeout(() => {
                   printWindow.print();
-                  // Opcional: cerrar la ventana después de imprimir
-                  // printWindow.close();
+                 
                 }, 500);
               };
             } else {
-              // Si el navegador bloquea las ventanas emergentes, descargar como HTML
+    
               const url = window.URL.createObjectURL(blob);
               const link = document.createElement('a');
               link.href = url;
@@ -802,7 +794,7 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
   }
 
   eliminarTramite(tramite: any) {
-    // Crear un modal personalizado más atractivo
+
     const modalDiv = document.createElement('div');
     modalDiv.innerHTML = `
       <div style="
@@ -893,7 +885,7 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
       </div>
     `;
 
-    // Agregar estilos de animación
+ 
     const style = document.createElement('style');
     style.textContent = `
       @keyframes fadeIn {
@@ -908,7 +900,7 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
     document.head.appendChild(style);
     document.body.appendChild(modalDiv);
 
-    // Manejar eventos
+
     const cancelBtn = modalDiv.querySelector('#cancelBtn') as HTMLButtonElement;
     const deleteBtn = modalDiv.querySelector('#deleteBtn') as HTMLButtonElement;
 
@@ -922,7 +914,7 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
     deleteBtn?.addEventListener('click', () => {
       closeModal();
       
-      // Ejecutar la eliminación
+   
       this.tramiteService.eliminarTramite(tramite.id!)
         .subscribe({
           next: () => {
@@ -932,7 +924,7 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
             );
             this.cargarTramites();
             
-            // Limpiar selección si el trámite eliminado estaba seleccionado
+          
             const index = this.selectedTramites.indexOf(tramite.id!);
             if (index > -1) {
               this.selectedTramites.splice(index, 1);
@@ -948,7 +940,6 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
     });
   }
 
-  // Utilidades
   getEstadoClase(estado: any): string {
     const clases: { [key: string]: string } = {
       'Borrador': 'estado-borrador',
@@ -992,7 +983,7 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
     return Math.ceil(diferencia / (1000 * 60 * 60 * 24));
   }
 
-  // Método auxiliar para descargar archivos
+
   private descargarArchivo(blob: Blob, nombreArchivo: string) {
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement('a');

@@ -1,9 +1,8 @@
-/* Modal base */
 .modal-content {
   padding: 1.5rem;
 }
 
-/* Header del trámite */
+
 .tramite-header {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
@@ -112,7 +111,7 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-/* Tabs de navegación */
+
 .tabs-container {
   margin-bottom: 2rem;
 }
@@ -161,12 +160,12 @@
   margin-right: 0.5rem;
 }
 
-/* Contenido de tabs */
+
 .tab-content {
   animation: fadeIn 0.5s ease;
 }
 
-/* Sección de información */
+
 .info-section {
   background: white;
   border-radius: 12px;
@@ -227,7 +226,7 @@
   margin-top: 0.5rem;
 }
 
-/* Sección de documentos */
+
 .documentos-section {
   background: white;
   border-radius: 12px;
@@ -354,7 +353,6 @@
   margin: 0;
 }
 
-/* Sección de historial */
 .historial-section {
   background: white;
   border-radius: 12px;
@@ -733,7 +731,6 @@
   font-size: 1rem;
 }
 
-/* Eliminar estilos antiguos duplicados del historial */
 
 .historial-list::before {
   content: '';
@@ -848,7 +845,7 @@
   transform: translateY(-2px);
 }
 
-/* Animaciones */
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -995,7 +992,7 @@
     font-size: 0.8rem;
   }
 
-  /* Header actions responsive */
+
   .header-actions {
     width: 100%;
     justify-content: center;
@@ -1007,7 +1004,7 @@
     font-size: 0.9rem;
   }
 
-  /* Tabs responsive */
+  
   .tabs-nav {
     flex-wrap: nowrap;
     gap: 0;
@@ -1426,7 +1423,7 @@
   }
 }
 
-/* Tablet responsive (768px - 1024px) */
+
 @media (min-width: 769px) and (max-width: 1024px) {
   .tramite-header {
     padding: 1.5rem;
@@ -1523,7 +1520,6 @@
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
-/* Modal de previsualización */
 .modal {
   position: fixed;
   top: 0;
@@ -1634,7 +1630,7 @@
   }
 }
 
-/* Custom Document Preview Modal */
+
 .document-preview-modal {
   position: fixed;
   top: 0;

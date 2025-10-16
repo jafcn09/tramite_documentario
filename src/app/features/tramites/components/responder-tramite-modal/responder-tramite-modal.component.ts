@@ -42,16 +42,16 @@ export class ResponderTramiteModalComponent implements OnInit {
     if (files && files.length > 0) {
       const newFiles = Array.from(files) as File[];
       
-      // Validar tamaño de archivos nuevos
+ 
       for (const file of newFiles) {
-        if (file.size > 10 * 1024 * 1024) { // 10MB
+        if (file.size > 10 * 1024 * 1024) {
           this.toastService.error('Archivo muy grande', 'El archivo ' + file.name + ' excede el tamaño máximo de 10MB');
-          // Limpiar el input pero mantener archivos existentes
+      
           event.target.value = '';
           return;
         }
         
-        // Verificar si el archivo ya existe (por nombre y tamaño)
+     
         const archivoExistente = this.respuestaForm.archivos.find(
           existingFile => existingFile.name === file.name && existingFile.size === file.size
         );
@@ -60,12 +60,10 @@ export class ResponderTramiteModalComponent implements OnInit {
           this.toastService.warning('Archivo duplicado', 'El archivo ' + file.name + ' ya ha sido seleccionado');
           continue;
         }
-        
-        // Agregar archivo al array existente
+
         this.respuestaForm.archivos.push(file);
       }
-      
-      // Limpiar el input para permitir seleccionar el mismo archivo nuevamente si se elimina
+
       event.target.value = '';
     }
   }
@@ -87,7 +85,7 @@ export class ResponderTramiteModalComponent implements OnInit {
     formData.append('observaciones', this.respuestaForm.observaciones);
     formData.append('asunto', this.respuestaForm.asunto);
     
-    // Agregar archivos si existen
+
     for (const archivo of this.respuestaForm.archivos) {
       formData.append('archivos', archivo);
     }

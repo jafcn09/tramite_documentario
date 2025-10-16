@@ -1271,10 +1271,10 @@ export class UserProfileComponent implements OnInit {
     this.clearMessages();
 
     try {
-      // Use the correct token key
-      let token = localStorage.getItem('auth_token'); // This is the correct key
+
+      let token = localStorage.getItem('auth_token'); 
       if (!token) {
-        token = localStorage.getItem('token'); // Fallback
+        token = localStorage.getItem('token'); 
       }
 
       
@@ -1311,8 +1311,7 @@ export class UserProfileComponent implements OnInit {
 
       }
 
-      
-      // Check if there's actually something to update
+
       if (Object.keys(updateData).length === 0) {
         this.setError('general', 'No hay cambios para guardar');
         this.isUpdating = false;
@@ -1320,9 +1319,6 @@ export class UserProfileComponent implements OnInit {
       }
 
       const apiUrl = `${environment.apiUrl}/api/usuarios/${this.currentUser.id}`;
-
-      
-      // First, let's test if we can GET the user data with this token
       try {
 
         const getUserResponse = await this.http.get<any>(apiUrl, {
@@ -1351,16 +1347,12 @@ export class UserProfileComponent implements OnInit {
 
         this.successMessage = 'Perfil actualizado correctamente';
         
-        // Use the complete user object from server response
         this.currentUser = response as User;
 
-        // Update localStorage with the new user data
         localStorage.setItem('current_user', JSON.stringify(this.currentUser));
 
-        // Update the AuthService's current user subject
         (this.authService as any).currentUserSubject?.next(this.currentUser);
-        
-        // Update the form with the new values from server
+    
         this.editForm.patchValue({
           correo: this.currentUser.correo || '',
           celular: this.currentUser.celular || '',
@@ -1385,13 +1377,13 @@ export class UserProfileComponent implements OnInit {
     const file = event.target.files[0];
     if (!file) return;
 
-    // Validate file type
+
     if (!file.type.startsWith('image/')) {
       this.setError('general', 'Por favor seleccione un archivo de imagen válido');
       return;
     }
 
-    // Validate file size (max 5MB)
+ 
     if (file.size > 5 * 1024 * 1024) {
       this.setError('general', 'El archivo no puede ser mayor a 5MB');
       return;
@@ -1404,7 +1396,6 @@ export class UserProfileComponent implements OnInit {
   async uploadPhoto() {
     if (!this.selectedPhotoFile || !this.currentUser) return;
 
-    // Check update attempts limit
     if (this.updateAttempts >= 2) {
       this.setError('general', 'Límite de ediciones alcanzado. Solo se permiten 2 actualizaciones.');
       return;
@@ -1414,17 +1405,17 @@ export class UserProfileComponent implements OnInit {
       this.isUploadingPhoto = true;
       this.clearMessages();
 
-      // Convert file to base64
+    
       const base64Photo = await this.convertFileToBase64(this.selectedPhotoFile);
 
-      // Get token
+
       let token = localStorage.getItem('auth_token');
       if (!token) {
         this.setError('general', 'No se encontró el token de autenticación');
         return;
       }
 
-      // Prepare update data with photo
+   
       const updateData = {
         foto: base64Photo
       };
@@ -1446,13 +1437,13 @@ export class UserProfileComponent implements OnInit {
 
         this.successMessage = 'Foto actualizada correctamente';
         
-        // Update the current user with new photo
+
         this.currentUser = response as User;
         
-        // Update localStorage
+
         localStorage.setItem('current_user', JSON.stringify(this.currentUser));
         
-        // Update AuthService
+        
         (this.authService as any).currentUserSubject?.next(this.currentUser);
         
         this.updateAttempts++;
@@ -1475,7 +1466,7 @@ export class UserProfileComponent implements OnInit {
       const reader = new FileReader();
       reader.onload = () => {
         const result = reader.result as string;
-        // Remove the data:image/...;base64, prefix
+
         const base64 = result.split(',')[1];
         resolve(`data:${file.type};base64,${base64}`);
       };
@@ -1487,10 +1478,9 @@ export class UserProfileComponent implements OnInit {
   private handleUpdateError(error: any) {
     
     if (error.status === 400) {
-      // Try to show the specific error message from backend
+  
       const backendMessage = error.error?.message || error.error?.error || 'Datos inválidos';
       this.setError('general', `Error del servidor: ${backendMessage}`);
-      // Additional 400 error handling
 
     } else if (error.status === 401) {
       this.setError('general', 'No autorizado. Verifique sus permisos');

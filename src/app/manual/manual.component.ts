@@ -19,7 +19,7 @@ export class ManualComponent {
 
   constructor(private router: Router) {}
 
-  showIndex = false; // Índice oculto por defecto en móvil
+  showIndex = false; 
 
   toggleIndex(): void {
     this.showIndex = !this.showIndex;
