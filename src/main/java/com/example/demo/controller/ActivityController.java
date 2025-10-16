@@ -1,13 +1,18 @@
 package com.example.demo.controller;
 
-import com.example.demo.dto.ActivityResponse;
-import com.example.demo.service.ActivityService;
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import com.example.demo.dto.ActivityResponse;
+import com.example.demo.service.ActivityService;
+
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/activities")
@@ -16,7 +21,7 @@ public class ActivityController {
 
     private final ActivityService activityService;
 
-    // Public endpoint for demo/testing
+
     @GetMapping("/public/recent")
     public ResponseEntity<List<ActivityResponse>> getRecentActivitiesPublic(
             @RequestParam(name = "limit", defaultValue = "5") int limit,

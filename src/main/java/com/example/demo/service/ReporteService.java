@@ -9,7 +9,6 @@ import com.example.demo.repository.TramiteRepository;
 import com.example.demo.repository.AreaRepository;
 import com.example.demo.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,7 +20,6 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 @Transactional(readOnly = true)
 public class ReporteService {
 
@@ -31,7 +29,6 @@ public class ReporteService {
     private final UsuarioService usuarioService;
 
     public ReporteCompletoDTO generarReporteCompleto(LocalDate fechaInicio, LocalDate fechaFin) {
-        // Si no se especifican fechas, usar el mes actual
         if (fechaInicio == null) {
             fechaInicio = LocalDate.now().withDayOfMonth(1);
         }
@@ -115,17 +112,16 @@ public class ReporteService {
     public List<TramiteUrgenteDTO> obtenerTramitesUrgentes() {
         LocalDate hoy = LocalDate.now();
 
-        // Obtener trámites vencidos o que vencen pronto
         List<Tramite> tramitesUrgentes = tramiteRepository.findAll().stream()
                 .filter(t -> !EstadoTramite.FINALIZADO.equals(t.getEstado()) &&
                            !EstadoTramite.RECHAZADO.equals(t.getEstado()) &&
                            t.getFechaVencimiento() != null)
                 .filter(t -> {
                     long diasHastaVencimiento = ChronoUnit.DAYS.between(hoy, t.getFechaVencimiento().toLocalDate());
-                    return diasHastaVencimiento <= 3; 
+                    return diasHastaVencimiento <= 3;
                 })
                 .sorted((a, b) -> a.getFechaVencimiento().compareTo(b.getFechaVencimiento()))
-                .limit(10) // Limitar a los 10 más urgentes
+                .limit(10)
                 .collect(Collectors.toList());
 
         return tramitesUrgentes.stream()
@@ -138,7 +134,6 @@ public class ReporteService {
                             var usuario = usuarioService.obtenerUsuarioPorId(t.getUsuarioAsignadoId());
                             responsable = usuario.getNombre() + " " + usuario.getApellidos();
                         } catch (Exception e) {
-                            log.warn("No se pudo obtener el usuario asignado: {}", e.getMessage());
                         }
                     }
 
@@ -190,7 +185,6 @@ public class ReporteService {
     public List<TramitePorUsuarioDTO> obtenerTramitesPorUsuario() {
         List<Tramite> tramites = tramiteRepository.findAll();
 
-        // Agrupar trámites por usuario asignado
         Map<Long, List<Tramite>> tramitesPorUsuario = tramites.stream()
                 .filter(t -> t.getUsuarioAsignadoId() != null)
                 .collect(Collectors.groupingBy(Tramite::getUsuarioAsignadoId));
@@ -208,7 +202,6 @@ public class ReporteService {
                         nombreUsuario = usuario.getNombre() + " " + usuario.getApellidos();
                         areaUsuario = usuario.getArea() != null ? usuario.getArea().getNombre() : "Sin área";
                     } catch (Exception e) {
-                        log.warn("No se pudo obtener información del usuario {}: {}", usuarioId, e.getMessage());
                     }
 
                     Long tramitesCreados = tramitesDelUsuario.stream()
@@ -224,7 +217,6 @@ public class ReporteService {
                             .filter(t -> EstadoTramite.RECHAZADO.equals(t.getEstado()))
                             .count();
 
-                    // Calcular promedio de tiempo de respuesta
                     Double promedioTiempo = tramitesDelUsuario.stream()
                             .filter(t -> t.getFechaRespuesta() != null && t.getFechaCreacion() != null)
                             .mapToLong(t -> ChronoUnit.DAYS.between(
@@ -243,12 +235,11 @@ public class ReporteService {
                             .build();
                 })
                 .sorted((a, b) -> b.getTramitesProcesados().compareTo(a.getTramitesProcesados()))
-                .limit(10) // Top 10 usuarios
+                .limit(10)
                 .collect(Collectors.toList());
     }
 
     public byte[] generarReporteExcel(LocalDate fechaInicio, LocalDate fechaFin) {
-        // Implementación simplificada - en producción usar Apache POI
         ReporteCompletoDTO reporte = generarReporteCompleto(fechaInicio, fechaFin);
 
         StringBuilder csv = new StringBuilder();
@@ -274,7 +265,6 @@ public class ReporteService {
     }
 
     public byte[] generarReportePDF(LocalDate fechaInicio, LocalDate fechaFin) {
-        // Implementación simplificada - en producción usar una librería de PDF
         ReporteCompletoDTO reporte = generarReporteCompleto(fechaInicio, fechaFin);
 
         StringBuilder html = new StringBuilder();

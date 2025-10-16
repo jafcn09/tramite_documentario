@@ -20,11 +20,9 @@ import com.example.demo.repository.TramiteRepository;
 import com.example.demo.repository.UsuarioRepository;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 @Transactional
 public class NotificacionService {
     
@@ -34,10 +32,9 @@ public class NotificacionService {
     private final SimpMessagingTemplate messagingTemplate;
     private final EmailService emailService;
     private final UsuarioService usuarioService;
-    
+
     private static final int MAX_TRAMITES_POR_TRABAJADOR = 20;
-    
-    // Notificar nuevo trámite a trabajadores del área
+
     @Async
     public void notificarNuevoTramite(Long tramiteId, Long areaId) {
         List<Long> trabajadoresArea = usuarioService.obtenerTrabajadoresDeArea(areaId);
@@ -52,20 +49,14 @@ public class NotificacionService {
             notificacion.setTramiteRelacionadoId(tramiteId);
             notificacion.setAreaOrigenId(areaId);
             notificacion.setRutaDestino("/tramites/" + tramiteId);
-            
+
             Notificacion saved = notificacionRepository.save(notificacion);
-            
-            // WebSocket
+
             enviarNotificacionWebSocket(saved, trabajadorId);
-            
-            // Email
             emailService.notificarNuevoTramiteATrabajador(trabajadorId, tramiteId);
         }
-        
-        log.info("Notificado nuevo trámite {} a {} trabajadores", tramiteId, trabajadoresArea.size());
     }
-    
-    // Notificar autoasignacion de tramite
+
     @Async
     public void notificarAutoasignacionTramite(Long tramiteId, Long trabajadorId, Long solicitanteId) {
         tramiteRepository.findById(tramiteId).ifPresent(tramite -> {
@@ -89,7 +80,6 @@ public class NotificacionService {
         });
     }
 
-    // Notificar recepción de trámite al solicitante
     @Async
     public void notificarRecepcionTramite(Long tramiteId, Long trabajadorId, Long solicitanteId) {
         tramiteRepository.findById(tramiteId).ifPresent(tramite -> {
@@ -107,13 +97,11 @@ public class NotificacionService {
             notificacion.setTramiteRelacionadoId(tramiteId);
             notificacion.setUsuarioEmisorId(trabajadorId);
             notificacion.setRutaDestino("/tramites/" + tramiteId);
-            
+
             Notificacion saved = notificacionRepository.save(notificacion);
-            
-            // WebSocket
+
             enviarNotificacionWebSocket(saved, solicitanteId);
-            
-            // Email con detalles
+
             Map<String, Object> datos = new HashMap<>();
             datos.put("tramiteCodigo", tramite.getCodigo());
             datos.put("trabajadorNombre", usuarioService.obtenerNombreCompleto(trabajadorId));
@@ -122,23 +110,20 @@ public class NotificacionService {
             emailService.enviarCorreoRecepcion(solicitanteId, tramiteId, datos);
         });
     }
-    
-    // Notificar respuesta de trámite con email obligatorio
+
     @Async
     public boolean notificarRespuestaTramite(Long tramiteId, Long solicitanteId, Long administrativoId,
                                             String respuesta, String asunto, Integer cantidadDocumentos) {
         try {
             tramiteRepository.findById(tramiteId).ifPresent(tramite -> {
-                // Obtener información del administrativo que respondió
                 String nombreResponsable = usuarioRepository.findById(administrativoId)
                     .map(admin -> admin.getNombre() + " " + admin.getApellidos())
                     .orElse("el administrativo");
-                
-                // Crear notificación en el sistema
+
                 Notificacion notificacion = new Notificacion();
                 notificacion.setUsuarioDestinatarioId(solicitanteId);
                 notificacion.setTitulo("Su trámite ha sido respondido");
-                // Crear mensaje con información de documentos adjuntos
+
                 String mensajeBase = String.format(
                     "Su trámite %s ha sido respondido por %s.",
                     tramite.getCodigo(),
@@ -158,45 +143,35 @@ public class NotificacionService {
                 notificacion.setTramiteRelacionadoId(tramiteId);
                 notificacion.setUsuarioEmisorId(administrativoId);
                 notificacion.setRutaDestino("/tramites/" + tramiteId);
-                
+
                 Notificacion saved = notificacionRepository.save(notificacion);
-                
-                // WebSocket
+
                 enviarNotificacionWebSocket(saved, solicitanteId);
-                
-                // Email con template HTML mejorado - OBLIGATORIO
+
                 Map<String, Object> datos = new HashMap<>();
                 datos.put("tramiteCodigo", tramite.getCodigo());
                 datos.put("tramiteTitulo", tramite.getTitulo());
                 datos.put("respuesta", respuesta);
                 datos.put("asunto", asunto);
                 datos.put("fechaRespuesta", LocalDateTime.now());
-                
-                // Obtener nombre del administrativo
+
                 String nombreAdministrativo = usuarioService.obtenerNombreCompleto(administrativoId);
                 datos.put("administrativoNombre", nombreAdministrativo);
-
-                // Agregar información de documentos adjuntos
                 datos.put("cantidadDocumentos", cantidadDocumentos != null ? cantidadDocumentos : 0);
-                
-                // Enviar email con template HTML
+
                 emailService.enviarCorreoRespuestaTramite(solicitanteId, tramiteId, datos);
             });
-            
-            log.info("Notificación de respuesta enviada para trámite {} al solicitante {}", tramiteId, solicitanteId);
+
             return true;
         } catch (Exception e) {
-            log.error("Error al enviar notificación de respuesta: ", e);
             return false;
         }
     }
-    
-    // Notificar derivación de trámite
+
     @Async
     public void notificarDerivacionTramite(Long tramiteId, Long trabajadorAnterior, 
                                           Long trabajadorNuevo, String motivo) {
         tramiteRepository.findById(tramiteId).ifPresent(tramite -> {
-            // Notificar al nuevo trabajador
             Notificacion notifNuevo = new Notificacion();
             notifNuevo.setUsuarioDestinatarioId(trabajadorNuevo);
             notifNuevo.setTitulo("Trámite derivado");
@@ -212,11 +187,8 @@ public class NotificacionService {
             
             Notificacion savedNuevo = notificacionRepository.save(notifNuevo);
             enviarNotificacionWebSocket(savedNuevo, trabajadorNuevo);
-            
-            // Email al nuevo trabajador
             emailService.notificarDerivacionATrabajador(trabajadorNuevo, tramiteId, motivo);
-            
-            // Notificar al solicitante del cambio
+
             Notificacion notifSolicitante = new Notificacion();
             notifSolicitante.setUsuarioDestinatarioId(tramite.getUsuarioSolicitanteId());
             notifSolicitante.setTitulo("Trámite reasignado");
@@ -232,24 +204,20 @@ public class NotificacionService {
             
             Notificacion savedSolicitante = notificacionRepository.save(notifSolicitante);
             enviarNotificacionWebSocket(savedSolicitante, tramite.getUsuarioSolicitanteId());
-            
-            // Email al solicitante
             emailService.notificarReasignacionASolicitante(
-                tramite.getUsuarioSolicitanteId(), 
-                tramiteId, 
+                tramite.getUsuarioSolicitanteId(),
+                tramiteId,
                 trabajadorNuevo
             );
         });
     }
-    
-    // Notificar cambio de estado automático
+
     @Async
     public void notificarCambioEstadoAutomatico(Long tramiteId, String estadoAnterior, 
                                                String estadoNuevo) {
         tramiteRepository.findById(tramiteId).ifPresent(tramite -> {
             String mensaje = generarMensajeEstado(estadoNuevo, tramite.getCodigo());
-            
-            // Notificar al solicitante
+
             Notificacion notificacion = new Notificacion();
             notificacion.setUsuarioDestinatarioId(tramite.getUsuarioSolicitanteId());
             notificacion.setTitulo("Actualización de trámite");
@@ -258,21 +226,18 @@ public class NotificacionService {
             notificacion.setPrioridad(determinarPrioridad(estadoNuevo));
             notificacion.setTramiteRelacionadoId(tramiteId);
             notificacion.setRutaDestino("/tramites/" + tramiteId);
-            
+
             Notificacion saved = notificacionRepository.save(notificacion);
             enviarNotificacionWebSocket(saved, tramite.getUsuarioSolicitanteId());
-            
-            // Email al solicitante
             emailService.notificarCambioEstado(
-                tramite.getUsuarioSolicitanteId(), 
-                tramiteId, 
-                estadoAnterior, 
+                tramite.getUsuarioSolicitanteId(),
+                tramiteId,
+                estadoAnterior,
                 estadoNuevo
             );
         });
     }
-    
-    // Notificar finalización con archivo adjunto
+
     @Async
     public void notificarFinalizacionConArchivo(Long tramiteId, String urlArchivo) {
         tramiteRepository.findById(tramiteId).ifPresent(tramite -> {
@@ -292,22 +257,18 @@ public class NotificacionService {
             Map<String, String> metadatos = new HashMap<>();
             metadatos.put("archivoUrl", urlArchivo);
             notificacion.setMetadatos(metadatos.toString());
-            
+
             Notificacion saved = notificacionRepository.save(notificacion);
             enviarNotificacionWebSocket(saved, tramite.getUsuarioSolicitanteId());
-            
-            // Email con archivo adjunto
             emailService.enviarCorreoFinalizacionConArchivo(
-                tramite.getUsuarioSolicitanteId(), 
-                tramiteId, 
+                tramite.getUsuarioSolicitanteId(),
+                tramiteId,
                 urlArchivo
             );
         });
     }
-    
-    // Verificar capacidad del trabajador
+
     public boolean puedeAsumirMasTramites(Long trabajadorId) {
-        // Contar trámites activos del trabajador
         Long tramitesActivos = tramiteRepository.countByUsuarioAsignadoIdAndEstado(
             trabajadorId, 
             com.example.demo.model.Tramite.EstadoTramite.EN_PROCESO
@@ -315,8 +276,7 @@ public class NotificacionService {
         
         return tramitesActivos < MAX_TRAMITES_POR_TRABAJADOR;
     }
-    
-    // Obtener trabajador con menor carga
+
     public Long obtenerTrabajadorConMenorCarga(Long areaId) {
         List<Long> trabajadores = usuarioService.obtenerTrabajadoresDeArea(areaId);
         Long trabajadorIdeal = null;
@@ -336,22 +296,19 @@ public class NotificacionService {
         
         return trabajadorIdeal;
     }
-    
-    // CRUD para admin
+
     @Transactional(readOnly = true)
     public Page<NotificacionResponse> obtenerTodasNotificaciones(Pageable pageable) {
         return notificacionRepository.findAll(pageable).map(this::convertirAResponse);
     }
-    
+
     public NotificacionResponse crearNotificacion(NotificacionRequest request) {
-        // Determinar destinatarios basado en el tipo de envío
         List<Long> destinatarios = determinarDestinatarios(request);
         
         if (destinatarios.isEmpty()) {
             throw new IllegalArgumentException("No se encontraron destinatarios válidos para la notificación");
         }
-        
-        // Crear notificación para cada destinatario
+
         NotificacionResponse responseEjemplo = null;
         
         for (Long destinatarioId : destinatarios) {
@@ -367,19 +324,16 @@ public class NotificacionService {
             notificacion.setRutaDestino(request.getRutaDestino());
             notificacion.setFechaVencimiento(request.getFechaVencimiento());
             notificacion.setMetadatos(request.getMetadatos());
-            
+
             Notificacion saved = notificacionRepository.save(notificacion);
-            
-            // Enviar por WebSocket
+
             enviarNotificacionWebSocket(saved, destinatarioId);
-            
-            // Guardar una respuesta de ejemplo para retornar
+
             if (responseEjemplo == null) {
                 responseEjemplo = convertirAResponse(saved);
             }
         }
-        
-        log.info("Notificación creada para {} destinatarios: {}", destinatarios.size(), request.getTitulo());
+
         return responseEjemplo;
     }
     
@@ -394,10 +348,9 @@ public class NotificacionService {
             })
             .orElseThrow(() -> new RuntimeException("Notificación no encontrada"));
     }
-    
+
     public void eliminarNotificacion(Long id) {
         notificacionRepository.deleteById(id);
-        log.info("Notificación {} eliminada por admin", id);
     }
     
     public void eliminarNotificacionUsuario(Long id, Long usuarioId) {
@@ -407,26 +360,20 @@ public class NotificacionService {
         if (!notificacion.getUsuarioDestinatarioId().equals(usuarioId)) {
             throw new RuntimeException("No tiene permisos para eliminar esta notificación");
         }
-        
+
         notificacionRepository.deleteById(id);
-        log.info("Notificación {} eliminada por usuario {}", id, usuarioId);
     }
 
     public void eliminarTodasNotificacionesUsuario(Long usuarioId) {
-        // Obtener todas las notificaciones del usuario sin paginación
         List<Notificacion> notificaciones = notificacionRepository
             .findByUsuarioDestinatarioIdOrderByFechaCreacionDesc(usuarioId,
                 org.springframework.data.domain.Pageable.unpaged()).getContent();
 
         if (!notificaciones.isEmpty()) {
             notificacionRepository.deleteAll(notificaciones);
-            log.info("Eliminadas {} notificaciones del usuario {}", notificaciones.size(), usuarioId);
-        } else {
-            log.info("No hay notificaciones para eliminar del usuario {}", usuarioId);
         }
     }
-    
-    // Obtener notificaciones de un usuario
+
     @Transactional(readOnly = true)
     public Page<NotificacionResponse> obtenerNotificacionesUsuario(Long usuarioId, Pageable pageable) {
         Page<Notificacion> notificaciones = notificacionRepository
@@ -434,22 +381,19 @@ public class NotificacionService {
         
         return notificaciones.map(this::convertirAResponse);
     }
-    
-    // Obtener una notificación por ID
+
     @Transactional(readOnly = true)
     public NotificacionResponse obtenerNotificacionPorId(Long id, Long usuarioId) {
         Notificacion notificacion = notificacionRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Notificación no encontrada"));
-        
-        // Verificar que la notificación pertenece al usuario
+
         if (!notificacion.getUsuarioDestinatarioId().equals(usuarioId)) {
             throw new RuntimeException("No tiene permisos para ver esta notificación");
         }
-        
+
         return convertirAResponse(notificacion);
     }
-    
-    // Obtener notificaciones no leídas
+
     @Transactional(readOnly = true)
     public Page<NotificacionResponse> obtenerNotificacionesNoLeidas(Long usuarioId, Pageable pageable) {
         Page<Notificacion> notificaciones = notificacionRepository
@@ -457,42 +401,33 @@ public class NotificacionService {
         
         return notificaciones.map(this::convertirAResponse);
     }
-    
-    // Contar notificaciones no leídas
+
     @Transactional(readOnly = true)
     public Long contarNotificacionesNoLeidas(Long usuarioId) {
         return notificacionRepository.countByUsuarioDestinatarioIdAndEsLeidaFalse(usuarioId);
     }
-    
-    // Marcar notificación como leída
+
     public void marcarComoLeida(Long notificacionId, Long usuarioId) {
         int updated = notificacionRepository.marcarComoLeida(notificacionId, usuarioId, LocalDateTime.now());
         if (updated > 0) {
-            log.info("Notificación {} marcada como leída", notificacionId);
-            
-            // WebSocket actualización
             messagingTemplate.convertAndSendToUser(
-                usuarioId.toString(), 
-                "/queue/notificaciones/leida", 
+                usuarioId.toString(),
+                "/queue/notificaciones/leida",
                 notificacionId
             );
         }
     }
-    
-    // Marcar todas como leídas
+
     public void marcarTodasComoLeidas(Long usuarioId) {
-        int updated = notificacionRepository.marcarTodasComoLeidas(usuarioId, LocalDateTime.now());
-        log.info("{} notificaciones marcadas como leídas", updated);
-        
-        // WebSocket actualización
+        notificacionRepository.marcarTodasComoLeidas(usuarioId, LocalDateTime.now());
+
         messagingTemplate.convertAndSendToUser(
             usuarioId.toString(), 
             "/queue/notificaciones/todas-leidas", 
             true
         );
     }
-    
-    // Métodos auxiliares
+
     private void enviarNotificacionWebSocket(Notificacion notificacion, Long usuarioId) {
         try {
             NotificacionResponse response = convertirAResponse(notificacion);
@@ -501,9 +436,7 @@ public class NotificacionService {
                 "/queue/notificaciones",
                 response
             );
-            log.debug("Notificación WebSocket enviada a usuario {}", usuarioId);
         } catch (Exception e) {
-            log.error("Error enviando notificación WebSocket: ", e);
         }
     }
     
@@ -523,7 +456,7 @@ public class NotificacionService {
             .metadatos(notificacion.getMetadatos())
             .build();
     }
-    
+
     private String generarMensajeEstado(String estado, String codigoTramite) {
         return switch (estado) {
             case "EN_PROCESO" -> "Su trámite " + codigoTramite + " está siendo procesado";
@@ -551,29 +484,25 @@ public class NotificacionService {
             default -> Notificacion.PrioridadNotificacion.BAJA;
         };
     }
-    
-    // Obtener notificaciones filtradas
+
     @Transactional(readOnly = true)
     public Page<NotificacionResponse> obtenerNotificacionesFiltradas(
-            Long usuarioId, String tipo, String prioridad, Boolean esLeida, 
+            Long usuarioId, String tipo, String prioridad, Boolean esLeida,
             Long tramiteId, Pageable pageable) {
-        
-        // Convertir strings a enums
+
         Notificacion.TipoNotificacion tipoEnum = null;
         if (tipo != null && !tipo.isEmpty()) {
             try {
                 tipoEnum = Notificacion.TipoNotificacion.valueOf(tipo);
             } catch (IllegalArgumentException e) {
-                // Ignorar tipo inválido
             }
         }
-        
+
         Notificacion.PrioridadNotificacion prioridadEnum = null;
         if (prioridad != null && !prioridad.isEmpty()) {
             try {
                 prioridadEnum = Notificacion.PrioridadNotificacion.valueOf(prioridad);
             } catch (IllegalArgumentException e) {
-                // Ignorar prioridad inválida
             }
         }
         
@@ -582,8 +511,7 @@ public class NotificacionService {
         
         return notificaciones.map(this::convertirAResponse);
     }
-    
-    // Obtener notificaciones por trámite
+
     @Transactional(readOnly = true)
     public Page<NotificacionResponse> obtenerNotificacionesPorTramite(
             Long usuarioId, Long tramiteId, Pageable pageable) {
@@ -594,69 +522,55 @@ public class NotificacionService {
         
         return notificaciones.map(this::convertirAResponse);
     }
-    
-    // Limpiar notificaciones antiguas
+
     public Integer limpiarNotificacionesAntiguas(int diasAntiguedad) {
         LocalDateTime fechaLimite = LocalDateTime.now().minusDays(diasAntiguedad);
         int eliminadas = notificacionRepository.eliminarNotificacionesAntiguas(fechaLimite);
-        log.info("Eliminadas {} notificaciones anteriores a {}", eliminadas, fechaLimite);
         return eliminadas;
     }
-    
-    // Reenviar notificación por email
+
     public void reenviarNotificacionPorEmail(Long notificacionId, Long usuarioId) {
         notificacionRepository.findById(notificacionId)
             .filter(n -> n.getUsuarioDestinatarioId().equals(usuarioId))
             .ifPresentOrElse(
                 notificacion -> {
-                    // Reenviar por email
                     emailService.reenviarNotificacion(notificacion);
-                    log.info("Notificación {} reenviada por email", notificacionId);
                 },
                 () -> {
                     throw new RuntimeException("Notificación no encontrada o sin permisos");
                 }
             );
     }
-    
-    // Estadísticas de notificaciones (ADMIN)
+
     @Transactional(readOnly = true)
     public Object obtenerEstadisticasNotificaciones() {
         Map<String, Object> estadisticas = new HashMap<>();
-        
-        // Total de notificaciones
+
         estadisticas.put("totalNotificaciones", notificacionRepository.count());
-        
-        // Por estado de lectura
         estadisticas.put("noLeidas", notificacionRepository.countByEsLeidaFalse());
         estadisticas.put("leidas", notificacionRepository.countByEsLeidaTrue());
-        
-        // Por tipo
+
         for (Notificacion.TipoNotificacion tipo : Notificacion.TipoNotificacion.values()) {
             estadisticas.put("tipo_" + tipo.name(), 
                 notificacionRepository.countByTipo(tipo));
         }
-        
-        // Por prioridad
+
         for (Notificacion.PrioridadNotificacion prioridad : Notificacion.PrioridadNotificacion.values()) {
             estadisticas.put("prioridad_" + prioridad.name(), 
                 notificacionRepository.countByPrioridad(prioridad));
         }
-        
-        // Notificaciones del último mes
+
         LocalDateTime mesAnterior = LocalDateTime.now().minusMonths(1);
         estadisticas.put("ultimoMes", 
             notificacionRepository.countByFechaCreacionAfter(mesAnterior));
         
         return estadisticas;
     }
-    
-    // Obtener configuración de notificaciones del usuario
+
     @Transactional(readOnly = true)
     public Object obtenerConfiguracionUsuario(Long usuarioId) {
         Map<String, Object> configuracion = new HashMap<>();
-        
-        // Configuración por defecto (esto debería estar en una entidad ConfiguracionUsuario)
+
         configuracion.put("recibirEmails", true);
         configuracion.put("recibirWebSocket", true);
         configuracion.put("recibirPorTipo", Map.of(
@@ -671,36 +585,24 @@ public class NotificacionService {
         
         return configuracion;
     }
-    
-    // Actualizar configuración de notificaciones del usuario
+
     public void actualizarConfiguracionUsuario(Long usuarioId, Object configuracion) {
-        // Esto debería guardar en una entidad ConfiguracionUsuario
-        // Por ahora solo log
-        log.info("Configuración de notificaciones actualizada para usuario {}: {}", 
-            usuarioId, configuracion);
     }
-    
-    // Método auxiliar para determinar destinatarios de la notificación
+
     private List<Long> determinarDestinatarios(NotificacionRequest request) {
         List<Long> destinatarios = new java.util.ArrayList<>();
-        
+
         if (request.getEnviarATodos() != null && request.getEnviarATodos()) {
-            // Enviar a todos los usuarios activos del sistema
             destinatarios = usuarioService.obtenerTodosLosUsuariosActivos();
-            
         } else if (request.getRoleDestinatario() != null && !request.getRoleDestinatario().trim().isEmpty()) {
-            // Enviar a todos los usuarios de un rol específico
             destinatarios = usuarioService.obtenerUsuariosPorRol(request.getRoleDestinatario());
-            
         } else if (request.getUsuarioDestinatarioId() != null) {
-            // Enviar a un usuario específico
             destinatarios.add(request.getUsuarioDestinatarioId());
         }
-        
+
         return destinatarios;
     }
 
-    // Crear notificación para rechazo de trámite
     public void crearNotificacionRechazoTramite(Long usuarioId, Long tramiteId, String codigoTramite, String asuntoTramite, String motivoRechazo) {
         try {
             Notificacion notificacion = new Notificacion();
@@ -717,10 +619,7 @@ public class NotificacionService {
             notificacion.setTramiteRelacionadoId(tramiteId);
 
             notificacionRepository.save(notificacion);
-
-            log.info("Notificación de rechazo creada para usuario {} - trámite {}", usuarioId, codigoTramite);
         } catch (Exception e) {
-            log.error("Error creando notificación de rechazo para trámite {}: {}", tramiteId, e.getMessage());
         }
     }
 }

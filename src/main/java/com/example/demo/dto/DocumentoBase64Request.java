@@ -14,6 +14,6 @@ public class DocumentoBase64Request {
     private String nombre;
     private String tipo;
     private Long tamano;
-    private String contenido; // Base64 encoded content
+    private String contenido;
     private String descripcion;
 }

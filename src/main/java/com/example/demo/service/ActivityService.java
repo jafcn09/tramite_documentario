@@ -1,22 +1,23 @@
 package com.example.demo.service;
 
-import com.example.demo.dto.ActivityResponse;
-import com.example.demo.model.Usuario;
-import com.example.demo.repository.UsuarioRepository;
-import com.example.demo.entity.Area;
-import com.example.demo.repository.AreaRepository;
-import com.example.demo.model.Tramite;
-import com.example.demo.repository.TramiteRepository;
-import com.example.demo.model.Notificacion;
-import com.example.demo.repository.NotificacionRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+
+import com.example.demo.dto.ActivityResponse;
+import com.example.demo.entity.Area;
+import com.example.demo.model.Notificacion;
+import com.example.demo.model.Tramite;
+import com.example.demo.model.Usuario;
+import com.example.demo.repository.AreaRepository;
+import com.example.demo.repository.NotificacionRepository;
+import com.example.demo.repository.TramiteRepository;
+import com.example.demo.repository.UsuarioRepository;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +31,7 @@ public class ActivityService {
     public List<ActivityResponse> getRecentActivities(int limit, int offset) {
         List<ActivityResponse> activities = new ArrayList<>();
 
-        // 1. Obtener últimos 5 usuarios registrados
+
         List<Usuario> recentUsers = usuarioRepository.findAll().stream()
                 .filter(u -> u.getFechaCreacion() != null)
                 .sorted(Comparator.comparing(Usuario::getFechaCreacion).reversed())
@@ -48,7 +49,7 @@ public class ActivityService {
                     .build());
         }
         
-        // 2. Obtener trámites pendientes de revisión o aprobación
+       
         List<Tramite> pendingTramites = tramiteRepository.findAll().stream()
                 .filter(t -> t.getEstado() != null &&
                         (t.getEstado().name().equals("EN_REVISION") ||
@@ -75,7 +76,7 @@ public class ActivityService {
                     .build());
         }
         
-        // 3. Obtener notificaciones recientes del sistema
+
         List<Notificacion> recentNotifications = notificacionRepository.findAll().stream()
                 .filter(n -> n.getFechaCreacion() != null)
                 .sorted(Comparator.comparing(Notificacion::getFechaCreacion).reversed())
@@ -94,7 +95,6 @@ public class ActivityService {
                     .build());
         }
 
-        // 4. Obtener trámites finalizados recientemente
         List<Tramite> completedTramites = tramiteRepository.findAll().stream()
                 .filter(t -> t.getEstado() != null && t.getEstado().name().equals("FINALIZADO"))
                 .sorted(Comparator.comparing(Tramite::getFechaActualizacion).reversed())
@@ -113,7 +113,6 @@ public class ActivityService {
                     .build());
         }
 
-        // 5. Obtener áreas creadas recientemente (como información adicional)
         List<Area> recentAreas = areaRepository.findAll().stream()
                 .filter(area -> area.getCreatedAt() != null)
                 .sorted(Comparator.comparing(Area::getCreatedAt).reversed())

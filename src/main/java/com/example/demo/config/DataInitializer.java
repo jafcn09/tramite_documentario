@@ -6,16 +6,13 @@ import com.example.demo.repository.RoleRepository;
 import com.example.demo.repository.UsuarioRepository;
 import com.example.demo.service.JwtService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-
 @Configuration
 @RequiredArgsConstructor
-@Slf4j
 public class DataInitializer {
 
     private final RoleRepository roleRepository;
@@ -26,9 +23,6 @@ public class DataInitializer {
     @Bean
     CommandLineRunner init() {
         return args -> {
-            log.info("=== Initializing application data ===");
-            
-            // Create default roles if they don't exist
             Role adminRole = roleRepository.findByName("ADMIN")
                 .orElseGet(() -> {
                     Role role = new Role();
@@ -61,11 +55,10 @@ public class DataInitializer {
                     return roleRepository.save(role);
                 });
 
-            // Create default admin user if doesn't exist
             String defaultUsername = "admin";
             String defaultPassword = "admin123";
             String defaultEmail = "admin@example.com";
-            
+
             Usuario adminUser = usuarioRepository.findByUsuario(defaultUsername)
                 .orElseGet(() -> {
                     Usuario usuario = new Usuario();
@@ -79,44 +72,23 @@ public class DataInitializer {
                     usuario.setCelular("999999999");
                     usuario.setDireccion("System Address");
                     usuario.setRole(adminRole);
-                    // These fields are handled by JPA annotations
                     usuario.setAccountLocked(false);
                     usuario.setAccountEnabled(true);
                     usuario.setMustChangePassword(false);
-                    
-                    Usuario saved = usuarioRepository.save(usuario);
-                    log.info("Created default admin user: {}", defaultUsername);
-                    return saved;
+
+                    return usuarioRepository.save(usuario);
                 });
 
-            // Generate initial tokens for admin user
-            String accessToken = jwtService.generateToken(
+            jwtService.generateToken(
                 adminUser.getUsuario(),
                 adminUser.getRole().getName(),
                 adminUser.getId()
             );
-            
-            String refreshToken = jwtService.generateRefreshToken(
+
+            jwtService.generateRefreshToken(
                 adminUser.getUsuario(),
                 adminUser.getId()
             );
-
-            log.info("========================================");
-            log.info("=== APPLICATION STARTED SUCCESSFULLY ===");
-            log.info("========================================");
-            log.info("Default Admin Credentials:");
-            log.info("  Username: {}", defaultUsername);
-            log.info("  Password: {}", defaultPassword);
-            log.info("========================================");
-            log.info("Initial Access Token (valid for 24 hours):");
-            log.info("  {}", accessToken);
-            log.info("========================================");
-            log.info("Initial Refresh Token (valid for 7 days):");
-            log.info("  {}", refreshToken);
-            log.info("========================================");
-            log.info("Test the API with:");
-            log.info("  curl -H \"Authorization: Bearer {}\" http://localhost:8081/api/usuarios", accessToken);
-            log.info("========================================");
         };
     }
 }

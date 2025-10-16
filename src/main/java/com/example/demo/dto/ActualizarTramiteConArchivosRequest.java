@@ -15,12 +15,12 @@ import java.util.List;
 public class ActualizarTramiteConArchivosRequest {
 
     private String titulo;
-    private String asunto;  // Frontend envía 'asunto' además de 'titulo'
+    private String asunto;
     private String descripcion;
     private String tipo;
-    private Long tipoId;    // Frontend envía tipoId
+    private Long tipoId;
     private String prioridad;
-    private Long prioridadId;   // Frontend envía prioridadId
+    private Long prioridadId;
     private String observaciones;
     private LocalDateTime fechaVencimiento;
     private Long areaDestinoId;

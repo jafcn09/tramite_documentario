@@ -4,11 +4,10 @@ import com.example.demo.model.Tramite;
 import com.example.demo.model.Usuario;
 import com.example.demo.repository.TramiteRepository;
 import com.example.demo.repository.UsuarioRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import com.example.demo.dto.UsuarioResponse;
+import com.example.demo.dto.AreaResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
@@ -22,13 +21,23 @@ import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
 @Service
-@RequiredArgsConstructor
-@Slf4j
 public class EmailService {
 
     private final JavaMailSender mailSender;
     private final UsuarioRepository usuarioRepository;
     private final TramiteRepository tramiteRepository;
+    private final UsuarioService usuarioService;
+    private final AreaService areaService;
+
+    public EmailService(JavaMailSender mailSender, UsuarioRepository usuarioRepository,
+                       TramiteRepository tramiteRepository, UsuarioService usuarioService,
+                       AreaService areaService) {
+        this.mailSender = mailSender;
+        this.usuarioRepository = usuarioRepository;
+        this.tramiteRepository = tramiteRepository;
+        this.usuarioService = usuarioService;
+        this.areaService = areaService;
+    }
 
     @Value("${spring.mail.username:noreply@tramites.com}")
     private String fromEmail;
@@ -38,7 +47,6 @@ public class EmailService {
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
-    // Enviar correo de respuesta de trámite con template HTML mejorado
     @Async
     public void enviarCorreoRespuestaTramite(Long solicitanteId, Long tramiteId, Map<String, Object> datos) {
         usuarioRepository.findById(solicitanteId).ifPresent(solicitante -> {
@@ -51,14 +59,12 @@ public class EmailService {
                     helper.setTo(solicitante.getCorreo());
                     helper.setSubject(datos.get("asunto").toString());
 
-                    // Template HTML mejorado
                     String htmlContent = construirTemplateRespuesta(solicitante, tramite, datos);
                     helper.setText(htmlContent, true);
 
                     mailSender.send(message);
-                    log.info("Email de respuesta enviado a {} para trámite {}", solicitante.getCorreo(), tramite.getCodigo());
                 } catch (MessagingException e) {
-                    log.error("Error al enviar email de respuesta: ", e);
+                    throw new RuntimeException("Error al enviar email de respuesta", e);
                 }
             });
         });
@@ -130,7 +136,6 @@ public class EmailService {
             "</html>";
     }
 
-    // Notificar nuevo trámite a trabajador
     @Async
     public void notificarNuevoTramiteATrabajador(Long trabajadorId, Long tramiteId) {
         usuarioRepository.findById(trabajadorId).ifPresent(trabajador -> {
@@ -147,9 +152,8 @@ public class EmailService {
                     helper.setText(htmlContent, true);
 
                     mailSender.send(message);
-                    log.info("Email enviado a trabajador {} sobre nuevo trámite {}", trabajadorId, tramiteId);
                 } catch (Exception e) {
-                    log.error("Error enviando email a trabajador {}: {}", trabajadorId, e.getMessage());
+                    throw new RuntimeException("Error enviando email a trabajador", e);
                 }
             });
         });
@@ -349,15 +353,13 @@ public class EmailService {
 
                     helper.setText(htmlContent, true);
                     mailSender.send(mimeMessage);
-                    log.info("Email de autoasignacion enviado a trabajador {} sobre tramite {}", trabajadorId, tramiteId);
                 } catch (Exception e) {
-                    log.error("Error enviando email de autoasignacion a trabajador {}: {}", trabajadorId, e.getMessage());
+                    throw new RuntimeException("Error enviando email de autoasignacion", e);
                 }
             });
         });
     }
 
-    // Enviar correo de recepción al solicitante
     @Async
     public void enviarCorreoRecepcion(Long solicitanteId, Long tramiteId, Map<String, Object> datos) {
         usuarioRepository.findById(solicitanteId).ifPresent(solicitante -> {
@@ -483,22 +485,19 @@ public class EmailService {
 
                     helper.setText(htmlContent, true);
                     mailSender.send(message);
-                    log.info("Email de recepción enviado a solicitante {}", solicitanteId);
                 } catch (Exception e) {
-                    log.error("Error enviando email de recepción: {}", e.getMessage());
+                    throw new RuntimeException("Error enviando email de recepción", e);
                 }
             });
         });
     }
 
-    // Métodos auxiliares
     private String obtenerNombreSolicitante(Long usuarioId) {
         return usuarioRepository.findById(usuarioId)
             .map(u -> u.getNombre() + " " + u.getApellidos())
             .orElse("Usuario");
     }
 
-    // Enviar correo de rechazo de trámite
     @Async
     public void enviarCorreoRechazoTramite(Long solicitanteId, Long tramiteId, String motivoRechazo, String observaciones, String rechazadoPor) {
         usuarioRepository.findById(solicitanteId).ifPresent(solicitante -> {
@@ -580,16 +579,13 @@ public class EmailService {
 
                     helper.setText(htmlContent, true);
                     mailSender.send(message);
-
-                    log.info("Correo de rechazo enviado a {} para trámite {}", solicitante.getCorreo(), tramite.getCodigo());
                 } catch (Exception e) {
-                    log.error("Error enviando correo de rechazo: {}", e.getMessage(), e);
+                    throw new RuntimeException("Error enviando correo de rechazo", e);
                 }
             });
         });
     }
 
-    // Notificar edición de trámite al usuario
     @Async
     public void notificarEdicionTramiteAUsuario(Long usuarioId, Long tramiteId, String tituloAnterior, String tituloNuevo) {
         usuarioRepository.findById(usuarioId).ifPresent(usuario -> {
@@ -665,16 +661,13 @@ public class EmailService {
 
                     helper.setText(htmlContent, true);
                     mailSender.send(message);
-
-                    log.info("Correo de edición enviado a {} para trámite {}", usuario.getCorreo(), tramite.getCodigo());
                 } catch (Exception e) {
-                    log.error("Error enviando correo de edición: {}", e.getMessage(), e);
+                    throw new RuntimeException("Error enviando correo de edición", e);
                 }
             });
         });
     }
 
-    // Notificar derivación a trabajador
     @Async
     public void notificarDerivacionATrabajador(Long trabajadorId, Long tramiteId, String motivo) {
         usuarioRepository.findById(trabajadorId).ifPresent(trabajador -> {
@@ -740,15 +733,13 @@ public class EmailService {
 
                     helper.setText(htmlContent, true);
                     mailSender.send(message);
-                    log.info("Email de derivación enviado a trabajador {}", trabajadorId);
                 } catch (Exception e) {
-                    log.error("Error enviando email de derivación: {}", e.getMessage());
+                    throw new RuntimeException("Error enviando email de derivación", e);
                 }
             });
         });
     }
 
-    // Notificar reasignación al solicitante
     @Async
     public void notificarReasignacionASolicitante(Long solicitanteId, Long tramiteId, Long nuevoTrabajadorId) {
         usuarioRepository.findById(solicitanteId).ifPresent(solicitante -> {
@@ -802,15 +793,13 @@ public class EmailService {
 
                     helper.setText(htmlContent, true);
                     mailSender.send(message);
-                    log.info("Email de reasignación enviado a solicitante {}", solicitanteId);
                 } catch (Exception e) {
-                    log.error("Error enviando email de reasignación: {}", e.getMessage());
+                    throw new RuntimeException("Error enviando email de reasignación", e);
                 }
             });
         });
     }
 
-    // Notificar cambio de estado
     @Async
     public void notificarCambioEstado(Long solicitanteId, Long tramiteId, String estadoAnterior, String estadoNuevo) {
         usuarioRepository.findById(solicitanteId).ifPresent(solicitante -> {
@@ -863,15 +852,13 @@ public class EmailService {
 
                     helper.setText(htmlContent, true);
                     mailSender.send(message);
-                    log.info("Email de cambio de estado enviado a solicitante {}", solicitanteId);
                 } catch (Exception e) {
-                    log.error("Error enviando email de cambio de estado: {}", e.getMessage());
+                    throw new RuntimeException("Error enviando email de cambio de estado", e);
                 }
             });
         });
     }
 
-    // Enviar correo con archivo adjunto de finalización
     @Async
     public void enviarCorreoFinalizacionConArchivo(Long solicitanteId, Long tramiteId, String urlArchivo) {
         usuarioRepository.findById(solicitanteId).ifPresent(solicitante -> {
@@ -920,7 +907,6 @@ public class EmailService {
 
                     helper.setText(htmlContent, true);
 
-                    // Adjuntar archivo si existe
                     if (urlArchivo != null && !urlArchivo.isEmpty()) {
                         File file = new File(urlArchivo);
                         if (file.exists()) {
@@ -930,15 +916,13 @@ public class EmailService {
                     }
 
                     mailSender.send(mimeMessage);
-                    log.info("Email con archivo adjunto enviado a solicitante {}", solicitanteId);
                 } catch (MessagingException e) {
-                    log.error("Error enviando email con archivo adjunto: {}", e.getMessage());
+                    throw new RuntimeException("Error enviando email con archivo adjunto", e);
                 }
             });
         });
     }
 
-    // Reenviar notificación por email
     @Async
     public void reenviarNotificacion(com.example.demo.model.Notificacion notificacion) {
         usuarioRepository.findById(notificacion.getUsuarioDestinatarioId()).ifPresent(usuario -> {
@@ -992,11 +976,399 @@ public class EmailService {
 
                 helper.setText(htmlContent, true);
                 mailSender.send(message);
-                log.info("Notificación {} reenviada por email", notificacion.getId());
             } catch (Exception e) {
-                log.error("Error reenviando notificación por email: {}", e.getMessage());
+                throw new RuntimeException("Error reenviando notificación por email", e);
             }
         });
+    }
+
+    public String generarHtmlTramite(Tramite tramite) {
+        UsuarioResponse solicitante = null;
+        UsuarioResponse asignado = null;
+
+        try {
+            if (tramite.getUsuarioSolicitanteId() != null) {
+                solicitante = usuarioService.obtenerUsuarioPorId(tramite.getUsuarioSolicitanteId());
+            }
+            if (tramite.getUsuarioAsignadoId() != null) {
+                asignado = usuarioService.obtenerUsuarioPorId(tramite.getUsuarioAsignadoId());
+            }
+        } catch (Exception e) {
+            // Continuar sin información de usuarios
+        }
+
+        StringBuilder html = new StringBuilder();
+        html.append("<!DOCTYPE html><html><head>")
+            .append("<meta charset='UTF-8'>")
+            .append("<title>Trámite ").append(tramite.getCodigo()).append("</title>")
+            .append("<style>")
+            .append("body { font-family: Arial, sans-serif; margin: 20px; }")
+            .append(".header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 20px; }")
+            .append(".section { margin-bottom: 15px; }")
+            .append(".label { font-weight: bold; color: #555; }")
+            .append(".value { margin-left: 10px; }")
+            .append(".estado { padding: 5px 10px; border-radius: 5px; color: white; display: inline-block; }")
+            .append(".estado.ENVIADO { background-color: #007bff; }")
+            .append(".estado.EN_REVISION { background-color: #ffc107; color: black; }")
+            .append(".estado.APROBADO { background-color: #28a745; }")
+            .append(".estado.FINALIZADO { background-color: #17a2b8; }")
+            .append(".estado.RECHAZADO { background-color: #dc3545; }")
+            .append(".footer { margin-top: 30px; text-align: center; font-size: 12px; color: #666; }")
+            .append("</style>")
+            .append("</head><body>");
+
+        html.append("<div class='header'>")
+            .append("<h1>SISTEMA DE TRÁMITES DOCUMENTARIOS</h1>")
+            .append("<h2>Detalle del Trámite</h2>")
+            .append("</div>");
+
+        html.append("<div class='section'>")
+            .append("<span class='label'>Código:</span>")
+            .append("<span class='value'>").append(tramite.getCodigo()).append("</span>")
+            .append("</div>");
+
+        html.append("<div class='section'>")
+            .append("<span class='label'>Tipo:</span>")
+            .append("<span class='value'>").append(formatearNombreEstado(tramite.getTipo().name())).append("</span>")
+            .append("</div>");
+
+        html.append("<div class='section'>")
+            .append("<span class='label'>Estado:</span>")
+            .append("<span class='estado ").append(tramite.getEstado().name()).append("'>")
+            .append(formatearNombreEstado(tramite.getEstado().name())).append("</span>")
+            .append("</div>");
+
+        html.append("<div class='section'>")
+            .append("<span class='label'>Prioridad:</span>")
+            .append("<span class='value'>").append(tramite.getPrioridad().name()).append("</span>")
+            .append("</div>");
+
+        if (tramite.getTitulo() != null) {
+            html.append("<div class='section'>")
+                .append("<span class='label'>Título:</span>")
+                .append("<span class='value'>").append(tramite.getTitulo()).append("</span>")
+                .append("</div>");
+        }
+
+        if (tramite.getDescripcion() != null) {
+            html.append("<div class='section'>")
+                .append("<span class='label'>Descripción:</span>")
+                .append("<div class='value'>").append(tramite.getDescripcion().replace("\n", "<br>")).append("</div>")
+                .append("</div>");
+        }
+
+        if (solicitante != null) {
+            html.append("<div class='section'>")
+                .append("<span class='label'>Solicitante:</span>")
+                .append("<span class='value'>").append(solicitante.getNombre()).append(" ").append(solicitante.getApellidos()).append("</span>")
+                .append("</div>");
+        }
+
+        if (asignado != null) {
+            html.append("<div class='section'>")
+                .append("<span class='label'>Asignado a:</span>")
+                .append("<span class='value'>").append(asignado.getNombre()).append(" ").append(asignado.getApellidos()).append("</span>")
+                .append("</div>");
+        }
+
+        html.append("<div class='section'>")
+            .append("<span class='label'>Fecha de Creación:</span>")
+            .append("<span class='value'>").append(formatearFecha(tramite.getFechaCreacion())).append("</span>")
+            .append("</div>");
+
+        if (tramite.getFechaVencimiento() != null) {
+            html.append("<div class='section'>")
+                .append("<span class='label'>Fecha de Vencimiento:</span>")
+                .append("<span class='value'>").append(formatearFecha(tramite.getFechaVencimiento())).append("</span>")
+                .append("</div>");
+        }
+
+        if (tramite.getObservaciones() != null && !tramite.getObservaciones().trim().isEmpty()) {
+            html.append("<div class='section'>")
+                .append("<span class='label'>Observaciones:</span>")
+                .append("<div class='value'>").append(tramite.getObservaciones().replace("\n", "<br>")).append("</div>")
+                .append("</div>");
+        }
+
+        html.append("<div class='footer'>")
+            .append("<p>Documento generado el ").append(formatearFecha(LocalDateTime.now())).append("</p>")
+            .append("<p>Sistema de Trámites Documentarios</p>")
+            .append("</div>");
+
+        html.append("</body></html>");
+        return html.toString();
+    }
+
+    private String formatearFecha(LocalDateTime fecha) {
+        if (fecha == null) return "N/A";
+        return fecha.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+    }
+
+    private String formatearNombreEstado(String estado) {
+        return switch (estado) {
+            case "ENVIADO" -> "Enviado";
+            case "EN_REVISION" -> "En Revisión";
+            case "APROBADO" -> "Aprobado";
+            case "FINALIZADO" -> "Finalizado";
+            case "RECHAZADO" -> "Rechazado";
+            case "OBSERVADO" -> "Observado";
+            case "DERIVADO" -> "Derivado";
+            case "EN_PROCESO" -> "En Proceso";
+            case "BORRADOR" -> "Borrador";
+            default -> estado;
+        };
+    }
+
+    public String generarHtmlParaImpresion(Long tramiteId, Long usuarioId) {
+        Tramite tramite = tramiteRepository.findById(tramiteId)
+            .orElseThrow(() -> new IllegalArgumentException("Trámite no encontrado"));
+
+        UsuarioResponse usuarioSolicitante = null;
+        UsuarioResponse usuarioAsignado = null;
+        AreaResponse areaActual = null;
+        AreaResponse areaOrigen = null;
+
+        try {
+            if (tramite.getUsuarioSolicitanteId() != null) {
+                usuarioSolicitante = usuarioService.obtenerUsuarioPorId(tramite.getUsuarioSolicitanteId());
+            }
+            if (tramite.getUsuarioAsignadoId() != null) {
+                usuarioAsignado = usuarioService.obtenerUsuarioPorId(tramite.getUsuarioAsignadoId());
+            }
+            if (tramite.getAreaActualId() != null) {
+                areaActual = areaService.getAreaById(tramite.getAreaActualId()).orElse(null);
+            }
+            if (tramite.getAreaOrigenId() != null) {
+                areaOrigen = areaService.getAreaById(tramite.getAreaOrigenId()).orElse(null);
+            }
+        } catch (Exception e) {
+            // Continuar sin información relacionada
+        }
+
+        StringBuilder html = new StringBuilder();
+        html.append("<!DOCTYPE html>")
+            .append("<html lang='es'>")
+            .append("<head>")
+            .append("<meta charset='UTF-8'>")
+            .append("<meta name='viewport' content='width=device-width, initial-scale=1.0'>")
+            .append("<title>Documento Oficial - Trámite ").append(tramite.getCodigo()).append("</title>")
+            .append("<style>")
+            .append("* { margin: 0; padding: 0; box-sizing: border-box; }")
+            .append("body { font-family: 'Times New Roman', serif; font-size: 12pt; line-height: 1.4; color: #000; background: #fff; max-width: 210mm; margin: 0 auto; padding: 20mm; }")
+            .append(".header { text-align: center; border-bottom: 3px solid #1f4788; padding-bottom: 20px; margin-bottom: 30px; }")
+            .append(".logo-section { margin-bottom: 15px; }")
+            .append(".institution-name { font-size: 18pt; font-weight: bold; color: #1f4788; text-transform: uppercase; letter-spacing: 1px; }")
+            .append(".department { font-size: 14pt; color: #2c5aa0; margin: 5px 0; }")
+            .append(".document-title { font-size: 16pt; font-weight: bold; margin-top: 15px; text-transform: uppercase; }")
+            .append(".document-info { background: #f8f9fa; border: 2px solid #dee2e6; padding: 15px; margin: 20px 0; border-radius: 5px; }")
+            .append(".doc-number { text-align: center; font-size: 14pt; font-weight: bold; color: #d63384; margin-bottom: 10px; }")
+            .append(".doc-date { text-align: right; font-style: italic; color: #6c757d; }")
+            .append(".info-section { margin: 25px 0; }")
+            .append(".section-title { font-size: 14pt; font-weight: bold; color: #1f4788; border-bottom: 1px solid #1f4788; padding-bottom: 5px; margin-bottom: 15px; text-transform: uppercase; }")
+            .append(".info-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }")
+            .append(".info-table td { padding: 8px 12px; border: 1px solid #dee2e6; vertical-align: top; }")
+            .append(".info-table .label { background: #e9ecef; font-weight: bold; width: 30%; color: #495057; }")
+            .append(".info-table .value { background: #fff; }")
+            .append(".status-badge { display: inline-block; padding: 4px 12px; border-radius: 15px; font-size: 10pt; font-weight: bold; text-transform: uppercase; }")
+            .append(".status-enviado { background: #cce5ff; color: #004085; }")
+            .append(".status-en_revision { background: #fff3cd; color: #856404; }")
+            .append(".status-en_proceso { background: #d4edda; color: #155724; }")
+            .append(".status-finalizado { background: #d1ecf1; color: #0c5460; }")
+            .append(".status-aprobado { background: #d4edda; color: #155724; }")
+            .append(".status-rechazado { background: #f8d7da; color: #721c24; }")
+            .append(".status-observado { background: #ffeaa7; color: #856404; }")
+            .append(".priority-badge { display: inline-block; padding: 4px 12px; border-radius: 15px; font-size: 10pt; font-weight: bold; text-transform: uppercase; }")
+            .append(".priority-baja { background: #e2e3e5; color: #383d41; }")
+            .append(".priority-normal { background: #bee5eb; color: #0c5460; }")
+            .append(".priority-alta { background: #f8d7da; color: #721c24; }")
+            .append(".priority-urgente { background: #dc3545; color: #fff; }")
+            .append(".content-section { margin: 25px 0; }")
+            .append(".content-box { border: 1px solid #dee2e6; padding: 15px; background: #fff; border-radius: 5px; }")
+            .append(".content-text { text-align: justify; line-height: 1.6; }")
+            .append(".footer { margin-top: 40px; padding-top: 20px; border-top: 2px solid #1f4788; }")
+            .append(".signatures { display: flex; justify-content: space-between; margin-top: 60px; }")
+            .append(".signature-box { text-align: center; width: 45%; }")
+            .append(".signature-line { border-top: 1px solid #000; margin-top: 50px; padding-top: 5px; font-size: 10pt; }")
+            .append("@media print {")
+            .append("  body { margin: 0; padding: 15mm; font-size: 11pt; }")
+            .append("  .header { page-break-after: avoid; }")
+            .append("  .info-section { page-break-inside: avoid; }")
+            .append("  .content-section { page-break-inside: avoid; }")
+            .append("  .no-print { display: none; }")
+            .append("}")
+            .append("</style>")
+            .append("</head>")
+            .append("<body>");
+
+        // Header oficial
+        html.append("<div class='header'>")
+            .append("<div class='logo-section'>")
+            .append("<div class='institution-name'>Sistema de Trámite Documentario</div>")
+            .append("<div class='department'>Secretaría General</div>")
+            .append("</div>")
+            .append("<div class='document-title'>Documento Oficial de Trámite</div>")
+            .append("</div>");
+
+        // Información del documento
+        html.append("<div class='document-info'>")
+            .append("<div class='doc-number'>DOCUMENTO N° ").append(tramite.getCodigo()).append("</div>")
+            .append("<div class='doc-date'>Generado el: ").append(formatearFecha(LocalDateTime.now())).append("</div>")
+            .append("</div>");
+
+        // Información general del trámite
+        html.append("<div class='info-section'>")
+            .append("<div class='section-title'>Información General</div>")
+            .append("<table class='info-table'>")
+            .append("<tr><td class='label'>Código de Trámite:</td><td class='value'>").append(tramite.getCodigo()).append("</td></tr>")
+            .append("<tr><td class='label'>Título:</td><td class='value'>").append(tramite.getTitulo() != null ? tramite.getTitulo() : "N/A").append("</td></tr>")
+            .append("<tr><td class='label'>Asunto:</td><td class='value'>").append(tramite.getAsunto() != null ? tramite.getAsunto() : "N/A").append("</td></tr>")
+            .append("<tr><td class='label'>Tipo de Trámite:</td><td class='value'>").append(formatearTipoTramite(tramite.getTipo())).append("</td></tr>")
+            .append("<tr><td class='label'>Estado Actual:</td><td class='value'>")
+            .append("<span class='status-badge status-").append(tramite.getEstado().name().toLowerCase()).append("'>")
+            .append(formatearNombreEstado(tramite.getEstado().name())).append("</span></td></tr>")
+            .append("<tr><td class='label'>Prioridad:</td><td class='value'>")
+            .append("<span class='priority-badge priority-").append(tramite.getPrioridad().name().toLowerCase()).append("'>")
+            .append(formatearPrioridad(tramite.getPrioridad())).append("</span></td></tr>");
+
+        if (tramite.getNumeroExpediente() != null) {
+            html.append("<tr><td class='label'>N° Expediente:</td><td class='value'>").append(tramite.getNumeroExpediente()).append("</td></tr>");
+        }
+
+        html.append("</table>")
+            .append("</div>");
+
+        // Información de fechas
+        html.append("<div class='info-section'>")
+            .append("<div class='section-title'>Información Temporal</div>")
+            .append("<table class='info-table'>")
+            .append("<tr><td class='label'>Fecha de Creación:</td><td class='value'>").append(formatearFecha(tramite.getFechaCreacion())).append("</td></tr>");
+
+        if (tramite.getFechaVencimiento() != null) {
+            html.append("<tr><td class='label'>Fecha de Vencimiento:</td><td class='value'>").append(formatearFecha(tramite.getFechaVencimiento())).append("</td></tr>");
+        }
+        if (tramite.getFechaCompletado() != null) {
+            html.append("<tr><td class='label'>Fecha de Finalización:</td><td class='value'>").append(formatearFecha(tramite.getFechaCompletado())).append("</td></tr>");
+        }
+        if (tramite.getFechaRespuesta() != null) {
+            html.append("<tr><td class='label'>Fecha de Respuesta:</td><td class='value'>").append(formatearFecha(tramite.getFechaRespuesta())).append("</td></tr>");
+        }
+
+        html.append("</table>")
+            .append("</div>");
+
+        // Información de personas y áreas
+        html.append("<div class='info-section'>")
+            .append("<div class='section-title'>Personas y Áreas Involucradas</div>")
+            .append("<table class='info-table'>");
+
+        if (usuarioSolicitante != null) {
+            html.append("<tr><td class='label'>Solicitante:</td><td class='value'>")
+                .append(usuarioSolicitante.getNombre()).append(" ").append(usuarioSolicitante.getApellidos());
+            if (usuarioSolicitante.getCorreo() != null) {
+                html.append(" (").append(usuarioSolicitante.getCorreo()).append(")");
+            }
+            html.append("</td></tr>");
+        }
+
+        if (usuarioAsignado != null) {
+            html.append("<tr><td class='label'>Asignado a:</td><td class='value'>")
+                .append(usuarioAsignado.getNombre()).append(" ").append(usuarioAsignado.getApellidos());
+            if (usuarioAsignado.getCorreo() != null) {
+                html.append(" (").append(usuarioAsignado.getCorreo()).append(")");
+            }
+            html.append("</td></tr>");
+        }
+
+        if (areaOrigen != null) {
+            html.append("<tr><td class='label'>Área de Origen:</td><td class='value'>").append(areaOrigen.getNombre()).append("</td></tr>");
+        }
+
+        if (areaActual != null) {
+            html.append("<tr><td class='label'>Área Actual:</td><td class='value'>").append(areaActual.getNombre()).append("</td></tr>");
+        }
+
+        html.append("</table>")
+            .append("</div>");
+
+        // Descripción
+        if (tramite.getDescripcion() != null && !tramite.getDescripcion().trim().isEmpty()) {
+            html.append("<div class='content-section'>")
+                .append("<div class='section-title'>Descripción del Trámite</div>")
+                .append("<div class='content-box'>")
+                .append("<div class='content-text'>").append(tramite.getDescripcion().replace("\n", "<br>")).append("</div>")
+                .append("</div>")
+                .append("</div>");
+        }
+
+        // Observaciones
+        if (tramite.getObservaciones() != null && !tramite.getObservaciones().trim().isEmpty()) {
+            html.append("<div class='content-section'>")
+                .append("<div class='section-title'>Observaciones</div>")
+                .append("<div class='content-box'>")
+                .append("<div class='content-text'>").append(tramite.getObservaciones().replace("\n", "<br>")).append("</div>")
+                .append("</div>")
+                .append("</div>");
+        }
+
+        // Respuesta
+        if (tramite.getRespuesta() != null && !tramite.getRespuesta().trim().isEmpty()) {
+            html.append("<div class='content-section'>")
+                .append("<div class='section-title'>Respuesta Oficial</div>")
+                .append("<div class='content-box'>")
+                .append("<div class='content-text'>").append(tramite.getRespuesta().replace("\n", "<br>")).append("</div>")
+                .append("</div>")
+                .append("</div>");
+        }
+
+        // Footer con firmas
+        html.append("<div class='footer'>")
+            .append("<div class='signatures'>")
+            .append("<div class='signature-box'>")
+            .append("<div class='signature-line'>Firma del Solicitante</div>")
+            .append("</div>")
+            .append("<div class='signature-box'>")
+            .append("<div class='signature-line'>Firma del Responsable</div>")
+            .append("</div>")
+            .append("</div>")
+            .append("<div style='text-align: center; margin-top: 30px; font-size: 10pt; color: #6c757d;'>")
+            .append("Este documento ha sido generado automáticamente por el Sistema de Trámite Documentario<br>")
+            .append("Fecha y hora de generación: ").append(formatearFecha(LocalDateTime.now()))
+            .append("</div>")
+            .append("</div>");
+
+        html.append("</body></html>");
+
+        return html.toString();
+    }
+
+    private String formatearTipoTramite(Tramite.TipoTramite tipo) {
+        if (tipo == null) return "N/A";
+
+        return switch (tipo) {
+            case SOLICITUD_CERTIFICADO -> "Solicitud de Certificado";
+            case SOLICITUD_CONSTANCIA -> "Solicitud de Constancia";
+            case SOLICITUD_PERMISO -> "Solicitud de Permiso";
+            case RECLAMO -> "Reclamo";
+            case SUGERENCIA -> "Sugerencia";
+            case CONSULTA -> "Consulta";
+            case LICENCIA -> "Licencia";
+            case AUTORIZACION -> "Autorización";
+            case REVISION_EXPEDIENTE -> "Revisión de Expediente";
+            case TRAMITE_ACADEMICO -> "Trámite Académico";
+            case TRAMITE_ADMINISTRATIVO -> "Trámite Administrativo";
+            case OTRO -> "Otro";
+        };
+    }
+
+    private String formatearPrioridad(Tramite.PrioridadTramite prioridad) {
+        if (prioridad == null) return "Normal";
+
+        return switch (prioridad) {
+            case BAJA -> "Baja";
+            case NORMAL -> "Normal";
+            case ALTA -> "Alta";
+            case URGENTE -> "Urgente";
+        };
     }
 
 }

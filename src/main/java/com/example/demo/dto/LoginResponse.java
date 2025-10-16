@@ -15,8 +15,7 @@ public class LoginResponse {
     private String role;
     private String message;
     private UsuarioResponse usuario;
-    
-    // Constructor for success with refresh token
+
     public LoginResponse(String token, String refreshToken, String redirectUrl, String role, UsuarioResponse usuario) {
         this.token = token;
         this.refreshToken = refreshToken;
@@ -25,8 +24,7 @@ public class LoginResponse {
         this.usuario = usuario;
         this.message = "Login exitoso";
     }
-    
-    // Constructor for error
+
     public LoginResponse(String message) {
         this.message = message;
     }

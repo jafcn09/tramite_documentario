@@ -1,13 +1,13 @@
 package com.example.demo.config;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-/**
- * Configuración de interceptores para la aplicación web
- */
+import lombok.RequiredArgsConstructor;
+
+
+
 @Configuration
 @RequiredArgsConstructor
 public class WebMvcConfig implements WebMvcConfigurer {
@@ -17,7 +17,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(rateLimitInterceptor)
-            .addPathPatterns("/api/**") // Aplicar a todos los endpoints de la API
+            .addPathPatterns("/api/**") 
             .excludePathPatterns(
                 "/api/auth/refresh-token", // Excluir refresh token
                 "/error" // Excluir página de error

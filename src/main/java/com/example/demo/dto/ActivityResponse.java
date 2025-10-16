@@ -12,11 +12,11 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ActivityResponse {
-    private String type; // "user", "tramite", "system", "login", "area"
+    private String type;
     private String icon;
     private String description;
     private LocalDateTime timestamp;
-    private String userRole; // Para actividades relacionadas con usuarios
-    private String status; // Para trámites
-    private String action; // "created", "updated", "deleted", "login", "logout"
+    private String userRole;
+    private String status;
+    private String action;
 }

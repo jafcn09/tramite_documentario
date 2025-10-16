@@ -157,7 +157,7 @@ public class AuthService {
     
     public LoginResponse refreshToken(String refreshToken) {
         try {
-            // Extraer username del refresh token
+        // Extraer usuario del token
             String username = jwtService.extractUsername(refreshToken);
             
             if (username == null || !jwtService.validateToken(refreshToken, username)) {

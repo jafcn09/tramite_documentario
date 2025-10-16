@@ -21,8 +21,8 @@ public class Tramite {
     private Long id;
     
     @Column(nullable = false, unique = true, length = 20)
-    private String codigo; // TRM-2024-0001
-    
+    private String codigo;
+
     @Column(nullable = false, length = 255)
     private String titulo;
     
@@ -40,20 +40,19 @@ public class Tramite {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private PrioridadTramite prioridad;
-    
-    // IDs simples en lugar de relaciones complejas
+
     @Column(name = "usuario_solicitante_id", nullable = false)
-    private Long usuarioSolicitanteId; // ID del usuario que creó el trámite
-    
+    private Long usuarioSolicitanteId;
+
     @Column(name = "usuario_asignado_id")
-    private Long usuarioAsignadoId; // ID del usuario asignado para procesar
-    
+    private Long usuarioAsignadoId;
+
     @Column(name = "area_actual_id")
-    private Long areaActualId; // ID del área donde está el trámite
-    
+    private Long areaActualId;
+
     @Column(name = "area_origen_id")
-    private Long areaOrigenId; // ID del área de origen
-    
+    private Long areaOrigenId;
+
     @Column(name = "fecha_vencimiento")
     private LocalDateTime fechaVencimiento;
     
@@ -65,13 +64,13 @@ public class Tramite {
     
     @Column(name = "numero_expediente", length = 50)
     private String numeroExpediente;
-    
+
     @Column(name = "documentos_adjuntos", columnDefinition = "JSON")
-    private String documentosAdjuntos; // JSON con la lista de documentos
-    
+    private String documentosAdjuntos;
+
     @Column(name = "calificacion")
-    private Integer calificacion; // 1-5 estrellas
-    
+    private Integer calificacion;
+
     @Column(name = "comentario_calificacion", columnDefinition = "TEXT")
     private String comentarioCalificacion;
     
@@ -106,8 +105,7 @@ public class Tramite {
     @UpdateTimestamp
     @Column(name = "fecha_actualizacion")
     private LocalDateTime fechaActualizacion;
-    
-    // Enums
+
     public enum TipoTramite {
         SOLICITUD_CERTIFICADO,
         SOLICITUD_CONSTANCIA,

@@ -2,6 +2,7 @@ package com.example.demo.config;
 
 import com.example.demo.config.security.ContentSecurityPolicyConfig;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -26,6 +27,9 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final ContentSecurityPolicyConfig cspFilter;
+
+    @Value("${app.cors.allowed-origins}")
+    private String allowedOrigins;
     
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -76,13 +80,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         
-        // Allow specific origins (frontend URLs)
-        configuration.setAllowedOrigins(Arrays.asList(
-            "http://localhost:4200",    // Angular dev server
-            "http://localhost:3000",    // Alternative port
-            "http://127.0.0.1:4200",
-            "http://127.0.0.1:3000"
-        ));
+        configuration.setAllowedOrigins(Arrays.asList(allowedOrigins.split(",")));
         
         // Allow specific methods
         configuration.setAllowedMethods(Arrays.asList(

@@ -1,13 +1,15 @@
 package com.example.demo.config.security;
 
+import java.io.IOException;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.filter.OncePerRequestFilter;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.web.filter.OncePerRequestFilter;
-
-import java.io.IOException;
 
 /**
  * Configuración de Content Security Policy headers
@@ -15,6 +17,12 @@ import java.io.IOException;
  */
 @Configuration
 public class ContentSecurityPolicyConfig extends OncePerRequestFilter {
+
+    @Value("${app.url:http://localhost:4200}")
+    private String appUrl;
+
+    @Value("${server.port:8081}")
+    private String serverPort;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
@@ -27,19 +35,18 @@ public class ContentSecurityPolicyConfig extends OncePerRequestFilter {
             "style-src 'self' 'unsafe-inline'; " +
             "img-src 'self' data: https:; " +
             "font-src 'self' data:; " +
-            "connect-src 'self' http://localhost:4200 http://localhost:8081 ws://localhost:8081; " +
+            "connect-src 'self' " + appUrl + " http://localhost:" + serverPort + " ws://localhost:" + serverPort + "; " +
             "frame-ancestors 'none'; " +
             "base-uri 'self'; " +
             "form-action 'self'"
         );
 
-        // X-Content-Type-Options - Previene MIME sniffing
         response.setHeader("X-Content-Type-Options", "nosniff");
 
-        // X-Frame-Options - Previene clickjacking
+
         response.setHeader("X-Frame-Options", "DENY");
 
-        // X-XSS-Protection - Protección XSS del navegador
+    
         response.setHeader("X-XSS-Protection", "1; mode=block");
 
         // Referrer-Policy - Controla información de referrer
@@ -50,9 +57,6 @@ public class ContentSecurityPolicyConfig extends OncePerRequestFilter {
             "camera=(), microphone=(), geolocation=(), payment=()"
         );
 
-        // Strict-Transport-Security - Fuerza HTTPS (solo en producción)
-        // Descomentado en producción con certificado SSL válido
-        // response.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
 
         filterChain.doFilter(request, response);
     }

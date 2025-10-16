@@ -20,24 +20,15 @@ public class NotificacionResponse {
     private String prioridad;
     private Boolean esLeida;
     private String rutaDestino;
-    private Long referenciaId; // ID del trámite o entidad relacionada para el frontend
+    private Long referenciaId;
     private LocalDateTime fechaCreacion;
     private LocalDateTime fechaLectura;
     private LocalDateTime fechaVencimiento;
-
-    // Información del trámite relacionado (opcional)
     private TramiteBasicInfo tramiteRelacionado;
-    
-    // Información del área origen (opcional)
     private AreaBasicInfo areaOrigen;
-    
-    // Información del usuario emisor (opcional)
     private UsuarioBasicInfo usuarioEmisor;
-    
-    // Metadatos adicionales
     private String metadatos;
-    
-    // Información básica del trámite
+
     @Data
     @Builder
     @NoArgsConstructor
@@ -49,8 +40,7 @@ public class NotificacionResponse {
         private String estado;
         private String tipo;
     }
-    
-    // Información básica del área
+
     @Data
     @Builder
     @NoArgsConstructor
@@ -60,8 +50,7 @@ public class NotificacionResponse {
         private String nombre;
         private String descripcion;
     }
-    
-    // Información básica del usuario
+
     @Data
     @Builder
     @NoArgsConstructor

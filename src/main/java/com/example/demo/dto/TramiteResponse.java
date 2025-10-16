@@ -26,48 +26,28 @@ public class TramiteResponse {
     private String observaciones;
     private Integer calificacion;
     private String comentarioCalificacion;
-    
-    // Información del usuario solicitante
     private UsuarioBasicInfo usuarioSolicitante;
-    
-    // Información del usuario asignado
     private UsuarioBasicInfo usuarioAsignado;
-    
-    // Información del área actual
     private AreaBasicInfo areaActual;
-    
-    // Información del área origen
     private AreaBasicInfo areaOrigen;
-    
-    // Información de respuesta
     private String respuesta;
     private LocalDateTime fechaRespuesta;
     private UsuarioBasicInfo usuarioRespondio;
     private List<DocumentoAdjunto> archivosRespuesta;
-    
-    // Contadores
     private Integer contadorProcesados;
     private Integer contadorPorProcesar;
-
-    // Permisos y estados
     private Boolean puedeEditar;
     private Boolean estaVencido;
     private Long diasRestantes;
-
-    // Fechas
     private LocalDateTime fechaCreacion;
     private LocalDateTime fechaActualizacion;
     private LocalDateTime fechaVencimiento;
     private LocalDateTime fechaCompletado;
-    
-    // Documentos adjuntos
+
     @JsonProperty("documentos")
     private List<DocumentoAdjunto> documentosAdjuntos;
-    
-    // Historial (opcional, solo cuando se solicite explícitamente)
     private List<TramiteHistorialResponse> historial;
-    
-    // Información básica del usuario
+
     @Data
     @Builder
     @NoArgsConstructor
@@ -79,8 +59,7 @@ public class TramiteResponse {
         private String correo;
         private String rol;
     }
-    
-    // Información básica del área
+
     @Data
     @Builder
     @NoArgsConstructor
@@ -90,8 +69,7 @@ public class TramiteResponse {
         private String nombre;
         private String descripcion;
     }
-    
-    // Documento adjunto
+
     @Data
     @Builder
     @NoArgsConstructor

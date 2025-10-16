@@ -1,19 +1,30 @@
 package com.example.demo.controller;
 
-import com.example.demo.dto.NotificacionRequest;
-import com.example.demo.dto.NotificacionResponse;
-import com.example.demo.service.NotificacionService;
-import lombok.RequiredArgsConstructor;
+import java.security.Principal;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.security.Principal;
+import com.example.demo.dto.NotificacionRequest;
+import com.example.demo.dto.NotificacionResponse;
+import com.example.demo.service.NotificacionService;
 import com.example.demo.service.UsuarioService;
+
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/notificaciones")
@@ -24,10 +35,10 @@ public class NotificacionController {
     private final NotificacionService notificacionService;
     private final UsuarioService usuarioService;
 
-    // Helper method to get user ID from principal
+   
     private Long getUserId(Principal principal) {
         try {
-            // Try to parse as Long (if it's already an ID)
+     
             return Long.parseLong(principal.getName());
         } catch (NumberFormatException e) {
             // If it's a username, look up the user
@@ -44,20 +55,18 @@ public class NotificacionController {
             @RequestParam(name = "sortBy", defaultValue = "fechaCreacion") String sortBy,
             @RequestParam(name = "sortDir", defaultValue = "desc") String sortDir) {
 
-        // Return empty page for public access
+
         return ResponseEntity.ok(Page.empty());
     }
 
-    // Public endpoint for notification count
+
     @GetMapping("/public/no-leidas/count")
     public ResponseEntity<Long> contarNotificacionesNoLeidasPublic() {
-        // Return 0 for public access
+
         return ResponseEntity.ok(0L);
     }
 
-    // CRUD para ADMIN
 
-    // Obtener todas las notificaciones (solo ADMIN)
     @GetMapping("/admin/todas")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Page<NotificacionResponse>> obtenerTodasNotificaciones(
@@ -74,7 +83,7 @@ public class NotificacionController {
         return ResponseEntity.ok(notificaciones);
     }
 
-    // Crear notificación (solo ADMIN)
+    
     @PostMapping("/admin")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<NotificacionResponse> crearNotificacion(@RequestBody NotificacionRequest request) {
@@ -82,7 +91,6 @@ public class NotificacionController {
         return ResponseEntity.ok(notificacion);
     }
 
-    // Actualizar notificación (solo ADMIN)
     @PutMapping("/admin/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<NotificacionResponse> actualizarNotificacion(
@@ -93,7 +101,7 @@ public class NotificacionController {
         return ResponseEntity.ok(notificacion);
     }
 
-    // Eliminar notificación (solo ADMIN)
+
     @DeleteMapping("/admin/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> eliminarNotificacion(@PathVariable Long id) {
@@ -118,9 +126,7 @@ public class NotificacionController {
         return ResponseEntity.ok(eliminadas);
     }
 
-    // ENDPOINTS PARA USUARIOS
 
-    // Obtener notificación por ID
     @GetMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<NotificacionResponse> obtenerNotificacionPorId(

@@ -23,8 +23,8 @@ public class TramiteHistorial {
     private Long tramiteId;
     
     @Column(name = "usuario_id", nullable = false)
-    private Long usuarioId; // Usuario que realizó la acción
-    
+    private Long usuarioId;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 50)
     private TipoAccion accion;
@@ -49,15 +49,14 @@ public class TramiteHistorial {
     
     @Column(columnDefinition = "TEXT")
     private String observaciones;
-    
+
     @Column(columnDefinition = "TEXT")
-    private String motivo; // Motivo de la acción (rechazo, derivación, etc.)
-    
+    private String motivo;
+
     @CreationTimestamp
     @Column(name = "fecha_accion", nullable = false, updatable = false)
     private LocalDateTime fechaAccion;
-    
-    // Enums para los tipos de acciones
+
     public enum TipoAccion {
         CREADO,
         ENVIADO,

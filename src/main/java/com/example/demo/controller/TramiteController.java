@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-// import com.example.demo.dto.ActualizarTramiteConArchivosRequest; // Unused - edit functionality disabled
 import com.example.demo.dto.AprobarTramiteRequest;
 import com.example.demo.dto.AprobarTramiteResponse;
 import com.example.demo.dto.TramiteConArchivosRequest;
@@ -48,9 +47,7 @@ public class TramiteController {
     private final FileValidationService fileValidationService;
     private final InputSanitizerService inputSanitizerService;
     
-    // ENDPOINTS PÚBLICOS (sin token)
-    
-    // Búsqueda pública de trámites por código
+
     @GetMapping("/public/buscar")
     public ResponseEntity<Page<TramiteResponse>> buscarTramitesPublico(
             @RequestParam(name = "codigo", required = false) String codigo,
@@ -82,7 +79,7 @@ public class TramiteController {
         return ResponseEntity.ok(tramites);
     }
     
-    // Descargar archivo sin token (con código de trámite)
+
     @GetMapping("/public/{codigo}/archivo/{nombreArchivo}")
     public ResponseEntity<byte[]> descargarArchivoPublico(
             @PathVariable String codigo,
@@ -90,14 +87,13 @@ public class TramiteController {
         
         return tramiteService.descargarArchivoPublico(codigo, nombreArchivo);
     }
-    
-    // Descargar todos los documentos públicamente (sin token)
+
     @GetMapping("/public/{codigo}/documentos/descargar-todos")
     public ResponseEntity<byte[]> descargarTodosDocumentosPublico(@PathVariable String codigo) {
         return tramiteService.descargarTodosDocumentosPublico(codigo);
     }
     
-    // Previsualizar trámite sin token
+
     @GetMapping("/public/preview/{codigo}")
     public ResponseEntity<TramiteResponse> previsualizarTramite(@PathVariable String codigo) {
         TramiteResponse tramite = tramiteService.obtenerTramitePublico(codigo);
@@ -157,8 +153,7 @@ public class TramiteController {
             throw new RuntimeException("No se pudo obtener el ID del usuario del token");
         }
 
-        // 🔒 VALIDACIÓN DE SEGURIDAD
-        // 1. Sanitizar inputs de texto
+  
         inputSanitizerService.validateNotEmpty("asunto", asunto);
         inputSanitizerService.validateNotEmpty("descripcion", descripcion);
         inputSanitizerService.validateLength("asunto", asunto, 255);
@@ -167,11 +162,11 @@ public class TramiteController {
         String asuntoSanitizado = inputSanitizerService.sanitizeTextField(asunto);
         String descripcionSanitizada = inputSanitizerService.sanitizeTextField(descripcion);
 
-        // 2. Validar archivos si existen
+   
         if (documentos != null && !documentos.isEmpty()) {
             fileValidationService.validateFiles(documentos);
 
-            // Validar tamaño total (max 50MB para todos los archivos)
+            
             long totalSize = fileValidationService.getTotalSize(documentos);
             if (totalSize > 50 * 1024 * 1024) {
                 throw new IllegalArgumentException(
@@ -181,10 +176,9 @@ public class TramiteController {
         }
         String rol = getRole(principal);
 
-        // Create TramiteRequest from form parameters (usando valores sanitizados)
         TramiteRequest request = new TramiteRequest();
-        request.setTitulo(asuntoSanitizado);  // ✅ Valor sanitizado
-        request.setDescripcion(descripcionSanitizada);  // ✅ Valor sanitizado
+        request.setTitulo(asuntoSanitizado);  
+        request.setDescripcion(descripcionSanitizada);  
         
         // Map numeric IDs to enum strings
         String tipoString = mapTipoTramiteIdToString(tipoTramiteId);
@@ -229,7 +223,7 @@ public class TramiteController {
         return ResponseEntity.ok(tramite);
     }
     
-    // Editar trámite por el usuario que lo creó (USUARIO)
+
     @PutMapping("/{id}/editar")
     @PreAuthorize("hasRole('USUARIO') or hasRole('ADMIN')")
     public ResponseEntity<TramiteResponse> editarTramiteUsuario(
@@ -246,7 +240,7 @@ public class TramiteController {
         return ResponseEntity.ok(tramite);
     }
     
-    // Recepcionar trámite (ADMINISTRATIVO)
+
     @PostMapping("/{id}/recepcionar")
     @PreAuthorize("hasRole('ADMINISTRATIVO') or hasRole('ADMIN')")
     public ResponseEntity<TramiteResponse> recepcionarTramite(
@@ -294,16 +288,16 @@ public class TramiteController {
         System.out.println("🔍 Motivo: " + motivo);
 
         Long trabajadorActualId = getUserIdFromToken(httpRequest);
-        System.out.println("🔍 Trabajador actual ID (del token): " + trabajadorActualId);
+ 
 
         if (trabajadorActualId == null) {
-            System.err.println("❌ Error: No se pudo obtener el ID del usuario del token");
+  
             throw new RuntimeException("No se pudo obtener el ID del usuario del token");
         }
 
         try {
             TramiteResponse tramite = tramiteService.derivarTramite(id, trabajadorActualId, trabajadorNuevoId, motivo);
-            System.out.println("✅ Trámite derivado exitosamente");
+
             return ResponseEntity.ok(tramite);
         } catch (Exception e) {
             System.err.println("❌ Error al derivar trámite: " + e.getMessage());
@@ -312,7 +306,7 @@ public class TramiteController {
         }
     }
     
-    // Aprobar trámite (ADMINISTRATIVO/ADMIN)
+
     @PostMapping("/{id}/aprobar")
     @PreAuthorize("hasRole('ADMINISTRATIVO') or hasRole('ADMIN')")
     public ResponseEntity<AprobarTramiteResponse> aprobarTramite(
@@ -332,8 +326,7 @@ public class TramiteController {
         AprobarTramiteResponse response = tramiteService.aprobarTramite(id, request, administrativoId);
         return ResponseEntity.ok(response);
     }
-    
-    // Responder trámite (ADMINISTRATIVO/ADMIN) - Nuevo endpoint
+
     @PostMapping("/{id}/responder")
     @PreAuthorize("hasRole('ADMINISTRATIVO') or hasRole('ADMIN')")
     public ResponseEntity<com.example.demo.dto.ResponderTramiteResponse> responderTramite(
@@ -378,7 +371,7 @@ public class TramiteController {
         return ResponseEntity.ok(tramite);
     }
     
-    // Finalizar con archivo (ADMINISTRATIVO/ADMIN)
+
     @PostMapping("/{id}/finalizar")
     @PreAuthorize("hasRole('ADMINISTRATIVO') or hasRole('ADMIN')")
     public ResponseEntity<TramiteResponse> finalizarConArchivo(
@@ -396,7 +389,7 @@ public class TramiteController {
         return ResponseEntity.ok(tramite);
     }
     
-    // Eliminar trámite (solo ADMIN)
+
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> eliminarTramite(
@@ -413,7 +406,7 @@ public class TramiteController {
         return ResponseEntity.noContent().build();
     }
     
-    // Obtener mis trámites
+
     @GetMapping("/mis-tramites")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Page<TramiteResponse>> obtenerMisTramites(
@@ -455,7 +448,7 @@ public class TramiteController {
         return ResponseEntity.ok(tramite);
     }
     
-    // Búsqueda avanzada (autenticado)
+
     @GetMapping("/buscar")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Page<TramiteResponse>> buscarTramites(
@@ -502,8 +495,7 @@ public class TramiteController {
         List<String> urlsArchivos = tramiteService.subirArchivosMultiples(id, archivos, usuarioId);
         return ResponseEntity.ok(urlsArchivos);
     }
-    
-    // Subir documentos múltiples (alias para compatibilidad con frontend)
+
     @PostMapping("/{id}/documentos")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<String>> subirDocumentos(
@@ -525,9 +517,7 @@ public class TramiteController {
         return ResponseEntity.ok(urlsDocumentos);
     }
 
-    // NUEVOS ENDPOINTS PARA ARCHIVOS EN BASE64
 
-    // Crear trámite con archivos en base64
     @PostMapping("/con-archivos")
     @PreAuthorize("hasRole('USUARIO') or hasRole('ADMIN')")
     public ResponseEntity<TramiteResponse> crearTramiteConArchivos(
@@ -585,7 +575,7 @@ public class TramiteController {
         return ResponseEntity.ok(estadisticas);
     }
     
-    // Estadísticas del usuario (todos los roles autenticados)
+
     @GetMapping("/mis-tramites/estadisticas")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Object> obtenerMisEstadisticas(
@@ -601,7 +591,7 @@ public class TramiteController {
         return ResponseEntity.ok(estadisticas);
     }
 
-    // Verificar permisos de acciones para un trámite (considerando vencimiento)
+  
     @GetMapping("/{id}/permisos")
     @PreAuthorize("hasRole('ADMINISTRATIVO') or hasRole('ADMIN')")
     public ResponseEntity<java.util.Map<String, Boolean>> verificarPermisosAcciones(
@@ -636,7 +626,7 @@ public class TramiteController {
         return ResponseEntity.ok(resultado);
     }
     
-    // Obtener tipos de trámite disponibles
+   
     @GetMapping("/tipos")
     public ResponseEntity<List<java.util.Map<String, Object>>> obtenerTiposTramite(Principal principal) {
         List<java.util.Map<String, Object>> tipos = new java.util.ArrayList<>();
@@ -671,7 +661,7 @@ public class TramiteController {
         return ResponseEntity.ok(tipos);
     }
     
-    // Obtener prioridades de trámite disponibles
+   
     @GetMapping("/prioridades")
     public ResponseEntity<List<java.util.Map<String, Object>>> obtenerPrioridadesTramite() {
         List<java.util.Map<String, Object>> prioridades = new java.util.ArrayList<>();

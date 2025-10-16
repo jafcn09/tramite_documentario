@@ -38,33 +38,32 @@ public class Notificacion {
     
     @Column(name = "es_leida", nullable = false)
     private Boolean esLeida = false;
-    
+
     @Column(name = "tramite_relacionado_id")
-    private Long tramiteRelacionadoId; // ID del trámite relacionado (opcional)
-    
+    private Long tramiteRelacionadoId;
+
     @Column(name = "area_origen_id")
-    private Long areaOrigenId; // ID del área que genera la notificación
-    
+    private Long areaOrigenId;
+
     @Column(name = "usuario_emisor_id")
-    private Long usuarioEmisorId; // ID del usuario que genera la notificación (opcional)
-    
+    private Long usuarioEmisorId;
+
     @Column(name = "ruta_destino", length = 255)
-    private String rutaDestino; // Ruta de navegación relacionada (/tramites/123)
-    
+    private String rutaDestino;
+
     @Column(name = "fecha_vencimiento")
-    private LocalDateTime fechaVencimiento; // Para notificaciones con expiración
-    
+    private LocalDateTime fechaVencimiento;
+
     @Column(name = "metadatos", columnDefinition = "JSON")
-    private String metadatos; // Información adicional en formato JSON
-    
+    private String metadatos;
+
     @CreationTimestamp
     @Column(name = "fecha_creacion", nullable = false, updatable = false)
     private LocalDateTime fechaCreacion;
     
     @Column(name = "fecha_lectura")
     private LocalDateTime fechaLectura;
-    
-    // Enums
+
     public enum TipoNotificacion {
         TRAMITE_NUEVO,
         TRAMITE_ASIGNADO,

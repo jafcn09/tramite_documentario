@@ -32,8 +32,7 @@ public class CreateUsuarioRequest {
     @ValidDocument
     @Size(max = 20, message = "El número de documento no puede tener más de 20 caracteres")
     private String numDocumento;
-    
-    // Usuario y clave son generados automáticamente por el sistema
+
     @Size(max = 50, message = "El usuario no puede tener más de 50 caracteres")
     private String usuario;
     

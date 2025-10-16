@@ -188,18 +188,18 @@ public class UsuarioService {
     public void changePassword(Long userId, ChangePasswordRequest request) {
         // Validar que las contraseñas coincidan
         if (!request.getNewPassword().equals(request.getConfirmPassword())) {
-            throw new IllegalArgumentException("Las contraseñas no coinciden");
+            throw new IllegalArgumentException("Las credenciales no coinciden");
         }
 
         Usuario usuario = usuarioRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado con ese id: " + userId));
         if (passwordEncoder.matches(request.getNewPassword(), usuario.getClave())) {
-            throw new IllegalArgumentException("La nueva contraseña debe ser diferente a la actual");
+            throw new IllegalArgumentException("La nueva credencial debe ser diferente a la actual");
         }
 
 
         if (isPasswordInHistory(usuario, request.getNewPassword())) {
-            throw new IllegalArgumentException("No puedes usar una de las últimas 10 contraseñas utilizadas");
+            throw new IllegalArgumentException("No puedes usar una de las últimas 10 credenciales utilizadas");
         }
 
         savePasswordHistory(usuario, usuario.getClave());
@@ -284,7 +284,7 @@ public class UsuarioService {
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
             helper.setTo(usuario.getCorreo());
-            helper.setSubject("🔐 Contraseña Actualizada Exitosamente");
+            helper.setSubject("🔐 credenciales Actualizada Exitosamente");
 
             String htmlContent = emailTemplateService.createPasswordChangeNotificationTemplate(usuario);
             helper.setText(htmlContent, true);
@@ -455,7 +455,7 @@ public class UsuarioService {
         
         usersWithExpiredOrSoonToExpirePasswords.forEach(usuario -> {
             usuario.setPasswordExpiry(LocalDateTime.now().plusDays(2));
-            usuario.setMustChangePassword(false); // Permitir que usen la contraseC1a temporal por 48 horas
+            usuario.setMustChangePassword(false); 
             usuarioRepository.save(usuario);
             System.out.println("Extendiendo credenciales expiradas para usuario: " + usuario.getUsuario() + " to " + usuario.getPasswordExpiry() + " and set mustChangePassword to false");
         });
@@ -519,22 +519,21 @@ public class UsuarioService {
         
         String newPassword;
         if (request.getNewPassword() != null && !request.getNewPassword().trim().isEmpty()) {
-            // Use provided password
+
             newPassword = request.getNewPassword().trim();
             
-            // Validar que la nueva contraseC1a no sea igual a la actual
+    
             if (passwordEncoder.matches(newPassword, usuario.getClave())) {
-                throw new IllegalArgumentException("La nueva contraseC1a no puede ser igual a la contraseC1a actual");
+                throw new IllegalArgumentException("La nueva credencial no puede ser igual a la  actual");
             }
-            
-            // Validar que no estC) en las C:ltimas 10 contraseC1as del historial
+  
             if (isPasswordInHistory(usuario, newPassword)) {
-                throw new IllegalArgumentException("No se puede usar una contraseC1a que ya fue utilizada anteriormente. Elige una contraseC1a diferente.");
+                throw new IllegalArgumentException("No se pueden usar estas credenciales que ya fueron utilizadas anteriormente. Elige unas diferentes.");
             }
             
-            // Validar que no sea una contraseC1a de otro usuario del sistema
+        
             if (isPasswordUsedByOtherUser(newPassword, userId)) {
-                throw new IllegalArgumentException("Esta contraseC1a estC! siendo utilizada por otro usuario del sistema. Elige una contraseC1a diferente.");
+                throw new IllegalArgumentException("Estas credenciales están siendo utilizadas por otro usuario del sistema. Elige unas diferentes.");
             }
         } else {
             // Generate random password - guaranteed to be unique
@@ -548,7 +547,7 @@ public class UsuarioService {
             }
             
             if (attempts >= 10) {
-                throw new RuntimeException("No se pudo generar una contraseC1a C:nica despuC)s de varios intentos");
+                throw new RuntimeException("No se pudo generar una credencial después de varios intentos");
             }
         }
         
@@ -582,23 +581,23 @@ public class UsuarioService {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
             message.setTo(usuario.getCorreo());
-            message.setSubject("ContraseC1a Restablecida por Administrador");
+            message.setSubject("Credencial Restablecida por Administrador");
             message.setText(String.format(
                 "Hola %s %s,\n\n" +
-                "Tu contraseC1a ha sido restablecida por un administrador del sistema.\n\n" +
-                "Tu nueva contraseC1a es: %s\n\n" +
+                "Tu credencial ha sido restablecida por un administrador del sistema.\n\n" +
+                "Tu nueva credencial es: %s\n\n" +
                 "%s\n\n" +
                 "Motivo: %s\n\n" +
                 "Fecha: %s\n\n" +
-                "Por favor, cambia esta contraseC1a despuC)s de iniciar sesiC3n.\n\n" +
+                "Por favor, cambia esta credencial despues de iniciar sesión.\n\n" +
                 "Saludos,\n" +
                 "El equipo del sistema",
                 usuario.getNombre(),
                 usuario.getApellidos(),
                 newPassword,
                 usuario.isMustChangePassword() ? 
-                    "IMPORTANTE: Debes cambiar esta contraseC1a en tu prC3ximo inicio de sesiC3n." : 
-                    "Puedes usar esta contraseC1a para iniciar sesiC3n normalmente.",
+                    "IMPORTANTE: Debes cambiar esta credencial en tu próximo inicio de sesión." : 
+                    "Puedes usar esta credencial para iniciar sesión normalmente.",
                 reason != null ? reason : "No especificado",
                 LocalDateTime.now().toString()
             ));
@@ -622,7 +621,7 @@ public class UsuarioService {
                 .anyMatch(user -> passwordEncoder.matches(plainPassword, user.getClave()));
     }
     
-    // MC)todos auxiliares para TramiteService
+
     public List<Long> obtenerTrabajadoresDeArea(Long areaId) {
         return usuarioRepository.findAll().stream()
                 .filter(user -> user.getArea() != null && user.getArea().getId().equals(areaId))

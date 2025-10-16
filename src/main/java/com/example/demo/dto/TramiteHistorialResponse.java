@@ -21,19 +21,12 @@ public class TramiteHistorialResponse {
     private String motivo;
     private LocalDateTime fechaAccion;
     private Long totalModificaciones;
-    
-    // Información del usuario que realizó la acción
     private UsuarioBasicInfo usuario;
-    
-    // Información de las áreas (en caso de derivación)
     private AreaBasicInfo areaOrigen;
     private AreaBasicInfo areaDestino;
-    
-    // Usuarios anteriores y nuevos (en caso de reasignación)
     private UsuarioBasicInfo usuarioAnterior;
     private UsuarioBasicInfo usuarioNuevo;
-    
-    // Clases internas para información básica
+
     @Data
     @Builder
     @NoArgsConstructor
@@ -44,7 +37,7 @@ public class TramiteHistorialResponse {
         private String apellidos;
         private String rol;
     }
-    
+
     @Data
     @Builder
     @NoArgsConstructor

@@ -27,14 +27,12 @@ import com.example.demo.repository.TramiteHistorialRepository;
 import com.example.demo.repository.TramiteRepository;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 @Transactional
 public class TramiteService {
-    
+
     private final TramiteRepository tramiteRepository;
     private final TramiteHistorialRepository historialRepository;
     private final NotificacionService notificacionService;
@@ -46,17 +44,14 @@ public class TramiteService {
     private static final int DIAS_PROCESAMIENTO = 3;
     private static final Long AREA_SECRETARIA_GENERAL_ID = 1L;
     
-    // Crear nuevo trC!mite (USUARIO y ADMIN pueden crear)
     public TramiteResponse crearTramite(TramiteRequest request, Long usuarioSolicitanteId, String rol) {
-        // Verificar que solo usuarios autorizados puedan crear trC!mites
         if (!"USUARIO".equals(rol) && !"ADMIN".equals(rol)) {
-            throw new RuntimeException("Solo los usuarios y administradores pueden crear trC!mites");
+            throw new RuntimeException("Solo los usuarios y administradores pueden crear trámites");
         }
         
-        // Generar cC3digo C:nico
+        // Generar código único
         String codigo = generarCodigoTramite();
         
-        // Crear trC!mite
         Tramite tramite = new Tramite();
         tramite.setCodigo(codigo);
         tramite.setTitulo(request.getTitulo());
@@ -72,149 +67,107 @@ public class TramiteService {
         tramite.setObservaciones(request.getObservaciones());
         tramite.setFechaVencimiento(LocalDateTime.now().plusDays(DIAS_PROCESAMIENTO));
         
-        // Guardar archivos adjuntos si existen
         if (request.getDocumentosAdjuntos() != null) {
             tramite.setDocumentosAdjuntos(request.getDocumentosAdjuntos());
         }
         
         Tramite saved = tramiteRepository.save(tramite);
         
-        // Registrar en historial
         registrarHistorial(saved.getId(), usuarioSolicitanteId, 
                          TramiteHistorial.TipoAccion.CREADO, 
                          null, "ENVIADO", 
-                         "TrC!mite creado y enviado");
+                         "Trámite creado y enviado");
         
-        // Notificar a trabajadores del C!rea
         notificacionService.notificarNuevoTramite(saved.getId(), AREA_SECRETARIA_GENERAL_ID);
         
-        log.info("TrC!mite {} creado por usuario {}", saved.getCodigo(), usuarioSolicitanteId);
         
         return convertirAResponse(saved);
     }
     
-    // Editar trC!mite (REMITENTE solo si estC! en BORRADOR/ENVIADO)
     public TramiteResponse editarTramite(Long tramiteId, TramiteRequest request, Long usuarioId, String rol) {
-        log.info("=== INICIO EDICICN TRCMITE {} ===", tramiteId);
-        log.info("Request completo: {}", request);
-        log.info("Campos recibidos - TC-tulo: '{}', DescripciC3n: '{}', Tipo: '{}', Prioridad: '{}'", 
-                request.getTitulo(), request.getDescripcion(), request.getTipo(), request.getPrioridad());
                 
         Tramite tramite = tramiteRepository.findById(tramiteId)
-            .orElseThrow(() -> new RuntimeException("TrC!mite no encontrado"));
+            .orElseThrow(() -> new RuntimeException("Trámite no encontrado"));
         
-        log.info("TrC!mite encontrado: {}", tramite.getCodigo());
         
-        // Validaciones de permisos mC!s flexibles
         if ("USUARIO".equals(rol)) {
             if (!tramite.getUsuarioSolicitanteId().equals(usuarioId)) {
-                throw new RuntimeException("No autorizado para editar este trC!mite");
+                throw new RuntimeException("No autorizado para editar este trámite");
             }
-            // Los usuarios solo pueden editar en estados iniciales
             if (!Arrays.asList(Tramite.EstadoTramite.BORRADOR, Tramite.EstadoTramite.ENVIADO, Tramite.EstadoTramite.OBSERVADO)
                     .contains(tramite.getEstado())) {
-                log.warn("Usuario intentC3 editar trC!mite en estado: {}", tramite.getEstado());
-                throw new RuntimeException("El trC!mite ya estC! en proceso avanzado y no puede ser editado");
+                throw new RuntimeException("El trámite ya está en proceso avanzado y no puede ser editado");
             }
         }
-        // Los administradores pueden editar en mC!s estados
         else if ("ADMIN".equals(rol)) {
-            log.info("Usuario administrador editando trC!mite en estado: {}", tramite.getEstado());
-            // Los admins pueden editar en cualquier estado excepto FINALIZADO, ARCHIVADO, CANCELADO
             if (Arrays.asList(Tramite.EstadoTramite.FINALIZADO, Tramite.EstadoTramite.ARCHIVADO, Tramite.EstadoTramite.CANCELADO)
                     .contains(tramite.getEstado())) {
-                log.warn("Admin intentC3 editar trC!mite en estado final: {}", tramite.getEstado());
-                throw new RuntimeException("No se puede editar un trC!mite " + tramite.getEstado().toString().toLowerCase());
+                throw new RuntimeException("No se puede editar un trámite " + tramite.getEstado().toString().toLowerCase());
             }
         }
         
-        // Actualizar campos de forma mC!s robusta
         boolean actualizado = false;
         
-        // TC-tulo
+        // Título
         if (isValidString(request.getTitulo())) {
-            log.info("Actualizando tC-tulo de '{}' a '{}'", tramite.getTitulo(), request.getTitulo());
             tramite.setTitulo(request.getTitulo().trim());
             actualizado = true;
         }
         
-        // DescripciC3n
+        // Descripción
         if (isValidString(request.getDescripcion())) {
-            log.info("Actualizando descripciC3n");
             tramite.setDescripcion(request.getDescripcion().trim());
             actualizado = true;
         }
         
-        // Tipo de trC!mite
         if (isValidString(request.getTipo())) {
-            log.info("Intentando actualizar tipo de trC!mite a: '{}'", request.getTipo());
             Tramite.TipoTramite nuevoTipo = parseEnumSafely(request.getTipo(), Tramite.TipoTramite.class);
             if (nuevoTipo != null) {
-                log.info("Actualizando tipo de '{}' a '{}'", tramite.getTipo(), nuevoTipo);
                 tramite.setTipo(nuevoTipo);
                 actualizado = true;
-            } else {
-                log.warn("Tipo de trC!mite invC!lido ignorado: '{}'", request.getTipo());
             }
         }
-        
-        // Prioridad
+
         if (isValidString(request.getPrioridad())) {
-            log.info("Intentando actualizar prioridad a: '{}'", request.getPrioridad());
             Tramite.PrioridadTramite nuevaPrioridad = parseEnumSafely(request.getPrioridad(), Tramite.PrioridadTramite.class);
             if (nuevaPrioridad != null) {
-                log.info("Actualizando prioridad de '{}' a '{}'", tramite.getPrioridad(), nuevaPrioridad);
                 tramite.setPrioridad(nuevaPrioridad);
                 actualizado = true;
-            } else {
-                log.warn("Prioridad invC!lida ignorada: '{}'", request.getPrioridad());
             }
         }
         
-        // Observaciones
         if (request.getObservaciones() != null) {
-            log.info("Actualizando observaciones");
             tramite.setObservaciones(request.getObservaciones().trim());
             actualizado = true;
         }
         
-        // Fecha de vencimiento
         if (request.getFechaVencimiento() != null) {
-            log.info("Actualizando fecha de vencimiento a: {}", request.getFechaVencimiento());
             tramite.setFechaVencimiento(request.getFechaVencimiento());
             actualizado = true;
         }
         
-        // Documentos adjuntos
         if (isValidString(request.getDocumentosAdjuntos())) {
-            log.info("Actualizando documentos adjuntos");
             tramite.setDocumentosAdjuntos(request.getDocumentosAdjuntos().trim());
             actualizado = true;
         }
         
         if (!actualizado) {
-            log.warn("No se actualizC3 ningC:n campo del trC!mite {}", tramiteId);
             return convertirAResponse(tramite); // Retornar sin guardar si no hay cambios
         }
         
-        log.info("Guardando trC!mite actualizado...");
         Tramite updated = tramiteRepository.save(tramite);
         
-        // Registrar en historial
         registrarHistorial(tramiteId, usuarioId, 
                          TramiteHistorial.TipoAccion.MODIFICADO,
                          null, null, 
-                         "TrC!mite modificado");
+                         "Trámite modificado");
         
-        log.info("=== FIN EDICICN TRCMITE {} EXITOSA ===", updated.getCodigo());
         
         TramiteResponse response = convertirAResponse(updated);
-        log.info("Response enviada al frontend: {}", response);
         
         return response;
     }
     
-    // MC)todos auxiliares para validaciC3n
     private boolean isValidString(String value) {
         return value != null && !value.trim().isEmpty();
     }
@@ -227,26 +180,22 @@ public class TramiteService {
         try {
             return Enum.valueOf(enumClass, value.trim().toUpperCase());
         } catch (IllegalArgumentException e) {
-            log.warn("No se pudo parsear enum {} con valor: '{}'", enumClass.getSimpleName(), value);
             return null;
         }
     }
     
-    // Recepcionar trC!mite (TRABAJADOR del C!rea)
     public TramiteResponse recepcionarTramite(Long tramiteId, Long trabajadorId) {
-        // Verificar capacidad del trabajador
         if (!puedeAsumirTramite(trabajadorId)) {
-            throw new RuntimeException("Ha alcanzado el lC-mite mC!ximo de trC!mites activos");
+            throw new RuntimeException("Ha alcanzado el límite máximo de trámites activos");
         }
         
         Tramite tramite = tramiteRepository.findById(tramiteId)
-            .orElseThrow(() -> new RuntimeException("TrC!mite no encontrado"));
+            .orElseThrow(() -> new RuntimeException("Trámite no encontrado"));
         
         if (tramite.getEstado() != Tramite.EstadoTramite.ENVIADO) {
-            throw new RuntimeException("El trC!mite no estC! disponible para recepcionar");
+            throw new RuntimeException("El trámite no está disponible para recepcionar");
         }
         
-        // Asignar trabajador y cambiar estado
         String estadoAnterior = tramite.getEstado().name();
         tramite.setUsuarioAsignadoId(trabajadorId);
         tramite.setEstado(Tramite.EstadoTramite.EN_REVISION);
@@ -254,17 +203,14 @@ public class TramiteService {
         
         Tramite saved = tramiteRepository.save(tramite);
         
-        // Registrar en historial
         registrarHistorial(tramiteId, trabajadorId,
                          TramiteHistorial.TipoAccion.ASIGNADO,
                          estadoAnterior, "EN_REVISION",
-                         "TrC!mite recepcionado");
+                         "Trámite recepcionado");
         
-        // Notificar al solicitante
         notificacionService.notificarRecepcionTramite(tramiteId, trabajadorId, 
                                                      tramite.getUsuarioSolicitanteId());
         
-        log.info("TrC!mite {} recepcionado por trabajador {}", tramite.getCodigo(), trabajadorId);
 
         return convertirAResponse(saved);
     }
@@ -298,17 +244,12 @@ public class TramiteService {
         notificacionService.notificarAutoasignacionTramite(tramiteId, trabajadorId,
                                                           tramite.getUsuarioSolicitanteId());
 
-        log.info("Tramite {} autoasignado al trabajador {}", tramite.getCodigo(), trabajadorId);
-
         return convertirAResponse(saved);
     }
 
-    // Derivar trC!mite a otro trabajador
     public TramiteResponse derivarTramite(Long tramiteId, Long trabajadorActual,
                                          Long trabajadorNuevo, String motivo) {
-        // Verificar que el nuevo trabajador puede recibir el trC!mite
         if (!puedeAsumirTramite(trabajadorNuevo)) {
-            // Buscar otro trabajador con capacidad
             Long trabajadorAlternativo = buscarTrabajadorConCapacidad();
             if (trabajadorAlternativo == null) {
                 throw new RuntimeException("No hay trabajadores disponibles con capacidad");
@@ -317,25 +258,22 @@ public class TramiteService {
         }
         
         Tramite tramite = tramiteRepository.findById(tramiteId)
-            .orElseThrow(() -> new RuntimeException("TrC!mite no encontrado"));
+            .orElseThrow(() -> new RuntimeException("Trámite no encontrado"));
 
-        // Verificar que el trabajador actual es quien tiene asignado el trC!mite
-        // o que el trC!mite no tiene asignado (cualquier administrativo puede tomarlo)
         Long usuarioAsignado = tramite.getUsuarioAsignadoId();
         if (usuarioAsignado != null && !usuarioAsignado.equals(trabajadorActual)) {
-            throw new RuntimeException("No autorizado para derivar este trC!mite - estC! asignado a otro trabajador");
+            throw new RuntimeException("No autorizado para derivar este trámite - está asignado a otro trabajador");
         }
         
         String estadoAnterior = tramite.getEstado().name();
         Long trabajadorAnterior = tramite.getUsuarioAsignadoId();
         
-        // Cambiar asignaciC3n
+        // Cambiar asignación
         tramite.setUsuarioAsignadoId(trabajadorNuevo);
         tramite.setEstado(Tramite.EstadoTramite.DERIVADO);
         
         Tramite saved = tramiteRepository.save(tramite);
         
-        // Registrar en historial
         TramiteHistorial historial = new TramiteHistorial();
         historial.setTramiteId(tramiteId);
         historial.setUsuarioId(trabajadorActual);
@@ -345,24 +283,21 @@ public class TramiteService {
         historial.setUsuarioAnteriorId(trabajadorAnterior);
         historial.setUsuarioNuevoId(trabajadorNuevo);
         historial.setMotivo(motivo);
-        historial.setObservaciones("TrC!mite derivado: " + motivo);
+        historial.setObservaciones("Trámite derivado: " + motivo);
         historialRepository.save(historial);
         
         // Notificaciones
         notificacionService.notificarDerivacionTramite(tramiteId, trabajadorActual, 
                                                       trabajadorNuevo, motivo);
         
-        log.info("TrC!mite {} derivado de trabajador {} a {}", 
-                tramite.getCodigo(), trabajadorActual, trabajadorNuevo);
         
         return convertirAResponse(saved);
     }
     
-    // Cambiar estado del trC!mite
     public TramiteResponse cambiarEstado(Long tramiteId, String nuevoEstado, 
                                         Long usuarioId, String observaciones) {
         Tramite tramite = tramiteRepository.findById(tramiteId)
-            .orElseThrow(() -> new RuntimeException("TrC!mite no encontrado"));
+            .orElseThrow(() -> new RuntimeException("Trámite no encontrado"));
         
         String estadoAnterior = tramite.getEstado().name();
         Tramite.EstadoTramite estado = Tramite.EstadoTramite.valueOf(nuevoEstado);
@@ -372,7 +307,6 @@ public class TramiteService {
             tramite.setObservaciones(observaciones);
         }
         
-        // Si se completa, marcar fecha
         if (estado == Tramite.EstadoTramite.FINALIZADO || 
             estado == Tramite.EstadoTramite.APROBADO) {
             tramite.setFechaCompletado(LocalDateTime.now());
@@ -380,34 +314,27 @@ public class TramiteService {
         
         Tramite saved = tramiteRepository.save(tramite);
         
-        // Registrar en historial
         registrarHistorial(tramiteId, usuarioId,
                          mapearAccionPorEstado(estado),
                          estadoAnterior, nuevoEstado,
                          observaciones);
         
-        // Notificar cambio de estado
         notificacionService.notificarCambioEstadoAutomatico(tramiteId, estadoAnterior, nuevoEstado);
         
-        log.info("Estado del trC!mite {} cambiado de {} a {}", 
-                tramite.getCodigo(), estadoAnterior, nuevoEstado);
         
         return convertirAResponse(saved);
     }
     
-    // Finalizar trC!mite con archivo de respuesta
     public TramiteResponse finalizarConArchivo(Long tramiteId, String urlArchivo, Long usuarioId) {
         Tramite tramite = tramiteRepository.findById(tramiteId)
-            .orElseThrow(() -> new RuntimeException("TrC!mite no encontrado"));
+            .orElseThrow(() -> new RuntimeException("Trámite no encontrado"));
         
         String estadoAnterior = tramite.getEstado().name();
         tramite.setEstado(Tramite.EstadoTramite.FINALIZADO);
         tramite.setFechaCompletado(LocalDateTime.now());
         
-        // Agregar archivo a documentos adjuntos
         String documentosActuales = tramite.getDocumentosAdjuntos();
         if (documentosActuales != null) {
-            // Agregar el nuevo archivo al JSON existente
             tramite.setDocumentosAdjuntos(documentosActuales + "," + urlArchivo);
         } else {
             tramite.setDocumentosAdjuntos(urlArchivo);
@@ -415,35 +342,29 @@ public class TramiteService {
         
         Tramite saved = tramiteRepository.save(tramite);
         
-        // Registrar en historial
         registrarHistorial(tramiteId, usuarioId,
                          TramiteHistorial.TipoAccion.FINALIZADO,
                          estadoAnterior, "FINALIZADO",
-                         "TrC!mite finalizado con archivo de respuesta");
+                         "Trámite finalizado con archivo de respuesta");
         
-        // Notificar con archivo
         notificacionService.notificarFinalizacionConArchivo(tramiteId, urlArchivo);
         
-        log.info("TrC!mite {} finalizado con archivo de respuesta", tramite.getCodigo());
         
         return convertirAResponse(saved);
     }
     
-    // Eliminar trC!mite (solo ADMIN)
     public void eliminarTramite(Long tramiteId, Long usuarioId, String rol) {
         if (!"ADMIN".equals(rol)) {
-            throw new RuntimeException("Solo el administrador puede eliminar trC!mites");
+            throw new RuntimeException("Solo el administrador puede eliminar trámites");
         }
         
         Tramite tramite = tramiteRepository.findById(tramiteId)
-            .orElseThrow(() -> new RuntimeException("TrC!mite no encontrado"));
+            .orElseThrow(() -> new RuntimeException("Trámite no encontrado"));
         
         tramiteRepository.deleteById(tramiteId);
         
-        log.info("TrC!mite {} eliminado por admin {}", tramite.getCodigo(), usuarioId);
     }
     
-    // BC:squeda en tiempo real
     @Transactional(readOnly = true)
     public Page<TramiteResponse> buscarTramites(String texto, Pageable pageable) {
         Page<Tramite> tramites = tramiteRepository
@@ -452,7 +373,6 @@ public class TramiteService {
         return tramites.map(this::convertirAResponse);
     }
     
-    // Obtener trC!mites del usuario
     @Transactional(readOnly = true)
     public Page<TramiteResponse> obtenerMisTramites(Long usuarioId, String rol, Pageable pageable) {
         Page<Tramite> tramites;
@@ -461,64 +381,51 @@ public class TramiteService {
             org.springframework.data.domain.PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
         
         if ("USUARIO".equals(rol) || "ESTUDIANTE".equalsIgnoreCase(rol)) {
-            // Usuario y Estudiante ven solo sus trC!mites creados - usar consulta optimizada por ID
             tramites = tramiteRepository.findByUsuarioSolicitanteIdOrderById(usuarioId, pageableOptimizado);
         } else if ("ADMINISTRATIVO".equals(rol) || "ADMIN".equals(rol)) {
-            // Usar consulta optimizada que ordena por ID en lugar de fecha
             tramites = tramiteRepository.findAllOrderById(pageableOptimizado);
         } else {
-            // Cualquier otro rol ve trC!mites ordenados por ID
+            // Cualquier otro rol ve trámites ordenados por ID
             tramites = tramiteRepository.findAllOrderById(pageableOptimizado);
         }
         
         return tramites.map(this::convertirAResponse);
     }
     
-    // MC)todo especC-fico para la bandeja que excluye archivados por defecto
     @Transactional(readOnly = true)
     public Page<TramiteResponse> obtenerTramitesBandeja(Long usuarioId, String rol, Pageable pageable, String estado, String prioridad, String tipo) {
         Page<Tramite> tramites;
         
-        // Crear un Pageable optimizado que solo use paginaciC3n sin ordenamiento
-        // para evitar problemas de memoria con archivos base64 grandes
         org.springframework.data.domain.PageRequest pageableOptimizado = 
             org.springframework.data.domain.PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
         
         if ("USUARIO".equals(rol) || "ESTUDIANTE".equalsIgnoreCase(rol)) {
-            // Usuario y Estudiante ven solo sus trC!mites creados, excluyendo archivados por defecto
             if (estado == null) {
-                // Excluir archivados por defecto
                 tramites = tramiteRepository.findByUsuarioSolicitanteIdAndEstadoNotOrderById(usuarioId, Tramite.EstadoTramite.ARCHIVADO, pageableOptimizado);
             } else if ("ARCHIVADO".equals(estado)) {
-                // Mostrar solo archivados si se solicita explC-citamente
                 tramites = tramiteRepository.findByUsuarioSolicitanteIdAndEstadoOrderById(usuarioId, Tramite.EstadoTramite.ARCHIVADO, pageableOptimizado);
             } else {
-                // Filtrar por estado especC-fico
+                // Filtrar por estado específico
                 Tramite.EstadoTramite estadoEnum;
                 try {
                     estadoEnum = Tramite.EstadoTramite.valueOf(estado);
                     tramites = tramiteRepository.findByUsuarioSolicitanteIdAndEstadoOrderById(usuarioId, estadoEnum, pageableOptimizado);
                 } catch (IllegalArgumentException e) {
-                    // Si el estado no es vC!lido, excluir archivados
                     tramites = tramiteRepository.findByUsuarioSolicitanteIdAndEstadoNotOrderById(usuarioId, Tramite.EstadoTramite.ARCHIVADO, pageableOptimizado);
                 }
             }
         } else {
-            // Administrativos ven todos los trC!mites, excluyendo archivados por defecto
             if (estado == null) {
-                // Excluir archivados por defecto
                 tramites = tramiteRepository.findByEstadoNotOrderByIdDesc(Tramite.EstadoTramite.ARCHIVADO, pageableOptimizado);
             } else if ("ARCHIVADO".equals(estado)) {
-                // Mostrar solo archivados si se solicita explC-citamente
                 tramites = tramiteRepository.findByEstadoOrderByIdDesc(Tramite.EstadoTramite.ARCHIVADO, pageableOptimizado);
             } else {
-                // Filtrar por estado especC-fico
+                // Filtrar por estado específico
                 Tramite.EstadoTramite estadoEnum;
                 try {
                     estadoEnum = Tramite.EstadoTramite.valueOf(estado);
                     tramites = tramiteRepository.findByEstadoOrderByIdDesc(estadoEnum, pageableOptimizado);
                 } catch (IllegalArgumentException e) {
-                    // Si el estado no es vC!lido, excluir archivados
                     tramites = tramiteRepository.findByEstadoNotOrderByIdDesc(Tramite.EstadoTramite.ARCHIVADO, pageableOptimizado);
                 }
             }
@@ -527,12 +434,10 @@ public class TramiteService {
         return tramites.map(this::convertirAResponse);
     }
     
-    // MC)todos pC:blicos (sin autenticaciC3n)
+    // Métodos públicos (sin autenticación)
     @Transactional(readOnly = true)
     public Page<TramiteResponse> buscarPorCodigo(String codigo, Pageable pageable) {
-        // Limitar búsquedas muy amplias para evitar problemas de memoria
         if (codigo == null || codigo.trim().length() < 3) {
-            // Si la búsqueda es muy corta, limitamos a máximo 5 resultados
             org.springframework.data.domain.Pageable limitedPageable =
                 org.springframework.data.domain.PageRequest.of(
                     pageable.getPageNumber(),
@@ -543,7 +448,6 @@ public class TramiteService {
                 .map(this::convertirAResponse);
         }
 
-        // Para búsquedas más específicas, permitir el tamaño solicitado pero con límite
         org.springframework.data.domain.Pageable safePageable =
             org.springframework.data.domain.PageRequest.of(
                 pageable.getPageNumber(),
@@ -557,7 +461,6 @@ public class TramiteService {
     
     @Transactional(readOnly = true)
     public Page<TramiteResponse> obtenerTramitesPublicos(Pageable pageable) {
-        // Solo trC!mites en estados pC:blicos
         return tramiteRepository.findByEstado(Tramite.EstadoTramite.FINALIZADO, pageable)
             .map(this::convertirAResponse);
     }
@@ -566,17 +469,14 @@ public class TramiteService {
     public TramiteResponse obtenerTramitePublico(String codigo) {
         return tramiteRepository.findByCodigo(codigo)
             .map(this::convertirAResponse)
-            .orElseThrow(() -> new RuntimeException("TrC!mite no encontrado"));
+            .orElseThrow(() -> new RuntimeException("Trámite no encontrado"));
     }
     
-    // MC)todos de archivos
     public String guardarArchivoRespuesta(org.springframework.web.multipart.MultipartFile archivo) {
         try {
-            // Convertir archivo a base64
             byte[] bytes = archivo.getBytes();
             String base64Content = java.util.Base64.getEncoder().encodeToString(bytes);
             
-            // Crear objeto JSON con metadata del archivo
             String archivoJson = String.format(
                 "{\"nombre\":\"%s\",\"tipo\":\"%s\",\"tamanio\":%d,\"contenido\":\"%s\",\"fechaSubida\":\"%s\"}",
                 archivo.getOriginalFilename(),
@@ -593,25 +493,22 @@ public class TramiteService {
     }
     
     public org.springframework.http.ResponseEntity<byte[]> descargarArchivoPublico(String codigo, String nombreArchivo) {
-        // Verificar que el trC!mite existe y estC! finalizado
         tramiteRepository.findByCodigo(codigo)
             .filter(t -> t.getEstado() == Tramite.EstadoTramite.FINALIZADO)
             .orElseThrow(() -> new RuntimeException("Archivo no disponible"));
         
-        // Implementar descarga de archivo
         byte[] archivo = new byte[0]; // Placeholder
         return org.springframework.http.ResponseEntity.ok()
             .header("Content-Disposition", "attachment; filename=\"" + nombreArchivo + "\"")
             .body(archivo);
     }
     
-    // MC)todos extendidos
+    // Métodos extendidos
     @Transactional(readOnly = true)
     public TramiteResponse obtenerTramite(Long id, Long usuarioId, String rol) {
         Tramite tramite = tramiteRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("TrC!mite no encontrado"));
+            .orElseThrow(() -> new RuntimeException("Trámite no encontrado"));
         
-        // Verificar permisos
         if ("USUARIO".equals(rol) && !tramite.getUsuarioSolicitanteId().equals(usuarioId)) {
             throw new RuntimeException("No autorizado");
         }
@@ -626,12 +523,10 @@ public class TramiteService {
     public Page<TramiteResponse> buscarTramitesAvanzado(Long usuarioId, String rol, String texto, 
                                                        String estado, String tipo, String prioridad, 
                                                        Pageable pageable) {
-        // Convertir strings a enums si no son nulos
         Tramite.EstadoTramite estadoEnum = estado != null ? Tramite.EstadoTramite.valueOf(estado) : null;
         Tramite.TipoTramite tipoEnum = tipo != null ? Tramite.TipoTramite.valueOf(tipo) : null;
         Tramite.PrioridadTramite prioridadEnum = prioridad != null ? Tramite.PrioridadTramite.valueOf(prioridad) : null;
         
-        // Filtros segC:n el rol
         Long solicitanteId = "USUARIO".equals(rol) ? usuarioId : null;
         Long asignadoId = "ADMINISTRATIVO".equals(rol) ? usuarioId : null;
         
@@ -641,62 +536,48 @@ public class TramiteService {
     }
     
     public java.util.List<String> subirArchivosMultiples(Long tramiteId, java.util.List<org.springframework.web.multipart.MultipartFile> archivos, Long usuarioId) {
-        log.info("Iniciando subida de {} archivos para trC!mite ID: {}", archivos.size(), tramiteId);
         
-        // Verificar que el trC!mite existe y el usuario tiene permisos
         Tramite tramite = tramiteRepository.findById(tramiteId)
-            .orElseThrow(() -> new RuntimeException("TrC!mite no encontrado"));
+            .orElseThrow(() -> new RuntimeException("Trámite no encontrado"));
         
-        log.info("TrC!mite encontrado: {} - Estado actual documentos: {}", tramite.getCodigo(), 
-            tramite.getDocumentosAdjuntos() != null ? "Existe" : "NULL");
         
         java.util.List<String> archivosBase64 = new java.util.ArrayList<>();
         
         for (org.springframework.web.multipart.MultipartFile archivo : archivos) {
-            // Validar tamaC1o y tipo
-            if (archivo.getSize() > 50 * 1024 * 1024) { // 50MB lC-mite por archivo
-                throw new RuntimeException("Archivo " + archivo.getOriginalFilename() + " excede el lC-mite de 50MB");
+            // Validar tamaño y tipo
+            if (archivo.getSize() > 50 * 1024 * 1024) { // 50MB límite por archivo
+                throw new RuntimeException("Archivo " + archivo.getOriginalFilename() + " excede el límite de 50MB");
             }
             
-            // Convertir archivo a base64 y crear JSON
             String archivoJson = guardarArchivoRespuesta(archivo);
             archivosBase64.add(archivoJson);
         }
         
-        // Actualizar documentos adjuntos del trC!mite en la base de datos
         String documentosActuales = tramite.getDocumentosAdjuntos();
         String nuevosDocumentos;
         
         if (documentosActuales != null && !documentosActuales.trim().isEmpty()) {
-            // Si ya hay documentos, agregar los nuevos
             if (documentosActuales.startsWith("[") && documentosActuales.endsWith("]")) {
-                // Es un array JSON vC!lido, insertar antes del corchete de cierre
                 nuevosDocumentos = documentosActuales.substring(0, documentosActuales.length() - 1) 
                     + "," + String.join(",", archivosBase64) + "]";
             } else {
-                // Formato legacy, convertir a array
                 nuevosDocumentos = "[" + documentosActuales + "," + String.join(",", archivosBase64) + "]";
             }
         } else {
-            // Crear nuevo JSON array
             nuevosDocumentos = "[" + String.join(",", archivosBase64) + "]";
         }
         
-        log.info("Estableciendo documentos en trC!mite: {} caracteres", nuevosDocumentos.length());
         tramite.setDocumentosAdjuntos(nuevosDocumentos);
         tramiteRepository.save(tramite);
         
-        log.info("Guardados {} archivos en base64 para trC!mite {}", archivos.size(), tramite.getCodigo());
         
         return archivosBase64;
     }
     
     public org.springframework.http.ResponseEntity<byte[]> descargarArchivo(Long tramiteId, String nombreArchivo, Long usuarioId, String rol) {
-        // Verificar permisos y obtener el trámite
         Tramite tramite = tramiteRepository.findById(tramiteId)
             .orElseThrow(() -> new RuntimeException("Trámite no encontrado"));
 
-        // Verificar permisos según el rol
         if ("USUARIO".equals(rol) && !tramite.getUsuarioSolicitanteId().equals(usuarioId)) {
             throw new RuntimeException("No tiene permisos para acceder a este trámite");
         }
@@ -707,78 +588,53 @@ public class TramiteService {
         }
 
         try {
-            log.info("📄 BACKEND DEBUG: Iniciando descarga de archivo: {}", nombreArchivo);
-            log.info("📄 BACKEND DEBUG: JSON de documentos: {}", documentosJson);
 
-            // Parsear documentos JSON
             com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
             java.util.List<java.util.Map<String, Object>> documentos =
                 mapper.readValue(documentosJson, java.util.List.class);
 
-            log.info("📄 BACKEND DEBUG: Documentos parseados: {} documentos encontrados", documentos.size());
-
-            // Buscar el documento específico por nombre
             for (int i = 0; i < documentos.size(); i++) {
                 java.util.Map<String, Object> documento = documentos.get(i);
                 String nombre = (String) documento.get("nombre");
 
-                log.info("📄 BACKEND DEBUG: Documento {}: nombre='{}', buscado='{}'", i, nombre, nombreArchivo);
-
                 if (nombreArchivo.equals(nombre)) {
-                    log.info("📄 BACKEND DEBUG: ¡Documento encontrado! Procesando...");
 
                     String contenidoBase64 = (String) documento.get("contenido");
-                    log.info("📄 BACKEND DEBUG: Contenido base64 presente: {}", contenidoBase64 != null);
 
                     if (contenidoBase64 != null) {
-                        log.info("📄 BACKEND DEBUG: Longitud contenido base64: {}", contenidoBase64.length());
-                        log.info("📄 BACKEND DEBUG: Primeros 50 chars: {}",
-                            contenidoBase64.length() > 50 ? contenidoBase64.substring(0, 50) : contenidoBase64);
                     }
 
                     if (contenidoBase64 != null && !contenidoBase64.isEmpty()) {
                         try {
-                            // Decodificar el contenido base64
                             byte[] archivo = java.util.Base64.getDecoder().decode(contenidoBase64);
-                            log.info("📄 BACKEND DEBUG: Archivo decodificado, tamaño: {} bytes", archivo.length);
 
-                            // Determinar el tipo de contenido
                             String tipoArchivo = (String) documento.get("tipo");
                             if (tipoArchivo == null) tipoArchivo = "application/octet-stream";
-
-                            log.info("📄 BACKEND DEBUG: Tipo de archivo: {}", tipoArchivo);
-                            log.info("📄 BACKEND DEBUG: Retornando archivo de {} bytes", archivo.length);
 
                             return org.springframework.http.ResponseEntity.ok()
                                 .header("Content-Disposition", "attachment; filename=\"" + nombreArchivo + "\"")
                                 .header("Content-Type", tipoArchivo)
                                 .body(archivo);
                         } catch (Exception decodeError) {
-                            log.error("📄 BACKEND DEBUG: Error al decodificar base64: {}", decodeError.getMessage());
                         }
                     } else {
-                        log.warn("📄 BACKEND DEBUG: Contenido base64 vacío o nulo");
                     }
                 }
             }
 
-            log.warn("Archivo no encontrado: {}", nombreArchivo);
             return org.springframework.http.ResponseEntity.notFound().build();
 
         } catch (Exception e) {
-            log.error("Error al descargar archivo {}: {}", nombreArchivo, e.getMessage(), e);
             return org.springframework.http.ResponseEntity.internalServerError().build();
         }
     }
     
     public org.springframework.http.ResponseEntity<byte[]> descargarTodosDocumentos(Long tramiteId, Long usuarioId, String rol) {
-        // Verificar permisos y obtener el trC!mite
         Tramite tramite = tramiteRepository.findById(tramiteId)
-            .orElseThrow(() -> new RuntimeException("TrC!mite no encontrado"));
+            .orElseThrow(() -> new RuntimeException("Trámite no encontrado"));
         
-        // Verificar permisos segC:n el rol
         if ("USUARIO".equals(rol) && !tramite.getUsuarioSolicitanteId().equals(usuarioId)) {
-            throw new RuntimeException("No tiene permisos para acceder a este trC!mite");
+            throw new RuntimeException("No tiene permisos para acceder a este trámite");
         }
         
         String documentosJson = tramite.getDocumentosAdjuntos();
@@ -787,13 +643,10 @@ public class TramiteService {
         }
         
         try {
-            // Crear un ZIP con todos los documentos
             java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
             java.util.zip.ZipOutputStream zos = new java.util.zip.ZipOutputStream(baos);
             
-            // Parsear el JSON que contiene mC:ltiples documentos
             if (documentosJson.startsWith("[")) {
-                // Array de documentos
                 com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
                 com.fasterxml.jackson.core.type.TypeReference<java.util.List<java.util.Map<String, Object>>> typeRef = 
                     new com.fasterxml.jackson.core.type.TypeReference<java.util.List<java.util.Map<String, Object>>>() {};
@@ -806,16 +659,13 @@ public class TramiteService {
                     if (nombre != null && contenidoBase64 != null) {
                         byte[] contenido = java.util.Base64.getDecoder().decode(contenidoBase64);
                         
-                        // Hashear el contenido del archivo antes de agregarlo al ZIP
                         String hash = calcularHashArchivo(contenido);
                         
-                        // Crear entrada en el ZIP
                         java.util.zip.ZipEntry entry = new java.util.zip.ZipEntry(nombre);
                         zos.putNextEntry(entry);
                         zos.write(contenido);
                         zos.closeEntry();
                         
-                        // Agregar archivo de hash junto al documento
                         String nombreHash = nombre + ".hash";
                         java.util.zip.ZipEntry hashEntry = new java.util.zip.ZipEntry(nombreHash);
                         zos.putNextEntry(hashEntry);
@@ -824,7 +674,6 @@ public class TramiteService {
                     }
                 }
             } else if (documentosJson.startsWith("{")) {
-                // Un solo documento como objeto
                 com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
                 java.util.Map<String, Object> doc = mapper.readValue(documentosJson, java.util.Map.class);
                 String nombre = (String) doc.get("nombre");
@@ -833,16 +682,13 @@ public class TramiteService {
                 if (nombre != null && contenidoBase64 != null) {
                     byte[] contenido = java.util.Base64.getDecoder().decode(contenidoBase64);
                     
-                    // Hashear el contenido del archivo antes de agregarlo al ZIP
                     String hash = calcularHashArchivo(contenido);
                     
-                    // Crear entrada en el ZIP
                     java.util.zip.ZipEntry entry = new java.util.zip.ZipEntry(nombre);
                     zos.putNextEntry(entry);
                     zos.write(contenido);
                     zos.closeEntry();
                     
-                    // Agregar archivo de hash junto al documento
                     String nombreHash = nombre + ".hash";
                     java.util.zip.ZipEntry hashEntry = new java.util.zip.ZipEntry(nombreHash);
                     zos.putNextEntry(hashEntry);
@@ -870,9 +716,8 @@ public class TramiteService {
     }
     
     public org.springframework.http.ResponseEntity<byte[]> descargarTodosDocumentosPublico(String codigo) {
-        // Buscar trC!mite por cC3digo sin verificar permisos (acceso pC:blico)
         Tramite tramite = tramiteRepository.findByCodigo(codigo)
-            .orElseThrow(() -> new RuntimeException("TrC!mite no encontrado con cC3digo: " + codigo));
+            .orElseThrow(() -> new RuntimeException("Trámite no encontrado con código: " + codigo));
         
         String documentosJson = tramite.getDocumentosAdjuntos();
         if (documentosJson == null || documentosJson.trim().isEmpty()) {
@@ -880,13 +725,10 @@ public class TramiteService {
         }
         
         try {
-            // Crear un ZIP con todos los documentos
             java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
             java.util.zip.ZipOutputStream zos = new java.util.zip.ZipOutputStream(baos);
             
-            // Parsear el JSON que contiene mC:ltiples documentos
             if (documentosJson.startsWith("[")) {
-                // Array de documentos
                 com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
                 com.fasterxml.jackson.core.type.TypeReference<java.util.List<java.util.Map<String, Object>>> typeRef = 
                     new com.fasterxml.jackson.core.type.TypeReference<java.util.List<java.util.Map<String, Object>>>() {};
@@ -899,16 +741,13 @@ public class TramiteService {
                     if (nombre != null && contenidoBase64 != null) {
                         byte[] contenido = java.util.Base64.getDecoder().decode(contenidoBase64);
                         
-                        // Hashear el contenido del archivo antes de agregarlo al ZIP
                         String hash = calcularHashArchivo(contenido);
                         
-                        // Crear entrada en el ZIP
                         java.util.zip.ZipEntry entry = new java.util.zip.ZipEntry(nombre);
                         zos.putNextEntry(entry);
                         zos.write(contenido);
                         zos.closeEntry();
                         
-                        // Agregar archivo de hash junto al documento
                         String nombreHash = nombre + ".hash";
                         java.util.zip.ZipEntry hashEntry = new java.util.zip.ZipEntry(nombreHash);
                         zos.putNextEntry(hashEntry);
@@ -917,7 +756,6 @@ public class TramiteService {
                     }
                 }
             } else if (documentosJson.startsWith("{")) {
-                // Un solo documento como objeto
                 com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
                 java.util.Map<String, Object> doc = mapper.readValue(documentosJson, java.util.Map.class);
                 String nombre = (String) doc.get("nombre");
@@ -926,16 +764,13 @@ public class TramiteService {
                 if (nombre != null && contenidoBase64 != null) {
                     byte[] contenido = java.util.Base64.getDecoder().decode(contenidoBase64);
                     
-                    // Hashear el contenido del archivo antes de agregarlo al ZIP
                     String hash = calcularHashArchivo(contenido);
                     
-                    // Crear entrada en el ZIP
                     java.util.zip.ZipEntry entry = new java.util.zip.ZipEntry(nombre);
                     zos.putNextEntry(entry);
                     zos.write(contenido);
                     zos.closeEntry();
                     
-                    // Agregar archivo de hash junto al documento
                     String nombreHash = nombre + ".hash";
                     java.util.zip.ZipEntry hashEntry = new java.util.zip.ZipEntry(nombreHash);
                     zos.putNextEntry(hashEntry);
@@ -1006,26 +841,22 @@ public class TramiteService {
         java.util.Map<String, Object> estadisticas = new java.util.HashMap<>();
 
         if ("USUARIO".equals(rol)) {
-            // EstadC-sticas para usuario remitente - solo sus trC!mites
             estadisticas.put("total", tramiteRepository.countByUsuarioSolicitanteId(usuarioId));
 
-            // Contar por estado para sus trC!mites
             for (Tramite.EstadoTramite estado : Tramite.EstadoTramite.values()) {
                 Long count = tramiteRepository.countByUsuarioSolicitanteIdAndEstado(usuarioId, estado);
                 estadisticas.put("estado_" + estado.name(), count);
             }
 
-            // Contar por tipo para sus trC!mites
             for (Tramite.TipoTramite tipo : Tramite.TipoTramite.values()) {
                 Long count = tramiteRepository.countByUsuarioSolicitanteIdAndTipo(usuarioId, tipo);
                 estadisticas.put("tipo_" + tipo.name(), count);
             }
 
         } else if ("ADMINISTRATIVO".equals(rol) || "ADMIN".equals(rol)) {
-            // Administrativo y Admin ven estadC-sticas generales de todos los trC!mites
             return obtenerEstadisticas();
         } else {
-            // Cualquier otro rol ve estadC-sticas generales
+            // Cualquier otro rol ve estadísticas generales
             return obtenerEstadisticas();
         }
 
@@ -1060,7 +891,6 @@ public class TramiteService {
                 .fechaAccion(h.getFechaAccion())
                 .totalModificaciones(totalModificaciones);
 
-            // Agregar información del usuario si existe
             if (h.getUsuarioId() != null) {
                 try {
                     UsuarioResponse usuario = usuarioService.obtenerUsuarioPorId(h.getUsuarioId());
@@ -1071,11 +901,9 @@ public class TramiteService {
                         .rol(usuario.getRole() != null ? usuario.getRole().getName() : null)
                         .build());
                 } catch (Exception e) {
-                    log.warn("Usuario con ID {} no encontrado para historial", h.getUsuarioId());
                 }
             }
 
-            // Agregar información de las áreas si existen
             if (h.getAreaOrigenId() != null) {
                 areaService.getAreaById(h.getAreaOrigenId()).ifPresent(areaOrigen ->
                     builder.areaOrigen(TramiteHistorialResponse.AreaBasicInfo.builder()
@@ -1103,12 +931,10 @@ public class TramiteService {
         return resultado;
     }
     
-    // Proceso automC!tico: cambiar estados segC:n tiempo
     @Scheduled(cron = "0 0 */1 * * *") // Cada hora
     public void actualizarEstadosAutomaticos() {
         LocalDateTime ahora = LocalDateTime.now();
         
-        // Cambiar de EN_REVISION a EN_PROCESO despuC)s de 1 dC-a
         List<Tramite> enRevision = tramiteRepository.findByEstado(
             Tramite.EstadoTramite.EN_REVISION, 
             Pageable.unpaged()
@@ -1119,16 +945,14 @@ public class TramiteService {
                 tramite.setEstado(Tramite.EstadoTramite.EN_PROCESO);
                 tramiteRepository.save(tramite);
                 
-                // Notificar cambio automC!tico
                 notificacionService.notificarCambioEstadoAutomatico(
                     tramite.getId(), "EN_REVISION", "EN_PROCESO"
                 );
                 
-                log.info("TrC!mite {} cambiC3 automC!ticamente a EN_PROCESO", tramite.getCodigo());
             }
         }
         
-        // Marcar trC!mites vencidos
+        // Marcar trámites vencidos
         List<Tramite> vencidos = tramiteRepository.findTramitesVencidos(
             ahora, 
             Arrays.asList(Tramite.EstadoTramite.FINALIZADO, 
@@ -1137,12 +961,10 @@ public class TramiteService {
         );
         
         for (Tramite tramite : vencidos) {
-            log.warn("TrC!mite {} ha vencido", tramite.getCodigo());
-            // Notificar vencimiento
         }
     }
     
-    // MC)todos auxiliares
+    // Métodos auxiliares
     private boolean puedeAsumirTramite(Long trabajadorId) {
         Long tramitesActivos = tramiteRepository.countByUsuarioAsignadoIdAndEstado(
             trabajadorId, 
@@ -1173,27 +995,22 @@ public class TramiteService {
             
             String codigo = String.format("TRM-%s-%04d", anio, siguiente);
             
-            // Verify this code doesn't already exist
             if (!tramiteRepository.findByCodigo(codigo).isPresent()) {
-                log.info("CC3digo generado exitosamente: {} (intento {})", codigo, retry + 1);
                 return codigo;
             } else {
-                log.warn("CC3digo duplicado detectado: {} (intento {})", codigo, retry + 1);
                 // Small delay before retry
                 try {
                     Thread.sleep(10 + (retry * 10)); // 10ms, 20ms, 30ms, etc.
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
-                    throw new RuntimeException("Error generando cC3digo de trC!mite", e);
+                    throw new RuntimeException("Error generando código de trámite", e);
                 }
             }
         }
         
-        // If all retries failed, generate a random suffix
         String codigo = String.format("TRM-%s-%04d-%d", anio, 
             tramiteRepository.getNextCodigoNumber(anio), 
             System.currentTimeMillis() % 1000);
-        log.warn("Generando cC3digo con sufijo aleatorio despuC)s de {} intentos: {}", maxRetries, codigo);
         return codigo;
     }
     
@@ -1225,8 +1042,6 @@ public class TramiteService {
     }
     
     private TramiteResponse convertirAResponse(Tramite tramite) {
-        log.info("=== CONVERTING TRAMITE TO RESPONSE: {} ===", tramite.getCodigo());
-        log.info("Tramite datos - Titulo: '{}', Descripcion: '{}', Estado: '{}'", tramite.getTitulo(), tramite.getDescripcion(), tramite.getEstado());
         
         TramiteResponse.TramiteResponseBuilder builder = TramiteResponse.builder()
             .id(tramite.getId())
@@ -1245,13 +1060,10 @@ public class TramiteService {
             .fechaVencimiento(tramite.getFechaVencimiento())
             .fechaCompletado(tramite.getFechaCompletado());
             
-        // Mapear usuario solicitante usando ID
         if (tramite.getUsuarioSolicitanteId() != null) {
-            log.info("Buscando usuario solicitante con ID: {}", tramite.getUsuarioSolicitanteId());
             Optional<UsuarioResponse> usuarioOpt = usuarioService.getUsuarioById(tramite.getUsuarioSolicitanteId());
             if (usuarioOpt.isPresent()) {
                 var usuario = usuarioOpt.get();
-                log.info("Usuario solicitante encontrado: {} {}", usuario.getNombre(), usuario.getApellidos());
                 builder.usuarioSolicitante(TramiteResponse.UsuarioBasicInfo.builder()
                     .id(usuario.getId())
                     .nombre(usuario.getNombre())
@@ -1260,8 +1072,6 @@ public class TramiteService {
                     .rol(usuario.getRole() != null ? usuario.getRole().getName() : null)
                     .build());
             } else {
-                log.warn("Usuario solicitante NO ENCONTRADO con ID: {} - Proporcionando datos por defecto", tramite.getUsuarioSolicitanteId());
-                // Proporcionar datos por defecto para evitar errores en el frontend
                 builder.usuarioSolicitante(TramiteResponse.UsuarioBasicInfo.builder()
                     .id(tramite.getUsuarioSolicitanteId())
                     .nombre("Usuario no encontrado")
@@ -1271,7 +1081,6 @@ public class TramiteService {
                     .build());
             }
         } else {
-            log.warn("Usuario solicitante ID es NULL para trC!mite: {}", tramite.getCodigo());
             // Proporcionar datos por defecto
             builder.usuarioSolicitante(TramiteResponse.UsuarioBasicInfo.builder()
                 .id(0L)
@@ -1282,7 +1091,6 @@ public class TramiteService {
                 .build());
         }
         
-        // Mapear usuario asignado usando ID
         if (tramite.getUsuarioAsignadoId() != null) {
             usuarioService.getUsuarioById(tramite.getUsuarioAsignadoId()).ifPresent(usuario -> 
                 builder.usuarioAsignado(TramiteResponse.UsuarioBasicInfo.builder()
@@ -1294,38 +1102,32 @@ public class TramiteService {
                     .build()));
         }
         
-        // Mapear C!rea actual usando ID
         if (tramite.getAreaActualId() != null) {
-            log.info("Buscando C!rea actual con ID: {}", tramite.getAreaActualId());
             Optional<AreaResponse> areaOpt = areaService.getAreaById(tramite.getAreaActualId());
             if (areaOpt.isPresent()) {
                 var area = areaOpt.get();
-                log.info("Crea actual encontrada: {}", area.getNombre());
                 builder.areaActual(TramiteResponse.AreaBasicInfo.builder()
                     .id(area.getId())
                     .nombre(area.getNombre())
                     .descripcion(area.getDescripcion())
                     .build());
             } else {
-                log.warn("Crea actual NO ENCONTRADA con ID: {} - Proporcionando datos por defecto", tramite.getAreaActualId());
                 // Proporcionar datos por defecto
                 builder.areaActual(TramiteResponse.AreaBasicInfo.builder()
                     .id(tramite.getAreaActualId())
-                    .nombre("Crea no encontrada")
-                    .descripcion("Crea no disponible")
+                    .nombre("area no encontrada")
+                    .descripcion("descripcion no disponible")
                     .build());
             }
         } else {
-            log.warn("Crea actual ID es NULL para trC!mite: {}", tramite.getCodigo());
             // Proporcionar datos por defecto
             builder.areaActual(TramiteResponse.AreaBasicInfo.builder()
                 .id(0L)
-                .nombre("Crea no disponible")
-                .descripcion("Crea no disponible")
+                .nombre("area no disponible")
+                .descripcion("area no disponible")
                 .build());
         }
         
-        // Mapear C!rea origen usando ID
         if (tramite.getAreaOrigenId() != null) {
             areaService.getAreaById(tramite.getAreaOrigenId()).ifPresent(area -> 
                 builder.areaOrigen(TramiteResponse.AreaBasicInfo.builder()
@@ -1335,7 +1137,6 @@ public class TramiteService {
                     .build()));
         }
         
-        // Mapear informaciC3n de respuesta
         if (tramite.getRespuesta() != null) {
             builder.respuesta(tramite.getRespuesta());
         }
@@ -1343,7 +1144,6 @@ public class TramiteService {
             builder.fechaRespuesta(tramite.getFechaRespuesta());
         }
         
-        // Mapear usuario que respondiC3
         if (tramite.getUsuarioRespondioId() != null) {
             usuarioService.getUsuarioById(tramite.getUsuarioRespondioId()).ifPresent(usuario -> 
                 builder.usuarioRespondio(TramiteResponse.UsuarioBasicInfo.builder()
@@ -1359,10 +1159,6 @@ public class TramiteService {
         builder.contadorProcesados(tramite.getContadorProcesados() != null ? tramite.getContadorProcesados() : 0);
         builder.contadorPorProcesar(tramite.getContadorPorProcesar() != null ? tramite.getContadorPorProcesar() : 0);
 
-        // Mapear documentos adjuntos
-        log.info("Procesando documentos para trámite {}: documentos_adjuntos = '{}'",
-            tramite.getId(), tramite.getDocumentosAdjuntos());
-
         if (tramite.getDocumentosAdjuntos() != null && !tramite.getDocumentosAdjuntos().isEmpty()) {
             try {
                 // Intentar parsear como JSON array primero
@@ -1371,7 +1167,6 @@ public class TramiteService {
                     mapper.registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
                     mapper.disable(com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
-                    // Intentar parsear como lista de maps primero (formato más común de la BD)
                     java.util.List<java.util.Map<String, Object>> rawDocumentos = mapper.readValue(
                         tramite.getDocumentosAdjuntos(),
                         mapper.getTypeFactory().constructCollectionType(java.util.List.class, java.util.Map.class)
@@ -1385,13 +1180,11 @@ public class TramiteService {
                         doc.setUrl((String) rawDoc.get("url"));
                         doc.setDescripcion((String) rawDoc.get("descripcion"));
 
-                        // Manejar tamaño que puede venir como Integer o Long
                         Object tamanoObj = rawDoc.get("tamano");
                         if (tamanoObj != null) {
                             doc.setTamanio(((Number) tamanoObj).longValue());
                         }
 
-                        // Manejar fecha
                         Object fechaObj = rawDoc.get("fechaSubida");
                         if (fechaObj instanceof String) {
                             try {
@@ -1407,29 +1200,22 @@ public class TramiteService {
                     }
 
                     builder.documentosAdjuntos(documentosList);
-                    log.info("✅ Documentos adjuntos mapeados exitosamente: {} documentos", documentosList.size());
                     for (TramiteResponse.DocumentoAdjunto doc : documentosList) {
-                        log.info("  - Documento: {} ({})", doc.getNombre(), doc.getTipo());
                     }
                 } else {
-                    // Formato simple string (nombre del archivo)
                     TramiteResponse.DocumentoAdjunto doc = new TramiteResponse.DocumentoAdjunto();
                     doc.setNombre(tramite.getDocumentosAdjuntos());
                     doc.setTipo("application/octet-stream");
                     doc.setFechaSubida(java.time.LocalDateTime.now());
                     builder.documentosAdjuntos(java.util.Arrays.asList(doc));
-                    log.info("Documento simple adjunto: {}", doc.getNombre());
                 }
             } catch (Exception e) {
-                log.error("❌ Error al parsear documentos adjuntos: {}", e.getMessage(), e);
                 builder.documentosAdjuntos(new java.util.ArrayList<>());
             }
         } else {
-            log.info("No hay documentos adjuntos para el trámite {}", tramite.getId());
             builder.documentosAdjuntos(new java.util.ArrayList<>());
         }
 
-        // Mapear archivos de respuesta
         if (tramite.getArchivosRespuesta() != null && !tramite.getArchivosRespuesta().isEmpty()) {
             try {
                 com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
@@ -1439,16 +1225,13 @@ public class TramiteService {
                     mapper.getTypeFactory().constructCollectionType(java.util.List.class,
                         TramiteResponse.DocumentoAdjunto.class));
                 builder.archivosRespuesta(archivosList);
-                log.info("Archivos de respuesta mapeados: {} archivos", archivosList.size());
             } catch (Exception e) {
-                log.error("Error al parsear archivos de respuesta: {}", e.getMessage());
                 builder.archivosRespuesta(new java.util.ArrayList<>());
             }
         } else {
             builder.archivosRespuesta(new java.util.ArrayList<>());
         }
 
-        // Calcular si el trámite está vencido y días restantes
         boolean estaVencido = false;
         Long diasRestantes = null;
 
@@ -1456,14 +1239,11 @@ public class TramiteService {
             LocalDateTime now = LocalDateTime.now();
             LocalDateTime fechaVencimiento = tramite.getFechaVencimiento();
 
-            // Verificar si está vencido
             estaVencido = now.isAfter(fechaVencimiento);
 
-            // Calcular días restantes (puede ser negativo si ya venció)
             long horas = java.time.Duration.between(now, fechaVencimiento).toHours();
             diasRestantes = horas / 24; // Convertir horas a días
 
-            log.info("Trámite {}: estaVencido={}, diasRestantes={}", tramite.getCodigo(), estaVencido, diasRestantes);
         }
 
         builder.estaVencido(estaVencido);
@@ -1472,21 +1252,20 @@ public class TramiteService {
         return builder.build();
     }
     
-    // Responder trC!mite con notificaciC3n obligatoria
+    // Responder trámite con notificación obligatoria
     public com.example.demo.dto.ResponderTramiteResponse responderTramite(Long tramiteId, com.example.demo.dto.ResponderTramiteRequest request, Long administrativoId) {
         Tramite tramite = tramiteRepository.findById(tramiteId)
-            .orElseThrow(() -> new RuntimeException("TrC!mite no encontrado"));
+            .orElseThrow(() -> new RuntimeException("Trámite no encontrado"));
         
-        // Verificar estado vC!lido
         if (tramite.getEstado() == Tramite.EstadoTramite.FINALIZADO || 
             tramite.getEstado() == Tramite.EstadoTramite.ARCHIVADO ||
             tramite.getEstado() == Tramite.EstadoTramite.CANCELADO) {
-            throw new RuntimeException("No se puede responder un trC!mite en estado: " + tramite.getEstado());
+            throw new RuntimeException("No se puede responder un trámite en estado: " + tramite.getEstado());
         }
         
         String estadoAnterior = tramite.getEstado().name();
         
-        // Actualizar trC!mite con respuesta
+        // Actualizar trámite con respuesta
         tramite.setRespuesta(request.getRespuesta());
         tramite.setFechaRespuesta(LocalDateTime.now());
         tramite.setUsuarioRespondioId(administrativoId);
@@ -1498,19 +1277,17 @@ public class TramiteService {
         }
         tramite.setContadorProcesados(tramite.getContadorProcesados() + 1);
         
-        // Decrementar contador "Por Procesar" ya que se estC! respondiendo
         if (tramite.getContadorPorProcesar() != null && tramite.getContadorPorProcesar() > 0) {
             tramite.setContadorPorProcesar(tramite.getContadorPorProcesar() - 1);
         }
         
-        // Manejar archivos de respuesta
         if (request.getArchivosRespuesta() != null && !request.getArchivosRespuesta().isEmpty()) {
             List<String> archivosJsonList = new java.util.ArrayList<>();
             for (org.springframework.web.multipart.MultipartFile archivo : request.getArchivosRespuesta()) {
                 String archivoJson = guardarArchivoRespuesta(archivo);
                 archivosJsonList.add(archivoJson);
             }
-            // Guardar como array JSON vC!lido
+            // Guardar como array JSON válido
             tramite.setArchivosRespuesta("[" + String.join(",", archivosJsonList) + "]");
         }
         
@@ -1520,11 +1297,10 @@ public class TramiteService {
         
         tramite = tramiteRepository.save(tramite);
         
-        // Registrar en historial
         registrarHistorial(tramiteId, administrativoId,
                          TramiteHistorial.TipoAccion.RESPONDIDO,
                          estadoAnterior, "FINALIZADO",
-                         "TrC!mite respondido y finalizado");
+                         "Trámite respondido y finalizado");
         
 
         com.example.demo.dto.ResponderTramiteResponse.ResponsableInfo.ResponsableInfoBuilder responsableBuilder = 
@@ -1555,15 +1331,14 @@ public class TramiteService {
             tramite.getUsuarioSolicitanteId(),
             administrativoId,
             request.getRespuesta(),
-            request.getAsunto() != null ? request.getAsunto() : "Respuesta a su trC!mite " + tramite.getCodigo(),
+            request.getAsunto() != null ? request.getAsunto() : "Respuesta a su trámite " + tramite.getCodigo(),
             cantidadDocumentosRespuesta
         );
         
-        log.info("TrC!mite {} respondido por administrativo {}", tramite.getCodigo(), administrativoId);
         
         return com.example.demo.dto.ResponderTramiteResponse.builder()
             .success(true)
-            .mensaje("TrC!mite respondido exitosamente y notificaciC3n enviada")
+            .mensaje("Trámite respondido exitosamente y notificación enviada")
             .tramiteId(tramite.getId())
             .codigoTramite(tramite.getCodigo())
             .estadoActual(tramite.getEstado().name())
@@ -1574,14 +1349,12 @@ public class TramiteService {
     }
     
     public com.example.demo.dto.AprobarTramiteResponse aprobarTramite(Long tramiteId, com.example.demo.dto.AprobarTramiteRequest request, Long administrativoId) {
-        // Verificar que el trC!mite existe
         Tramite tramite = tramiteRepository.findById(tramiteId)
-            .orElseThrow(() -> new RuntimeException("TrC!mite no encontrado"));
+            .orElseThrow(() -> new RuntimeException("Trámite no encontrado"));
         
-        // Verificar que el estado actual permite la aprobaciC3n
         if (!tramite.getEstado().equals(Tramite.EstadoTramite.ENVIADO) && 
             !tramite.getEstado().equals(Tramite.EstadoTramite.EN_REVISION)) {
-            throw new RuntimeException("El trC!mite no se puede aprobar en su estado actual: " + tramite.getEstado());
+            throw new RuntimeException("El trámite no se puede aprobar en su estado actual: " + tramite.getEstado());
         }
         
 
@@ -1589,10 +1362,8 @@ public class TramiteService {
         tramite.setEstado(Tramite.EstadoTramite.APROBADO);
         tramite.setFechaActualizacion(LocalDateTime.now());
         
-        // Incrementar contador "Por Procesar" cuando se aprueba (indica que necesita ser respondido)
         tramite.setContadorPorProcesar((tramite.getContadorPorProcesar() != null ? tramite.getContadorPorProcesar() : 0) + 1);
         
-        // Asignar trabajador si no tiene uno
         if (tramite.getUsuarioAsignadoId() == null) {
             // Asignar al administrativo que aprueba
             tramite.setUsuarioAsignadoId(administrativoId);
@@ -1601,7 +1372,6 @@ public class TramiteService {
         // Guardar cambios
         tramite = tramiteRepository.save(tramite);
         
-        // Crear registro en historial
         TramiteHistorial historial = new TramiteHistorial();
         historial.setTramiteId(tramite.getId());
         historial.setEstadoAnterior(estadoAnterior.toString());
@@ -1612,20 +1382,17 @@ public class TramiteService {
         historial.setObservaciones(request.getObservaciones());
         historialRepository.save(historial);
         
-        // Crear respuesta con informaciC3n del responsable
         com.example.demo.dto.AprobarTramiteResponse response = new com.example.demo.dto.AprobarTramiteResponse();
         response.setSuccess(true);
-        response.setMensaje("TrC!mite aprobado exitosamente");
+        response.setMensaje("Trámite aprobado exitosamente");
         
-        // InformaciC3n del responsable asignado
         com.example.demo.dto.AprobarTramiteResponse.ResponsableAsignado responsableAsignado = 
             new com.example.demo.dto.AprobarTramiteResponse.ResponsableAsignado();
         
-        // Por ahora usar valores por defecto, luego se puede mejorar
         responsableAsignado.setId(administrativoId);
         responsableAsignado.setNombre("Administrativo");
         responsableAsignado.setApellidos("Asignado");
-        responsableAsignado.setArea("SecretarC-a General");
+        responsableAsignado.setArea("Secretaría General");
         
         response.setResponsableAsignado(responsableAsignado);
         response.setTramiteActualizado(convertirAResponse(tramite));
@@ -1639,7 +1406,6 @@ public class TramiteService {
 
     @org.springframework.transaction.annotation.Transactional
     public void actualizarContadoresTramitesExistentes() {
-        // Usar query nativa para obtener trC!mites por estado sin paginaciC3n
         java.util.List<Tramite> tramitesAprobados = tramiteRepository.findAll().stream()
                 .filter(t -> t.getEstado() == Tramite.EstadoTramite.APROBADO)
                 .collect(java.util.stream.Collectors.toList());
@@ -1654,13 +1420,12 @@ public class TramiteService {
             }
         }
         
-        // Actualizar trC!mites FINALIZADOS que fueron respondidos pero no tienen contadores actualizados  
+        // Actualizar trámites FINALIZADOS que fueron respondidos pero no tienen contadores actualizados  
         java.util.List<Tramite> tramitesFinalizados = tramiteRepository.findAll().stream()
                 .filter(t -> t.getEstado() == Tramite.EstadoTramite.FINALIZADO)
                 .collect(java.util.stream.Collectors.toList());
         
         for (Tramite tramite : tramitesFinalizados) {
-            // Si tiene respuesta pero no tiene contador de procesados, actualizar
             if (tramite.getRespuesta() != null && !tramite.getRespuesta().isEmpty()) {
                 if (tramite.getContadorProcesados() == null || tramite.getContadorProcesados() == 0) {
                     tramite.setContadorProcesados(1);
@@ -1671,30 +1436,25 @@ public class TramiteService {
         }
     }
     
-    // Cambiar estado de trC!mite (para archivado y otras operaciones)
     public void cambiarEstadoTramite(Long tramiteId, String nuevoEstado, String observaciones, Long usuarioId, String rol) {
         Optional<Tramite> tramiteOpt = tramiteRepository.findById(tramiteId);
         if (!tramiteOpt.isPresent()) {
-            throw new RuntimeException("TrC!mite no encontrado con ID: " + tramiteId);
+            throw new RuntimeException("Trámite no encontrado con ID: " + tramiteId);
         }
         
         Tramite tramite = tramiteOpt.get();
         
-        // Validaciones de permisos
         if ("USUARIO".equals(rol)) {
-            // Los usuarios solo pueden hacer ciertas operaciones en sus propios trC!mites
             if (!tramite.getUsuarioSolicitanteId().equals(usuarioId)) {
-                throw new RuntimeException("No tiene permisos para modificar este trC!mite");
+                throw new RuntimeException("No tiene permisos para modificar este trámite");
             }
         }
         
         try {
-            // Cambiar estado
             Tramite.EstadoTramite estadoEnum = Tramite.EstadoTramite.valueOf(nuevoEstado);
             tramite.setEstado(estadoEnum);
             tramite.setFechaActualizacion(LocalDateTime.now());
             
-            // Agregar observaciones si se proporcionan
             if (observaciones != null && !observaciones.trim().isEmpty()) {
                 String observacionesActuales = tramite.getObservaciones();
                 String nuevasObservaciones = (observacionesActuales != null ? observacionesActuales + "\n" : "") + 
@@ -1705,14 +1465,13 @@ public class TramiteService {
             tramiteRepository.save(tramite);
             
         } catch (IllegalArgumentException e) {
-            throw new RuntimeException("Estado no vC!lido: " + nuevoEstado);
+            throw new RuntimeException("Estado no válido: " + nuevoEstado);
         }
     }
     
-    // Exportar trC!mites a PDF
     public byte[] exportarTramitesAPdf(java.util.List<Long> tramiteIds, Long usuarioId, String rol) {
         try {
-            // Obtener trC!mites
+            // Obtener trámites
             java.util.List<Tramite> tramites = new java.util.ArrayList<>();
             for (Long id : tramiteIds) {
                 Optional<Tramite> tramiteOpt = tramiteRepository.findById(id);
@@ -1721,7 +1480,7 @@ public class TramiteService {
                     
                     // Validar permisos
                     if ("USUARIO".equals(rol) && !tramite.getUsuarioSolicitanteId().equals(usuarioId)) {
-                        continue; // Saltar trC!mites que no le pertenecen al usuario
+                        continue; // Saltar trámites que no le pertenecen al usuario
                     }
                     
                     tramites.add(tramite);
@@ -1729,10 +1488,9 @@ public class TramiteService {
             }
             
             if (tramites.isEmpty()) {
-                throw new RuntimeException("No se encontraron trC!mites vC!lidos para exportar");
+                throw new RuntimeException("No se encontraron trámites válidos para exportar");
             }
             
-            // Generar PDF simple (texto plano por ahora, se puede mejorar con librerC-as como iText)
             return generarPdfSimple(tramites);
             
         } catch (Exception e) {
@@ -1742,28 +1500,27 @@ public class TramiteService {
     
     private byte[] generarPdfSimple(java.util.List<Tramite> tramites) {
         StringBuilder contenido = new StringBuilder();
-        contenido.append("EXPORTACICN DE TRCMITES\n");
-        contenido.append("Fecha de generaciC3n: ").append(LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))).append("\n");
-        contenido.append("Total de trC!mites: ").append(tramites.size()).append("\n\n");
+        contenido.append("EXPORTACICON DE TRA MITES\n");
+        contenido.append("Fecha de generación: ").append(LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))).append("\n");
+        contenido.append("Total de trámites: ").append(tramites.size()).append("\n\n");
         contenido.append("=".repeat(80)).append("\n\n");
         
         for (int i = 0; i < tramites.size(); i++) {
             Tramite tramite = tramites.get(i);
-            contenido.append("TRCMITE ").append(i + 1).append("\n");
+            contenido.append("TRAMITE ").append(i + 1).append("\n");
             contenido.append("-".repeat(40)).append("\n");
-            contenido.append("CC3digo: ").append(tramite.getCodigo()).append("\n");
-            contenido.append("TC-tulo: ").append(tramite.getTitulo()).append("\n");
+            contenido.append("Código: ").append(tramite.getCodigo()).append("\n");
+            contenido.append("Título: ").append(tramite.getTitulo()).append("\n");
             contenido.append("Tipo: ").append(tramite.getTipo()).append("\n");
             contenido.append("Estado: ").append(tramite.getEstado()).append("\n");
             contenido.append("Prioridad: ").append(tramite.getPrioridad()).append("\n");
-            contenido.append("Fecha creaciC3n: ").append(tramite.getFechaCreacion() != null ? 
+            contenido.append("Fecha creación: ").append(tramite.getFechaCreacion() != null ? 
                 tramite.getFechaCreacion().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) : "N/A").append("\n");
             contenido.append("Fecha vencimiento: ").append(tramite.getFechaVencimiento() != null ? 
                 tramite.getFechaVencimiento().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")) : "N/A").append("\n");
-            // Note: We need to get the user details separately since we only have the ID
-            // For now, we'll just use the ID
+
             contenido.append("Solicitante ID: ").append(tramite.getUsuarioSolicitanteId()).append("\n");
-            contenido.append("DescripciC3n: ").append(tramite.getDescripcion() != null ? tramite.getDescripcion() : "N/A").append("\n");
+            contenido.append("Descripción: ").append(tramite.getDescripcion() != null ? tramite.getDescripcion() : "N/A").append("\n");
             
             if (tramite.getObservaciones() != null && !tramite.getObservaciones().trim().isEmpty()) {
                 contenido.append("Observaciones: ").append(tramite.getObservaciones()).append("\n");
@@ -1772,29 +1529,23 @@ public class TramiteService {
             contenido.append("\n");
         }
         
-        // Convertir a bytes (en un caso real usarC-as una librerC-a como iText para PDF real)
         return contenido.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8);
     }
 
-    // Verificar permisos de acciones para un trC!mite especC-fico
     public java.util.Map<String, Boolean> verificarPermisosAcciones(Long tramiteId, Long usuarioId, String rol) {
         java.util.Map<String, Boolean> permisos = new java.util.HashMap<>();
 
-        // Obtener el trC!mite
         Tramite tramite = tramiteRepository.findById(tramiteId)
-            .orElseThrow(() -> new RuntimeException("TrC!mite no encontrado"));
+            .orElseThrow(() -> new RuntimeException("Trámite no encontrado"));
 
-        // Verificar si el trC!mite estC! vencido
         boolean estaVencido = false;
         if (tramite.getFechaVencimiento() != null) {
             estaVencido = LocalDateTime.now().isAfter(tramite.getFechaVencimiento());
         }
 
-        // Solo administrativos pueden realizar estas acciones
         boolean esAdministrativo = "ADMINISTRATIVO".equals(rol) || "ADMIN".equals(rol);
 
         if (!esAdministrativo) {
-            // Si no es administrativo, no puede hacer ninguna acciC3n
             permisos.put("puedeAprobar", false);
             permisos.put("puedeRechazar", false);
             permisos.put("puedeDerivar", false);
@@ -1803,7 +1554,7 @@ public class TramiteService {
             return permisos;
         }
 
-        // Si estC! vencido, deshabilitar todas las acciones
+        // Si está vencido, deshabilitar todas las acciones
         if (estaVencido) {
             permisos.put("puedeAprobar", false);
             permisos.put("puedeRechazar", false);
@@ -1813,19 +1564,14 @@ public class TramiteService {
             return permisos;
         }
 
-
         String estadoNombre = tramite.getEstado() != null ? tramite.getEstado().name() : "";
 
-
-        // Administrativos pueden aprobar, rechazar y derivar en cualquier estado
         boolean puedeAprobar = true;
         boolean puedeRechazar = true;
         boolean puedeDerivar = true;
 
-
         Long usuarioAsignado = tramite.getUsuarioAsignadoId();
 
-        // RESPONDER: Solo la persona asignada puede responder cuando está Aprobado o Derivado
         List<String> estadosParaResponder = Arrays.asList("APROBADO", "DERIVADO");
         boolean puedeResponder = false;
 
@@ -1842,12 +1588,9 @@ public class TramiteService {
         return permisos;
     }
 
-    // NUEVOS MÉTODOS PARA ARCHIVOS EN BASE64
-
     @Transactional
     public TramiteResponse crearTramiteConArchivos(TramiteConArchivosRequest request, Long usuarioId, String rol) {
         try {
-            // Crear el trámite básico
             TramiteRequest tramiteRequest = new TramiteRequest();
             tramiteRequest.setTitulo(request.getAsunto());
             tramiteRequest.setAsunto(request.getAsunto());
@@ -1856,16 +1599,13 @@ public class TramiteService {
             tramiteRequest.setFechaVencimiento(request.getFechaVencimiento());
             tramiteRequest.setAreaDestinoId(request.getAreaDestinoId());
 
-            // Mapear IDs a enums
             String tipoString = mapTipoTramiteIdToString(request.getTipoTramiteId());
             String prioridadString = mapPrioridadIdToString(request.getPrioridadId());
             tramiteRequest.setTipo(tipoString);
             tramiteRequest.setPrioridad(prioridadString);
 
-            // Crear el trámite sin documentos primero
             TramiteResponse tramiteCreado = crearTramite(tramiteRequest, usuarioId, rol);
 
-            // Procesar documentos en base64 si los hay
             if (request.getDocumentos() != null && !request.getDocumentos().isEmpty()) {
                 procesarDocumentosBase64(tramiteCreado.getId(), request.getDocumentos(), usuarioId);
             }
@@ -1880,9 +1620,7 @@ public class TramiteService {
     @Transactional
     public TramiteResponse actualizarTramiteConArchivos(Long tramiteId, ActualizarTramiteConArchivosRequest request, Long usuarioId, String rol) {
         try {
-            // Actualizar el trámite básico
             TramiteRequest tramiteRequest = new TramiteRequest();
-            // El frontend envía 'asunto' pero el backend espera 'titulo'
             tramiteRequest.setTitulo(request.getAsunto() != null ? request.getAsunto() : request.getTitulo());
             tramiteRequest.setDescripcion(request.getDescripcion());
             tramiteRequest.setObservaciones(request.getObservaciones());
@@ -1891,15 +1629,12 @@ public class TramiteService {
             tramiteRequest.setTipo(request.getTipo());
             tramiteRequest.setPrioridad(request.getPrioridad());
 
-            // Buscar el trámite existente y actualizarlo
             Optional<Tramite> tramiteExistente = tramiteRepository.findById(tramiteId);
             if (tramiteExistente.isEmpty()) {
                 throw new RuntimeException("Trámite no encontrado con ID: " + tramiteId);
             }
 
             Tramite tramite = tramiteExistente.get();
-
-
 
             if (request.getAsunto() != null) {
               
@@ -1918,12 +1653,10 @@ public class TramiteService {
                 tramite.setFechaVencimiento(request.getFechaVencimiento());
             }
 
-
             if (request.getTipoId() != null) {
 
                 Tramite.TipoTramite tipoEnum = mapearTipoTramiteDesdeId(request.getTipoId());
                 if (tipoEnum != null) {
-                    System.out.println("✅ BACKEND DEBUG: Actualizando tipo de trámite a: " + tipoEnum);
                     tramite.setTipo(tipoEnum);
                 }
             } else if (request.getTipo() != null) {
@@ -1931,10 +1664,8 @@ public class TramiteService {
                     Tramite.TipoTramite tipoEnum = Tramite.TipoTramite.valueOf(request.getTipo().toUpperCase());
                     tramite.setTipo(tipoEnum);
                 } catch (IllegalArgumentException e) {
-                    log.warn("Tipo de trámite no válido: " + request.getTipo());
                 }
             }
-
 
             if (request.getPrioridadId() != null) {
     
@@ -1948,14 +1679,12 @@ public class TramiteService {
                     Tramite.PrioridadTramite prioridadEnum = Tramite.PrioridadTramite.valueOf(request.getPrioridad().toUpperCase());
                     tramite.setPrioridad(prioridadEnum);
                 } catch (IllegalArgumentException e) {
-                    log.warn("Prioridad no válida: " + request.getPrioridad());
                 }
             }
 
             // Guardar cambios
             Tramite tramiteGuardado = tramiteRepository.save(tramite);
 
-            // Crear respuesta básica - simplificada para evitar errores
             TramiteResponse tramiteActualizado = new TramiteResponse();
             tramiteActualizado.setId(tramiteGuardado.getId());
             tramiteActualizado.setCodigo(tramiteGuardado.getCodigo() != null ? tramiteGuardado.getCodigo() : "TRM-" + tramiteGuardado.getId());
@@ -1965,12 +1694,10 @@ public class TramiteService {
                 tramiteActualizado.setObservaciones(tramiteGuardado.getObservaciones());
             }
 
-            // Eliminar documentos marcados para eliminación
             if (request.getDocumentosAEliminar() != null && !request.getDocumentosAEliminar().isEmpty()) {
                 eliminarDocumentos(tramiteId, request.getDocumentosAEliminar(), usuarioId);
             }
 
-            // Procesar nuevos documentos en base64 si los hay
             if (request.getDocumentos() != null && !request.getDocumentos().isEmpty()) {
                 procesarDocumentosBase64(tramiteId, request.getDocumentos(), usuarioId);
             }
@@ -1987,11 +1714,9 @@ public class TramiteService {
             return; // No hay documentos que procesar
         }
 
-        // Buscar el trámite para actualizar sus documentos
         Tramite tramite = tramiteRepository.findById(tramiteId)
             .orElseThrow(() -> new RuntimeException("Trámite no encontrado"));
 
-        // Lista para almacenar los documentos procesados como JSON
         List<String> archivosJsonList = new ArrayList<>();
 
         for (DocumentoBase64Request documento : documentos) {
@@ -2000,7 +1725,6 @@ public class TramiteService {
                 if (documento.getContenido() == null || documento.getContenido().isEmpty()) {
                     continue; // Saltar documentos sin contenido
                 }
-
 
                 String archivoJson = String.format(
                     "{\"nombre\":\"%s\",\"tipo\":\"%s\",\"tamano\":%d,\"contenido\":\"%s\",\"descripcion\":\"%s\",\"fechaSubida\":\"%s\"}",
@@ -2014,34 +1738,26 @@ public class TramiteService {
 
                 archivosJsonList.add(archivoJson);
 
-
-
             } catch (Exception e) {
           
             }
         }
 
-        // Actualizar los documentos adjuntos del trámite en la base de datos
         if (!archivosJsonList.isEmpty()) {
             String documentosActuales = tramite.getDocumentosAdjuntos();
             String nuevosDocumentos;
 
             if (documentosActuales != null && !documentosActuales.trim().isEmpty()) {
-                // Si ya hay documentos, agregar los nuevos
                 if (documentosActuales.startsWith("[") && documentosActuales.endsWith("]")) {
-                    // Es un array JSON válido, insertar antes del corchete de cierre
                     nuevosDocumentos = documentosActuales.substring(0, documentosActuales.length() - 1)
                         + "," + String.join(",", archivosJsonList) + "]";
                 } else {
-                    // Formato legacy, convertir a array
                     nuevosDocumentos = "[" + documentosActuales + "," + String.join(",", archivosJsonList) + "]";
                 }
             } else {
-                // Crear nuevo JSON array
                 nuevosDocumentos = "[" + String.join(",", archivosJsonList) + "]";
             }
 
-            log.info("Guardando {} nuevos documentos en trámite {}", archivosJsonList.size(), tramiteId);
             tramite.setDocumentosAdjuntos(nuevosDocumentos);
             tramiteRepository.save(tramite);
         }
@@ -2057,8 +1773,6 @@ public class TramiteService {
         
 
             } catch (Exception e) {
-                System.err.println("❌ Error al eliminar documento " + documentoId + ": " + e.getMessage());
-                // No lanzar excepción para que no falle todo el proceso
             }
         }
     }
@@ -2084,7 +1798,6 @@ public class TramiteService {
         }
     }
 
-    // Métodos auxiliares para mapeo de IDs (reutilizados del controlador)
     private String mapTipoTramiteIdToString(Long tipoTramiteId) {
         return switch (tipoTramiteId.intValue()) {
             case 1 -> "SOLICITUD";
@@ -2116,28 +1829,23 @@ public class TramiteService {
     // Rechazar trámite con notificación por correo
     @Transactional
     public com.example.demo.dto.RechazarTramiteResponse rechazarTramite(Long tramiteId, com.example.demo.dto.RechazarTramiteRequest request, Long administrativoId) {
-        // Verificar que el trámite existe
         Tramite tramite = tramiteRepository.findById(tramiteId)
             .orElseThrow(() -> new RuntimeException("Trámite no encontrado"));
 
-        // Verificar que el estado actual permite el rechazo
         if (tramite.getEstado().equals(Tramite.EstadoTramite.FINALIZADO) ||
             tramite.getEstado().equals(Tramite.EstadoTramite.ARCHIVADO)) {
             throw new RuntimeException("El trámite no se puede rechazar en su estado actual: " + tramite.getEstado());
         }
 
-        // Cambiar estado a RECHAZADO
         Tramite.EstadoTramite estadoAnterior = tramite.getEstado();
         tramite.setEstado(Tramite.EstadoTramite.RECHAZADO);
         tramite.setFechaActualizacion(LocalDateTime.now());
 
-        // Incrementar contador de rechazados
         tramite.setContadorRechazados((tramite.getContadorRechazados() != null ? tramite.getContadorRechazados() : 0) + 1);
 
         // Guardar cambios
         tramite = tramiteRepository.save(tramite);
 
-        // Crear registro en historial
         TramiteHistorial historial = new TramiteHistorial();
         historial.setTramiteId(tramite.getId());
         historial.setEstadoAnterior(estadoAnterior.toString());
@@ -2148,7 +1856,6 @@ public class TramiteService {
         historial.setObservaciones(request.getMotivoRechazo());
         historialRepository.save(historial);
 
-        // Obtener información del usuario administrativo que rechaza
         UsuarioResponse administrativo = usuarioService.obtenerUsuarioPorId(administrativoId);
         String nombreAdministrativo = administrativo.getNombre() + " " + administrativo.getApellidos();
 
@@ -2156,7 +1863,6 @@ public class TramiteService {
         boolean notificacionEnviada = false;
         try {
             if (tramite.getUsuarioSolicitanteId() != null) {
-                // Llamar al servicio de email para enviar notificación de rechazo
                 emailService.enviarCorreoRechazoTramite(
                     tramite.getUsuarioSolicitanteId(),
                     tramiteId,
@@ -2166,7 +1872,6 @@ public class TramiteService {
                 );
                 notificacionEnviada = true;
 
-                // También crear una notificación en el sistema
                 notificacionService.crearNotificacionRechazoTramite(
                     tramite.getUsuarioSolicitanteId(),
                     tramiteId,
@@ -2176,10 +1881,8 @@ public class TramiteService {
                 );
             }
         } catch (Exception e) {
-            log.error("Error al enviar notificación de rechazo para trámite {}: {}", tramiteId, e.getMessage());
         }
 
-        // Crear respuesta
         return com.example.demo.dto.RechazarTramiteResponse.builder()
             .tramiteId(tramite.getId())
             .codigo(tramite.getCodigo())
@@ -2193,35 +1896,27 @@ public class TramiteService {
             .build();
     }
 
-    // Generar PDF del trámite para impresión
     public byte[] generarPdfTramite(Long tramiteId, Long usuarioId, String rol) {
         try {
-            // Obtener el trámite
             Tramite tramite = tramiteRepository.findById(tramiteId)
                 .orElseThrow(() -> new RuntimeException("Trámite no encontrado"));
 
-            // Verificar permisos
             if (!"ADMIN".equals(rol) && !"ADMINISTRATIVO".equals(rol)) {
-                // Solo usuarios pueden ver sus propios trámites
                 if (!tramite.getUsuarioSolicitanteId().equals(usuarioId)) {
                     throw new RuntimeException("No tiene permisos para imprimir este trámite");
                 }
             }
 
-            // Generar contenido HTML del trámite
             String htmlContent = generarHtmlTramite(tramite);
 
-            // Convertir HTML a PDF usando una librería simple
             return convertirHtmlAPdf(htmlContent);
 
         } catch (Exception e) {
-            log.error("Error al generar PDF del trámite {}: {}", tramiteId, e.getMessage());
             throw new RuntimeException("Error al generar PDF: " + e.getMessage(), e);
         }
     }
 
     private String generarHtmlTramite(Tramite tramite) {
-        // Obtener información adicional usando los servicios inyectados
         UsuarioResponse solicitante = null;
         UsuarioResponse asignado = null;
 
@@ -2233,7 +1928,6 @@ public class TramiteService {
                 asignado = usuarioService.obtenerUsuarioPorId(tramite.getUsuarioAsignadoId());
             }
         } catch (Exception e) {
-            log.warn("No se pudo obtener información de usuarios: {}", e.getMessage());
         }
 
         StringBuilder html = new StringBuilder();
@@ -2298,7 +1992,6 @@ public class TramiteService {
                 .append("</div>");
         }
 
-        // Información del solicitante
         if (solicitante != null) {
             html.append("<div class='section'>")
                 .append("<span class='label'>Solicitante:</span>")
@@ -2306,7 +1999,6 @@ public class TramiteService {
                 .append("</div>");
         }
 
-        // Información del asignado
         if (asignado != null) {
             html.append("<div class='section'>")
                 .append("<span class='label'>Asignado a:</span>")
@@ -2314,7 +2006,6 @@ public class TramiteService {
                 .append("</div>");
         }
 
-        // Fechas
         html.append("<div class='section'>")
             .append("<span class='label'>Fecha de Creación:</span>")
             .append("<span class='value'>").append(formatearFecha(tramite.getFechaCreacion())).append("</span>")
@@ -2398,7 +2089,6 @@ public class TramiteService {
                 areaOrigen = areaService.getAreaById(tramite.getAreaOrigenId()).orElse(null);
             }
         } catch (Exception e) {
-            log.warn("Error al obtener información relacionada para trámite {}: {}", tramiteId, e.getMessage());
         }
 
         StringBuilder html = new StringBuilder();
@@ -2409,7 +2099,6 @@ public class TramiteService {
             .append("<meta name='viewport' content='width=device-width, initial-scale=1.0'>")
             .append("<title>Documento Oficial - Trámite ").append(tramite.getCodigo()).append("</title>")
             .append("<style>")
-            // Estilos generales
             .append("* { margin: 0; padding: 0; box-sizing: border-box; }")
             .append("body { font-family: 'Times New Roman', serif; font-size: 12pt; line-height: 1.4; color: #000; background: #fff; max-width: 210mm; margin: 0 auto; padding: 20mm; }")
 
@@ -2420,12 +2109,10 @@ public class TramiteService {
             .append(".department { font-size: 14pt; color: #2c5aa0; margin: 5px 0; }")
             .append(".document-title { font-size: 16pt; font-weight: bold; margin-top: 15px; text-transform: uppercase; }")
 
-            // Información del documento
             .append(".document-info { background: #f8f9fa; border: 2px solid #dee2e6; padding: 15px; margin: 20px 0; border-radius: 5px; }")
             .append(".doc-number { text-align: center; font-size: 14pt; font-weight: bold; color: #d63384; margin-bottom: 10px; }")
             .append(".doc-date { text-align: right; font-style: italic; color: #6c757d; }")
 
-            // Grid de información
             .append(".info-section { margin: 25px 0; }")
             .append(".section-title { font-size: 14pt; font-weight: bold; color: #1f4788; border-bottom: 1px solid #1f4788; padding-bottom: 5px; margin-bottom: 15px; text-transform: uppercase; }")
             .append(".info-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }")
@@ -2433,7 +2120,6 @@ public class TramiteService {
             .append(".info-table .label { background: #e9ecef; font-weight: bold; width: 30%; color: #495057; }")
             .append(".info-table .value { background: #fff; }")
 
-            // Estados y prioridades
             .append(".status-badge { display: inline-block; padding: 4px 12px; border-radius: 15px; font-size: 10pt; font-weight: bold; text-transform: uppercase; }")
             .append(".status-enviado { background: #cce5ff; color: #004085; }")
             .append(".status-en_revision { background: #fff3cd; color: #856404; }")
@@ -2449,7 +2135,6 @@ public class TramiteService {
             .append(".priority-alta { background: #f8d7da; color: #721c24; }")
             .append(".priority-urgente { background: #dc3545; color: #fff; }")
 
-            // Contenido de texto
             .append(".content-section { margin: 25px 0; }")
             .append(".content-box { border: 1px solid #dee2e6; padding: 15px; background: #fff; border-radius: 5px; }")
             .append(".content-text { text-align: justify; line-height: 1.6; }")
@@ -2460,7 +2145,6 @@ public class TramiteService {
             .append(".signature-box { text-align: center; width: 45%; }")
             .append(".signature-line { border-top: 1px solid #000; margin-top: 50px; padding-top: 5px; font-size: 10pt; }")
 
-            // Estilos de impresión
             .append("@media print {")
             .append("  body { margin: 0; padding: 15mm; font-size: 11pt; }")
             .append("  .header { page-break-after: avoid; }")
@@ -2482,13 +2166,11 @@ public class TramiteService {
             .append("<div class='document-title'>Documento Oficial de Trámite</div>")
             .append("</div>");
 
-        // Información del documento
         html.append("<div class='document-info'>")
             .append("<div class='doc-number'>DOCUMENTO N° ").append(tramite.getCodigo()).append("</div>")
             .append("<div class='doc-date'>Generado el: ").append(formatearFecha(LocalDateTime.now())).append("</div>")
             .append("</div>");
 
-        // Información general del trámite
         html.append("<div class='info-section'>")
             .append("<div class='section-title'>Información General</div>")
             .append("<table class='info-table'>")
@@ -2510,7 +2192,6 @@ public class TramiteService {
         html.append("</table>")
             .append("</div>");
 
-        // Información de fechas
         html.append("<div class='info-section'>")
             .append("<div class='section-title'>Información Temporal</div>")
             .append("<table class='info-table'>")
@@ -2529,7 +2210,6 @@ public class TramiteService {
         html.append("</table>")
             .append("</div>");
 
-        // Información de personas y áreas
         html.append("<div class='info-section'>")
             .append("<div class='section-title'>Personas y Áreas Involucradas</div>")
             .append("<table class='info-table'>");
@@ -2563,7 +2243,6 @@ public class TramiteService {
         html.append("</table>")
             .append("</div>");
 
-        // Descripción
         if (tramite.getDescripcion() != null && !tramite.getDescripcion().trim().isEmpty()) {
             html.append("<div class='content-section'>")
                 .append("<div class='section-title'>Descripción del Trámite</div>")
@@ -2573,7 +2252,6 @@ public class TramiteService {
                 .append("</div>");
         }
 
-        // Observaciones
         if (tramite.getObservaciones() != null && !tramite.getObservaciones().trim().isEmpty()) {
             html.append("<div class='content-section'>")
                 .append("<div class='section-title'>Observaciones</div>")
@@ -2644,9 +2322,7 @@ public class TramiteService {
         };
     }
 
-    // Métodos auxiliares para mapear IDs a enums
     private Tramite.TipoTramite mapearTipoTramiteDesdeId(Long tipoId) {
-        // Mapeo basado en los IDs conocidos del frontend (pueden variar según tu BD)
         return switch (tipoId.intValue()) {
             case 1 -> Tramite.TipoTramite.TRAMITE_ADMINISTRATIVO;
             case 2 -> Tramite.TipoTramite.TRAMITE_ACADEMICO;
@@ -2668,7 +2344,6 @@ public class TramiteService {
     }
 
     private Tramite.PrioridadTramite mapearPrioridadDesdeId(Long prioridadId) {
-        // Mapeo basado en los IDs conocidos del frontend (pueden variar según tu BD)
         return switch (prioridadId.intValue()) {
             case 1 -> Tramite.PrioridadTramite.BAJA;
             case 2 -> Tramite.PrioridadTramite.NORMAL;
@@ -2680,30 +2355,24 @@ public class TramiteService {
         };
     }
 
-    // Editar trámite por el usuario que lo creó
     @Transactional
     public TramiteResponse editarTramiteUsuario(Long tramiteId, com.example.demo.dto.EditarTramiteRequest request, Long usuarioId) {
-        // Buscar el trámite
         Tramite tramite = tramiteRepository.findById(tramiteId)
             .orElseThrow(() -> new RuntimeException("Trámite no encontrado"));
 
-        // Verificar que el usuario sea el creador del trámite
         if (!tramite.getUsuarioSolicitanteId().equals(usuarioId)) {
             throw new RuntimeException("No tiene permisos para editar este trámite");
         }
 
-        // Solo se puede editar si está en ciertos estados
         if (tramite.getEstado() == Tramite.EstadoTramite.FINALIZADO ||
             tramite.getEstado() == Tramite.EstadoTramite.RECHAZADO ||
             tramite.getEstado() == Tramite.EstadoTramite.ARCHIVADO) {
             throw new RuntimeException("No se pueden editar trámites en estado FINALIZADO, RECHAZADO o ARCHIVADO");
         }
 
-        // Guardar datos anteriores para el historial
         String tituloAnterior = tramite.getTitulo();
         String asuntoAnterior = tramite.getAsunto();
 
-        // Actualizar campos opcionales
         if (request.getTitulo() != null && !request.getTitulo().trim().isEmpty()) {
             tramite.setTitulo(request.getTitulo().trim());
         }
@@ -2723,14 +2392,12 @@ public class TramiteService {
             try {
                 tramite.setTipo(Tramite.TipoTramite.valueOf(request.getTipo().toUpperCase()));
             } catch (IllegalArgumentException e) {
-                log.warn("Tipo de trámite inválido: {}", request.getTipo());
             }
         }
         if (request.getPrioridad() != null && !request.getPrioridad().trim().isEmpty()) {
             try {
                 tramite.setPrioridad(Tramite.PrioridadTramite.valueOf(request.getPrioridad().toUpperCase()));
             } catch (IllegalArgumentException e) {
-                log.warn("Prioridad inválida: {}", request.getPrioridad());
             }
         }
         if (request.getAreaDestinoId() != null) {
@@ -2740,7 +2407,6 @@ public class TramiteService {
         // Guardar cambios
         Tramite tramiteActualizado = tramiteRepository.save(tramite);
 
-        // Crear registro en historial
         TramiteHistorial historial = new TramiteHistorial();
         historial.setTramiteId(tramiteId);
         historial.setUsuarioId(usuarioId);
@@ -2754,10 +2420,7 @@ public class TramiteService {
         ));
         historialRepository.save(historial);
 
-        // Enviar notificación por correo al usuario
         emailService.notificarEdicionTramiteAUsuario(usuarioId, tramiteId, tituloAnterior, tramite.getTitulo());
-
-        log.info("Trámite {} editado por usuario {}", tramite.getCodigo(), usuarioId);
 
         return convertirAResponse(tramiteActualizado);
     }
