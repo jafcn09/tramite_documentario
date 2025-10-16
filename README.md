@@ -30,30 +30,6 @@ Sistema gestión de trámites documentarios desarrollado con Spring Boot 3.x, qu
 - MySQL 8.0 o superior
 - Gradle 8.0 o superior
 
-## ⚙️ Configuración
-
-### Variables de Entorno
-
-Crear archivo `.env` en la raíz:
-
-```env
-DB_USER=root
-DB_PASSWORD=tu_password
-DB_HOST=localhost
-DB_PORT=3306
-DB_NAME=db_tramites
-MAIL_HOST=smtp.gmail.com
-MAIL_PORT=587
-MAIL_USERNAME=tu_email@gmail.com
-MAIL_PASSWORD=tu_app_password
-JWT_SECRET=tu_secret_key_muy_seguro
-JWT_EXPIRATION=86400000
-ADMIN_USERNAME=admin
-ADMIN_PASSWORD=admin123
-SERVER_PORT=8081
-APP_URL=http://localhost:4200
-ALLOWED_ORIGINS=http://localhost:4200,http://localhost:3000
-```
 
 ### Base de Datos
 
