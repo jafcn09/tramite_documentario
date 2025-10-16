@@ -79,12 +79,6 @@ curl http://localhost:8081/api/auth/status
 - **Validación**: Longitud y formato de campos
 
 
-## 📞 Soporte
-
-- **Issues**: GitHub Issues
-- **Email**: soporte.tramites@untumbes.edu.pe
-- **Ubicación**: Av. Universitaria s/n, Pampa Grande, Tumbes
-
 ## 📄 Licencia
 
 © 2025 Universidad Nacional de Tumbes. Todos los derechos reservados.
