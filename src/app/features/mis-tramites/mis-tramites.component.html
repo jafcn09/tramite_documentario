@@ -320,10 +320,10 @@
         >
           <i class="fas fa-clock"></i>
           <span *ngIf="getDiasVencimiento(tramite.fechaVencimiento)! < 0">
-            Vencido hace {{ -getDiasVencimiento(tramite.fechaVencimiento)! }} días
+            Vencido hace {{ -getDiasVencimiento(tramite.fechaVencimiento)! }} días hábiles
           </span>
           <span *ngIf="getDiasVencimiento(tramite.fechaVencimiento)! >= 0">
-            {{ getDiasVencimiento(tramite.fechaVencimiento) }} días restantes
+            {{ getDiasVencimiento(tramite.fechaVencimiento) }} días hábiles restantes
           </span>
         </div>
       </div>
@@ -614,10 +614,10 @@
               [class.text-warning]="getDiasVencimiento(tramiteSeleccionado.fechaVencimiento)! <= 3 && getDiasVencimiento(tramiteSeleccionado.fechaVencimiento)! >= 0"
             >
               <span *ngIf="getDiasVencimiento(tramiteSeleccionado.fechaVencimiento)! < 0">
-                Vencido hace {{ -getDiasVencimiento(tramiteSeleccionado.fechaVencimiento)! }} días
+                Vencido hace {{ -getDiasVencimiento(tramiteSeleccionado.fechaVencimiento)! }} días hábiles
               </span>
               <span *ngIf="getDiasVencimiento(tramiteSeleccionado.fechaVencimiento)! >= 0">
-                {{ getDiasVencimiento(tramiteSeleccionado.fechaVencimiento) }} días restantes
+                {{ getDiasVencimiento(tramiteSeleccionado.fechaVencimiento) }} días hábiles restantes
               </span>
             </span>
           </div>

@@ -316,11 +316,11 @@ export class MisTramitesService {
       asunto: tramiteBackend.titulo || tramiteBackend.asunto || '',
       descripcion: tramiteBackend.descripcion || '',
       estado: {
-        id: this.mapEstadoStringToId(tramiteBackend.estado),
-        nombre: this.mapEstadoStringToName(tramiteBackend.estado),
-        color: this.mapEstadoStringToColor(tramiteBackend.estado),
-        icono: this.mapEstadoStringToIcon(tramiteBackend.estado),
-        descripcion: tramiteBackend.estado || ''
+        id: this.mapEstadoStringToId(tramiteBackend.estado?.nombre || tramiteBackend.estado),
+        nombre: tramiteBackend.estado?.nombre || this.mapEstadoStringToName(tramiteBackend.estado),
+        color: this.mapEstadoStringToColor(tramiteBackend.estado?.nombre || tramiteBackend.estado),
+        icono: this.mapEstadoStringToIcon(tramiteBackend.estado?.nombre || tramiteBackend.estado),
+        descripcion: tramiteBackend.estado?.nombre || tramiteBackend.estado || ''
       },
       prioridad: {
         id: this.mapPrioridadStringToId(tramiteBackend.prioridad),
@@ -380,11 +380,11 @@ export class MisTramitesService {
       asunto: tramiteBackend.titulo || tramiteBackend.asunto || '',
       descripcion: tramiteBackend.descripcion || '',
       estado: {
-        id: this.mapEstadoStringToId(tramiteBackend.estado),
-        nombre: this.mapEstadoStringToName(tramiteBackend.estado),
-        color: this.mapEstadoStringToColor(tramiteBackend.estado),
-        icono: this.mapEstadoStringToIcon(tramiteBackend.estado),
-        descripcion: tramiteBackend.estado || ''
+        id: this.mapEstadoStringToId(tramiteBackend.estado?.nombre || tramiteBackend.estado),
+        nombre: tramiteBackend.estado?.nombre || this.mapEstadoStringToName(tramiteBackend.estado),
+        color: this.mapEstadoStringToColor(tramiteBackend.estado?.nombre || tramiteBackend.estado),
+        icono: this.mapEstadoStringToIcon(tramiteBackend.estado?.nombre || tramiteBackend.estado),
+        descripcion: tramiteBackend.estado?.nombre || tramiteBackend.estado || ''
       },
       prioridad: {
         id: this.mapPrioridadStringToId(tramiteBackend.prioridad),
@@ -400,10 +400,21 @@ export class MisTramitesService {
         id: tramiteBackend.areaDestino.id || 0,
         nombre: tramiteBackend.areaDestino.nombre || tramiteBackend.areaDestino
       } : undefined,
-      trabajadorAsignado: tramiteBackend.trabajadorAsignado ? {
-        id: tramiteBackend.trabajadorAsignado.id || 0,
-        nombre: tramiteBackend.trabajadorAsignado.nombre || '',
-        apellidos: tramiteBackend.trabajadorAsignado.apellidos || ''
+      trabajadorAsignado: tramiteBackend.usuarioAsignado ? {
+        id: tramiteBackend.usuarioAsignado.id || 0,
+        nombre: tramiteBackend.usuarioAsignado.nombre || '',
+        apellidos: tramiteBackend.usuarioAsignado.apellidos || ''
+      } : undefined,
+      usuarioAsignado: tramiteBackend.usuarioAsignado ? {
+        id: tramiteBackend.usuarioAsignado.id || 0,
+        nombre: tramiteBackend.usuarioAsignado.nombre || '',
+        apellidos: tramiteBackend.usuarioAsignado.apellidos || ''
+      } : undefined,
+      usuarioSolicitante: tramiteBackend.usuarioSolicitante ? {
+        id: tramiteBackend.usuarioSolicitante.id || 0,
+        nombre: tramiteBackend.usuarioSolicitante.nombre || '',
+        apellidos: tramiteBackend.usuarioSolicitante.apellidos || '',
+        correo: tramiteBackend.usuarioSolicitante.correo || ''
       } : undefined,
       documentos: tramiteBackend.documentos || [],
       historial: tramiteBackend.historial || [],
@@ -453,10 +464,20 @@ export class MisTramitesService {
       'BORRADOR': 1,
       'ENVIADO': 2,
       'EN_REVISION': 3,
-      'DERIVADO': 4,
-      'OBSERVADO': 5,
-      'APROBADO': 6,
-      'FINALIZADO': 7
+      'EN_PROCESO': 4,
+      'DERIVADO': 5,
+      'OBSERVADO': 6,
+      'APROBADO': 7,
+      'FINALIZADO': 8,
+      // Mapeo para estados que lleguen en formato legible del backend
+      'Borrador': 1,
+      'Enviado': 2,
+      'En Revisión': 3,
+      'En Proceso': 4,
+      'Derivado': 5,
+      'Observado': 6,
+      'Aprobado': 7,
+      'Finalizado': 8
     };
     return estadoMap[estado] || 2;
   }
@@ -466,10 +487,20 @@ export class MisTramitesService {
       'BORRADOR': 'Borrador',
       'ENVIADO': 'Enviado',
       'EN_REVISION': 'En Revisión',
+      'EN_PROCESO': 'En Proceso',
       'DERIVADO': 'Derivado',
       'OBSERVADO': 'Observado',
       'APROBADO': 'Aprobado',
-      'FINALIZADO': 'Finalizado'
+      'FINALIZADO': 'Finalizado',
+      // Si ya llega en formato legible, mantenerlo
+      'Borrador': 'Borrador',
+      'Enviado': 'Enviado',
+      'En Revisión': 'En Revisión',
+      'En Proceso': 'En Proceso',
+      'Derivado': 'Derivado',
+      'Observado': 'Observado',
+      'Aprobado': 'Aprobado',
+      'Finalizado': 'Finalizado'
     };
     return estadoMap[estado] || estado;
   }
@@ -479,10 +510,20 @@ export class MisTramitesService {
       'BORRADOR': '#6c757d',
       'ENVIADO': '#007bff',
       'EN_REVISION': '#ffc107',
+      'EN_PROCESO': '#3498db',
       'DERIVADO': '#17a2b8',
       'OBSERVADO': '#fd7e14',
       'APROBADO': '#28a745',
-      'FINALIZADO': '#6f42c1'
+      'FINALIZADO': '#6f42c1',
+      // Mapeo para estados en formato legible
+      'Borrador': '#6c757d',
+      'Enviado': '#007bff',
+      'En Revisión': '#ffc107',
+      'En Proceso': '#3498db',
+      'Derivado': '#17a2b8',
+      'Observado': '#fd7e14',
+      'Aprobado': '#28a745',
+      'Finalizado': '#6f42c1'
     };
     return colorMap[estado] || '#007bff';
   }
@@ -492,10 +533,20 @@ export class MisTramitesService {
       'BORRADOR': 'fas fa-edit',
       'ENVIADO': 'fas fa-paper-plane',
       'EN_REVISION': 'fas fa-search',
+      'EN_PROCESO': 'fas fa-spinner',
       'DERIVADO': 'fas fa-share',
       'OBSERVADO': 'fas fa-exclamation-triangle',
       'APROBADO': 'fas fa-check-circle',
-      'FINALIZADO': 'fas fa-flag-checkered'
+      'FINALIZADO': 'fas fa-flag-checkered',
+      // Mapeo para estados en formato legible
+      'Borrador': 'fas fa-edit',
+      'Enviado': 'fas fa-paper-plane',
+      'En Revisión': 'fas fa-search',
+      'En Proceso': 'fas fa-spinner',
+      'Derivado': 'fas fa-share',
+      'Observado': 'fas fa-exclamation-triangle',
+      'Aprobado': 'fas fa-check-circle',
+      'Finalizado': 'fas fa-flag-checkered'
     };
     return iconMap[estado] || 'fas fa-file';
   }

@@ -19,6 +19,8 @@ import { NotificacionService } from '../../services/notificacion.service';
 import { WebSocketService } from '../../services/websocket.service';
 import { AuthService } from '../../services/auth.service';
 import { TramiteService } from '../../services/tramite.service';
+import { BandejaTramitesService } from '../../services/bandeja-tramites.service';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'app-notificaciones',
@@ -128,7 +130,9 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
     private webSocketService: WebSocketService,
     private authService: AuthService,
     private router: Router,
-    private tramiteService: TramiteService
+    private tramiteService: TramiteService,
+    private bandejaTramitesService: BandejaTramitesService,
+    private toastService: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -385,6 +389,11 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
     event.stopPropagation();
     if (!notificacion.referenciaId) return;
 
+    // Verificar restricciones de rol
+    if (!this.puedeAsignarseAsiMismo()) {
+      return;
+    }
+
     if (confirm('¿Deseas asignarte este trámite?')) {
       this.tramiteService.asignarseTramite(notificacion.referenciaId).subscribe({
         next: () => {
@@ -412,12 +421,36 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
     event.stopPropagation();
     if (!notificacion.referenciaId) return;
 
-    const userRole = this.authService.currentUserValue?.role?.name;
-    if (userRole === 'ADMINISTRATIVO' || userRole === 'ADMIN') {
-      this.router.navigate(['/administrativo/mis-tramites'], {
-        queryParams: { tramiteId: notificacion.referenciaId, action: 'derivar' }
-      });
+    // Verificar restricciones de rol
+    if (!this.puedeDerivarTramite()) {
+      return;
     }
+
+    // Verificar permisos específicos del trámite
+    this.bandejaTramitesService.verificarPermisosAcciones(notificacion.referenciaId).subscribe({
+      next: (permisos) => {
+        if (!permisos.puedeDerivar) {
+          this.toastService.error(
+            'Acción no permitida',
+            'No puedes derivar este trámite. Solo se puede derivar si no estás asignado al mismo.'
+          );
+          return;
+        }
+
+        const userRole = this.authService.currentUserValue?.role?.name;
+        if (userRole === 'ADMINISTRATIVO' || userRole === 'ADMIN') {
+          this.router.navigate(['/administrativo/mis-tramites'], {
+            queryParams: { tramiteId: notificacion.referenciaId, action: 'derivar' }
+          });
+        }
+      },
+      error: () => {
+        this.toastService.error(
+          'Error',
+          'No se pudieron verificar los permisos del trámite'
+        );
+      }
+    });
   }
 
   mostrarDetalleNotificacion(notificacion: Notificacion): void {
@@ -879,12 +912,132 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
 
   abrirModalCrear(): void {
     if (!this.esAdmin()) return;
-    
+
 
     this.cargarUsuarios();
     this.cargarRoles();
 
     this.mostrarModalCrear = true;
+  }
+
+  // Métodos de control de permisos basados en asignación
+
+  /**
+   * Verifica si el usuario actual puede asignarse a sí mismo un trámite
+   * Solo usuarios ADMINISTRATIVO y ADMIN pueden asignarse trámites
+   */
+  puedeAsignarseAsiMismo(): boolean {
+    const userRole = this.authService.currentUserValue?.role?.name;
+    return userRole === 'ADMINISTRATIVO' || userRole === 'ADMIN';
+  }
+
+  /**
+   * Verifica si el usuario actual puede derivar trámites
+   * Solo usuarios ADMINISTRATIVO y ADMIN pueden derivar
+   * Los ESTUDIANTES nunca pueden derivar
+   */
+  puedeDerivarTramite(): boolean {
+    const userRole = this.authService.currentUserValue?.role?.name;
+
+    // ESTUDIANTES nunca pueden derivar
+    if (userRole === 'ESTUDIANTE') {
+      this.toastService.warning(
+        'Acción no permitida',
+        'Los estudiantes no pueden derivar trámites'
+      );
+      return false;
+    }
+
+    // Solo ADMINISTRATIVO y ADMIN pueden derivar
+    if (userRole !== 'ADMINISTRATIVO' && userRole !== 'ADMIN') {
+      this.toastService.warning(
+        'Acción no permitida',
+        'Solo el personal administrativo puede derivar trámites'
+      );
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * Verifica si el usuario actual puede aprobar trámites
+   * Solo usuarios ADMINISTRATIVO y ADMIN pueden aprobar
+   * Los ESTUDIANTES nunca pueden aprobar
+   */
+  puedeAprobarTramite(): boolean {
+    const userRole = this.authService.currentUserValue?.role?.name;
+
+    // ESTUDIANTES nunca pueden aprobar
+    if (userRole === 'ESTUDIANTE') {
+      this.toastService.warning(
+        'Acción no permitida',
+        'Los estudiantes no pueden aprobar trámites'
+      );
+      return false;
+    }
+
+    return userRole === 'ADMINISTRATIVO' || userRole === 'ADMIN';
+  }
+
+  /**
+   * Verifica si el usuario actual puede rechazar trámites
+   * Solo usuarios ADMINISTRATIVO y ADMIN pueden rechazar
+   * Los ESTUDIANTES nunca pueden rechazar
+   */
+  puedeRechazarTramite(): boolean {
+    const userRole = this.authService.currentUserValue?.role?.name;
+
+    // ESTUDIANTES nunca pueden rechazar
+    if (userRole === 'ESTUDIANTE') {
+      this.toastService.warning(
+        'Acción no permitida',
+        'Los estudiantes no pueden rechazar trámites'
+      );
+      return false;
+    }
+
+    return userRole === 'ADMINISTRATIVO' || userRole === 'ADMIN';
+  }
+
+  /**
+   * Verifica si el usuario actual puede descargar documentos de trámites
+   * Los ESTUDIANTES no pueden descargar documentos
+   */
+  puedeDescargarDocumentos(): boolean {
+    const userRole = this.authService.currentUserValue?.role?.name;
+
+    // ESTUDIANTES no pueden descargar
+    if (userRole === 'ESTUDIANTE') {
+      this.toastService.warning(
+        'Acción no permitida',
+        'Los estudiantes no pueden descargar documentos de trámites'
+      );
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * Verifica si el usuario puede ver acciones rápidas en las notificaciones
+   * Los ESTUDIANTES tienen acceso limitado
+   */
+  puedeVerAccionesRapidas(accion: 'derivar' | 'responder' | 'aprobar' | 'rechazar' | 'descargar'): boolean {
+    const userRole = this.authService.currentUserValue?.role?.name;
+
+    // ESTUDIANTES no pueden realizar ninguna acción administrativa
+    if (userRole === 'ESTUDIANTE') {
+      return false;
+    }
+
+    // USUARIO solo puede ver sus propios trámites
+    if (userRole === 'USUARIO') {
+      return accion === 'responder'; // Solo pueden responder a consultas sobre sus trámites
+    }
+
+    // ADMINISTRATIVO y ADMIN pueden ver todas las acciones
+    return userRole === 'ADMINISTRATIVO' || userRole === 'ADMIN';
   }
 
 }

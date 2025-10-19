@@ -682,8 +682,18 @@
   position: relative;
 }
 
-.action-btn:hover {
+.action-btn:hover:not(:disabled) {
   transform: scale(1.1);
+}
+
+.action-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background: #f5f5f5 !important;
+  color: #c0c0c0 !important;
+  border-color: #e0e0e0 !important;
+  transform: none !important;
+  box-shadow: none !important;
 }
 
 .action-btn.estado { 
@@ -691,9 +701,9 @@
   border-color: #bee3f8;
 }
 
-.action-btn.estado:hover { 
-  background: #667eea; 
-  color: white; 
+.action-btn.estado:hover:not(:disabled) {
+  background: #667eea;
+  color: white;
 }
 
 .action-btn.derivar { 
@@ -701,9 +711,9 @@
   border-color: #c6f6d5;
 }
 
-.action-btn.derivar:hover { 
-  background: #48bb78; 
-  color: white; 
+.action-btn.derivar:hover:not(:disabled) {
+  background: #48bb78;
+  color: white;
 }
 
 .action-btn.download { 
@@ -711,9 +721,9 @@
   border-color: #bee3f8;
 }
 
-.action-btn.download:hover { 
-  background: #4299e1; 
-  color: white; 
+.action-btn.download:hover:not(:disabled) {
+  background: #4299e1;
+  color: white;
 }
 
 .action-btn.upload { 
@@ -721,9 +731,9 @@
   border-color: #fbd38d;
 }
 
-.action-btn.upload:hover { 
-  background: #ed8936; 
-  color: white; 
+.action-btn.upload:hover:not(:disabled) {
+  background: #ed8936;
+  color: white;
 }
 
 .action-btn.responder {
@@ -733,7 +743,7 @@
   transition: all 0.3s ease;
 }
 
-.action-btn.responder:hover {
+.action-btn.responder:hover:not(:disabled) {
   background: linear-gradient(135deg, #38a169, #2f855a);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(72, 187, 120, 0.3);
@@ -744,9 +754,9 @@
   border-color: #e9d8fd;
 }
 
-.action-btn.editar:hover { 
-  background: #9f7aea; 
-  color: white; 
+.action-btn.editar:hover:not(:disabled) {
+  background: #9f7aea;
+  color: white;
 }
 
 .action-btn.export { 
@@ -754,19 +764,45 @@
   border-color: #c6f6d5;
 }
 
-.action-btn.export:hover { 
-  background: #38a169; 
-  color: white; 
+.action-btn.export:hover:not(:disabled) {
+  background: #38a169;
+  color: white;
 }
 
-.action-btn.archive { 
-  color: #d69e2e; 
+.action-btn.archive {
+  color: #d69e2e;
   border-color: #faf089;
 }
 
-.action-btn.archive:hover { 
-  background: #d69e2e; 
-  color: white; 
+.action-btn.archive:hover:not(:disabled) {
+  background: #d69e2e;
+  color: white;
+}
+
+.action-btn.aprobar {
+  background: linear-gradient(135deg, #48bb78, #38a169);
+  color: white;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.action-btn.aprobar:hover:not(:disabled) {
+  background: linear-gradient(135deg, #38a169, #2f855a);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(72, 187, 120, 0.3);
+}
+
+.action-btn.rechazar {
+  background: linear-gradient(135deg, #e53e3e, #c53030);
+  color: white;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.action-btn.rechazar:hover:not(:disabled) {
+  background: linear-gradient(135deg, #c53030, #9c2626);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(229, 62, 62, 0.3);
 }
 
 .bulk-btn.exportar { 
@@ -1123,6 +1159,58 @@
   opacity: 0.6;
   cursor: not-allowed;
 }
+
+.btn-danger {
+  background: linear-gradient(135deg, #e53e3e, #c53030);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: linear-gradient(135deg, #c53030, #9c2626);
+}
+
+.btn-danger:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.char-counter {
+  font-size: 11px;
+  color: #718096;
+  text-align: right;
+  margin-top: 4px;
+}
+
+.alert {
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-top: 16px;
+  border-left: 4px solid;
+}
+
+.alert-warning {
+  background: #fef5e7;
+  color: #744210;
+  border-left-color: #ed8936;
+}
+
+.alert ul {
+  margin: 8px 0 0 16px;
+  padding: 0;
+}
+
+.alert li {
+  margin-bottom: 4px;
+}
 .empty-notifications {
   text-align: center;
   padding: 40px 20px;
@@ -1328,6 +1416,21 @@
   flex-direction: column;
   gap: 2px;
   align-items: center;
+}
+
+
+.modal-content textarea.ng-invalid,
+.modal-content input.ng-invalid,
+.modal-content select.ng-invalid {
+  border-color: #e2e8f0 !important;
+  box-shadow: none !important;
+}
+
+.modal-content textarea:focus,
+.modal-content input:focus,
+.modal-content select:focus {
+  border-color: #9ca3af !important;
+  box-shadow: 0 0 0 1px rgba(156, 163, 175, 0.1) !important;
 }
 
 .fecha-texto {

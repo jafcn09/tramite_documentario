@@ -522,6 +522,11 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
       return;
     }
 
+    // Prevenir múltiples submits
+    if (this.guardandoEdicion) {
+      return;
+    }
+
     this.guardandoEdicion = true;
 
     // Construir FormData para enviar archivos y datos
@@ -645,6 +650,15 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
   }
 
   descargarDocumento(tramiteId: number, nombreArchivo: string) {
+    // ESTUDIANTES no pueden descargar documentos
+    if (this.userRole === 'ESTUDIANTE') {
+      this.toastService.warning(
+        'Acción no permitida',
+        'Los estudiantes no pueden descargar documentos de trámites'
+      );
+      return;
+    }
+
     this.subscriptions.add(
       this.misTramitesService.descargarDocumento(tramiteId, nombreArchivo)
         .subscribe({
@@ -667,6 +681,15 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
   }
 
   descargarTodosDocumentos(tramite: MiTramite) {
+    // ESTUDIANTES no pueden descargar documentos
+    if (this.userRole === 'ESTUDIANTE') {
+      this.toastService.warning(
+        'Acción no permitida',
+        'Los estudiantes no pueden descargar documentos de trámites'
+      );
+      return;
+    }
+
     const cantidadDocumentos = tramite.documentos ? tramite.documentos.length : 0;
 
     if (cantidadDocumentos === 0) {
@@ -850,10 +873,18 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
 
   // Verificar si puede aprobar un trámite
   puedeAprobar(tramite: MiTramite): boolean {
-   
+  
+    if (this.userRole === 'ESTUDIANTE') {
+      return false;
+    }
+
+
+    if (!this.isAdministrativo) {
+      return false;
+    }
+
     const permisos = this.tramitePermisos.get(tramite.id);
     if (permisos) {
-   
       return permisos.puedeAprobar;
     }
 
@@ -878,13 +909,22 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
   }
 
   puedeRechazar(tramite: MiTramite): boolean {
+    // ESTUDIANTES nunca pueden rechazar
+    if (this.userRole === 'ESTUDIANTE') {
+      return false;
+    }
+
+    // Solo ADMINISTRATIVO y ADMIN pueden rechazar
+    if (!this.isAdministrativo) {
+      return false;
+    }
 
     const permisos = this.tramitePermisos.get(tramite.id);
     if (permisos) {
       return permisos.puedeRechazar;
     }
 
-   
+    // Fallback: local logic (backward compatibility)
     const estadosNoRechazables = ['Finalizado', 'FINALIZADO', 'Rechazado', 'RECHAZADO', 'Archivado', 'ARCHIVADO'];
     const puede = this.isAdministrativo && !estadosNoRechazables.includes(tramite.estado.nombre);
 
@@ -892,13 +932,23 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
   }
 
   puedeDerivar(tramite: MiTramite): boolean {
-   
+    // ESTUDIANTES nunca pueden derivar
+    if (this.userRole === 'ESTUDIANTE') {
+      return false;
+    }
+
+    // Solo ADMINISTRATIVO y ADMIN pueden derivar
+    if (!this.isAdministrativo) {
+      return false;
+    }
+
     const permisos = this.tramitePermisos.get(tramite.id);
     if (permisos) {
-   
+ 
       return permisos.puedeDerivar;
     }
 
+    // Fallback local (backward compatibility)
     const estadosParaDerivar = ['En Revisión', 'EN_REVISION', 'En Proceso', 'EN_PROCESO'];
     const estadosNoDerivar = ['Derivado', 'DERIVADO'];
     const puede = this.isAdministrativo &&

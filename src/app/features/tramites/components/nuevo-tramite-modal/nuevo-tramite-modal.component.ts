@@ -4,20 +4,24 @@ import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
 
 import { ModalBaseComponent } from '../../../../shared/components/modal-base/modal-base.component';
+import { BusinessDaysOnlyDirective } from '../../../../shared/directives/business-days-only.directive';
 import { TramiteService } from '../../../../services/tramite.service';
 import { ToastService } from '../../../../services/toast.service';
-import { 
-  Tramite, 
-  TipoTramite, 
-  PrioridadTramite, 
+import { OrganigramaService } from '../../../../services/organigrama.service';
+import { AuthService } from '../../../../services/auth.service';
+import { AreaJerarquica } from '../../../../models/organigrama.interface';
+import {
+  Tramite,
+  TipoTramite,
+  PrioridadTramite,
   DocumentoTramite,
-  CrearTramiteRequest 
+  CrearTramiteRequest
 } from '../../../../shared/interfaces/tramite.interface';
 
 @Component({
   selector: 'app-nuevo-tramite-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, ModalBaseComponent],
+  imports: [CommonModule, FormsModule, ModalBaseComponent, BusinessDaysOnlyDirective],
   templateUrl: './nuevo-tramite-modal.component.html',
   styleUrl: './nuevo-tramite-modal.component.css'
 })
@@ -26,17 +30,19 @@ export class NuevoTramiteModalComponent implements OnInit, OnDestroy {
   @Output() close = new EventEmitter<void>();
   @Output() tramiteCreado = new EventEmitter<Tramite>();
 
- 
-  nuevoTramite: Partial<Tramite> & { tipoId?: number; prioridadId?: number } = {
+
+  nuevoTramite: Omit<Partial<Tramite>, 'fechaVencimiento'> & { tipoId?: number; prioridadId?: number; areaOrigenId?: number; fechaInicio?: string; fechaVencimiento?: string } = {
     asunto: '',
     descripcion: '',
     observaciones: '',
-    fechaVencimiento: undefined
+    fechaVencimiento: '',
+    fechaInicio: ''
   };
 
-  
+
   tiposTramite: TipoTramite[] = [];
   prioridadesTramite: PrioridadTramite[] = [];
+  areasDisponibles: AreaJerarquica[] = [];
 
   loading = false;
   archivosSeleccionados: File[] = [];
@@ -49,11 +55,14 @@ export class NuevoTramiteModalComponent implements OnInit, OnDestroy {
 
   constructor(
     private tramiteService: TramiteService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private organigramaService: OrganigramaService,
+    private authService: AuthService
   ) {}
 
   ngOnInit() {
     this.cargarDatosCatalogo();
+    this.cargarAreas();
     this.resetForm();
   }
 
@@ -75,12 +84,46 @@ export class NuevoTramiteModalComponent implements OnInit, OnDestroy {
     );
   }
 
+  private cargarAreas() {
+    // Solo cargar áreas si es necesario para mostrar información
+    this.subscriptions.add(
+      this.organigramaService.obtenerAreasPlanas().subscribe(
+        areas => {
+          this.areasDisponibles = areas;
+          this.configurarAreaSegunRol();
+        }
+      )
+    );
+  }
+
+  private configurarAreaSegunRol() {
+    const currentUser = this.authService.currentUserValue;
+
+    // Para usuarios con rol USUARIO: usar su área asignada (obligatorio y readonly)
+    if (currentUser && currentUser.role?.name === 'USUARIO' && (currentUser as any).area?.id) {
+      this.nuevoTramite.areaOrigenId = (currentUser as any).area.id;
+    }
+
+    // Para ESTUDIANTE: el área se determinará automáticamente en el backend
+    // Para otros roles: no se configura área de origen
+  }
+
   private resetForm() {
+    const currentUser = this.authService.currentUserValue;
+    let areaOrigenId = undefined;
+
+    // Solo para rol USUARIO se preselecciona su área (automático e inmutable)
+    if (currentUser?.role?.name === 'USUARIO' && (currentUser as any).area?.id) {
+      areaOrigenId = (currentUser as any).area.id;
+    }
+
     this.nuevoTramite = {
       asunto: '',
       descripcion: '',
       observaciones: '',
-      fechaVencimiento: undefined
+      fechaVencimiento: '',
+      fechaInicio: this.getCurrentDate(), // Fecha de hoy precargada
+      areaOrigenId: areaOrigenId
     };
     this.archivosSeleccionados = [];
     this.documentosAdjuntos = [];
@@ -154,13 +197,23 @@ export class NuevoTramiteModalComponent implements OnInit, OnDestroy {
       esValido = false;
     }
 
-    if (this.nuevoTramite.fechaVencimiento) {
-      const fechaVencimiento = new Date(this.nuevoTramite.fechaVencimiento);
-      const hoy = new Date();
-      hoy.setHours(0, 0, 0, 0);
+    // Área de origen se configura automáticamente, no necesita validación manual
 
-      if (fechaVencimiento < hoy) {
-        this.errors['fechaVencimiento'] = 'La fecha de vencimiento no puede ser anterior a hoy';
+    if (this.nuevoTramite.fechaVencimiento && this.nuevoTramite.fechaVencimiento.trim()) {
+      // Usar fecha local para evitar problemas de timezone
+      const fechaVencimiento = new Date(this.nuevoTramite.fechaVencimiento + 'T12:00:00');
+      const fechaInicioString = this.nuevoTramite.fechaInicio || this.getCurrentDate();
+      const fechaInicio = new Date(fechaInicioString + 'T12:00:00');
+
+      // Verificar que no sea anterior al día de inicio
+      if (fechaVencimiento <= fechaInicio) {
+        this.errors['fechaVencimiento'] = 'La fecha de vencimiento debe ser posterior a la fecha de inicio';
+        esValido = false;
+      }
+
+      // Verificar que sea un día hábil (lunes a viernes)
+      if (fechaVencimiento.getDay() === 0 || fechaVencimiento.getDay() === 6) {
+        this.errors['fechaVencimiento'] = 'La fecha de vencimiento debe ser un día hábil (lunes a viernes)';
         esValido = false;
       }
     }
@@ -174,10 +227,15 @@ export class NuevoTramiteModalComponent implements OnInit, OnDestroy {
       return;
     }
 
+    // Prevenir múltiples submits
+    if (this.loading) {
+      return;
+    }
+
     this.loading = true;
 
     try {
-   
+
       const archivosBase64 = await this.procesarArchivosABase64();
 
 
@@ -186,15 +244,21 @@ export class NuevoTramiteModalComponent implements OnInit, OnDestroy {
         asunto: this.nuevoTramite.asunto!,
         descripcion: this.nuevoTramite.descripcion!,
         prioridadId: Number(this.nuevoTramite.prioridadId!),
-        fechaVencimiento: this.nuevoTramite.fechaVencimiento ? new Date(this.nuevoTramite.fechaVencimiento) : undefined,
+        fechaVencimiento: this.nuevoTramite.fechaVencimiento && this.nuevoTramite.fechaVencimiento.trim() ? new Date(this.nuevoTramite.fechaVencimiento + 'T12:00:00') : undefined,
         observaciones: this.nuevoTramite.observaciones,
         documentos: archivosBase64
       };
 
-      
+      // Solo agregar areaOrigenId para usuarios con rol USUARIO
+      if (this.isUsuarioRole && this.nuevoTramite.areaOrigenId) {
+        tramiteData.areaOrigenId = Number(this.nuevoTramite.areaOrigenId);
+      }
+
+
       this.subscriptions.add(
         this.tramiteService.crearTramiteConArchivos(tramiteData).subscribe({
           next: (tramiteCreado) => {
+            this.loading = false;
             this.toastService.success(
               'Trámite creado',
               `El trámite ${tramiteCreado.codigo} y sus documentos han sido creados exitosamente`
@@ -203,38 +267,21 @@ export class NuevoTramiteModalComponent implements OnInit, OnDestroy {
             this.tramiteCreado.emit(tramiteCreado);
             this.onClose();
           },
-          error: (error) => {
+          error: () => {
+            this.loading = false;
             this.toastService.error(
               'Error',
               'No se pudo crear el trámite con los archivos. Inténtelo nuevamente.'
             );
-          },
-          complete: () => {
-            this.loading = false;
           }
         })
       );
     } catch (error) {
-      this.toastService.error('Error', 'Ocurrió un error inesperado al procesar los archivos');
-    } finally {
       this.loading = false;
+      this.toastService.error('Error', 'Ocurrió un error inesperado al procesar los archivos');
     }
   }
 
-  private async subirArchivos(tramiteId: number) {
-    const promesasSubida = this.archivosSeleccionados.map((archivo) => {
-      return this.tramiteService.subirDocumento(tramiteId, archivo).toPromise();
-    });
-
-    try {
-      await Promise.all(promesasSubida);
-    } catch (error) {
-      this.toastService.warning(
-        'Archivos no subidos',
-        'El trámite fue creado pero algunos archivos no pudieron subirse'
-      );
-    }
-  }
 
   onClose() {
     this.resetForm();
@@ -266,6 +313,100 @@ export class NuevoTramiteModalComponent implements OnInit, OnDestroy {
   getCurrentDate(): string {
     const today = new Date();
     return today.toISOString().split('T')[0];
+  }
+
+  // Obtiene la fecha mínima para fecha de vencimiento (día siguiente al inicio, solo días hábiles)
+  getMinFechaVencimiento(): string {
+    if (!this.nuevoTramite.fechaInicio) {
+      return this.getCurrentDate();
+    }
+
+    // Usar fecha local para evitar problemas de timezone
+    const fechaInicio = new Date(this.nuevoTramite.fechaInicio + 'T12:00:00');
+    const siguienteDia = new Date(fechaInicio);
+    siguienteDia.setDate(fechaInicio.getDate() + 1);
+
+    // Buscar el siguiente día hábil (lunes a viernes)
+    while (siguienteDia.getDay() === 0 || siguienteDia.getDay() === 6) { // 0=domingo, 6=sábado
+      siguienteDia.setDate(siguienteDia.getDate() + 1);
+    }
+
+    return siguienteDia.toISOString().split('T')[0];
+  }
+
+  // Valida que la fecha de vencimiento sea un día hábil
+  onFechaVencimientoChange(event: Event): void {
+    this.validarYCorregirFecha(event);
+  }
+
+  private validarYCorregirFecha(event: Event): void {
+    const input = event.target as HTMLInputElement;
+
+    if (!input.value) {
+      this.nuevoTramite.fechaVencimiento = '';
+      return;
+    }
+
+    // Crear fechas usando la fecha local para evitar problemas de timezone
+    const fechaSeleccionada = new Date(input.value + 'T12:00:00');
+    const fechaInicioString = this.nuevoTramite.fechaInicio || this.getCurrentDate();
+    const fechaInicio = new Date(fechaInicioString + 'T12:00:00');
+
+    // Verificar si es anterior o igual a la fecha de inicio
+    if (fechaSeleccionada <= fechaInicio) {
+      this.toastService.warning(
+        'Fecha no válida',
+        'La fecha de vencimiento debe ser posterior a la fecha de inicio'
+      );
+
+      // Usar la fecha mínima permitida pero sin bloquear la interacción
+      const fechaMinima = this.getMinFechaVencimiento();
+
+      // Usar setTimeout para no interferir con el event loop
+      setTimeout(() => {
+        this.nuevoTramite.fechaVencimiento = fechaMinima;
+      }, 0);
+      return;
+    }
+
+    // Verificar si es fin de semana
+    if (fechaSeleccionada.getDay() === 0 || fechaSeleccionada.getDay() === 6) {
+      this.toastService.warning(
+        'Fecha no válida',
+        'Solo se permiten días hábiles (lunes a viernes) como fecha de vencimiento'
+      );
+
+      // Encontrar el siguiente día hábil
+      const siguienteDiaHabil = new Date(fechaSeleccionada);
+      while (siguienteDiaHabil.getDay() === 0 || siguienteDiaHabil.getDay() === 6) {
+        siguienteDiaHabil.setDate(siguienteDiaHabil.getDate() + 1);
+      }
+
+      const fechaHabilString = siguienteDiaHabil.toISOString().split('T')[0];
+
+      // Usar setTimeout para no interferir con el event loop
+      setTimeout(() => {
+        this.nuevoTramite.fechaVencimiento = fechaHabilString;
+      }, 0);
+    } else {
+      // Fecha válida (día hábil), actualizar el modelo
+      this.nuevoTramite.fechaVencimiento = input.value;
+    }
+  }
+
+  getAreaNombre(areaId: number): string {
+    const area = this.areasDisponibles.find(a => a.id === areaId);
+    return area?.nombre || '';
+  }
+
+  get isUsuarioRole(): boolean {
+    const currentUser = this.authService.currentUserValue;
+    return currentUser?.role?.name === 'USUARIO';
+  }
+
+  get isEstudianteRole(): boolean {
+    const currentUser = this.authService.currentUserValue;
+    return currentUser?.role?.name === 'ESTUDIANTE';
   }
 
   // Método para procesar archivos a base64

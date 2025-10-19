@@ -111,6 +111,11 @@ import { ReportesService } from '../../services/reportes.service';
                 <div class="tramite-info">
                   <div class="tramite-title">{{ tramite.title }}</div>
                   <div class="tramite-user">{{ tramite.user }}</div>
+                  <div class="tramite-metadata">
+                    <span class="tramite-tipo">📋 {{ tramite.tipoTramite }}</span>
+                    <span class="tramite-area">🏢 {{ tramite.areaOrigen }}</span>
+                    <span class="tramite-usuario-tipo">{{ tramite.tipoUsuario }}</span>
+                  </div>
                   <div class="tramite-date">{{ tramite.date }}</div>
                 </div>
                 <div class="tramite-actions">
@@ -319,6 +324,40 @@ import { ReportesService } from '../../services/reportes.service';
     .tramite-date {
       font-size: 12px;
       color: #95a5a6;
+    }
+
+    .tramite-metadata {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin: 8px 0;
+    }
+
+    .tramite-tipo,
+    .tramite-area,
+    .tramite-usuario-tipo {
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: #f1f2f6;
+      color: #2c3e50;
+      display: inline-block;
+      max-width: fit-content;
+    }
+
+    .tramite-tipo {
+      background: #e3f2fd;
+      color: #1976d2;
+    }
+
+    .tramite-area {
+      background: #f3e5f5;
+      color: #7b1fa2;
+    }
+
+    .tramite-usuario-tipo {
+      background: #fff3e0;
+      color: #f57c00;
     }
 
     .btn {
@@ -919,28 +958,41 @@ export class DashboardComponent implements OnInit {
   }
 
   private loadPendingTramitesWithPermissions() {
-    // Filter tramites that are truly pending (not expired)
-    this.pendingTramites = this.allTramites
-      .filter(tramite => {
-        const estado = tramite.estado?.nombre || '';
-        const isPendingState = ['En Revisión', 'Aprobado', 'Derivado', 'Enviado'].includes(estado);
-        const permisos = this.tramitePermisos.get(tramite.id);
-        const isNotExpired = !permisos?.estaVencido;
+    console.log('[DEBUG DASHBOARD] Cargando trámites pendientes...');
+    console.log('[DEBUG DASHBOARD] allTramites disponibles:', this.allTramites.length);
 
-        return isPendingState && isNotExpired;
-      })
+    // Filter tramites that are truly pending (not expired)
+    const filteredTramites = this.allTramites.filter(tramite => {
+      // El estado puede llegar como objeto {nombre: "En Proceso"} o como string "En Proceso"
+      const estado = tramite.estado?.nombre || tramite.estado || '';
+      const isPendingState = ['En Revisión', 'Aprobado', 'Derivado', 'Enviado', 'En Proceso'].includes(estado);
+      const permisos = this.tramitePermisos.get(tramite.id);
+      const isNotExpired = !permisos?.estaVencido;
+
+      console.log('[DEBUG DASHBOARD] Filtro pendiente - Trámite:', tramite.id, 'Estado:', estado, 'isPending:', isPendingState, 'notExpired:', isNotExpired);
+
+      return isPendingState && isNotExpired;
+    });
+
+    console.log('[DEBUG DASHBOARD] Trámites filtrados como pendientes:', filteredTramites.length);
+
+    this.pendingTramites = filteredTramites
       .slice(0, 3)
       .map(tramite => ({
         id: tramite.id,
-        title: tramite.asunto || `${tramite.tipoTramite.nombre}`,
-        user: tramite.trabajadorAsignado ?
-              `${tramite.trabajadorAsignado.nombre} ${tramite.trabajadorAsignado.apellidos}` :
-              'Sin asignar',
+        title: tramite.asunto || tramite.titulo || `${tramite.tipoTramite?.nombre || 'Trámite'}`,
+        user: tramite.usuarioSolicitante ?
+              `${tramite.usuarioSolicitante.nombre} ${tramite.usuarioSolicitante.apellidos}` :
+              'Usuario no identificado',
         date: this.formatTimeAgo(tramite.fechaActualizacion || tramite.fechaCreacion),
         codigo: tramite.codigo,
+        tipoTramite: tramite.tipoTramite?.nombre || tramite.tipo || 'No especificado',
+        areaOrigen: tramite.areaOrigen?.nombre || tramite.areaDestino?.nombre || 'Área general',
+        tipoUsuario: this.determinarTipoUsuario(tramite),
         isExpired: false
       }));
 
+    console.log('[DEBUG DASHBOARD] Trámites pendientes mapeados:', this.pendingTramites);
   }
 
   private loadPendingTramites() {
@@ -1019,5 +1071,33 @@ export class DashboardComponent implements OnInit {
       'Aprobado': 'estado-aprobado'
     };
     return clases[estado] || 'estado-default';
+  }
+
+  determinarTipoUsuario(tramite: any): string {
+    // Verificar si es estudiante por el rol del usuario solicitante
+    if (tramite.usuarioSolicitante?.rol && tramite.usuarioSolicitante.rol.toLowerCase().includes('estudiante')) {
+      return '👨‍🎓 Estudiante';
+    }
+
+    // Verificar si es usuario estándar
+    if (tramite.usuarioSolicitante?.rol && tramite.usuarioSolicitante.rol.toLowerCase() === 'usuario') {
+      return '👤 Usuario';
+    }
+
+    // Verificar si es administrativo
+    if (tramite.usuarioSolicitante?.rol && tramite.usuarioSolicitante.rol.toLowerCase().includes('administrativo')) {
+      return '👔 Administrativo';
+    }
+
+    // Verificar por el email si contiene patrones de estudiante
+    if (tramite.usuarioSolicitante?.correo) {
+      const email = tramite.usuarioSolicitante.correo.toLowerCase();
+      if (email.includes('student') || email.includes('estudiante') || email.includes('@univ') || email.includes('@edu')) {
+        return '👨‍🎓 Estudiante';
+      }
+    }
+
+    // Por defecto, mostrar como ciudadano
+    return '👤 Ciudadano';
   }
 }

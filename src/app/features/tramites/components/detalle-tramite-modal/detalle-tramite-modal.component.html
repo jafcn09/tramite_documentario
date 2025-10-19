@@ -95,7 +95,7 @@
                 <label>Fecha de Vencimiento:</label>
                 <span>{{ formatearFecha(tramite.fechaVencimiento) }}</span>
                 <span class="dias-vencimiento" [class.vence-pronto]="(getDiasVencimiento(tramite.fechaVencimiento) || 0) <= 3">
-                  ({{ getDiasVencimiento(tramite.fechaVencimiento) }} días)
+                  ({{ getDiasVencimiento(tramite.fechaVencimiento) }} días hábiles)
                 </span>
               </div>
             </div>

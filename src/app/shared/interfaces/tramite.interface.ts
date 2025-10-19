@@ -126,6 +126,7 @@ export interface CrearTramiteRequest {
   asunto: string;
   descripcion: string;
   prioridadId: number;
+  areaOrigenId: number;
   areaDestinoId?: number;
   fechaVencimiento?: Date;
   documentos?: File[];

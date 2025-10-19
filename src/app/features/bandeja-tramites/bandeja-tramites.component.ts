@@ -35,6 +35,15 @@ export class BandejaTramitesComponent implements OnInit, OnDestroy {
   estadisticas: EstadisticasBandeja | null = null;
   notificaciones: NotificacionBandeja[] = [];
   loading$ = this.bandejaTramitesService.loading$;
+
+  // Map para almacenar permisos de cada trámite
+  tramitePermisos: Map<number, {
+    puedeAprobar: boolean;
+    puedeRechazar: boolean;
+    puedeDerivar: boolean;
+    puedeResponder: boolean;
+    estaVencido: boolean;
+  }> = new Map();
   
 
   currentPage = 1;
@@ -64,8 +73,14 @@ export class BandejaTramitesComponent implements OnInit, OnDestroy {
   showNotificacionesModal = false;
   showResponderTramiteModal = false;
   showEditarTramiteModal = false;
+  showRechazarModal = false;
   tramiteSeleccionado: TramiteBandeja | null = null;
   tramiteParaEditar: Tramite | null = null;
+
+  // Propiedades para el modal de rechazo
+  motivoRechazo = '';
+  observacionesRechazo = '';
+  cargandoRechazo = false;
   
 
   cambiarEstadoForm: CambiarEstadoRequest = {
@@ -138,13 +153,13 @@ export class BandejaTramitesComponent implements OnInit, OnDestroy {
       this.bandejaTramitesService.getTramites(this.currentPage, this.pageSize, this.filtros, this.ordenarPor, this.ordenAscendente)
         .subscribe({
           next: (response) => {
-            response.data.forEach(tramite => {
-
-            });
-
             this.tramites = response.data;
             this.totalItems = response.total;
             this.totalPages = response.totalPages;
+
+            // Cargar permisos para todos los trámites
+            this.cargarPermisosParaTramites();
+
             this.autoFinalizarTramitesVencidos();
           },
           error: (error) => {
@@ -174,7 +189,34 @@ export class BandejaTramitesComponent implements OnInit, OnDestroy {
       this.bandejaTramitesService.getEstadosDisponibles()
         .subscribe(estados => this.estadosDisponibles = estados)
     );
-    
+
+  }
+
+  cargarPermisosParaTramites() {
+    if (this.tramites.length === 0) {
+      return;
+    }
+
+    this.tramites.forEach(tramite => {
+      this.subscriptions.add(
+        this.bandejaTramitesService.verificarPermisosAcciones(tramite.id)
+          .subscribe({
+            next: (permisos) => {
+              this.tramitePermisos.set(tramite.id, permisos);
+            },
+            error: (error) => {
+              // En caso de error, usar permisos por defecto más restrictivos
+              this.tramitePermisos.set(tramite.id, {
+                puedeAprobar: false,
+                puedeRechazar: false,
+                puedeDerivar: false,
+                puedeResponder: false,
+                estaVencido: false
+              });
+            }
+          })
+      );
+    });
   }
 
   onSearch(term: string) {
@@ -259,6 +301,12 @@ export class BandejaTramitesComponent implements OnInit, OnDestroy {
   }
 
   abrirDerivar(tramite: TramiteBandeja) {
+    // Verificar permisos antes de abrir el modal
+    if (!this.puedeMostrarDerivar(tramite)) {
+      this.toastService.error('Acción no permitida', 'No tienes permisos para derivar este trámite');
+      return;
+    }
+
     this.tramiteSeleccionado = tramite;
     this.derivarForm = {
       tramiteId: tramite.id,
@@ -280,6 +328,11 @@ export class BandejaTramitesComponent implements OnInit, OnDestroy {
   }
 
   abrirAprobar(tramite: TramiteBandeja) {
+    // Verificar permisos antes de ejecutar la acción
+    if (!this.puedeAprobar(tramite)) {
+      this.toastService.error('Acción no permitida', 'No tienes permisos para aprobar este trámite');
+      return;
+    }
 
     // Llamar directamente al endpoint de aprobación
     const request = {
@@ -291,7 +344,6 @@ export class BandejaTramitesComponent implements OnInit, OnDestroy {
       this.misTramitesService.aprobarTramite(request)
         .subscribe({
           next: (response: any) => {
-
             this.cargarTramites();
             this.cargarEstadisticas();
             this.toastService.success('Trámite aprobado', `El trámite ${tramite.codigo} ha sido aprobado correctamente`);
@@ -318,12 +370,17 @@ export class BandejaTramitesComponent implements OnInit, OnDestroy {
   }
 
   confirmarDerivar() {
+    // Verificar permisos antes de ejecutar
+    if (this.tramiteSeleccionado && !this.puedeMostrarDerivar(this.tramiteSeleccionado)) {
+      this.toastService.error('Acción no permitida', 'No tienes permisos para derivar este trámite');
+      this.cerrarModalDerivar();
+      return;
+    }
 
     this.subscriptions.add(
       this.bandejaTramitesService.derivarTramite(this.derivarForm)
         .subscribe({
           next: (response) => {
-
             this.cargarTramites();
             this.cargarEstadisticas();
             this.cerrarModalDerivar();
@@ -449,6 +506,12 @@ export class BandejaTramitesComponent implements OnInit, OnDestroy {
 
   // Modal de responder trámite
   abrirResponderTramite(tramite: TramiteBandeja) {
+    // Verificar permisos antes de abrir el modal
+    if (!this.puedeResponder(tramite)) {
+      this.toastService.error('Acción no permitida', 'No tienes permisos para responder este trámite');
+      return;
+    }
+
     this.tramiteSeleccionado = tramite;
     this.showResponderTramiteModal = true;
   }
@@ -469,6 +532,66 @@ export class BandejaTramitesComponent implements OnInit, OnDestroy {
     this.showEditarTramiteModal = false;
     this.tramiteSeleccionado = null;
     this.tramiteParaEditar = null;
+  }
+
+  // Modal de rechazar trámite
+  abrirRechazar(tramite: TramiteBandeja) {
+    // Verificar permisos antes de abrir el modal
+    if (!this.puedeRechazar(tramite)) {
+      this.toastService.error('Acción no permitida', 'No tienes permisos para rechazar este trámite');
+      return;
+    }
+
+    this.tramiteSeleccionado = tramite;
+    this.showRechazarModal = true;
+  }
+
+  cerrarModalRechazar() {
+    this.showRechazarModal = false;
+    this.tramiteSeleccionado = null;
+    this.motivoRechazo = '';
+    this.observacionesRechazo = '';
+    this.cargandoRechazo = false;
+  }
+
+  confirmarRechazo() {
+    if (!this.tramiteSeleccionado || !this.motivoRechazo.trim()) {
+      this.toastService.warning('Motivo requerido', 'Debe proporcionar un motivo para el rechazo');
+      return;
+    }
+
+    // Doble verificación de permisos antes de ejecutar
+    if (!this.puedeRechazar(this.tramiteSeleccionado)) {
+      this.toastService.error('Acción no permitida', 'No tienes permisos para rechazar este trámite');
+      this.cerrarModalRechazar();
+      return;
+    }
+
+    this.cargandoRechazo = true;
+
+    // Usar el servicio de mis-tramites que tiene el método rechazarTramite
+    this.subscriptions.add(
+      this.misTramitesService.rechazarTramite(
+        this.tramiteSeleccionado.id,
+        this.motivoRechazo.trim(),
+        this.observacionesRechazo.trim() || undefined
+      ).subscribe({
+        next: () => {
+          this.cargandoRechazo = false;
+          this.toastService.success(
+            'Trámite rechazado',
+            `El trámite ${this.tramiteSeleccionado?.codigo} ha sido rechazado correctamente`
+          );
+          this.cargarTramites();
+          this.cargarEstadisticas();
+          this.cerrarModalRechazar();
+        },
+        error: () => {
+          this.cargandoRechazo = false;
+          this.toastService.error('Error al rechazar', 'No se pudo rechazar el trámite. Intente nuevamente.');
+        }
+      })
+    );
   }
 
   // Función para convertir TramiteBandeja a Tramite
@@ -622,30 +745,54 @@ export class BandejaTramitesComponent implements OnInit, OnDestroy {
 
   // Verificar si puede aprobar un trámite
   puedeAprobar(tramite: TramiteBandeja): boolean {
+    const permisos = this.tramitePermisos.get(tramite.id);
 
-    const estadosParaAprobar = ['DERIVADO', 'Derivado'];
-    const puede = estadosParaAprobar.includes(tramite.estado.nombre);
+    // Siempre usar permisos del backend si están disponibles
+    if (permisos) {
+      return permisos.puedeAprobar;
+    }
 
-    return puede;
+    // Si no hay permisos del backend cargados, ser restrictivo por defecto
+    return false;
   }
 
   // Verificar si puede responder un trámite
   puedeResponder(tramite: TramiteBandeja): boolean {
+    const permisos = this.tramitePermisos.get(tramite.id);
 
+    // Siempre usar permisos del backend si están disponibles
+    if (permisos) {
+      return permisos.puedeResponder;
+    }
 
-    const estadosParaResponder = ['DERIVADO', 'Derivado', 'APROBADO', 'Aprobado', 'EN_PROCESO', 'En Proceso'];
-    const puede = estadosParaResponder.includes(tramite.estado.nombre);
-
-    return puede;
+    // Si no hay permisos del backend cargados, ser restrictivo por defecto
+    return false;
   }
 
   // Verificar si debe mostrar el botón derivar
   puedeMostrarDerivar(tramite: TramiteBandeja): boolean {
+    const permisos = this.tramitePermisos.get(tramite.id);
 
-    const estadosDerivados = ['DERIVADO', 'Derivado'];
-    const puede = tramite.puedeDerivar && !estadosDerivados.includes(tramite.estado.nombre);
+    // Siempre usar permisos del backend si están disponibles
+    if (permisos) {
+      return permisos.puedeDerivar;
+    }
 
-    return puede;
+    // Si no hay permisos del backend cargados, ser restrictivo por defecto
+    return false;
+  }
+
+  // Verificar si puede rechazar un trámite
+  puedeRechazar(tramite: TramiteBandeja): boolean {
+    const permisos = this.tramitePermisos.get(tramite.id);
+
+    // Siempre usar permisos del backend si están disponibles
+    if (permisos) {
+      return permisos.puedeRechazar;
+    }
+
+    // Si no hay permisos del backend cargados, ser restrictivo por defecto
+    return false;
   }
 
   // Utilidades

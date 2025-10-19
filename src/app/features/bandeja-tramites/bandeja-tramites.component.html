@@ -135,7 +135,7 @@
     </div>
 
     <div class="toolbar-actions">
-      <!-- Filtros rápidos -->
+
       <div class="quick-filters">
         <button 
           class="filter-chip"
@@ -174,7 +174,6 @@
     </div>
   </div>
 
-  <!-- Panel de filtros avanzados -->
   <div class="filters-panel" [class.active]="showFilters">
     <div class="filters-content">
       <div class="filter-group">
@@ -383,7 +382,7 @@
                   *ngIf="tramite.diasVencimiento !== undefined"
                 >
                   <i class="fas fa-clock"></i>
-                  {{ tramite.diasVencimiento < 0 ? 'Vencido' : tramite.diasVencimiento + 'd restantes' }}
+                  {{ tramite.diasVencimiento < 0 ? 'Vencido' : tramite.diasVencimiento + ' días hábiles restantes' }}
                 </div>
               </div>
               <ng-template #sinFechaVencimiento>
@@ -405,20 +404,28 @@
                 <i class="fas fa-edit"></i>
               </button>
               <button
-                *ngIf="puedeAprobar(tramite)"
                 class="action-btn aprobar"
+                [disabled]="!puedeAprobar(tramite)"
                 (click)="abrirAprobar(tramite)"
-                title="Aprobar trámite"
+                [title]="puedeAprobar(tramite) ? 'Aprobar trámite' : 'No puedes aprobar este trámite'"
               >
                 <i class="fas fa-check-circle"></i>
               </button>
 
-     
               <button
-                *ngIf="puedeResponder(tramite)"
+                class="action-btn rechazar"
+                [disabled]="!puedeRechazar(tramite)"
+                (click)="abrirRechazar(tramite)"
+                [title]="puedeRechazar(tramite) ? 'Rechazar trámite' : 'No puedes rechazar este trámite'"
+              >
+                <i class="fas fa-times-circle"></i>
+              </button>
+
+              <button
                 class="action-btn responder"
+                [disabled]="!puedeResponder(tramite)"
                 (click)="abrirResponderTramite(tramite)"
-                title="Responder trámite"
+                [title]="puedeResponder(tramite) ? 'Responder trámite' : 'No puedes responder este trámite'"
               >
                 <i class="fas fa-reply"></i>
               </button>
@@ -432,10 +439,10 @@
               </button>
 
               <button
-                *ngIf="puedeMostrarDerivar(tramite)"
                 class="action-btn derivar"
+                [disabled]="!puedeMostrarDerivar(tramite)"
                 (click)="abrirDerivar(tramite)"
-                title="Derivar"
+                [title]="puedeMostrarDerivar(tramite) ? 'Derivar trámite' : 'No puedes derivar este trámite'"
               >
                 <i class="fas fa-share"></i>
               </button>
@@ -739,4 +746,69 @@
   (close)="cerrarModalResponder()"
   (tramiteRespondido)="onTramiteRespondido($event)">
 </app-responder-tramite-modal>
+
+
+<div *ngIf="showRechazarModal" class="modal-overlay" (click)="cerrarModalRechazar()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Rechazar Trámite</h3>
+      <button class="modal-close" (click)="cerrarModalRechazar()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <p>Trámite: <strong>{{ tramiteSeleccionado?.codigo }}</strong></p>
+
+      <div class="form-group">
+        <label>Motivo del Rechazo *</label>
+        <textarea
+          [(ngModel)]="motivoRechazo"
+          placeholder="Explique detalladamente el motivo del rechazo del trámite..."
+          rows="4"
+          maxlength="1000"
+          required
+        ></textarea>
+        <small class="char-counter">{{ motivoRechazo.length }}/1000 caracteres</small>
+      </div>
+
+      <div class="form-group">
+        <label>Observaciones Adicionales</label>
+        <textarea
+          [(ngModel)]="observacionesRechazo"
+          placeholder="Observaciones adicionales (opcional)..."
+          rows="3"
+          maxlength="500"
+        ></textarea>
+        <small class="char-counter">{{ observacionesRechazo.length }}/500 caracteres</small>
+      </div>
+
+      <div class="alert alert-warning">
+        <strong>¡Atención!</strong> Al rechazar este trámite:
+        <ul>
+          <li>El trámite cambiará su estado a "RECHAZADO"</li>
+          <li>Se notificará al solicitante sobre el rechazo</li>
+          <li>Esta acción no se puede deshacer</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button
+        class="btn-cancel"
+        (click)="cerrarModalRechazar()"
+        [disabled]="cargandoRechazo">
+        Cancelar
+      </button>
+      <button
+        class="btn-danger"
+        [disabled]="!motivoRechazo.trim() || cargandoRechazo"
+        (click)="confirmarRechazo()">
+        <i class="fas fa-spinner fa-spin" *ngIf="cargandoRechazo"></i>
+        <i class="fas fa-times-circle" *ngIf="!cargandoRechazo"></i>
+        {{ cargandoRechazo ? 'Rechazando...' : 'Rechazar Trámite' }}
+      </button>
+    </div>
+  </div>
+</div>
 
