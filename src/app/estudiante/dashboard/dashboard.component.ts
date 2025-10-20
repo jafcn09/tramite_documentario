@@ -5,11 +5,12 @@ import { AuthService, User } from '../../services/auth.service';
 import { MisTramitesService } from '../../services/mis-tramites.service';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
+import { StudentDashboardLayoutComponent } from './student-dashboard-layout.component';
 
 @Component({
   selector: 'app-estudiante-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, StudentDashboardLayoutComponent],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css']
 })
@@ -144,7 +145,7 @@ export class EstudianteDashboardComponent implements OnInit {
             estado: estaVencido ? 'Finalizado' : (tramite.estado?.nombre || 'Sin estado'),
             fecha: this.formatDate(tramite.fechaCreacion),
             tipo: tramite.tipoTramite?.nombre || 'Sin tipo',
-            progreso: estaVencido ? 100 : this.calculateProgreso(tramite.estado?.nombre)
+            progreso: tramite.progreso
           };
         });
       },
@@ -175,22 +176,6 @@ export class EstudianteDashboardComponent implements OnInit {
     return clases[estado] || '';
   }
 
-  calculateProgreso(estado: string): number {
-    const progresoMap: { [key: string]: number } = {
-      'Borrador': 10,
-      'Enviado': 25,
-      'En Revisión': 40,
-      'Derivado': 50,
-      'En Proceso': 65,
-      'Aprobado': 80,
-      'Finalizado': 100,
-      'Observado': 35,
-      'Rechazado': 0,
-      'Archivado': 100,
-      'Cancelado': 0
-    };
-    return progresoMap[estado] || 50;
-  }
 
   formatTimeAgo(dateStr: string): string {
     if (!dateStr) return 'Fecha desconocida';
@@ -239,5 +224,16 @@ export class EstudianteDashboardComponent implements OnInit {
 
   consultarEstado() {
     this.router.navigate(['/estudiante/mis-tramites']);
+  }
+
+  getValidatedProgress(tramite: any): number {
+    if (!tramite) return 0;
+
+    const progreso = tramite.progreso;
+    if (progreso === undefined || progreso === null || isNaN(progreso)) {
+      return 0;
+    }
+
+    return Math.max(0, Math.min(100, progreso));
   }
 }

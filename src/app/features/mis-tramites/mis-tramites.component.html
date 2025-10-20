@@ -8,8 +8,7 @@
       <p>{{ isAdministrativo ? 'Procesa y gestiona trámites asignados' : 'Gestiona y da seguimiento a tus solicitudes' }}</p>
     </div>
     
-    <button *ngIf="shouldShowCreateButton" class="btn-nuevo" (click)="crearNuevoTramite()"
-            style="background-color: #28a745 !important; color: white !important; border: 2px solid #1e7e34 !important; padding: 10px 20px !important; border-radius: 5px !important; font-weight: bold !important; display: inline-block !important; visibility: visible !important; opacity: 1 !important;">
+    <button *ngIf="shouldShowCreateButton" class="btn-nuevo" (click)="crearNuevoTramite()">
       <i class="fas fa-plus"></i>
       Nuevo Trámite
     </button>
@@ -151,7 +150,7 @@
       </div>
     </div>
 
-    <div class="toolbar-actions">
+    <div class="toolbar-actions" *ngIf="userRole !== 'ESTUDIANTE'">
       <button
         class="btn-view"
         (click)="toggleVista()"
@@ -220,13 +219,15 @@
 
         <div class="card-progress">
           <div class="progress-bar">
-            <div 
-              class="progress-fill" 
-              [style.width.%]="getProgressoPorcentaje(tramite.estado.nombre, tramite)"
+            <div
+              class="progress-fill"
+              [style.width.%]="getProgressoPorcentaje(tramite)"
               [style.background-color]="tramite.estado.color"
             ></div>
           </div>
-          <div class="progress-text">{{ tramite.estado.nombre }}</div>
+          <div class="progress-text">
+            {{ getProgressoPorcentaje(tramite) }}% - {{ tramite.estado.nombre }}
+          </div>
         </div>
 
         <div class="card-actions">
@@ -394,7 +395,7 @@
                   [title]="estaVencido(tramite) ? 'Trámite finalizado - Descarga no disponible' : (tramite.documentos && tramite.documentos.length > 0 ? 'Descargar ' + tramite.documentos.length + ' documento(s)' : 'Descargar documentos')"
                 >
                   <i class="fas fa-download"></i>
-                  <span *ngIf="tramite.documentos && tramite.documentos.length > 0" class="badge">{{ tramite.documentos.length }}</span>
+                  <span *ngIf="tramite.documentos && tramite.documentos.length > 0" class="download-count">{{ tramite.documentos.length }}</span>
                 </button>
                 
          
@@ -569,7 +570,7 @@
     <div class="modal-body">
       <div class="detalle-grid">
         <div class="info-section">
-          <h4>Información General</h4>
+          <h4><i class="fas fa-info-circle"></i> Información General</h4>
           <div class="info-item">
             <label>Código:</label>
             <span class="codigo-destacado">{{ tramiteSeleccionado.codigo }}</span>
@@ -598,7 +599,7 @@
         </div>
 
         <div class="fechas-section">
-          <h4>Fechas</h4>
+          <h4><i class="fas fa-calendar-alt"></i> Fechas</h4>
           <div class="info-item">
             <label>Creación:</label>
             <span>{{ formatearFecha(tramiteSeleccionado.fechaCreacion) }}</span>
@@ -607,30 +608,30 @@
             <label>Vencimiento:</label>
             <span>{{ formatearFecha(tramiteSeleccionado.fechaVencimiento) }}</span>
           </div>
-          <div class="info-item" *ngIf="getDiasVencimiento(tramiteSeleccionado.fechaVencimiento) !== null">
+          <div class="info-item" *ngIf="getDiasHabilesRestantes(tramiteSeleccionado.fechaVencimiento) !== null">
             <label>Estado:</label>
-            <span 
-              [class.text-danger]="getDiasVencimiento(tramiteSeleccionado.fechaVencimiento)! < 0"
-              [class.text-warning]="getDiasVencimiento(tramiteSeleccionado.fechaVencimiento)! <= 3 && getDiasVencimiento(tramiteSeleccionado.fechaVencimiento)! >= 0"
+            <span
+              [class.text-danger]="getDiasHabilesRestantes(tramiteSeleccionado.fechaVencimiento)! < 0"
+              [class.text-warning]="getDiasHabilesRestantes(tramiteSeleccionado.fechaVencimiento)! <= 3 && getDiasHabilesRestantes(tramiteSeleccionado.fechaVencimiento)! >= 0"
             >
-              <span *ngIf="getDiasVencimiento(tramiteSeleccionado.fechaVencimiento)! < 0">
-                Vencido hace {{ -getDiasVencimiento(tramiteSeleccionado.fechaVencimiento)! }} días hábiles
+              <span *ngIf="getDiasHabilesRestantes(tramiteSeleccionado.fechaVencimiento)! < 0">
+                Vencido hace {{ -getDiasHabilesRestantes(tramiteSeleccionado.fechaVencimiento)! }} días hábiles
               </span>
-              <span *ngIf="getDiasVencimiento(tramiteSeleccionado.fechaVencimiento)! >= 0">
-                {{ getDiasVencimiento(tramiteSeleccionado.fechaVencimiento) }} días hábiles restantes
+              <span *ngIf="getDiasHabilesRestantes(tramiteSeleccionado.fechaVencimiento)! >= 0">
+                {{ getDiasHabilesRestantes(tramiteSeleccionado.fechaVencimiento) }} días hábiles restantes
               </span>
             </span>
           </div>
         </div>
       </div>
       <div class="descripcion-section" *ngIf="tramiteSeleccionado.descripcion">
-        <h4>Descripción</h4>
+        <h4><i class="fas fa-align-left"></i> Descripción</h4>
         <p class="descripcion-text">{{ tramiteSeleccionado.descripcion }}</p>
       </div>
 
     
       <div class="documentos-section" *ngIf="tramiteSeleccionado.documentos && tramiteSeleccionado.documentos.length > 0">
-        <h4>Documentos Adjuntos ({{ tramiteSeleccionado.documentos.length }})</h4>
+        <h4><i class="fas fa-file-alt"></i> Documentos Adjuntos ({{ tramiteSeleccionado.documentos.length }})</h4>
         <div class="documentos-list">
           <div
             *ngFor="let documento of tramiteSeleccionado.documentos"
@@ -649,7 +650,7 @@
 
       <!-- Área y asignación -->
       <div class="asignacion-section" *ngIf="tramiteSeleccionado.areaDestino && isAdministrativo">
-        <h4>Asignación</h4>
+        <h4><i class="fas fa-building"></i> Asignación</h4>
         <div class="info-item">
           <label>Área:</label>
           <span>
@@ -662,16 +663,30 @@
 
 
       <div class="progreso-section">
-        <h4>Progreso</h4>
-        <div class="progress-bar-detail">
-          <div 
-            class="progress-fill" 
-            [style.width.%]="getProgressoPorcentaje(tramiteSeleccionado.estado.nombre, tramiteSeleccionado)"
-            [style.background-color]="tramiteSeleccionado.estado.color"
-          ></div>
-        </div>
-        <div class="progress-text-detail">
-          {{ getProgressoPorcentaje(tramiteSeleccionado.estado.nombre, tramiteSeleccionado) }}% - {{ getEstadoVisualTexto(tramiteSeleccionado) }}
+        <h4><i class="fas fa-chart-line"></i> Progreso del Trámite</h4>
+        <div class="progress-container" *ngIf="getProgresoDetallado(tramiteSeleccionado) as progreso">
+          <div class="progress-bar-detail">
+            <div
+              class="progress-fill"
+              [style.width.%]="progreso.porcentaje"
+              [style.background-color]="tramiteSeleccionado.estado.color"
+              [class.progress-vencido]="progreso.tipoProgreso === 'vencido'"
+            ></div>
+          </div>
+          <div class="progress-text-detail">
+            <span class="progress-percentage">{{ progreso.porcentaje }}%</span>
+            <span class="progress-status">{{ getEstadoVisualTexto(tramiteSeleccionado) }}</span>
+          </div>
+          <div class="progress-info-detail">
+            <div class="progress-description">
+              <i class="fas fa-info-circle"></i>
+              {{ progreso.descripcion }}
+            </div>
+            <div class="progress-time-remaining">
+              <i class="fas fa-clock"></i>
+              {{ progreso.tiempoRestante }}
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -751,12 +766,13 @@
                   {{ trabajador.workloadCount }}/5 trámites
                 </span>
                 <div class="progress-bar">
-                  <div class="progress-fill" 
+                  <div class="progress-fill"
                        [style.width.%]="(trabajador.workloadCount / 5) * 100"
                        [class.warning]="trabajador.workloadCount >= 4"
                        [class.danger]="trabajador.workloadCount >= 5">
                   </div>
                 </div>
+                <span class="workload-percentage">{{ ((trabajador.workloadCount / 5) * 100) | number:'1.0-0' }}%</span>
               </div>
               
               <div *ngIf="trabajador.workloadCount >= 5" class="error-message">

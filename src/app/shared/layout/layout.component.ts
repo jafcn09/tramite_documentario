@@ -5,6 +5,7 @@ import { AuthService, User } from '../../services/auth.service';
 import { ModalComponent } from '../modal/modal.component';
 import { ToastComponent } from '../components/toast/toast.component';
 import { NotificationBellComponent } from '../components/notification-bell/notification-bell.component';
+import { MisTramitesService } from '../../services/mis-tramites.service';
 
 @Component({
   selector: 'app-layout',
@@ -158,6 +159,70 @@ import { NotificationBellComponent } from '../components/notification-bell/notif
                   <i class="fas fa-sign-out-alt"></i>
                   Cerrar Sesión
                 </a>
+              </div>
+            </div>
+          </div>
+        </header>
+
+
+        <header class="student-clean-header" *ngIf="userRole === 'estudiante'">
+          <div class="student-header-content">
+            <div class="student-greeting">
+              <button class="mobile-toggle-btn" (click)="toggleSidebar($event)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="3" y1="6" x2="21" y2="6"></line>
+                  <line x1="3" y1="12" x2="21" y2="12"></line>
+                  <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+              </button>
+              <div class="greeting-text">
+                <h1>¡Hola, {{ getFirstName(currentUser?.nombre) }}!</h1>
+                <p>Bienvenido</p>
+              </div>
+            </div>
+
+            <div class="student-center-space">
+              <!-- Espacio central vacío -->
+            </div>
+
+            <div class="student-user-actions">
+              <app-notification-bell></app-notification-bell>
+              <div class="student-user-dropdown" *ngIf="currentUser">
+                <button class="student-user-btn" (click)="toggleUserDropdown($event)">
+                  <img
+                    [src]="currentUser?.foto || '/assets/default-avatar.png'"
+                    [alt]="currentUser?.nombre"
+                    class="student-user-avatar"
+                    onerror="this.src='/assets/default-avatar.png'"
+                  >
+                  <div class="student-user-info">
+                    <div class="student-user-name">{{ currentUser?.nombre }} {{ currentUser?.apellidos }}</div>
+                    <div class="student-user-role">Estudiante</div>
+                  </div>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6,9 12,15 18,9"></polyline>
+                  </svg>
+                </button>
+
+                <div class="student-dropdown-menu" [class.show]="showUserDropdown">
+                  <a href="#" class="student-dropdown-item" (click)="viewProfile($event)">
+                    <i class="fas fa-user-circle"></i>
+                    Mi Perfil
+                  </a>
+                  <a href="#" class="student-dropdown-item" (click)="viewStudentNotifications($event)">
+                    <i class="fas fa-bell"></i>
+                    Ver Notificaciones
+                  </a>
+                  <a href="#" class="student-dropdown-item" (click)="changePassword($event)">
+                    <i class="fas fa-key"></i>
+                    Cambiar Contraseña
+                  </a>
+                  <div class="student-dropdown-divider"></div>
+                  <a href="#" class="student-dropdown-item logout-item" (click)="logout($event)">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Cerrar Sesión
+                  </a>
+                </div>
               </div>
             </div>
           </div>
@@ -1041,17 +1106,229 @@ import { NotificationBellComponent } from '../components/notification-bell/notif
       .header {
         padding: 10px 15px;
       }
-      
+
       .greeting-title {
         font-size: 20px;
       }
-      
+
       .greeting-subtitle {
         font-size: 12px;
       }
-      
+
       .breadcrumb {
         font-size: 12px;
+      }
+    }
+
+    /* Student Clean Header Styles */
+    .student-clean-header {
+      background: white;
+      border-bottom: 1px solid #e9ecef;
+      padding: 20px 30px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 70px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    }
+
+    .student-header-content {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      width: 100%;
+      gap: 1rem;
+    }
+
+    .student-greeting {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .greeting-text h1 {
+      font-size: 24px;
+      font-weight: 600;
+      color: #2c3e50;
+      margin: 0 0 4px 0;
+    }
+
+    .greeting-text p {
+      font-size: 14px;
+      color: #6c757d;
+      margin: 0;
+    }
+
+    .student-center-space {
+      /* Espacio central vacío */
+    }
+
+    .student-user-actions {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .student-user-dropdown {
+      position: relative;
+    }
+
+    .student-user-btn {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 8px 12px;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .student-user-btn:hover {
+      background: #f8f9fa;
+    }
+
+    .student-user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .student-user-info {
+      text-align: left;
+    }
+
+    .student-user-name {
+      font-weight: 500;
+      font-size: 14px;
+      color: #2c3e50;
+      margin: 0;
+    }
+
+    .student-user-role {
+      font-size: 12px;
+      color: #6c757d;
+      margin: 0;
+    }
+
+    .student-dropdown-menu {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      background: white;
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      min-width: 200px;
+      padding: 8px 0;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-10px);
+      transition: all 0.3s ease;
+      z-index: 1000;
+      margin-top: 8px;
+    }
+
+    .student-dropdown-menu.show {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    .student-dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      color: #2c3e50;
+      text-decoration: none;
+      font-size: 14px;
+      transition: all 0.3s ease;
+    }
+
+    .student-dropdown-item i {
+      width: 18px;
+      text-align: center;
+      color: #6c757d;
+      font-size: 16px;
+    }
+
+    .student-dropdown-item:hover {
+      background: #f8f9fa;
+      color: #2c3e50;
+    }
+
+    .student-dropdown-item:hover i {
+      color: #667eea;
+    }
+
+    .student-dropdown-item.logout-item i {
+      color: #dc3545;
+    }
+
+    .student-dropdown-item.logout-item:hover {
+      background: #fff5f5;
+    }
+
+    .student-dropdown-divider {
+      height: 1px;
+      background: #dee2e6;
+      margin: 8px 0;
+    }
+
+    /* Responsive for Student Header */
+    @media (max-width: 768px) {
+      .student-clean-header {
+        padding: 15px 20px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+        min-height: auto;
+      }
+
+      .student-header-content {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+      }
+
+      .greeting-text h1 {
+        font-size: 20px;
+      }
+
+      .greeting-text p {
+        font-size: 12px;
+      }
+
+      .student-actions {
+        width: 100%;
+        justify-content: flex-end;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .student-clean-header {
+        padding: 12px 15px;
+      }
+
+      .greeting-text h1 {
+        font-size: 18px;
+      }
+
+      .greeting-text p {
+        font-size: 11px;
+      }
+
+      .student-user-info {
+        display: none;
+      }
+
+      .student-user-avatar {
+        width: 28px;
+        height: 28px;
       }
     }
   `]
@@ -1062,10 +1339,12 @@ export class LayoutComponent implements OnInit {
   showUserDropdown = false;
   menuItems: any[] = [];
   userRole = '';
+  studentStats: any = null;
 
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private misTramitesService: MisTramitesService
   ) {}
 
   ngOnInit() {
@@ -1074,6 +1353,41 @@ export class LayoutComponent implements OnInit {
       this.updateMenuItems();
       if (user) {
         this.userRole = user.role?.name?.toLowerCase() || '';
+
+        // Load student stats if user is a student
+        if (this.userRole === 'estudiante') {
+          this.loadStudentStats();
+        }
+      }
+    });
+  }
+
+  loadStudentStats() {
+    this.misTramitesService.getMisTramites(1, 100).subscribe({
+      next: (response) => {
+        const tramites = response.data || [];
+
+        const tramitesActivos = tramites.filter((t: any) =>
+          ['En Revisión', 'Enviado', 'En Proceso', 'Aprobado', 'Derivado'].includes(t.estado?.nombre)
+        ).length;
+
+        const tramitesCompletados = tramites.filter((t: any) =>
+          ['Finalizado', 'Archivado'].includes(t.estado?.nombre) || t.estaVencido
+        ).length;
+
+        this.studentStats = {
+          tramitesActivos,
+          tramitesCompletados,
+          totalTramites: tramites.length
+        };
+      },
+      error: (error) => {
+        console.error('Error loading student stats:', error);
+        this.studentStats = {
+          tramitesActivos: 0,
+          tramitesCompletados: 0,
+          totalTramites: 0
+        };
       }
     });
   }
@@ -1173,6 +1487,17 @@ export class LayoutComponent implements OnInit {
     }
     this.showUserDropdown = false;
     this.authService.logout();
+  }
+
+  getFirstName(fullName: string | undefined): string {
+    if (!fullName) return 'Estudiante';
+    return fullName.split(' ')[0];
+  }
+
+  viewStudentNotifications(event: Event) {
+    event.preventDefault();
+    this.showUserDropdown = false;
+    this.router.navigate(['/estudiante/notificaciones']);
   }
 
   @HostListener('document:click', ['$event'])

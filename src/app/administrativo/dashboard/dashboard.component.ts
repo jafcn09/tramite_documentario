@@ -175,9 +175,9 @@ import { ReportesService } from '../../services/reportes.service';
                 </div>
                 <div class="tramite-progress">
                   <div class="progress-bar">
-                    <div class="progress-fill" [style.width.%]="tramite.progreso"></div>
+                    <div class="progress-fill" [style.width.%]="getValidatedProgress(tramite)"></div>
                   </div>
-                  <span class="progress-text">{{ tramite.progreso }}% avanzado</span>
+                  <span class="progress-text">{{ getValidatedProgress(tramite) }}% avanzado</span>
                 </div>
               </div>
             </div>
@@ -441,7 +441,7 @@ import { ReportesService } from '../../services/reportes.service';
     .progress-text {
       font-size: 12px;
       font-weight: 600;
-      color: #7f8c8d;
+      color: #334155;
       min-width: 35px;
     }
 
@@ -851,7 +851,7 @@ export class DashboardComponent implements OnInit {
             title: tramite.asunto || `${tramite.tipoTramite?.nombre}`,
             estado: tramite.estado?.nombre,
             date: this.formatTimeAgo(tramite.fechaActualizacion || tramite.fechaCreacion),
-            progreso: this.calculateProgreso(tramite.estado?.nombre)
+            progreso: tramite.progreso
           }));
       },
       error: (error) => {
@@ -940,22 +940,6 @@ export class DashboardComponent implements OnInit {
     });
   }
 
-  private calculateProgreso(estado: string): number {
-    const progresoMap: { [key: string]: number } = {
-      'Borrador': 10,
-      'Enviado': 20,
-      'En Revisión': 35,
-      'Derivado': 45,
-      'En Proceso': 60,
-      'Aprobado': 75,
-      'Finalizado': 100,
-      'Observado': 30,
-      'Rechazado': 0,
-      'Archivado': 100,
-      'Cancelado': 0
-    };
-    return progresoMap[estado] || 50;
-  }
 
   private loadPendingTramitesWithPermissions() {
     console.log('[DEBUG DASHBOARD] Cargando trámites pendientes...');
@@ -1089,15 +1073,24 @@ export class DashboardComponent implements OnInit {
       return '👔 Administrativo';
     }
 
-    // Verificar por el email si contiene patrones de estudiante
+   
     if (tramite.usuarioSolicitante?.correo) {
       const email = tramite.usuarioSolicitante.correo.toLowerCase();
       if (email.includes('student') || email.includes('estudiante') || email.includes('@univ') || email.includes('@edu')) {
         return '👨‍🎓 Estudiante';
       }
     }
+    return '👤 Usuario';
+  }
 
-    // Por defecto, mostrar como ciudadano
-    return '👤 Ciudadano';
+  getValidatedProgress(tramite: any): number {
+    if (!tramite || tramite.progreso === undefined || tramite.progreso === null) return 0;
+
+    const progreso = tramite.progreso;
+    if (isNaN(progreso)) {
+      return 0;
+    }
+
+    return Math.max(0, Math.min(100, progreso));
   }
 }

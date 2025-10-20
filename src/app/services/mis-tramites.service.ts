@@ -430,7 +430,8 @@ export class MisTramitesService {
       puedeEditar: tramiteBackend.puedeEditar || false,
       puedeCalificar: tramiteBackend.puedeCalificar || false,
       estaVencido: tramiteBackend.estaVencido || false,
-      diasRestantes: tramiteBackend.diasRestantes
+      diasRestantes: tramiteBackend.diasRestantes,
+      progreso: tramiteBackend.progreso || 0
     }));
   }
 

@@ -107,7 +107,7 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
     this.setupSearch();
     this.cargarMisTramites();
     this.cargarEstadisticas();
-    
+
     this.subscriptions.add(
       this.route.queryParams.subscribe(params => {
         const tramiteId = params['tramiteId'];
@@ -120,6 +120,7 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
       })
     );
   }
+
 
   ngOnDestroy() {
     this.subscriptions.unsubscribe();
@@ -1289,26 +1290,127 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
     return Math.ceil(diferencia / (1000 * 60 * 60 * 24));
   }
 
-  getProgressoPorcentaje(estado: string, tramite?: MiTramite): number {
+  getDiasHabilesRestantes(fechaVencimiento?: Date): number | null {
+    if (!fechaVencimiento) return null;
 
-    if (tramite && this.estaVencido(tramite)) {
-      return 100;
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0); // Normalizar hora
+
+    const vencimiento = new Date(fechaVencimiento);
+    vencimiento.setHours(0, 0, 0, 0); // Normalizar hora
+
+    // Si ya está vencido
+    if (vencimiento < hoy) {
+      return this.calcularDiasHabilesEntre(vencimiento, hoy) * -1;
     }
 
-    const progresos: { [key: string]: number } = {
-      'Borrador': 10,
-      'Enviado': 25,
-      'En Revisión': 50,
-      'Derivado': 60,
-      'Observado': 40,
-      'Aprobado': 80,
-      'Finalizado': 100
-    };
-    return progresos[estado] || 0;
+    return this.calcularDiasHabilesEntre(hoy, vencimiento);
+  }
+
+  private calcularDiasHabilesEntre(fechaInicio: Date, fechaFin: Date): number {
+    let diasHabiles = 0;
+    const fechaActual = new Date(fechaInicio);
+
+    while (fechaActual < fechaFin) {
+      const diaSemana = fechaActual.getDay();
+      // 0 = Domingo, 6 = Sábado
+      if (diaSemana !== 0 && diaSemana !== 6) {
+        diasHabiles++;
+      }
+      fechaActual.setDate(fechaActual.getDate() + 1);
+    }
+
+    return diasHabiles;
+  }
+
+  getProgressoPorcentaje(tramite: MiTramite): number {
+    if (!tramite) return 0;
+
+    const progreso = tramite.progreso;
+    if (progreso === undefined || progreso === null || isNaN(progreso)) {
+      return 0;
+    }
+
+    // Asegurar que esté en el rango 0-100
+    return Math.max(0, Math.min(100, progreso));
   }
 
   trackByTramiteId(_: number, tramite: MiTramite): number {
     return tramite.id;
+  }
+
+  getProgresoDetallado(tramite: MiTramite) {
+    if (!tramite) {
+      return {
+        porcentaje: 0,
+        tipoProgreso: 'temporal',
+        descripcion: 'Cargando...',
+        tiempoRestante: 'Calculando...'
+      };
+    }
+
+    // Usar el método validado para obtener el porcentaje
+    const porcentaje = this.getProgressoPorcentaje(tramite);
+
+    if (tramite.estaVencido) {
+      return {
+        porcentaje: 100,
+        tipoProgreso: 'vencido',
+        descripcion: 'Trámite vencido',
+        tiempoRestante: 'Vencido'
+      };
+    }
+
+    if (tramite.estado?.nombre === 'Finalizado') {
+      return {
+        porcentaje: 100,
+        tipoProgreso: 'estado',
+        descripcion: 'Trámite completado',
+        tiempoRestante: 'Finalizado'
+      };
+    }
+
+    const tiempoRestante = this.formatearTiempoRestante(tramite);
+
+    return {
+      porcentaje,
+      tipoProgreso: 'temporal',
+      descripcion: `Progreso: ${porcentaje}%`,
+      tiempoRestante
+    };
+  }
+
+  private formatearTiempoRestante(tramite: MiTramite): string {
+    if (!tramite.fechaVencimiento) {
+      return 'Sin fecha límite';
+    }
+
+    const diasHabiles = this.getDiasHabilesRestantes(tramite.fechaVencimiento);
+
+    if (diasHabiles === null) {
+      return 'Sin fecha límite';
+    }
+
+    if (diasHabiles < 0) {
+      const diasVencido = Math.abs(diasHabiles);
+      return `Vencido hace ${diasVencido} día${diasVencido === 1 ? '' : 's'} hábil${diasVencido === 1 ? '' : 'es'}`;
+    }
+
+    if (diasHabiles === 0) {
+      // Verificar si es el último día
+      const ahora = new Date();
+      const fechaVencimiento = new Date(tramite.fechaVencimiento);
+      ahora.setHours(0, 0, 0, 0);
+      fechaVencimiento.setHours(0, 0, 0, 0);
+
+      if (ahora.getTime() === fechaVencimiento.getTime()) {
+        const horasRestantes = 24 - new Date().getHours();
+        return `${horasRestantes} hora${horasRestantes === 1 ? '' : 's'} restante${horasRestantes === 1 ? '' : 's'} (último día)`;
+      }
+      return 'Vence hoy';
+    }
+
+    return `${diasHabiles} día${diasHabiles === 1 ? '' : 's'} hábil${diasHabiles === 1 ? '' : 'es'} restante${diasHabiles === 1 ? '' : 's'}`;
   }
 
   getTramitesVencidos(): number {
@@ -1330,7 +1432,6 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
     const vencidos = this.getTramitesVencidos();
     const finalizados = this.estadisticas.finalizado;
 
-    // Sumar vencidos a los finalizados para mostrar como procesados
     return finalizados + vencidos;
   }
 
@@ -1452,11 +1553,10 @@ export class MisTramitesComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Método para convertir MiTramite a formato compatible con el modal de editar
   getTramiteForEdit(): any {
     if (!this.tramiteSeleccionado) return null;
 
-    // Crear un objeto compatible con la interfaz Tramite esperada por el modal
+
     return {
       id: this.tramiteSeleccionado.id,
       codigo: this.tramiteSeleccionado.codigo,

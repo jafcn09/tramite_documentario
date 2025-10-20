@@ -379,6 +379,7 @@
   transition: all 0.2s ease;
   border: 1px solid #e5e7eb;
   position: relative;
+  min-height: 200px;
 }
 
 .tramite-card:active {
@@ -496,18 +497,19 @@
 
 .progress-text {
   font-size: 11px;
-  font-weight: 500;
-  color: #64748b;
+  font-weight: 600;
+  color: #475569;
 }
 
 .card-actions {
-  padding: 12px;
+  padding: 12px 12px 16px 12px;
   background: #f8fafc;
   display: flex;
   justify-content: space-evenly;
   align-items: center;
   border-top: 1px solid #e5e7eb;
   gap: 8px;
+  margin-bottom: 8px;
 }
 
 .btn-action {
@@ -547,17 +549,123 @@
   box-shadow: none !important;
 }
 
-.download-count {
+/* Download counter - Cards view (larger buttons) */
+.tramites-grid .btn-action.download {
+  position: relative;
+  overflow: visible;
+}
+
+.tramites-grid .btn-action .download-count {
   position: absolute;
   top: -4px;
   right: -4px;
-  background: #10b981;
+  background: linear-gradient(135deg, #64748b 0%, #475569 100%);
   color: white;
-  font-size: 10px;
-  font-weight: 600;
-  padding: 2px 5px;
-  border-radius: 10px;
-  line-height: 1;
+  font-size: 9px;
+  font-weight: 500;
+  padding: 2px 4px;
+  border-radius: 8px;
+  line-height: 1.2;
+  z-index: 2;
+  min-width: 14px;
+  text-align: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  border: 1.5px solid white;
+  transition: all 0.2s ease;
+}
+
+.tramites-grid .btn-action.download:hover .download-count {
+  background: linear-gradient(135deg, #475569 0%, #334155 100%);
+  transform: scale(1.05);
+}
+
+/* Download counter - Table view (smaller buttons) */
+.table-actions .btn-mini.download {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  padding: 0 2px;
+  overflow: hidden;
+}
+
+.table-actions .btn-mini .download-count {
+  position: static;
+  background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+  color: white;
+  font-size: 9px;
+  font-weight: 500;
+  padding: 2px 4px;
+  border-radius: 5px;
+  line-height: 1.1;
+  min-width: 14px;
+  text-align: center;
+  margin-left: 2px;
+  display: inline-block;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+  border: 0.5px solid rgba(255, 255, 255, 0.2);
+  flex-shrink: 0;
+}
+
+.table-actions .btn-mini.download:hover .download-count {
+  background: linear-gradient(135deg, #4b5563 0%, #374151 100%);
+}
+
+/* Responsive improvements for mobile */
+@media (max-width: 768px) {
+  .tramites-grid .btn-action.download {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+  }
+
+  .tramites-grid .btn-action .download-count {
+    position: static;
+    font-size: 8px;
+    padding: 1px 3px;
+    min-width: 12px;
+    border-radius: 6px;
+    margin-left: 2px;
+  }
+
+  .table-actions .btn-mini .download-count {
+    font-size: 8px;
+    padding: 1px 3px;
+    min-width: 12px;
+    border-radius: 4px;
+  }
+}
+
+@media (max-width: 480px) {
+  .tramites-grid .btn-action.download {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    padding: 0 8px;
+  }
+
+  .tramites-grid .btn-action .download-count {
+    position: static;
+    font-size: 7px;
+    padding: 1px 2px;
+    min-width: 10px;
+    border-radius: 4px;
+    margin-left: 1px;
+  }
+
+  .table-actions .btn-mini {
+    width: 30px;
+    height: 30px;
+  }
+
+  .table-actions .btn-mini .download-count {
+    font-size: 7px;
+    padding: 1px 2px;
+    min-width: 10px;
+  }
 }
 
 .btn-mini .badge {
@@ -625,28 +733,38 @@
 
 .vencimiento-indicator {
   position: absolute;
-  top: 12px;
-  right: 12px;
+  bottom: 12px;
+  left: 12px;
   background: #fef3c7;
   color: #78350f;
-  padding: 4px 8px;
-  border-radius: 8px;
-  font-size: 10px;
-  font-weight: 500;
+  padding: 6px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
   display: flex;
   align-items: center;
-  gap: 4px;
-  max-width: 45%;
+  gap: 6px;
+  max-width: calc(100% - 24px);
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .vencimiento-indicator.urgente {
   background: #fed7aa;
   color: #7c2d12;
+  animation: pulse 2s infinite;
 }
 
 .vencimiento-indicator.vencido {
-  background: #ef4444;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
   color: white;
+  animation: pulse 1.5s infinite;
+  box-shadow: 0 2px 12px rgba(239, 68, 68, 0.3);
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
 }
 
 .tramites-table {
@@ -874,19 +992,36 @@
   margin-bottom: 20px;
 }
 
-.info-section, .fechas-section, .descripcion-section, 
+.info-section, .fechas-section, .descripcion-section,
 .documentos-section, .asignacion-section, .calificacion-section, .progreso-section {
   background: #f8fafc;
   border-radius: 12px;
-  padding: 16px;
+  padding: 20px;
+  border: 1px solid #e2e8f0;
+  transition: all 0.2s ease;
+}
+
+.info-section:hover, .fechas-section:hover, .descripcion-section:hover,
+.documentos-section:hover, .asignacion-section:hover, .calificacion-section:hover, .progreso-section:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .info-section h4, .fechas-section h4, .descripcion-section h4,
 .documentos-section h4, .asignacion-section h4, .calificacion-section h4, .progreso-section h4 {
-  margin: 0 0 12px 0;
-  color: #334155;
-  font-size: 14px;
+  margin: 0 0 16px 0;
+  font-size: 16px;
   font-weight: 600;
+  color: #1e40af;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.info-section h4 i, .fechas-section h4 i, .descripcion-section h4 i,
+.documentos-section h4 i, .asignacion-section h4 i, .calificacion-section h4 i, .progreso-section h4 i {
+  color: #3b82f6;
+  font-size: 16px;
 }
 
 .info-item {
@@ -963,17 +1098,87 @@
 }
 
 .progress-bar-detail {
-  height: 6px;
+  height: 12px;
   background: #e5e7eb;
-  border-radius: 6px;
+  border-radius: 10px;
   overflow: hidden;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
+  border: 2px solid #f1f5f9;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.progress-container {
+  background: #f8fafc;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
 }
 
 .progress-text-detail {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.progress-percentage {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1e40af;
+}
+
+.progress-status {
+  font-size: 14px;
+  font-weight: 600;
+  color: #475569;
+  background: #e2e8f0;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+
+.progress-fill.progress-vencido {
+  background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%) !important;
+  animation: warning-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes progress-flow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+@keyframes warning-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.progress-info-detail {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.progress-description, .progress-time-remaining {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: 12px;
   color: #64748b;
-  text-align: center;
+  padding: 6px 8px;
+  background: #ffffff;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+}
+
+.progress-description i, .progress-time-remaining i {
+  color: #3b82f6;
+  font-size: 11px;
+}
+
+.progress-time-remaining {
+  justify-content: flex-end;
+  text-align: right;
 }
 
 .rating-section label,
@@ -1915,6 +2120,14 @@
 .tramites-count::after {
   content: '📊';
   font-size: 12px;
+}
+
+.workload-percentage {
+  font-size: 12px;
+  font-weight: 600;
+  color: #334155;
+  margin-top: 4px;
+  text-align: center;
 }
 
 .progress-bar {

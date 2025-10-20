@@ -23,6 +23,7 @@ import { NotificationDetailModalComponent } from '../notification-detail-modal/n
     </div>
 
  
+    <div *ngIf="mostrarDropdown" class="backdrop" (click)="cerrarDropdown()"></div>
     <div *ngIf="mostrarDropdown" class="dropdown">
 
       <div class="header">
@@ -124,18 +125,28 @@ import { NotificationDetailModalComponent } from '../notification-detail-modal/n
       text-align: center;
     }
 
+    .backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 999;
+    }
 
     .dropdown {
       position: fixed;
-      top: 60px;
-      right: 20px;
-      width: 300px;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 350px;
       max-width: calc(100vw - 40px);
       background: white;
       border: 1px solid #ddd;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      z-index: 1000;
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+      z-index: 1001;
     }
 
     
@@ -349,9 +360,11 @@ import { NotificationDetailModalComponent } from '../notification-detail-modal/n
 
     @media (max-width: 480px) {
       .dropdown {
-        right: 10px;
-        left: 10px;
-        width: auto;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: calc(100vw - 20px);
+        max-width: none;
       }
 
       .actions {

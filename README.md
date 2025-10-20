@@ -1,91 +1,80 @@
 # Sistema de Trámite Documentario - Frontend
 
-Desarrollado con Angular 18+ para gestión de trámites documentarios universitarios con sistema de roles diferenciados y notificaciones en tiempo real.
+Aplicación Angular 17 para gestión integral de trámites documentarios universitarios con sistema de roles, notificaciones en tiempo real y diseño responsive.
+## Tecnologías
+- **Angular 17.3.0** - Framework principal
+- **TypeScript 5.4.2** - Lenguaje de desarrollo
+- **Tailwind CSS** - Framework de estilos
+- **RxJS 7.8.0** - Programación reactiva
+- **FontAwesome 7.0.0** - Sistema de iconos
+- **WebSocket (STOMP)** - Comunicación en tiempo real
+- **Angular SSR** - Renderizado del lado del servidor
+## Características
+- Dashboards personalizados por tipo de usuario
+- Notificaciones en tiempo real vía WebSocket
+- Búsqueda pública de trámites por expediente
+- Gestión completa de documentos y archivos adjuntos
+- Diseño responsive mobile-first
+- Autenticación y autorización por rutas
+- Seguimiento de progreso de trámites con días hábiles
+- Sistema de descargas con contador visual
 
-## 🚀 Características
+## Prerrequisitos
 
-- **Sistema de roles**: ADMIN, ADMINISTRATIVO, USUARIO, ESTUDIANTE
-- **Dashboards personalizados** por tipo de usuario
-- **Notificaciones en tiempo real** vía WebSocket
-- **Búsqueda pública** de trámites por expediente
-- **Gestión completa** de documentos y archivos adjuntos
-- **Responsive design** mobile-first
+- Node.js 18+
+- npm 9+
+- Angular CLI 17.3.11+
 
-## 🛠️ Tecnologías
+## Instalación
 
-- **Angular 18+** - Framework principal
-- **Tailwind CSS** - Estilos y diseño
-- **TypeScript** - Tipado estático
-- **RxJS** - Programación reactiva
-- **WebSocket** - Comunicación en tiempo real
-- **FontAwesome** - Iconografía
-
-## 📋 Prerrequisitos
-
-- Node.js v18+
-- npm v9+
-- Angular CLI 18+
-
-## ⚙️ Instalación
-
-### 1. Clonar e instalar
+1. **Instalar dependencias**
 ```bash
-git clone <url-del-repositorio>
 cd tramite_documentario/front
 npm install
 ```
-
-### 2. Configurar entorno
-```typescript
-// src/environments/environment.ts
-export const environment = {
-  production: false,
-  apiUrl: 'http://localhost:8081/api'
-};
-```
-
-### 3. Ejecutar aplicación
+3. **Ejecutar aplicación**
 ```bash
 npm start
 ```
-
-### 4. Acceder al sistema
-```
-http://localhost:4200
-```
-
-## 📁 Estructura
+## Estructura del Proyecto
 
 ```
 src/app/
-├── admin/              # Dashboard administrativo
-├── administrativo/     # Panel staff administrativo
-├── usuario/           # Dashboard usuarios
-├── estudiante/        # Panel estudiantes
-├── features/          # Funcionalidades principales
-├── services/          # Servicios HTTP
-├── shared/            # Componentes compartidos
-├── guards/            # Protección de rutas
-└── models/           # Interfaces TypeScript
+├── admin/                    # Dashboard administrativo
+├── administrativo/           # Panel staff administrativo
+├── usuario/                  # Dashboard usuarios regulares
+├── estudiante/               # Panel estudiantes
+│   ├── dashboard/            # Dashboard principal estudiante
+│   ├── nuevo-tramite/        # Creación de trámites
+│   └── notificaciones/       # Sistema de notificaciones
+├── features/                 # Funcionalidades principales
+│   ├── mis-tramites/         # Gestión de trámites propios
+│   ├── bandeja-tramites/     # Bandeja administrativa
+│   └── tramites/             # Componentes de trámites
+├── services/                 # Servicios HTTP y lógica
+│   ├── auth.service.ts       # Autenticación
+│   ├── mis-tramites.service.ts # Gestión de trámites
+│   └── notification.service.ts # WebSocket notifications
+├── shared/                   # Componentes compartidos
+├── guards/                   # Protección de rutas
+├── models/                   # Interfaces TypeScript
+└── environments/             # Configuraciones de entorno
 ```
 
-## 🚀 Build y Despliegue
 
-### Desarrollo
-```bash
-npm start         
-npm run build      
-npm run lint        
-```
+## Configuración de Build
 
-### Producción
-```bash
-npm run build
-# Archivos en dist/ listos para servidor web
-```
+- **Desarrollo**: `ng serve` con hot reload
+- **Producción**: Build optimizado con tree-shaking y minificación
+- **SSR**: Soporte para renderizado del lado del servidor
 
-## 📄 Licencia
+## Servicios Principales
 
-© 2025 Universidad Nacional de Tumbes. Todos los derechos reservados.
+- **AuthService**: Manejo de autenticación y roles
+- **MisTramitesService**: CRUD de trámites propios
+- **NotificationService**: WebSocket para notificaciones
+- **TramiteService**: Gestión general de trámites
 
-**Desarrollado por Jhafet Cánepa**
+
+## Universidad Nacional de Tumbes
+**Desarrollado por Jhafet Cánepa - 2025**

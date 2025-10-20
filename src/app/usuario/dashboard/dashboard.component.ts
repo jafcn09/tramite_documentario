@@ -152,9 +152,9 @@ import { environment } from '../../../environments/environment';
               </div>
               <div class="tramite-progress">
                 <div class="progress-bar">
-                  <div class="progress-fill" [style.width.%]="tramite.progreso"></div>
+                  <div class="progress-fill" [style.width.%]="getValidatedProgress(tramite)"></div>
                 </div>
-                <span class="progress-text">{{ tramite.progreso }}%</span>
+                <span class="progress-text">{{ getValidatedProgress(tramite) }}%</span>
               </div>
             </div>
           </div>
@@ -729,7 +729,7 @@ export class UsuarioDashboardComponent implements OnInit {
             fecha: this.formatDate(tramite.fechaCreacion),
             tipo: tramite.tipoTramite?.nombre || 'Sin tipo',
         
-            progreso: estaVencido ? 100 : this.calculateProgreso(tramite.estado?.nombre)
+            progreso: estaVencido ? 100 : tramite.progreso
           };
         });
       },
@@ -760,22 +760,6 @@ export class UsuarioDashboardComponent implements OnInit {
     return clases[estado] || '';
   }
 
-  calculateProgreso(estado: string): number {
-    const progresoMap: { [key: string]: number } = {
-      'Borrador': 10,
-      'Enviado': 20,
-      'En Revisión': 35,
-      'Derivado': 45,
-      'En Proceso': 60,
-      'Aprobado': 75,
-      'Finalizado': 100,
-      'Observado': 30,
-      'Rechazado': 0,
-      'Archivado': 100,
-      'Cancelado': 0
-    };
-    return progresoMap[estado] || 50;
-  }
 
   formatTimeAgo(dateStr: string): string {
     if (!dateStr) return 'Fecha desconocida';
@@ -820,5 +804,16 @@ export class UsuarioDashboardComponent implements OnInit {
 
   viewNotifications() {
     this.router.navigate(['/usuario/notificaciones']);
+  }
+
+  getValidatedProgress(tramite: any): number {
+    if (!tramite || tramite.progreso === undefined || tramite.progreso === null) return 0;
+
+    const progreso = tramite.progreso;
+    if (isNaN(progreso)) {
+      return 0;
+    }
+
+    return Math.max(0, Math.min(100, progreso));
   }
 }

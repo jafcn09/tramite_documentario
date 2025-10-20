@@ -922,20 +922,13 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
 
   // Métodos de control de permisos basados en asignación
 
-  /**
-   * Verifica si el usuario actual puede asignarse a sí mismo un trámite
-   * Solo usuarios ADMINISTRATIVO y ADMIN pueden asignarse trámites
-   */
+  
   puedeAsignarseAsiMismo(): boolean {
     const userRole = this.authService.currentUserValue?.role?.name;
     return userRole === 'ADMINISTRATIVO' || userRole === 'ADMIN';
   }
 
-  /**
-   * Verifica si el usuario actual puede derivar trámites
-   * Solo usuarios ADMINISTRATIVO y ADMIN pueden derivar
-   * Los ESTUDIANTES nunca pueden derivar
-   */
+  
   puedeDerivarTramite(): boolean {
     const userRole = this.authService.currentUserValue?.role?.name;
 
@@ -960,11 +953,6 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
     return true;
   }
 
-  /**
-   * Verifica si el usuario actual puede aprobar trámites
-   * Solo usuarios ADMINISTRATIVO y ADMIN pueden aprobar
-   * Los ESTUDIANTES nunca pueden aprobar
-   */
   puedeAprobarTramite(): boolean {
     const userRole = this.authService.currentUserValue?.role?.name;
 
@@ -980,11 +968,7 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
     return userRole === 'ADMINISTRATIVO' || userRole === 'ADMIN';
   }
 
-  /**
-   * Verifica si el usuario actual puede rechazar trámites
-   * Solo usuarios ADMINISTRATIVO y ADMIN pueden rechazar
-   * Los ESTUDIANTES nunca pueden rechazar
-   */
+
   puedeRechazarTramite(): boolean {
     const userRole = this.authService.currentUserValue?.role?.name;
 
@@ -1000,14 +984,10 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
     return userRole === 'ADMINISTRATIVO' || userRole === 'ADMIN';
   }
 
-  /**
-   * Verifica si el usuario actual puede descargar documentos de trámites
-   * Los ESTUDIANTES no pueden descargar documentos
-   */
   puedeDescargarDocumentos(): boolean {
     const userRole = this.authService.currentUserValue?.role?.name;
 
-    // ESTUDIANTES no pueden descargar
+   
     if (userRole === 'ESTUDIANTE') {
       this.toastService.warning(
         'Acción no permitida',
@@ -1019,24 +999,18 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
     return true;
   }
 
-  /**
-   * Verifica si el usuario puede ver acciones rápidas en las notificaciones
-   * Los ESTUDIANTES tienen acceso limitado
-   */
+ 
   puedeVerAccionesRapidas(accion: 'derivar' | 'responder' | 'aprobar' | 'rechazar' | 'descargar'): boolean {
     const userRole = this.authService.currentUserValue?.role?.name;
 
-    // ESTUDIANTES no pueden realizar ninguna acción administrativa
     if (userRole === 'ESTUDIANTE') {
       return false;
     }
 
-    // USUARIO solo puede ver sus propios trámites
-    if (userRole === 'USUARIO') {
-      return accion === 'responder'; // Solo pueden responder a consultas sobre sus trámites
-    }
 
-    // ADMINISTRATIVO y ADMIN pueden ver todas las acciones
+    if (userRole === 'USUARIO') {
+      return accion === 'responder'; 
+    }
     return userRole === 'ADMINISTRATIVO' || userRole === 'ADMIN';
   }
 

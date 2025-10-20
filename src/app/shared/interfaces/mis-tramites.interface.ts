@@ -56,6 +56,7 @@ export interface MiTramite {
   contadorPorProcesar?: number;
   estaVencido?: boolean;
   diasRestantes?: number;
+  progreso?: number;
 }
 
 export interface DocumentoMiTramite {

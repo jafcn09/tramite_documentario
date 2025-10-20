@@ -1,19 +1,13 @@
 .dashboard-container {
-  padding: 20px;
+  padding: 0;
   height: 100%;
   overflow-y: auto;
+  background: #f8f9fc;
 }
 
+/* Remove welcome banner since it's now in the header */
 .welcome-banner {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 16px;
-  padding: 30px;
-  color: white;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
-  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+  display: none;
 }
 
 .welcome-content h1 {
@@ -33,27 +27,53 @@
   opacity: 0.2;
 }
 
+.stats-section {
+  margin-bottom: 3rem;
+  padding: 0 2rem;
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.section-header h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 0.5rem 0;
+}
+
+.section-header p {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0;
+}
+
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
-  margin-bottom: 30px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  width: 100%;
+  margin: 0;
 }
 
 .stat-card {
   background: white;
-  border-radius: 12px;
-  padding: 25px;
+  border-radius: 16px;
+  padding: 1.5rem;
   display: flex;
   align-items: center;
-  gap: 20px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  gap: 1rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
 }
 
 .stat-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  border-color: rgba(102, 126, 234, 0.2);
 }
 
 .stat-icon {
@@ -99,15 +119,22 @@
 .content-grid {
   display: grid;
   grid-template-columns: 2fr 1fr;
-  gap: 20px;
-  margin-bottom: 30px;
+  gap: 1.5rem;
+  margin: 0 0 2rem 0;
 }
 
 .card {
   background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border-radius: 16px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.05);
   overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  border-color: rgba(102, 126, 234, 0.2);
 }
 
 .card-header {
@@ -317,7 +344,9 @@
 }
 
 .my-recent-tramites {
-  margin-bottom: 30px;
+  margin: 0 0 2rem 0;
+  width: 100%;
+  padding: 0 2rem;
 }
 
 .tramites-list {
@@ -522,66 +551,113 @@
 
 @media (max-width: 768px) {
   .dashboard-container {
-    padding: 15px;
-  }
-
-  .welcome-banner {
-    flex-direction: column;
-    text-align: center;
-    padding: 25px;
-  }
-
-  .welcome-icon {
-    margin-top: 15px;
+    background: #f8f9fc;
   }
 
   .stats-grid {
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 15px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin: 1rem;
+    margin-bottom: 1.5rem;
   }
 
   .content-grid {
     grid-template-columns: 1fr;
-    gap: 15px;
+    gap: 1rem;
+    margin: 0 1rem 1.5rem 1rem;
+  }
+
+  .my-recent-tramites {
+    margin: 0 1rem 1.5rem 1rem;
   }
 
   .actions-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
+    gap: 0.75rem;
   }
 
   .action-btn {
-    padding: 15px;
+    padding: 1rem;
+    font-size: 0.9rem;
+  }
+
+  .stat-card {
+    padding: 1rem;
+    gap: 0.75rem;
+  }
+
+  .stat-icon {
+    width: 48px;
+    height: 48px;
+    font-size: 20px;
+  }
+
+  .stat-content h3 {
+    font-size: 1.5rem;
   }
 }
 
 @media (max-width: 480px) {
   .stats-grid {
     grid-template-columns: 1fr;
-    gap: 10px;
+    gap: 0.75rem;
+    margin: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .content-grid {
+    margin: 0 0.75rem 1rem 0.75rem;
+  }
+
+  .my-recent-tramites {
+    margin: 0 0.75rem 1rem 0.75rem;
   }
 
   .actions-grid {
     grid-template-columns: 1fr;
-    gap: 10px;
+    gap: 0.75rem;
   }
 
   .action-btn {
     flex-direction: row;
     justify-content: flex-start;
-    gap: 15px;
-    padding: 15px;
+    gap: 1rem;
+    padding: 1rem;
+    text-align: left;
   }
 
   .action-btn i {
-    font-size: 24px;
+    font-size: 22px;
   }
 
   .stat-card {
-    padding: 20px;
+    padding: 1rem;
+    gap: 1rem;
   }
 
-  .info-cards {
-    grid-template-columns: 1fr;
+  .stat-icon {
+    width: 44px;
+    height: 44px;
+    font-size: 18px;
+  }
+
+  .stat-content h3 {
+    font-size: 1.25rem;
+  }
+
+  .stat-content p {
+    font-size: 0.8rem;
+  }
+
+  .card-header {
+    padding: 1rem 1.25rem;
+  }
+
+  .card-content {
+    padding: 1.25rem;
+  }
+
+  .tramite-item {
+    padding: 1rem;
   }
 }

@@ -1,129 +1,44 @@
 <div class="dashboard-container">
-  <div class="welcome-banner">
-    <div class="welcome-content">
-      <h1>¡Hola, {{ currentUser?.nombre }}! 👋</h1>
-      <p>Bienvenido a tu portal estudiantil</p>
-    </div>
-    <div class="welcome-icon">
-      <i class="fas fa-user-graduate"></i>
-    </div>
-  </div>
+  <app-student-dashboard-layout>
 
-  <div class="stats-grid">
-    <div class="stat-card">
-      <div class="stat-icon sent">
-        <i class="fas fa-paper-plane"></i>
+    <!-- Statistics Cards -->
+    <section class="stats-section">
+      <div class="section-header">
+        <h2>Resumen de Actividad</h2>
+        <p>Estado actual de tus trámites</p>
       </div>
-      <div class="stat-content">
-        <h3>{{ stats.enviados }}</h3>
-        <p>Trámites Enviados</p>
-      </div>
-    </div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon processing">
+            <i class="fas fa-clock"></i>
+          </div>
+          <div class="stat-content">
+            <h3>{{ stats.enProceso }}</h3>
+            <p>En Proceso</p>
+          </div>
+        </div>
 
-    <div class="stat-card">
-      <div class="stat-icon processing">
-        <i class="fas fa-spinner"></i>
-      </div>
-      <div class="stat-content">
-        <h3>{{ stats.enProceso }}</h3>
-        <p>En Proceso</p>
-      </div>
-    </div>
+        <div class="stat-card">
+          <div class="stat-icon completed">
+            <i class="fas fa-check-circle"></i>
+          </div>
+          <div class="stat-content">
+            <h3>{{ stats.completados }}</h3>
+            <p>Completados</p>
+          </div>
+        </div>
 
-    <div class="stat-card">
-      <div class="stat-icon completed">
-        <i class="fas fa-check-circle"></i>
-      </div>
-      <div class="stat-content">
-        <h3>{{ stats.completados }}</h3>
-        <p>Completados</p>
-      </div>
-    </div>
-
-    <div class="stat-card">
-      <div class="stat-icon month">
-        <i class="fas fa-calendar-alt"></i>
-      </div>
-      <div class="stat-content">
-        <h3>{{ stats.esteMes }}</h3>
-        <p>Este Mes</p>
-      </div>
-    </div>
-  </div>
-
-  <div class="content-grid">
-    <div class="card recent-activity">
-      <div class="card-header">
-        <h3><i class="fas fa-history"></i> Actividad Reciente</h3>
-      </div>
-      <div class="card-content">
-        <div class="activity-list-container">
-          <div class="activity-list">
-            <div *ngFor="let activity of recentActivities" class="activity-item">
-              <div class="activity-icon" [class]="activity.type">
-                <i [class]="activity.icon"></i>
-              </div>
-              <div class="activity-content">
-                <p>{{ activity.description }}</p>
-                <div class="activity-meta">
-                  <span class="activity-status"
-                        [class.status-completed]="activity.status === 'completed'"
-                        [class.status-pending]="activity.status === 'pending'"
-                        [class.status-rejected]="activity.status === 'rejected'"
-                        *ngIf="activity.status">{{ getStatusLabel(activity.status) }}</span>
-                  <span class="activity-time">{{ activity.time }}</span>
-                </div>
-              </div>
-            </div>
-
-            <div *ngIf="recentActivities.length === 0 && !loadingActivities" class="activity-item empty-state">
-              <div class="activity-icon empty">
-                <i class="fas fa-inbox"></i>
-              </div>
-              <div class="activity-content">
-                <p>No hay actividades recientes</p>
-              </div>
-            </div>
-
-            <div *ngIf="loadingActivities" class="activity-item loading-item">
-              <div class="activity-icon loading">
-                <i class="fas fa-spinner fa-spin"></i>
-              </div>
-              <div class="activity-content">
-                <p>Cargando actividades...</p>
-              </div>
-            </div>
+        <div class="stat-card">
+          <div class="stat-icon month">
+            <i class="fas fa-calendar-alt"></i>
+          </div>
+          <div class="stat-content">
+            <h3>{{ stats.esteMes }}</h3>
+            <p>Este Mes</p>
           </div>
         </div>
       </div>
-    </div>
-
-    <div class="card quick-actions">
-      <div class="card-header">
-        <h3><i class="fas fa-bolt"></i> Acciones Rápidas</h3>
-      </div>
-      <div class="card-content">
-        <div class="actions-grid">
-          <button class="action-btn" (click)="createNewTramite()">
-            <i class="fas fa-plus-circle"></i>
-            <span>Nueva Solicitud</span>
-          </button>
-          <button class="action-btn" (click)="viewMyTramites()">
-            <i class="fas fa-folder-open"></i>
-            <span>Mis Trámites</span>
-          </button>
-          <button class="action-btn" (click)="viewNotifications()">
-            <i class="fas fa-bell"></i>
-            <span>Notificaciones</span>
-          </button>
-          <button class="action-btn" (click)="consultarEstado()">
-            <i class="fas fa-search"></i>
-            <span>Consultar Estado</span>
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
+    </section>
 
   <div class="card my-recent-tramites">
     <div class="card-header">
@@ -148,9 +63,9 @@
           </div>
           <div class="tramite-progress">
             <div class="progress-bar">
-              <div class="progress-fill" [style.width.%]="tramite.progreso"></div>
+              <div class="progress-fill" [style.width.%]="getValidatedProgress(tramite)"></div>
             </div>
-            <span class="progress-text">{{ tramite.progreso }}%</span>
+            <span class="progress-text">{{ getValidatedProgress(tramite) }}%</span>
           </div>
         </div>
       </div>
@@ -162,5 +77,5 @@
     </div>
   </div>
 
-
+  </app-student-dashboard-layout>
 </div>
