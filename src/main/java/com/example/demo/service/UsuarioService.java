@@ -9,7 +9,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.PageRequest;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -579,32 +578,21 @@ public class UsuarioService {
     
     private void sendPasswordResetNotification(Usuario usuario, String newPassword, String reason) {
         try {
-            SimpleMailMessage message = new SimpleMailMessage();
-            message.setTo(usuario.getCorreo());
-            message.setSubject("Credencial Restablecida por Administrador");
-            message.setText(String.format(
-                "Hola %s %s,\n\n" +
-                "Tu credencial ha sido restablecida por un administrador del sistema.\n\n" +
-                "Tu nueva credencial es: %s\n\n" +
-                "%s\n\n" +
-                "Motivo: %s\n\n" +
-                "Fecha: %s\n\n" +
-                "Por favor, cambia esta credencial despues de iniciar sesión.\n\n" +
-                "Saludos,\n" +
-                "El equipo del sistema",
-                usuario.getNombre(),
-                usuario.getApellidos(),
-                newPassword,
-                usuario.isMustChangePassword() ? 
-                    "IMPORTANTE: Debes cambiar esta credencial en tu próximo inicio de sesión." : 
-                    "Puedes usar esta credencial para iniciar sesión normalmente.",
-                reason != null ? reason : "No especificado",
-                LocalDateTime.now().toString()
-            ));
-            
+            MimeMessage message = mailSender.createMimeMessage();
+            message.setRecipients(MimeMessage.RecipientType.TO, usuario.getCorreo());
+            message.setSubject("Credencial Restablecida - Universidad Nacional de Tumbes", "UTF-8");
+            message.setContent(
+                emailTemplateService.createPasswordResetTemplate(
+                    usuario,
+                    newPassword,
+                    reason,
+                    usuario.isMustChangePassword()
+                ),
+                "text/html; charset=utf-8"
+            );
             mailSender.send(message);
-        } catch (Exception e) {
-            System.err.println("Failed to send password reset notification: " + e.getMessage());
+        } catch (MessagingException e) {
+            throw new RuntimeException("Error al enviar notificación de restablecimiento de credencial", e);
         }
     }
     

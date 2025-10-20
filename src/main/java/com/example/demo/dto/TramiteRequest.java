@@ -20,6 +20,7 @@ public class TramiteRequest {
     private String prioridad;
     private String numeroExpediente;
     private String observaciones;
+    private Long areaOrigenId;
     private Long areaDestinoId;
     private Long usuarioAsignadoId;
     private String documentosAdjuntos;

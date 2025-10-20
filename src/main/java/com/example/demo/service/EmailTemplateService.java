@@ -2075,4 +2075,379 @@ public class EmailTemplateService {
             LocalDateTime.now().getYear()
         );
     }
+
+    public String createPasswordResetTemplate(Usuario usuario, String newPassword, String reason, boolean mustChangePassword) {
+        return String.format("""
+            <!DOCTYPE html>
+            <html lang="es">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Credencial Restablecida - Universidad Nacional de Tumbes</title>
+                <style>
+                    * {
+                        margin: 0;
+                        padding: 0;
+                        box-sizing: border-box;
+                    }
+
+                    body {
+                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                        line-height: 1.6;
+                        color: #2c3e50;
+                        background: #f1f5f9;
+                        margin: 0;
+                        padding: 20px;
+                    }
+
+                    .email-container {
+                        max-width: 600px;
+                        margin: 0 auto;
+                        background: #ffffff;
+                        border-radius: 12px;
+                        overflow: hidden;
+                        box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+                        border: 1px solid #e2e8f0;
+                    }
+
+                    .header {
+                        background: linear-gradient(135deg, #1e40af 0%%, #3b82f6 100%%);
+                        color: white;
+                        padding: 30px;
+                        text-align: center;
+                        position: relative;
+                    }
+
+                    .header::before {
+                        content: '';
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        right: 0;
+                        bottom: 0;
+                        background: url('data:image/svg+xml,<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd"><g fill="%%23ffffff" fill-opacity="0.05"><circle cx="36" cy="24" r="2"/><circle cx="6" cy="44" r="2"/><circle cx="36" cy="4" r="2"/></g></g></svg>');
+                        opacity: 0.4;
+                    }
+
+                    .logo {
+                        width: 60px;
+                        height: 60px;
+                        background: rgba(255, 255, 255, 0.15);
+                        border-radius: 50%%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        margin: 0 auto 15px;
+                        font-size: 24px;
+                        font-weight: bold;
+                        position: relative;
+                        z-index: 1;
+                    }
+
+                    .header h1 {
+                        font-size: 24px;
+                        font-weight: 600;
+                        margin-bottom: 8px;
+                        position: relative;
+                        z-index: 1;
+                    }
+
+                    .header p {
+                        font-size: 16px;
+                        opacity: 0.9;
+                        font-weight: 400;
+                        position: relative;
+                        z-index: 1;
+                    }
+
+                    .content {
+                        padding: 35px 30px;
+                    }
+
+                    .greeting {
+                        margin-bottom: 25px;
+                    }
+
+                    .greeting h2 {
+                        color: #1e293b;
+                        font-size: 20px;
+                        font-weight: 600;
+                        margin-bottom: 8px;
+                    }
+
+                    .greeting p {
+                        color: #64748b;
+                        font-size: 16px;
+                        line-height: 1.5;
+                    }
+
+                    .main-message {
+                        background: #f8fafc;
+                        border-left: 4px solid #3b82f6;
+                        border-radius: 8px;
+                        padding: 20px;
+                        margin: 25px 0;
+                    }
+
+                    .main-message p {
+                        color: #374151;
+                        font-size: 16px;
+                        line-height: 1.6;
+                        margin-bottom: 15px;
+                    }
+
+                    .main-message p:last-child {
+                        margin-bottom: 0;
+                    }
+
+                    .credential-box {
+                        background: linear-gradient(135deg, #f0f9ff 0%%, #e0f2fe 100%%);
+                        border: 2px solid #0ea5e9;
+                        border-radius: 12px;
+                        padding: 25px;
+                        text-align: center;
+                        margin: 25px 0;
+                        position: relative;
+                    }
+
+                    .credential-box::before {
+                        content: '🔑';
+                        position: absolute;
+                        top: -15px;
+                        left: 50%%;
+                        transform: translateX(-50%%);
+                        background: white;
+                        padding: 8px 12px;
+                        border-radius: 50%%;
+                        font-size: 18px;
+                        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                    }
+
+                    .credential-label {
+                        color: #0c4a6e;
+                        font-size: 14px;
+                        font-weight: 600;
+                        text-transform: uppercase;
+                        letter-spacing: 0.5px;
+                        margin-bottom: 10px;
+                    }
+
+                    .credential-value {
+                        background: #ffffff;
+                        color: #1e293b;
+                        font-size: 18px;
+                        font-weight: 700;
+                        font-family: 'Courier New', monospace;
+                        padding: 15px 20px;
+                        border-radius: 8px;
+                        border: 2px solid #e2e8f0;
+                        letter-spacing: 1px;
+                        word-break: break-all;
+                        box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+                    }
+
+                    .warning-box {
+                        background: linear-gradient(135deg, #fef3c7 0%%, #fde68a 100%%);
+                        border: 2px solid #f59e0b;
+                        border-radius: 12px;
+                        padding: 20px;
+                        margin: 25px 0;
+                        display: flex;
+                        align-items: flex-start;
+                        gap: 15px;
+                    }
+
+                    .warning-icon {
+                        font-size: 24px;
+                        color: #d97706;
+                        flex-shrink: 0;
+                        margin-top: 2px;
+                    }
+
+                    .warning-content h3 {
+                        color: #92400e;
+                        font-size: 16px;
+                        font-weight: 600;
+                        margin-bottom: 8px;
+                    }
+
+                    .warning-content p {
+                        color: #78350f;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        margin: 0;
+                    }
+
+                    .info-grid {
+                        display: grid;
+                        grid-template-columns: 1fr 1fr;
+                        gap: 20px;
+                        margin: 25px 0;
+                    }
+
+                    .info-card {
+                        background: #f8fafc;
+                        border: 1px solid #e2e8f0;
+                        border-radius: 8px;
+                        padding: 20px;
+                    }
+
+                    .info-card h4 {
+                        color: #374151;
+                        font-size: 14px;
+                        font-weight: 600;
+                        margin-bottom: 8px;
+                        text-transform: uppercase;
+                        letter-spacing: 0.5px;
+                    }
+
+                    .info-card p {
+                        color: #6b7280;
+                        font-size: 14px;
+                        margin: 0;
+                        word-break: break-word;
+                    }
+
+                    .action-button {
+                        display: inline-block;
+                        background: linear-gradient(135deg, #3b82f6 0%%, #2563eb 100%%);
+                        color: white;
+                        text-decoration: none;
+                        padding: 14px 28px;
+                        border-radius: 8px;
+                        font-weight: 600;
+                        font-size: 16px;
+                        text-align: center;
+                        margin: 25px auto;
+                        display: block;
+                        max-width: 200px;
+                        transition: all 0.3s ease;
+                        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+                    }
+
+                    .action-button:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 6px 18px rgba(59, 130, 246, 0.4);
+                    }
+
+                    .footer {
+                        background: #1f2937;
+                        color: white;
+                        padding: 25px 30px;
+                        text-align: center;
+                    }
+
+                    .footer p {
+                        margin: 0 0 8px 0;
+                        font-size: 14px;
+                        opacity: 0.9;
+                    }
+
+                    .footer .year {
+                        font-size: 12px;
+                        opacity: 0.7;
+                        margin-top: 15px;
+                    }
+
+                    @media (max-width: 600px) {
+                        body {
+                            padding: 10px;
+                        }
+
+                        .email-container {
+                            border-radius: 8px;
+                        }
+
+                        .header,
+                        .content,
+                        .footer {
+                            padding: 20px;
+                        }
+
+                        .info-grid {
+                            grid-template-columns: 1fr;
+                            gap: 15px;
+                        }
+
+                        .credential-value {
+                            font-size: 16px;
+                            padding: 12px 15px;
+                        }
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="email-container">
+                    <div class="header">
+                        <div class="logo">🎓</div>
+                        <h1>Credencial Restablecida</h1>
+                        <p>Sistema de Trámites Documentarios</p>
+                    </div>
+
+                    <div class="content">
+                        <div class="greeting">
+                            <h2>Hola, %s %s</h2>
+                            <p>Tu credencial de acceso ha sido restablecida exitosamente por un administrador del sistema.</p>
+                        </div>
+
+                        <div class="main-message">
+                            <p><strong>¿Qué significa esto?</strong></p>
+                            <p>Un administrador ha generado una nueva credencial para tu cuenta con el propósito de restaurar tu acceso al sistema.</p>
+                        </div>
+
+                        <div class="credential-box">
+                            <div class="credential-label">Nueva Credencial</div>
+                            <div class="credential-value">%s</div>
+                        </div>
+
+                        %s
+
+                        <div class="info-grid">
+                            <div class="info-card">
+                                <h4>Motivo</h4>
+                                <p>%s</p>
+                            </div>
+                            <div class="info-card">
+                                <h4>Fecha de Restablecimiento</h4>
+                                <p>%s</p>
+                            </div>
+                        </div>
+
+                        <a href="%s" class="action-button">Iniciar Sesión</a>
+
+                        <div class="main-message">
+                            <p><strong>Recomendaciones de seguridad:</strong></p>
+                            <p>• Utiliza esta credencial para acceder al sistema inmediatamente</p>
+                            <p>• Mantén tu credencial segura y no la compartas</p>
+                            <p>• Si tienes alguna duda, contacta al administrador del sistema</p>
+                        </div>
+                    </div>
+
+                    <div class="footer">
+                        <p><strong>Universidad Nacional de Tumbes</strong></p>
+                        <p>Sistema de Trámites Documentarios</p>
+                        <p class="year">© %d - Todos los derechos reservados</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """,
+            usuario.getNombre(),
+            usuario.getApellidos(),
+            newPassword,
+            mustChangePassword ? """
+                <div class="warning-box">
+                    <div class="warning-icon">⚠️</div>
+                    <div class="warning-content">
+                        <h3>Cambio Obligatorio de Credencial</h3>
+                        <p>Debes cambiar esta credencial en tu próximo inicio de sesión por motivos de seguridad.</p>
+                    </div>
+                </div>
+                """ : "",
+            reason != null && !reason.trim().isEmpty() ? reason : "Restablecimiento administrativo",
+            LocalDateTime.now().format(DATE_FORMATTER),
+            appUrl,
+            LocalDateTime.now().getYear()
+        );
+    }
 }

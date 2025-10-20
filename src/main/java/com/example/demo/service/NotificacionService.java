@@ -449,7 +449,7 @@ public class NotificacionService {
             .prioridad(notificacion.getPrioridad().name())
             .esLeida(notificacion.getEsLeida())
             .rutaDestino(notificacion.getRutaDestino())
-            .referenciaId(notificacion.getTramiteRelacionadoId()) // Mapear tramiteRelacionadoId como referenciaId
+            .referenciaId(notificacion.getTramiteRelacionadoId()) 
             .fechaCreacion(notificacion.getFechaCreacion())
             .fechaLectura(notificacion.getFechaLectura())
             .fechaVencimiento(notificacion.getFechaVencimiento())

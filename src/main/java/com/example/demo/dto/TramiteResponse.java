@@ -20,7 +20,7 @@ public class TramiteResponse {
     private String titulo;
     private String descripcion;
     private String tipo;
-    private String estado;
+    private EstadoInfo estado;
     private String prioridad;
     private String numeroExpediente;
     private String observaciones;
@@ -43,6 +43,7 @@ public class TramiteResponse {
     private LocalDateTime fechaActualizacion;
     private LocalDateTime fechaVencimiento;
     private LocalDateTime fechaCompletado;
+    private Integer progreso;
 
     @JsonProperty("documentos")
     private List<DocumentoAdjunto> documentosAdjuntos;
@@ -83,5 +84,13 @@ public class TramiteResponse {
         private LocalDateTime fechaSubida;
         private String contenido;
         private String descripcion;
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class EstadoInfo {
+        private String nombre;
     }
 }

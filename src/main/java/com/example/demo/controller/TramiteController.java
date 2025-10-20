@@ -134,9 +134,9 @@ public class TramiteController {
         return ResponseEntity.ok(tramites);
     }
     
-    // Crear trámite (USUARIO y ADMIN)
+    // Crear trámite (USUARIO, ADMIN y ESTUDIANTE)
     @PostMapping(consumes = {"multipart/form-data"})
-    @PreAuthorize("hasRole('USUARIO') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('USUARIO') || hasRole('ADMIN') || hasRole('ESTUDIANTE')")
     public ResponseEntity<TramiteResponse> crearTramite(
             @RequestParam("tipoTramiteId") Long tipoTramiteId,
             @RequestParam("asunto") String asunto,
@@ -519,17 +519,26 @@ public class TramiteController {
 
 
     @PostMapping("/con-archivos")
-    @PreAuthorize("hasRole('USUARIO') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('USUARIO') || hasRole('ADMIN') || hasRole('ESTUDIANTE')")
     public ResponseEntity<TramiteResponse> crearTramiteConArchivos(
             @RequestBody TramiteConArchivosRequest request,
             Principal principal,
             HttpServletRequest httpRequest) {
+
+        System.out.println("🔍 crearTramiteConArchivos - Principal: " + principal);
+        System.out.println("🔍 crearTramiteConArchivos - Principal name: " + (principal != null ? principal.getName() : "null"));
+        System.out.println("🔍 crearTramiteConArchivos - Authentication type: " + (principal != null ? principal.getClass().getSimpleName() : "null"));
+
+        if (principal instanceof Authentication auth) {
+            System.out.println("🔍 crearTramiteConArchivos - Authorities: " + auth.getAuthorities());
+        }
 
         Long usuarioId = getUserIdFromToken(httpRequest);
         if (usuarioId == null) {
             throw new RuntimeException("No se pudo obtener el ID del usuario del token");
         }
         String rol = getRole(principal);
+        System.out.println("🔍 crearTramiteConArchivos - Extracted role: " + rol);
 
         TramiteResponse tramiteCreado = tramiteService.crearTramiteConArchivos(request, usuarioId, rol);
         return ResponseEntity.ok(tramiteCreado);

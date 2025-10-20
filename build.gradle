@@ -52,6 +52,12 @@ dependencies {
 	implementation 'com.bucket4j:bucket4j-core:8.10.1'
 	implementation 'org.owasp.encoder:encoder:1.2.3'
 	implementation 'org.apache.commons:commons-text:1.11.0'
+
+	// Spring Session with Redis for distributed session management
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+	implementation 'org.springframework.session:spring-session-data-redis'
+	implementation 'org.springframework.boot:spring-boot-starter-cache'
+	implementation 'redis.clients:jedis'
 	
 	// Docker/Testcontainers
 	testImplementation 'org.springframework.boot:spring-boot-docker-compose'

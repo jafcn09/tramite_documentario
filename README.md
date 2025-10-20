@@ -79,7 +79,6 @@ curl http://localhost:8081/api/auth/status
 - **Validación**: Longitud y formato de campos
 
 
-## 📄 Licencia
 
 © 2025 Universidad Nacional de Tumbes. Todos los derechos reservados.
 

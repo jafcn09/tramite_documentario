@@ -101,23 +101,31 @@ public class BandejaTramitesController {
         @SuppressWarnings("unchecked")
         Map<String, Object> estadisticasOriginales = (Map<String, Object>) estadisticasRaw;
         
+        // DEBUG: Log para verificar estadísticas originales
+        System.out.println("[DEBUG ESTADISTICAS] Rol: " + rol);
+        System.out.println("[DEBUG ESTADISTICAS] Estadísticas originales: " + estadisticasOriginales);
+
         // Adaptar al formato que espera el frontend para la bandeja
         Map<String, Object> estadisticasBandeja = new HashMap<>();
-        
+
         if ("ADMINISTRATIVO".equals(rol) || "ADMIN".equals(rol)) {
             // Para administrativos: estadísticas de todos los trámites
             estadisticasBandeja.put("totalAsignados", estadisticasOriginales.getOrDefault("total", 0L));
-            
+
             // Pendientes de revisión: trámites enviados que aún no han sido procesados
-            estadisticasBandeja.put("pendientesRevision", 
-                (Long) estadisticasOriginales.getOrDefault("estado_ENVIADO", 0L) + 
+            estadisticasBandeja.put("pendientesRevision",
+                (Long) estadisticasOriginales.getOrDefault("estado_ENVIADO", 0L) +
                 (Long) estadisticasOriginales.getOrDefault("estado_EN_REVISION", 0L));
-            
+
             // Por procesar: trámites aprobados que necesitan respuesta/documentación
-            estadisticasBandeja.put("enProceso", 
-                (Long) estadisticasOriginales.getOrDefault("estado_APROBADO", 0L) +
-                (Long) estadisticasOriginales.getOrDefault("estado_EN_PROCESO", 0L) +
-                (Long) estadisticasOriginales.getOrDefault("estado_DERIVADO", 0L));
+            Long aprobados = (Long) estadisticasOriginales.getOrDefault("estado_APROBADO", 0L);
+            Long enProceso = (Long) estadisticasOriginales.getOrDefault("estado_EN_PROCESO", 0L);
+            Long derivados = (Long) estadisticasOriginales.getOrDefault("estado_DERIVADO", 0L);
+            Long totalEnProceso = aprobados + enProceso + derivados;
+
+            System.out.println("[DEBUG ESTADISTICAS] Aprobados: " + aprobados + ", En Proceso: " + enProceso + ", Derivados: " + derivados + ", Total En Proceso: " + totalEnProceso);
+
+            estadisticasBandeja.put("enProceso", totalEnProceso);
             
             // Finalizados: trámites que ya tienen respuesta completa
             estadisticasBandeja.put("finalizadosHoy", 
@@ -165,7 +173,10 @@ public class BandejaTramitesController {
             estadisticasBandeja.put("calificacionPromedio", 0.0);
             estadisticasBandeja.put("productividadSemanal", java.util.Collections.emptyList());
         }
-        
+
+        // DEBUG: Log para verificar respuesta final
+        System.out.println("[DEBUG ESTADISTICAS] Respuesta final: " + estadisticasBandeja);
+
         return ResponseEntity.ok(estadisticasBandeja);
     }
     

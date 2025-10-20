@@ -1,11 +1,10 @@
 package com.example.demo.service;
 
-import com.example.demo.model.Tramite;
-import com.example.demo.model.Usuario;
-import com.example.demo.repository.TramiteRepository;
-import com.example.demo.repository.UsuarioRepository;
-import com.example.demo.dto.UsuarioResponse;
-import com.example.demo.dto.AreaResponse;
+import java.io.File;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -13,12 +12,15 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import com.example.demo.dto.AreaResponse;
+import com.example.demo.dto.UsuarioResponse;
+import com.example.demo.model.Tramite;
+import com.example.demo.model.Usuario;
+import com.example.demo.repository.TramiteRepository;
+import com.example.demo.repository.UsuarioRepository;
+
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
-import java.io.File;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Map;
 
 @Service
 public class EmailService {
@@ -79,15 +81,15 @@ public class EmailService {
             "    <style>" +
             "        body { font-family: 'Arial', sans-serif; line-height: 1.6; color: #333; background: #f4f4f4; margin: 0; padding: 0; }" +
             "        .container { max-width: 600px; margin: 20px auto; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 0 20px rgba(0,0,0,0.1); }" +
-            "        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; }" +
+            "        .header { background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%); color: white; padding: 30px; text-align: center; }" +
             "        .header h1 { margin: 0; font-size: 28px; }" +
             "        .content { padding: 30px; }" +
-            "        .info-box { background: #f8f9fa; border-left: 4px solid #667eea; padding: 15px; margin: 20px 0; border-radius: 5px; }" +
+            "        .info-box { background: #f8f9fa; border-left: 4px solid #4a90e2; padding: 15px; margin: 20px 0; border-radius: 5px; }" +
             "        .response-box { background: #e8f5e9; border: 1px solid #4caf50; padding: 20px; margin: 20px 0; border-radius: 8px; }" +
             "        .response-box h3 { color: #2e7d32; margin-top: 0; }" +
-            "        .button { display: inline-block; padding: 12px 30px; background: #667eea; color: white; text-decoration: none; border-radius: 25px; margin: 20px 0; }" +
+            "        .button { display: inline-block; padding: 12px 30px; background: #4a90e2; color: white; text-decoration: none; border-radius: 25px; margin: 20px 0; }" +
             "        .footer { background: #f8f9fa; padding: 20px; text-align: center; color: #666; font-size: 12px; }" +
-            "        .badge { display: inline-block; padding: 5px 10px; background: #667eea; color: white; border-radius: 15px; font-size: 12px; }" +
+            "        .badge { display: inline-block; padding: 5px 10px; background: #4a90e2; color: white; border-radius: 15px; font-size: 12px; }" +
             "    </style>" +
             "</head>" +
             "<body>" +
@@ -160,6 +162,29 @@ public class EmailService {
     }
 
     private String construirTemplateNuevoTramite(Usuario trabajador, Tramite tramite, Long tramiteId) {
+        // Obtener información del área de origen
+        String areaOrigenNombre = "N/A";
+        if (tramite.getAreaOrigenId() != null) {
+            try {
+                areaOrigenNombre = areaService.getAreaById(tramite.getAreaOrigenId())
+                    .map(AreaResponse::getNombre)
+                    .orElse("N/A");
+            } catch (Exception e) {
+                // Continuar con valor por defecto
+            }
+        }
+
+        // Verificar si el solicitante es estudiante para ocultar área de origen
+        boolean esEstudiante = false;
+        try {
+            Usuario solicitante = usuarioRepository.findById(tramite.getUsuarioSolicitanteId()).orElse(null);
+            if (solicitante != null && solicitante.getRole() != null && "ESTUDIANTE".equals(solicitante.getRole().getName())) {
+                esEstudiante = true;
+            }
+        } catch (Exception e) {
+         
+        }
+
         return "<!DOCTYPE html>" +
             "<html lang='es'>" +
             "<head>" +
@@ -168,13 +193,13 @@ public class EmailService {
             "    <style>" +
             "        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif; line-height: 1.6; color: #333; background: #f5f7fa; margin: 0; padding: 20px; }" +
             "        .container { max-width: 600px; margin: 0 auto; background: #fff; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }" +
-            "        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 40px 30px; text-align: center; }" +
+            "        .header { background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%); color: white; padding: 40px 30px; text-align: center; }" +
             "        .header h1 { margin: 0; font-size: 28px; font-weight: 600; }" +
             "        .header p { margin: 10px 0 0 0; opacity: 0.9; }" +
             "        .icon { font-size: 48px; margin-bottom: 15px; }" +
             "        .content { padding: 40px 30px; }" +
             "        .greeting { font-size: 18px; color: #2c3e50; margin-bottom: 20px; }" +
-            "        .info-card { background: #f8f9fb; border-left: 4px solid #667eea; padding: 25px; margin: 25px 0; border-radius: 8px; }" +
+            "        .info-card { background: #f8f9fb; border-left: 4px solid #4a90e2; padding: 25px; margin: 25px 0; border-radius: 8px; }" +
             "        .detail-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e5e7eb; }" +
             "        .detail-row:last-child { border-bottom: none; }" +
             "        .detail-label { font-weight: 600; color: #6b7280; }" +
@@ -182,7 +207,7 @@ public class EmailService {
             "        .priority-alta { color: #dc3545; font-weight: bold; }" +
             "        .priority-normal { color: #ffc107; font-weight: bold; }" +
             "        .priority-baja { color: #28a745; font-weight: bold; }" +
-            "        .btn { display: inline-block; background: #667eea; color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; margin: 20px 0; font-weight: 600; }" +
+            "        .btn { display: inline-block; background: #4a90e2; color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; margin: 20px 0; font-weight: 600; }" +
             "        .footer { background: #2c3e50; color: white; padding: 25px; text-align: center; }" +
             "        .footer p { margin: 5px 0; opacity: 0.8; font-size: 14px; }" +
             "        @media (max-width: 600px) { .container { margin: 10px; } .content, .header { padding: 25px 20px; } }" +
@@ -217,6 +242,12 @@ public class EmailService {
             "                    <span class='detail-label'>Solicitante:</span>" +
             "                    <span class='detail-value'>" + obtenerNombreSolicitante(tramite.getUsuarioSolicitanteId()) + "</span>" +
             "                </div>" +
+            // Solo mostrar área de origen si el solicitante NO es estudiante
+            (!esEstudiante ?
+                "                <div class='detail-row'>" +
+                "                    <span class='detail-label'>Área de Origen:</span>" +
+                "                    <span class='detail-value'>" + areaOrigenNombre + "</span>" +
+                "                </div>" : "") +
             "                <div class='detail-row'>" +
             "                    <span class='detail-label'>Fecha de recepción:</span>" +
             "                    <span class='detail-value'>" + tramite.getFechaCreacion().format(DATE_FORMATTER) + "</span>" +
@@ -265,21 +296,21 @@ public class EmailService {
                             <style>
                                 @keyframes slideIn { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
                                 @keyframes pulse { 0%%, 100%% { transform: scale(1); } 50%% { transform: scale(1.05); } }
-                                body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background: linear-gradient(135deg, #667eea 0%%, #764ba2 100%%); }
+                                body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background: linear-gradient(135deg, #4a90e2 0%%, #357abd 100%%); }
                                 .container { max-width: 600px; margin: 40px auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
-                                .header { background: linear-gradient(135deg, #667eea 0%%, #764ba2 100%%); padding: 40px 30px; text-align: center; animation: slideIn 0.6s ease; }
+                                .header { background: linear-gradient(135deg, #4a90e2 0%%, #357abd 100%%); padding: 40px 30px; text-align: center; animation: slideIn 0.6s ease; }
                                 .header h1 { color: white; margin: 0; font-size: 28px; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
                                 .badge { display: inline-block; background: rgba(255,255,255,0.2); color: white; padding: 8px 16px; border-radius: 20px; font-size: 14px; margin-top: 10px; animation: pulse 2s infinite; }
                                 .content { padding: 40px 30px; }
                                 .greeting { font-size: 18px; color: #2c3e50; margin-bottom: 20px; }
-                                .message-box { background: linear-gradient(135deg, #f5f7fa 0%%, #c3cfe2 100%%); padding: 25px; border-radius: 12px; margin: 20px 0; border-left: 4px solid #667eea; }
+                                .message-box { background: linear-gradient(135deg, #f5f7fa 0%%, #c3cfe2 100%%); padding: 25px; border-radius: 12px; margin: 20px 0; border-left: 4px solid #4a90e2; }
                                 .details { background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; }
                                 .detail-row { display: flex; padding: 10px 0; border-bottom: 1px solid #e9ecef; }
                                 .detail-row:last-child { border-bottom: none; }
                                 .detail-label { font-weight: 600; color: #495057; width: 140px; }
                                 .detail-value { color: #6c757d; }
-                                .cta-button { display: inline-block; background: linear-gradient(135deg, #667eea 0%%, #764ba2 100%%); color: white; padding: 15px 40px; text-decoration: none; border-radius: 50px; margin: 20px 0; font-weight: 600; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4); transition: all 0.3s; }
-                                .cta-button:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6); }
+                                .cta-button { display: inline-block; background: linear-gradient(135deg, #4a90e2 0%%, #357abd 100%%); color: white; padding: 15px 40px; text-decoration: none; border-radius: 50px; margin: 20px 0; font-weight: 600; box-shadow: 0 4px 15px rgba(74, 144, 226, 0.4); transition: all 0.3s; }
+                                .cta-button:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(74, 144, 226, 0.6); }
                                 .footer { text-align: center; padding: 30px; background: #f8f9fa; color: #6c757d; font-size: 14px; }
                                 .priority-high { color: #dc3545; font-weight: bold; }
                                 .priority-normal { color: #ffc107; font-weight: bold; }
@@ -494,7 +525,14 @@ public class EmailService {
 
     private String obtenerNombreSolicitante(Long usuarioId) {
         return usuarioRepository.findById(usuarioId)
-            .map(u -> u.getNombre() + " " + u.getApellidos())
+            .map(u -> {
+                String nombreCompleto = u.getNombre() + " " + u.getApellidos();
+                // Si el usuario es ESTUDIANTE, agregar el prefijo "Estudiante"
+                if (u.getRole() != null && "ESTUDIANTE".equals(u.getRole().getName())) {
+                    return "Estudiante " + nombreCompleto;
+                }
+                return nombreCompleto;
+            })
             .orElse("Usuario");
     }
 
@@ -606,10 +644,10 @@ public class EmailService {
                             <style>
                                 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif; margin: 0; padding: 20px; background: #f5f7fa; }
                                 .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.07); }
-                                .header { background: linear-gradient(135deg, #667eea 0%%, #764ba2 100%%); color: white; padding: 40px 30px; text-align: center; }
+                                .header { background: linear-gradient(135deg, #4a90e2 0%%, #357abd 100%%); color: white; padding: 40px 30px; text-align: center; }
                                 .header h1 { font-size: 26px; font-weight: 600; margin-bottom: 8px; }
                                 .content { padding: 35px 30px; }
-                                .info-card { background: #f8f9fb; border-left: 4px solid #667eea; padding: 20px; margin: 25px 0; border-radius: 8px; }
+                                .info-card { background: #f8f9fb; border-left: 4px solid #4a90e2; padding: 20px; margin: 25px 0; border-radius: 8px; }
                                 .changes-box { background: #fef3c7; border: 1px solid #fbbf24; padding: 20px; margin: 25px 0; border-radius: 8px; }
                                 .changes-box h3 { color: #92400e; margin-bottom: 15px; font-size: 16px; }
                                 .change-item { background: white; padding: 12px; margin-bottom: 10px; border-radius: 6px; }

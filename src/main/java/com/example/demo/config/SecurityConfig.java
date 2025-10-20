@@ -36,7 +36,11 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .sessionManagement(session -> session
+                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                .maximumSessions(3) // Máximo 3 sesiones por usuario
+                .maxSessionsPreventsLogin(false)
+            )
             .authorizeHttpRequests(authz -> authz
                 // Public endpoints first (order matters!)
                 .requestMatchers("/api/auth/**").permitAll()
@@ -47,6 +51,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/notificaciones/public/**").permitAll()
                 .requestMatchers("/api/activities/public/**").permitAll()
                 .requestMatchers("/api/usuarios/public/**").permitAll()
+                .requestMatchers("/api/test/**").permitAll()
 
                 // Public trámite endpoints (no token required) - MUST come before protected tramites
                 .requestMatchers("/api/tramites/public/**").permitAll()
@@ -66,6 +71,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/notificaciones/**").authenticated()
                 .requestMatchers("/api/bandeja-tramites/**").authenticated()
                 .requestMatchers("/api/activities/**").authenticated()
+                .requestMatchers("/api/cache/**").authenticated()
                 
                 // All other routes require authentication
                 .anyRequest().authenticated()
@@ -98,17 +104,17 @@ public class SecurityConfig {
             "Access-Control-Request-Headers"
         ));
         
-        // Allow credentials (cookies, authorization headers)
+        // toddo los headers
         configuration.setAllowCredentials(true);
         
-        // Expose headers that frontend can access
+        //especificar los headers que se exponen al cliente
         configuration.setExposedHeaders(Arrays.asList(
             "Authorization",
             "Content-Length",
             "X-Requested-With"
         ));
         
-        // Set max age for preflight requests
+        //maximo tiempo de vida de la configuración CORS
         configuration.setMaxAge(3600L);
         
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

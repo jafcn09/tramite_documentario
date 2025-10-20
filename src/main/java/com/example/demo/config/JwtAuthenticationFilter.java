@@ -44,10 +44,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 if (jwtService.validateToken(jwt, username)) {
                     String role = jwtService.extractRole(jwt);
+                    System.out.println("🔍 JWT Filter - Username: " + username + ", Role: " + role);
 
                     List<GrantedAuthority> authorities = new ArrayList<>();
                     if (role != null) {
-                        authorities.add(new SimpleGrantedAuthority("ROLE_" + role));
+                        String roleUpperCase = role.toUpperCase();
+                        authorities.add(new SimpleGrantedAuthority("ROLE_" + roleUpperCase));
+                        System.out.println("🔍 JWT Filter - Added authority: ROLE_" + roleUpperCase);
                     }
 
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(

@@ -44,9 +44,10 @@ public class TramiteService {
     private static final int DIAS_PROCESAMIENTO = 3;
     private static final Long AREA_SECRETARIA_GENERAL_ID = 1L;
     
+    @Transactional
     public TramiteResponse crearTramite(TramiteRequest request, Long usuarioSolicitanteId, String rol) {
-        if (!"USUARIO".equals(rol) && !"ADMIN".equals(rol)) {
-            throw new RuntimeException("Solo los usuarios y administradores pueden crear trámites");
+        if (!"USUARIO".equals(rol) && !"ADMIN".equals(rol) && !"ESTUDIANTE".equals(rol)) {
+            throw new RuntimeException("Solo los usuarios, administradores y estudiantes pueden crear trámites");
         }
         
         // Generar código único
@@ -62,10 +63,23 @@ public class TramiteService {
         tramite.setPrioridad(Tramite.PrioridadTramite.valueOf(request.getPrioridad()));
         tramite.setUsuarioSolicitanteId(usuarioSolicitanteId);
         tramite.setAreaActualId(AREA_SECRETARIA_GENERAL_ID);
-        tramite.setAreaOrigenId(AREA_SECRETARIA_GENERAL_ID);
+
+        // Lógica de área de origen según el rol
+        if ("ESTUDIANTE".equals(rol)) {
+            // Para estudiantes, NO se guarda área de origen (permanece null)
+            // Solo se configura área destino (Secretaría General) que ya está configurada arriba
+        } else if ("USUARIO".equals(rol)) {
+            // Para usuarios con rol USUARIO, usar su área asignada
+            Long areaUsuario = obtenerAreaDelUsuario(usuarioSolicitanteId);
+            tramite.setAreaOrigenId(areaUsuario != null ? areaUsuario : AREA_SECRETARIA_GENERAL_ID);
+        } else {
+            // Para otros roles (ADMIN, ADMINISTRATIVO), usar el área especificada en el request
+            tramite.setAreaOrigenId(request.getAreaOrigenId() != null ? request.getAreaOrigenId() : AREA_SECRETARIA_GENERAL_ID);
+        }
+
         tramite.setNumeroExpediente(request.getNumeroExpediente());
         tramite.setObservaciones(request.getObservaciones());
-        tramite.setFechaVencimiento(LocalDateTime.now().plusDays(DIAS_PROCESAMIENTO));
+        tramite.setFechaVencimiento(calcularFechaVencimientoEstandar(LocalDateTime.now()));
         
         if (request.getDocumentosAdjuntos() != null) {
             tramite.setDocumentosAdjuntos(request.getDocumentosAdjuntos());
@@ -199,7 +213,7 @@ public class TramiteService {
         String estadoAnterior = tramite.getEstado().name();
         tramite.setUsuarioAsignadoId(trabajadorId);
         tramite.setEstado(Tramite.EstadoTramite.EN_REVISION);
-        tramite.setFechaVencimiento(LocalDateTime.now().plusDays(DIAS_PROCESAMIENTO));
+        tramite.setFechaVencimiento(calcularFechaVencimientoEstandar(LocalDateTime.now()));
         
         Tramite saved = tramiteRepository.save(tramite);
         
@@ -232,7 +246,7 @@ public class TramiteService {
         String estadoAnterior = tramite.getEstado().name();
         tramite.setUsuarioAsignadoId(trabajadorId);
         tramite.setEstado(Tramite.EstadoTramite.EN_PROCESO);
-        tramite.setFechaVencimiento(LocalDateTime.now().plusDays(DIAS_PROCESAMIENTO));
+        tramite.setFechaVencimiento(calcularFechaVencimientoEstandar(LocalDateTime.now()));
 
         Tramite saved = tramiteRepository.save(tramite);
 
@@ -271,6 +285,8 @@ public class TramiteService {
         // Cambiar asignación
         tramite.setUsuarioAsignadoId(trabajadorNuevo);
         tramite.setEstado(Tramite.EstadoTramite.DERIVADO);
+        // Recalcular fecha de vencimiento con días hábiles desde la derivación
+        tramite.setFechaVencimiento(calcularFechaVencimientoEstandar(LocalDateTime.now()));
         
         Tramite saved = tramiteRepository.save(tramite);
         
@@ -388,7 +404,7 @@ public class TramiteService {
             // Cualquier otro rol ve trámites ordenados por ID
             tramites = tramiteRepository.findAllOrderById(pageableOptimizado);
         }
-        
+
         return tramites.map(this::convertirAResponse);
     }
     
@@ -1041,15 +1057,37 @@ public class TramiteService {
         };
     }
     
+    // Método para convertir el enum del estado al formato legible que espera el frontend
+    private String convertirEstadoATexto(Tramite.EstadoTramite estado) {
+        if (estado == null) return "En Revisión";
+
+        return switch (estado) {
+            case ENVIADO -> "Enviado";
+            case EN_REVISION -> "En Revisión";
+            case EN_PROCESO -> "En Proceso";
+            case APROBADO -> "Aprobado";
+            case DERIVADO -> "Derivado";
+            case FINALIZADO -> "Finalizado";
+            case RECHAZADO -> "Rechazado";
+            case OBSERVADO -> "Observado";
+            case BORRADOR -> "Borrador";
+            case CANCELADO -> "Cancelado";
+            case ARCHIVADO -> "Archivado";
+            default -> "En Revisión";
+        };
+    }
+
     private TramiteResponse convertirAResponse(Tramite tramite) {
-        
+
         TramiteResponse.TramiteResponseBuilder builder = TramiteResponse.builder()
             .id(tramite.getId())
             .codigo(tramite.getCodigo())
             .titulo(tramite.getTitulo())
             .descripcion(tramite.getDescripcion())
             .tipo(tramite.getTipo() != null ? tramite.getTipo().name() : "OTRO")
-            .estado(tramite.getEstado() != null ? tramite.getEstado().name() : "EN_REVISION")
+            .estado(TramiteResponse.EstadoInfo.builder()
+                .nombre(convertirEstadoATexto(tramite.getEstado()))
+                .build())
             .prioridad(tramite.getPrioridad() != null ? tramite.getPrioridad().name() : "NORMAL")
             .numeroExpediente(tramite.getNumeroExpediente())
             .observaciones(tramite.getObservaciones())
@@ -1249,9 +1287,85 @@ public class TramiteService {
         builder.estaVencido(estaVencido);
         builder.diasRestantes(diasRestantes);
 
+        Integer progreso = calcularProgresoTramite(tramite, estaVencido);
+        builder.progreso(progreso);
+
         return builder.build();
     }
-    
+
+    /**
+     * Calcula el progreso de un trámite basado en tiempo transcurrido y estado
+     */
+    private Integer calcularProgresoTramite(Tramite tramite, boolean estaVencido) {
+        // Si está vencido, siempre 100%
+        if (estaVencido) {
+            return 100;
+        }
+
+        // Si está finalizado, 100%
+        if (tramite.getEstado() == Tramite.EstadoTramite.FINALIZADO) {
+            return 100;
+        }
+
+        Integer progressoTemporal = calcularProgresoTemporal(tramite);
+        Integer progresoMinimoPorEstado = getProgresoMinimoPorEstado(tramite.getEstado());
+        return Math.max(progressoTemporal, progresoMinimoPorEstado);
+    }
+
+    /**
+     * Calcula el progreso temporal basado en fechas
+     */
+    private Integer calcularProgresoTemporal(Tramite tramite) {
+        if (tramite.getFechaCreacion() == null || tramite.getFechaVencimiento() == null) {
+            return 0;
+        }
+
+        LocalDateTime ahora = LocalDateTime.now();
+        LocalDateTime fechaCreacion = tramite.getFechaCreacion();
+        LocalDateTime fechaVencimiento = tramite.getFechaVencimiento();
+
+        // Si la fecha actual es anterior a la creación, 0%
+        if (ahora.isBefore(fechaCreacion) || ahora.isEqual(fechaCreacion)) {
+            return 0;
+        }
+
+        // Si la fecha actual es posterior al vencimiento, 100%
+        if (ahora.isAfter(fechaVencimiento) || ahora.isEqual(fechaVencimiento)) {
+            return 100;
+        }
+
+        // Calcular el progreso temporal como porcentaje
+        long tiempoTotal = java.time.Duration.between(fechaCreacion, fechaVencimiento).toMillis();
+        long tiempoTranscurrido = java.time.Duration.between(fechaCreacion, ahora).toMillis();
+
+        if (tiempoTotal <= 0) {
+            return 0;
+        }
+
+        int porcentaje = (int) Math.round(((double) tiempoTranscurrido / tiempoTotal) * 100);
+        return Math.max(0, Math.min(100, porcentaje));
+    }
+
+    /**
+     * Obtiene el progreso mínimo basado en el estado del trámite
+     */
+    private Integer getProgresoMinimoPorEstado(Tramite.EstadoTramite estado) {
+        return switch (estado) {
+            case BORRADOR -> 5;
+            case ENVIADO -> 15;
+            case EN_REVISION -> 30;
+            case DERIVADO -> 40;
+            case OBSERVADO -> 25;
+            case APROBADO -> 60;
+            case EN_PROCESO -> 50;
+            case FINALIZADO -> 100;
+            case RECHAZADO -> 0;
+            case ARCHIVADO -> 100;
+            case CANCELADO -> 0;
+            default -> 0;
+        };
+    }
+
     // Responder trámite con notificación obligatoria
     public com.example.demo.dto.ResponderTramiteResponse responderTramite(Long tramiteId, com.example.demo.dto.ResponderTramiteRequest request, Long administrativoId) {
         Tramite tramite = tramiteRepository.findById(tramiteId)
@@ -1544,7 +1658,10 @@ public class TramiteService {
         }
 
         boolean esAdministrativo = "ADMINISTRATIVO".equals(rol) || "ADMIN".equals(rol);
+        boolean esUsuario = "USUARIO".equals(rol);
+        boolean esEstudiante = "ESTUDIANTE".equals(rol);
 
+        // ESTUDIANTES y USUARIOS no pueden realizar acciones administrativas
         if (!esAdministrativo) {
             permisos.put("puedeAprobar", false);
             permisos.put("puedeRechazar", false);
@@ -1566,11 +1683,35 @@ public class TramiteService {
 
         String estadoNombre = tramite.getEstado() != null ? tramite.getEstado().name() : "";
 
-        boolean puedeAprobar = true;
-        boolean puedeRechazar = true;
-        boolean puedeDerivar = true;
-
+        // OBTENER USUARIO ASIGNADO PARA VALIDACIONES
         Long usuarioAsignado = tramite.getUsuarioAsignadoId();
+        boolean usuarioEstaAsignado = usuarioAsignado != null && usuarioAsignado.equals(usuarioId);
+
+        // REGLA CRÍTICA: Si el usuario está asignado al trámite, NO puede aprobar ni rechazar
+        // Solo pueden aprobar/rechazar usuarios que NO están asignados al trámite
+        boolean puedeAprobar = false;
+        boolean puedeRechazar = false;
+
+        if (!usuarioEstaAsignado) {
+            // VALIDACIÓN DE ESTADO PARA APROBAR: Solo se puede aprobar si está en ENVIADO o EN_REVISION
+            puedeAprobar = tramite.getEstado() != null &&
+                          (tramite.getEstado().equals(Tramite.EstadoTramite.ENVIADO) ||
+                           tramite.getEstado().equals(Tramite.EstadoTramite.EN_REVISION));
+
+            // VALIDACIÓN DE ESTADO PARA RECHAZAR: No se puede rechazar si está FINALIZADO o ARCHIVADO
+            puedeRechazar = tramite.getEstado() != null &&
+                           !tramite.getEstado().equals(Tramite.EstadoTramite.FINALIZADO) &&
+                           !tramite.getEstado().equals(Tramite.EstadoTramite.ARCHIVADO);
+        }
+
+        // DEBUG: Log para verificar permisos
+        System.out.println("[DEBUG PERMISOS] Trámite ID: " + tramiteId + ", Estado: " + tramite.getEstado() +
+                          ", Usuario Asignado: " + usuarioAsignado + ", Usuario Actual: " + usuarioId +
+                          ", usuarioEstaAsignado: " + usuarioEstaAsignado +
+                          ", puedeAprobar: " + puedeAprobar + ", puedeRechazar: " + puedeRechazar);
+
+        // LÓGICA PARA DERIVAR: Solo puede derivar si NO está asignado al trámite
+        boolean puedeDerivar = usuarioAsignado == null || !usuarioAsignado.equals(usuarioId);
 
         List<String> estadosParaResponder = Arrays.asList("APROBADO", "DERIVADO");
         boolean puedeResponder = false;
@@ -1597,6 +1738,10 @@ public class TramiteService {
             tramiteRequest.setDescripcion(request.getDescripcion());
             tramiteRequest.setObservaciones(request.getObservaciones());
             tramiteRequest.setFechaVencimiento(request.getFechaVencimiento());
+            // Solo setear areaOrigenId si se proporciona explícitamente y no es estudiante
+            if (!"ESTUDIANTE".equals(rol) && request.getAreaOrigenId() != null) {
+                tramiteRequest.setAreaOrigenId(request.getAreaOrigenId());
+            }
             tramiteRequest.setAreaDestinoId(request.getAreaDestinoId());
 
             String tipoString = mapTipoTramiteIdToString(request.getTipoTramiteId());
@@ -1777,35 +1922,15 @@ public class TramiteService {
         }
     }
 
-    private String obtenerExtensionDeNombre(String nombreArchivo) {
-        int puntoIndex = nombreArchivo.lastIndexOf('.');
-        return puntoIndex > 0 ? nombreArchivo.substring(puntoIndex) : "";
-    }
-
-    private String guardarArchivo(byte[] contenido, String nombreArchivo, Long tramiteId) {
-        try {
-
-            java.nio.file.Path directorioTramite = java.nio.file.Paths.get("uploads", "tramites", tramiteId.toString());
-            java.nio.file.Files.createDirectories(directorioTramite);
-
-            // Guardar archivo
-            java.nio.file.Path rutaCompleta = directorioTramite.resolve(nombreArchivo);
-            java.nio.file.Files.write(rutaCompleta, contenido);
-
-            return rutaCompleta.toString();
-        } catch (Exception e) {
-            throw new RuntimeException("Error al guardar archivo " + nombreArchivo + ": " + e.getMessage(), e);
-        }
-    }
 
     private String mapTipoTramiteIdToString(Long tipoTramiteId) {
         return switch (tipoTramiteId.intValue()) {
-            case 1 -> "SOLICITUD";
+            case 1 -> "SOLICITUD_CERTIFICADO";
             case 2 -> "RECLAMO";
             case 3 -> "CONSULTA";
-            case 4 -> "PETICION";
-            case 5 -> "CERTIFICACION";
-            case 6 -> "PERMISO";
+            case 4 -> "SOLICITUD_CONSTANCIA";
+            case 5 -> "SOLICITUD_PERMISO";
+            case 6 -> "SUGERENCIA";
             case 7 -> "LICENCIA";
             case 8 -> "AUTORIZACION";
             case 9 -> "REVISION_EXPEDIENTE";
@@ -2423,6 +2548,94 @@ public class TramiteService {
         emailService.notificarEdicionTramiteAUsuario(usuarioId, tramiteId, tituloAnterior, tramite.getTitulo());
 
         return convertirAResponse(tramiteActualizado);
+    }
+
+    private Long obtenerAreaDelUsuario(Long usuarioId) {
+        try {
+            // Obtener el usuario completo usando el UsuarioService
+            UsuarioResponse usuario = usuarioService.obtenerUsuarioPorId(usuarioId);
+
+            // Verificar si el usuario tiene área asignada
+            if (usuario != null && usuario.getArea() != null) {
+                return usuario.getArea().getId();
+            }
+
+            return null; // Si no tiene área, usar fallback en el método llamador
+        } catch (Exception e) {
+            System.err.println("Error al obtener área del usuario " + usuarioId + ": " + e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Calcula la fecha de vencimiento agregando días hábiles (lunes a viernes)
+     * @param fechaInicio fecha desde la cual calcular
+     * @param diasHabiles cantidad de días hábiles a agregar
+     * @return fecha de vencimiento considerando solo días laborables
+     */
+    private LocalDateTime calcularFechaVencimientoConDiasHabiles(LocalDateTime fechaInicio, int diasHabiles) {
+        LocalDateTime fecha = fechaInicio;
+        int diasAgregados = 0;
+
+        while (diasAgregados < diasHabiles) {
+            fecha = fecha.plusDays(1);
+
+            // Verificar si el día es hábil (lunes=1 a viernes=5)
+            if (fecha.getDayOfWeek().getValue() >= 1 && fecha.getDayOfWeek().getValue() <= 5) {
+                diasAgregados++;
+            }
+        }
+
+        return fecha;
+    }
+
+    /**
+     * Calcula la fecha de vencimiento estándar para un trámite (3 días hábiles)
+     * @param fechaInicio fecha desde la cual calcular
+     * @return fecha de vencimiento
+     */
+    private LocalDateTime calcularFechaVencimientoEstandar(LocalDateTime fechaInicio) {
+        return calcularFechaVencimientoConDiasHabiles(fechaInicio, DIAS_PROCESAMIENTO);
+    }
+
+    /**
+     * Calcula cuántos días hábiles quedan hasta una fecha determinada
+     * @param fechaVencimiento fecha límite
+     * @return cantidad de días hábiles restantes (puede ser negativo si ya venció)
+     */
+    public int calcularDiasHabilesRestantes(LocalDateTime fechaVencimiento) {
+        LocalDateTime ahora = LocalDateTime.now();
+
+        if (fechaVencimiento.isBefore(ahora)) {
+            // Ya venció, calcular días transcurridos (negativo)
+            return -calcularDiasHabilesEntre(fechaVencimiento, ahora);
+        } else {
+            // Calcular días restantes
+            return calcularDiasHabilesEntre(ahora, fechaVencimiento);
+        }
+    }
+
+    /**
+     * Calcula la cantidad de días hábiles entre dos fechas
+     * @param fechaInicio fecha de inicio
+     * @param fechaFin fecha de fin
+     * @return cantidad de días hábiles entre las fechas
+     */
+    private int calcularDiasHabilesEntre(LocalDateTime fechaInicio, LocalDateTime fechaFin) {
+        LocalDateTime fecha = fechaInicio.toLocalDate().atStartOfDay();
+        LocalDateTime fin = fechaFin.toLocalDate().atStartOfDay();
+        int diasHabiles = 0;
+
+        while (fecha.isBefore(fin)) {
+            fecha = fecha.plusDays(1);
+
+            // Verificar si el día es hábil (lunes=1 a viernes=5)
+            if (fecha.getDayOfWeek().getValue() >= 1 && fecha.getDayOfWeek().getValue() <= 5) {
+                diasHabiles++;
+            }
+        }
+
+        return diasHabiles;
     }
 
 }

@@ -18,6 +18,7 @@ public class TramiteConArchivosRequest {
     private String asunto;
     private String descripcion;
     private Long prioridadId;
+    private Long areaOrigenId;
     private Long areaDestinoId;
     private LocalDateTime fechaVencimiento;
     private String observaciones;
