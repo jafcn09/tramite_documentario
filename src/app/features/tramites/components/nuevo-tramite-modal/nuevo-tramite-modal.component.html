@@ -1,6 +1,6 @@
-<app-modal-base 
+<app-modal-base
   [show]="show"
-  title="Nuevo Trámite"
+  [title]="modoEdicion ? 'Editar Trámite' : 'Nuevo Trámite'"
   size="lg"
   [loading]="loading"
   [showFooter]="true"
@@ -18,14 +18,14 @@
         
         <div class="form-row">
           <div class="form-group" [ngClass]="isUsuarioRole ? 'col-md-4' : 'col-md-6'">
-            <label for="tipoTramite" class="form-label required">Tipo de Trámite</label>
+            <label for="tipoTramite" class="form-label" [class.required]="!modoEdicion">Tipo de Trámite</label>
             <select
               id="tipoTramite"
               name="tipoTramite"
               class="form-control"
               [class.is-invalid]="errors['tipoId']"
               [(ngModel)]="nuevoTramite.tipoId"
-              required>
+              [required]="!modoEdicion">
               <option value="">Seleccione un tipo</option>
               <option *ngFor="let tipo of tiposTramite" [value]="tipo.id">
                 {{ tipo.nombre }}
@@ -37,14 +37,13 @@
           </div>
 
           <div class="form-group" [ngClass]="isUsuarioRole ? 'col-md-4' : 'col-md-6'">
-            <label for="prioridad" class="form-label required">Prioridad</label>
+            <label for="prioridad" class="form-label">Prioridad</label>
             <select
               id="prioridad"
               name="prioridad"
               class="form-control"
               [class.is-invalid]="errors['prioridadId']"
-              [(ngModel)]="nuevoTramite.prioridadId"
-              required>
+              [(ngModel)]="nuevoTramite.prioridadId">
               <option value="">Seleccione prioridad</option>
               <option *ngFor="let prioridad of prioridadesTramite" [value]="prioridad.id">
                 {{ prioridad.nombre }}
@@ -55,8 +54,6 @@
               {{ errors['prioridadId'] }}
             </div>
           </div>
-
-          <!-- Solo mostrar para rol USUARIO -->
           <div class="form-group col-md-4" *ngIf="isUsuarioRole">
             <label for="areaOrigen" class="form-label">Área de Origen</label>
             <input
@@ -71,10 +68,8 @@
             </small>
           </div>
         </div>
-
-        <!-- Campos de fechas en una fila -->
         <div class="form-row">
-          <div class="form-group col-md-6">
+          <div class="form-group col-md-12">
             <label for="fechaInicio" class="form-label">Fecha de Inicio</label>
             <input
               type="date"
@@ -86,37 +81,17 @@
             <small class="form-text text-muted">
               Fecha de inicio del trámite (generada automáticamente)
             </small>
-          </div>
-
-          <div class="form-group col-md-6">
-            <label for="fechaVencimiento" class="form-label">Fecha de Vencimiento</label>
-            <input
-              type="date"
-              id="fechaVencimiento"
-              name="fechaVencimiento"
-              class="form-control"
-              [class.is-invalid]="errors['fechaVencimiento']"
-              [(ngModel)]="nuevoTramite.fechaVencimiento"
-              [min]="getMinFechaVencimiento()"
-              (change)="onFechaVencimientoChange($event)"
-              appBusinessDaysOnly>
-            <div class="invalid-feedback" *ngIf="errors['fechaVencimiento']">
-              {{ errors['fechaVencimiento'] }}
-            </div>
-            <small class="form-text text-muted">
-              Opcional. Si no se especifica, se usará el plazo por defecto (3 días hábiles).
-            </small>
-            <small class="form-text text-warning">
+            <small class="form-text text-info">
               <i class="fas fa-info-circle"></i>
-              <strong>Importante:</strong> Solo se permiten días hábiles (lunes a viernes). Los fines de semana se corregirán automáticamente al siguiente día hábil.
+              La fecha de vencimiento se calculará automáticamente (3 días hábiles desde la fecha de creación, excluyendo fines de semana).
             </small>
           </div>
         </div>
 
         <div class="form-group">
-          <label for="asunto" class="form-label required">Asunto</label>
-          <input 
-            type="text" 
+          <label for="asunto" class="form-label" [class.required]="!modoEdicion">Asunto</label>
+          <input
+            type="text"
             id="asunto"
             name="asunto"
             class="form-control"
@@ -124,7 +99,7 @@
             [(ngModel)]="nuevoTramite.asunto"
             placeholder="Ingrese el asunto del trámite"
             maxlength="200"
-            required>
+            [required]="!modoEdicion">
           <div class="invalid-feedback" *ngIf="errors['asunto']">
             {{ errors['asunto'] }}
           </div>
@@ -134,17 +109,16 @@
         </div>
 
         <div class="form-group">
-          <label for="descripcion" class="form-label required">Descripción</label>
-          <textarea 
+          <label for="descripcion" class="form-label">Descripción</label>
+          <textarea
             id="descripcion"
             name="descripcion"
             class="form-control"
             [class.is-invalid]="errors['descripcion']"
             [(ngModel)]="nuevoTramite.descripcion"
-            placeholder="Describa detalladamente el trámite"
+            placeholder="Describa detalladamente el trámite (opcional)"
             rows="4"
-            maxlength="1000"
-            required></textarea>
+            maxlength="1000"></textarea>
           <div class="invalid-feedback" *ngIf="errors['descripcion']">
             {{ errors['descripcion'] }}
           </div>
@@ -215,7 +189,7 @@
         
         <div class="form-group">
           <label for="observaciones" class="form-label">Observaciones</label>
-          <textarea 
+          <textarea
             id="observaciones"
             name="observaciones"
             class="form-control"
@@ -228,7 +202,255 @@
           </small>
         </div>
       </div>
+
+      <!-- Sección de Firma Digital -->
+      <div class="form-section signature-section">
+        <div class="signature-header">
+          <h3 class="section-title">
+            <i class="fas fa-signature"></i>
+            Firma Digital
+          </h3>
+          <div class="signature-toggle">
+            <input
+              type="checkbox"
+              id="requiereFirmaDigitalCrear"
+              [checked]="requiereFirmaDigital"
+              (change)="onCheckboxChange($event)"
+              [disabled]="loading">
+            <label for="requiereFirmaDigitalCrear" class="toggle-label">
+              Firmar digitalmente este trámite (opcional)
+            </label>
+          </div>
+        </div>
+        <div *ngIf="requiereFirmaDigital" class="signature-config" style="animation: slideDown 0.3s ease-out;">
+
+          <div class="signature-row">
+            <div class="signature-field">
+              <label for="tipoFirmaCrear" class="form-label" [class.required]="requiereFirmaDigital">
+                <i class="fas fa-certificate"></i>
+                Tipo de Firma
+              </label>
+              <select
+                id="tipoFirmaCrear"
+                name="tipoFirmaCrear"
+                class="form-control"
+                [class.is-invalid]="errors['tipoFirma']"
+                [(ngModel)]="tipoFirma"
+                [disabled]="loading"
+                [required]="requiereFirmaDigital">
+                <option *ngFor="let tipo of tiposFirmaCreacion" [value]="tipo.value">
+                  {{ tipo.label }}
+                </option>
+              </select>
+              <div class="invalid-feedback" *ngIf="errors['tipoFirma']">
+                {{ errors['tipoFirma'] }}
+              </div>
+            </div>
+
+            <div class="signature-field">
+              <label for="ubicacionFirmaCrear" class="form-label" [class.required]="requiereFirmaDigital">
+                <i class="fas fa-map-marker-alt"></i>
+                Departamento
+              </label>
+              <select
+                id="ubicacionFirmaCrear"
+                name="ubicacionFirmaCrear"
+                class="form-control"
+                [class.is-invalid]="errors['ubicacionFirma']"
+                [(ngModel)]="ubicacionFirma"
+                [disabled]="loading"
+                [required]="requiereFirmaDigital">
+                <option *ngFor="let depto of departamentosPeru" [value]="depto.value">
+                  {{ depto.label }}
+                </option>
+              </select>
+              <div class="invalid-feedback" *ngIf="errors['ubicacionFirma']">
+                {{ errors['ubicacionFirma'] }}
+              </div>
+            </div>
+          </div>
+
+
+          <div class="signature-field full-width">
+            <label for="razonFirmaCrear" class="form-label" [class.required]="requiereFirmaDigital">
+              <i class="fas fa-comment"></i>
+              Razón de la Firma
+            </label>
+            <input
+              type="text"
+              id="razonFirmaCrear"
+              name="razonFirmaCrear"
+              class="form-control"
+              [class.is-invalid]="errors['razonFirma']"
+              [(ngModel)]="razonFirma"
+              placeholder="Motivo por el cual se firma este trámite"
+              [required]="requiereFirmaDigital"
+              [disabled]="loading">
+            <div class="invalid-feedback" *ngIf="errors['razonFirma']">
+              {{ errors['razonFirma'] }}
+            </div>
+          </div>
+          <div class="signature-canvas-container">
+            <label class="form-label" [class.required]="requiereFirmaDigital">
+              <i class="fas fa-pen-fancy"></i>
+              Dibuje su Firma
+            </label>
+            <div class="canvas-wrapper">
+              <canvas
+                #signatureCanvas
+                class="signature-canvas"
+                [class.has-signature]="signatureExists"
+                [class.is-invalid]="errors['firmaDigital']">
+              </canvas>
+              <div class="canvas-controls">
+                <button
+                  type="button"
+                  class="btn-canvas clear"
+                  (click)="clearCanvas()"
+                  [disabled]="loading">
+                  <i class="fas fa-eraser"></i>
+                  Limpiar
+                </button>
+                <button
+                  type="button"
+                  class="btn-canvas capture"
+                  (click)="captureSignature()"
+                  [disabled]="loading || !signatureExists">
+                  <i class="fas fa-save"></i>
+                  Capturar
+                </button>
+              </div>
+            </div>
+            <div class="invalid-feedback" *ngIf="errors['firmaDigital']" style="display: block;">
+              {{ errors['firmaDigital'] }}
+            </div>
+
+            <div *ngIf="firmaDigitalData" class="signature-preview">
+              <label class="form-label">
+                <i class="fas fa-eye"></i>
+                Firma Capturada
+              </label>
+              <div class="preview-container">
+                <img [src]="firmaDigitalData" alt="Firma digital capturada" class="signature-image">
+                <button
+                  type="button"
+                  class="btn-remove-signature"
+                  (click)="clearCanvas(); firmaDigitalData = null"
+                  [disabled]="loading">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+         
+          <div class="signature-consent">
+            <label class="consent-label" [class.is-invalid]="errors['consentimientoFirma']">
+              <input
+                type="checkbox"
+                name="consentimientoFirma"
+                [(ngModel)]="consentimientoFirma"
+                [disabled]="loading"
+                [required]="requiereFirmaDigital">
+              <span class="consent-text">
+                <i class="fas fa-shield-alt"></i>
+                Confirmo que he dibujado mi firma digital y acepto que este trámite sea
+                firmado electrónicamente bajo mi responsabilidad
+              </span>
+            </label>
+            <div class="invalid-feedback" *ngIf="errors['consentimientoFirma']" style="display: block;">
+              {{ errors['consentimientoFirma'] }}
+            </div>
+          </div>
+
+       
+          <div class="signature-info">
+            <div class="info-box">
+              <i class="fas fa-info-circle"></i>
+              <div class="info-content">
+                <strong>Información sobre la Firma Digital:</strong>
+                <ul>
+                  <li>Su firma será asociada con su usuario y será auditable</li>
+                  <li>Se registrará la fecha, hora y ubicación de la firma</li>
+                  <li>El trámite firmado tendrá validez legal</li>
+                  <li>No podrá ser modificado después de ser creado</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </form>
   </div>
 
 </app-modal-base>
+<div class="confirmation-modal-overlay" *ngIf="showConfirmationModal" (click)="onCancelSignature()">
+  <div class="confirmation-modal-container" (click)="$event.stopPropagation()">
+
+    <div class="confirmation-modal-header">
+      <div class="header-icon">
+        <i class="fas fa-certificate"></i>
+      </div>
+      <h2>Confirmación de Firma Digital</h2>
+      <button type="button" class="close-btn" (click)="onCancelSignature()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="confirmation-modal-body">
+      <div class="confirmation-content">
+        <div class="declaration-box">
+          <h3>
+            <i class="fas fa-shield-alt"></i>
+            Declaración de Responsabilidad
+          </h3>
+          <div class="declaration-text">
+            <p><strong>Al proceder con la firma digital, usted declara y acepta que:</strong></p>
+            <ul>
+              <li>Es el titular autorizado de esta cuenta y tiene la capacidad legal para firmar</li>
+              <li>La información proporcionada en este trámite es veraz y completa</li>
+              <li>Comprende que la firma digital tiene plena validez legal</li>
+              <li>Se responsabiliza por todas las acciones realizadas con su firma digital</li>
+              <li>Acepta que el documento firmado no podrá ser modificado posteriormente</li>
+              <li>Autoriza el registro de fecha, hora y ubicación de la firma para fines de auditoría</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="terms-box">
+          <h4>
+            <i class="fas fa-file-contract"></i>
+            Términos y Condiciones de Firma Digital
+          </h4>
+          <div class="terms-content">
+            <p>• Su firma será asociada permanentemente con su usuario</p>
+            <p>• El trámite firmado tendrá validez legal ante cualquier instancia</p>
+            <p>• Se generará un registro de auditoría inmutable</p>
+            <p>• No podrá negar la autoría del documento firmado</p>
+            <p>• Cualquier uso indebido de la firma digital será responsabilidad exclusiva del usuario</p>
+            
+          </div>
+        </div>
+
+        <div class="warning-box">
+          <i class="fas fa-exclamation-triangle"></i>
+          <strong>IMPORTANTE:</strong> Solo proceda si está completamente seguro de su decisión.
+          Esta acción es irreversible.
+        </div>
+      </div>
+    </div>
+
+    <div class="confirmation-modal-footer">
+      <button type="button" class="btn-cancel" (click)="onCancelSignature()">
+        <i class="fas fa-times"></i>
+        Cancelar
+      </button>
+      <button type="button" class="btn-proceed" (click)="onConfirmSignature()">
+        <i class="fas fa-pen-fancy"></i>
+        Acepto y Deseo Firmar
+      </button>
+    </div>
+
+  </div>
+</div>

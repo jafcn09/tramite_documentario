@@ -1561,12 +1561,20 @@ export class UserProfileComponent implements OnInit {
   }
 
   getBackRoute(): string {
-    const roleRoutes: { [key: string]: string } = {
-      'ADMIN': '/admin/tablero',
-      'ADMINISTRATIVO': '/administrativo/tablero',
-      'USUARIO': '/usuario/tablero',
-    };
-    return roleRoutes[this.currentUser?.role?.name || ''] || '/';
+    const roleName = this.currentUser?.role?.name?.toUpperCase();
+
+    switch (roleName) {
+      case 'USUARIO':
+        return '/usuario/mis-tramites';
+      case 'ADMINISTRATIVO':
+        return '/administrativo/dashboard';
+      case 'ADMIN':
+        return '/admin/dashboard';
+      case 'ESTUDIANTE':
+        return '/estudiante/tablero';
+      default:
+        return '/';
+    }
   }
 
   changePassword() {

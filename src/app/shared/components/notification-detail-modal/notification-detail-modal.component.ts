@@ -506,6 +506,7 @@ export class NotificationDetailModalComponent implements OnChanges {
         if (this.notificacion) {
           this.notificacion.esLeida = true;
           this.notificacion.fechaLectura = new Date();
+          this.notificacionService.actualizarContadorNoLeidas();
         }
       }
     });

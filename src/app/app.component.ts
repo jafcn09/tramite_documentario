@@ -4,6 +4,7 @@ import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { DevToolsProtectionService } from './core/services/devtools-protection.service';
 import { AntiTamperingService } from './core/services/anti-tampering.service';
 import { HtmlObfuscatorService } from './core/services/html-obfuscator.service';
+import { AuthService } from './services/auth.service';
 
 @Component({
   selector: 'app-root',
@@ -21,6 +22,7 @@ export class AppComponent implements OnInit {
 
   constructor(
     private router: Router,
+    private authService: AuthService,
     private devToolsProtection: DevToolsProtectionService,
     private antiTampering: AntiTamperingService,
     private htmlObfuscator: HtmlObfuscatorService
@@ -90,6 +92,31 @@ export class AppComponent implements OnInit {
   }
   
   goHome(): void {
-    this.router.navigate(['/']);
+    const user = this.authService.currentUserValue;
+
+    if (!user || !user.role) {
+
+      this.router.navigate(['/']);
+      return;
+    }
+
+    const roleName = user.role.name.toUpperCase();
+
+    switch (roleName) {
+      case 'USUARIO':
+        this.router.navigate(['/usuario/mis-tramites']);
+        break;
+      case 'ADMINISTRATIVO':
+        this.router.navigate(['/administrativo/dashboard']);
+        break;
+      case 'ADMIN':
+        this.router.navigate(['/admin/dashboard']);
+        break;
+      case 'ESTUDIANTE':
+        this.router.navigate(['/estudiante/tablero']);
+        break;
+      default:
+        this.router.navigate(['/']);
+    }
   }
 }

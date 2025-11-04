@@ -35,8 +35,6 @@ export class TramitePublicoService {
   private apiUrl = `${environment.apiUrl}/api/tramites/public`;
 
   constructor(private http: HttpClient) {}
-
-  // Búsqueda pública de trámites por código o texto
   buscarTramites(
     codigo?: string, 
     texto?: string,
@@ -148,7 +146,6 @@ export class TramitePublicoService {
   
   formatearPrioridad(prioridad: string): string {
     const prioridades: { [key: string]: string } = {
-      'BAJA': 'Baja',
       'NORMAL': 'Normal',
       'ALTA': 'Alta',
       'URGENTE': 'Urgente'
@@ -173,7 +170,7 @@ export class TramitePublicoService {
 
   getClasePrioridad(prioridad: string): string {
     const clases: { [key: string]: string } = {
-      'BAJA': 'prioridad-baja',
+  
       'NORMAL': 'prioridad-normal',
       'ALTA': 'prioridad-alta',
       'URGENTE': 'prioridad-urgente'

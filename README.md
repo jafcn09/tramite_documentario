@@ -1,80 +1,86 @@
 # Sistema de Trámite Documentario - Frontend
 
-Aplicación Angular 17 para gestión integral de trámites documentarios universitarios con sistema de roles, notificaciones en tiempo real y diseño responsive.
+Aplicación Angular 17 standalone para gestión de trámites con firma digital, visualización de QR, notificaciones WebSocket en tiempo real y diseño responsive TailwindCSS.
+
 ## Tecnologías
-- **Angular 17.3.0** - Framework principal
-- **TypeScript 5.4.2** - Lenguaje de desarrollo
-- **Tailwind CSS** - Framework de estilos
+
+- **Angular 17.3.11** - Standalone components
+- **TypeScript 5.4.2** - Tipado fuerte
+- **TailwindCSS 3.4.1** - Framework de estilos
 - **RxJS 7.8.0** - Programación reactiva
-- **FontAwesome 7.0.0** - Sistema de iconos
-- **WebSocket (STOMP)** - Comunicación en tiempo real
-- **Angular SSR** - Renderizado del lado del servidor
-## Características
-- Dashboards personalizados por tipo de usuario
-- Notificaciones en tiempo real vía WebSocket
-- Búsqueda pública de trámites por expediente
-- Gestión completa de documentos y archivos adjuntos
-- Diseño responsive mobile-first
-- Autenticación y autorización por rutas
-- Seguimiento de progreso de trámites con días hábiles
-- Sistema de descargas con contador visual
+- **FontAwesome 7.0.0** - Iconos vectoriales
+- **WebSocket STOMP** - Tiempo real
+- **Angular SSR** - Server-side rendering
 
-## Prerrequisitos
+## Características Principales
 
-- Node.js 18+
-- npm 9+
-- Angular CLI 17.3.11+
+### Gestión de Trámites
+- Dashboards personalizados: Admin, Administrativo, Usuario, Estudiante
+- Creación con formularios validados y archivos adjuntos
+- Derivación inteligente entre áreas
+- Seguimiento con días hábiles
+- Búsqueda pública por expediente
 
-## Instalación
+### Firma Digital
+- Canvas HTML5 para captura manuscrita
+- Restricción por rol: Estudiantes solo SIMPLE
+- Tipos: SIMPLE, CONFORMIDAD, AVANZADA, CUALIFICADA
+- Conversión a Base64 para backend
+- Validación de consentimiento
 
-1. **Instalar dependencias**
-```bash
-cd tramite_documentario/front
-npm install
-```
-3. **Ejecutar aplicación**
-```bash
-npm start
-```
-## Estructura del Proyecto
+### Códigos QR
+- Visualización en modales con diseño moderno
+- Generación automática al crear trámites
+- Descarga de imágenes QR en PNG
+- Verificación pública sin autenticación
+- Contador de escaneos
+
+### Notificaciones
+- WebSocket STOMP con reconexión automática
+- Badge contador en navbar
+- Marcado leído/no leído
+- Navegación directa al trámite
+
+### Seguridad
+- JWT con access + refresh tokens
+- Guards por rol y autenticación
+- Interceptores HTTP automáticos
+- Renovación automática de tokens
+
+#
+## Estructura
 
 ```
 src/app/
-├── admin/                    # Dashboard administrativo
-├── administrativo/           # Panel staff administrativo
-├── usuario/                  # Dashboard usuarios regulares
-├── estudiante/               # Panel estudiantes
-│   ├── dashboard/            # Dashboard principal estudiante
-│   ├── nuevo-tramite/        # Creación de trámites
-│   └── notificaciones/       # Sistema de notificaciones
-├── features/                 # Funcionalidades principales
-│   ├── mis-tramites/         # Gestión de trámites propios
-│   ├── bandeja-tramites/     # Bandeja administrativa
-│   └── tramites/             # Componentes de trámites
-├── services/                 # Servicios HTTP y lógica
-│   ├── auth.service.ts       # Autenticación
-│   ├── mis-tramites.service.ts # Gestión de trámites
-│   └── notification.service.ts # WebSocket notifications
-├── shared/                   # Componentes compartidos
-├── guards/                   # Protección de rutas
-├── models/                   # Interfaces TypeScript
-└── environments/             # Configuraciones de entorno
+├── admin/                  - Dashboard admin
+├── administrativo/         - Panel staff
+├── usuario/                - Dashboard usuarios
+├── estudiante/             - Panel estudiantes
+├── features/
+│   ├── mis-tramites/       - Trámites propios
+│   ├── bandeja-tramites/   - Bandeja administrativa
+│   ├── tramites/           - Componentes trámites
+│   └── firma-digital/      - Firma digital
+├── services/
+│   ├── auth.service.ts     - Autenticación JWT
+│   ├── tramite.service.ts  - CRUD trámites
+│   ├── firma-digital.service.ts - Firmas
+│   ├── qr-code.service.ts  - QR codes
+│   └── notification.service.ts - WebSocket
+├── shared/
+│   ├── components/         - Componentes reutilizables
+│   ├── interfaces/         - TypeScript interfaces
+│   └── guards/             - Auth y role guards
+└── environments/           - Configuraciones
 ```
 
+## Scripts
 
-## Configuración de Build
+```bash
+npm start           # Desarrollo (puerto 4200)
+npm run build       # Build producción
+npm test            # Tests unitarios
+npm run lint        # Linter
+```
 
-- **Desarrollo**: `ng serve` con hot reload
-- **Producción**: Build optimizado con tree-shaking y minificación
-- **SSR**: Soporte para renderizado del lado del servidor
-
-## Servicios Principales
-
-- **AuthService**: Manejo de autenticación y roles
-- **MisTramitesService**: CRUD de trámites propios
-- **NotificationService**: WebSocket para notificaciones
-- **TramiteService**: Gestión general de trámites
-
-
-## Universidad Nacional de Tumbes
-**Desarrollado por Jhafet Cánepa - 2025**
+© 2025 Universidad Nacional de Tumbes - Desarrollado por Jhafet Cánepa

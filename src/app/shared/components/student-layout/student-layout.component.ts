@@ -429,13 +429,13 @@ import { MisTramitesService } from '../../../services/mis-tramites.service';
       background: #e5e7eb;
     }
 
-    /* Main Content */
+   
     .main-content {
       flex: 1;
       overflow-y: auto;
     }
 
-    /* Responsive */
+
     @media (max-width: 768px) {
       .header-container {
         padding: 0 1rem;
@@ -502,7 +502,6 @@ import { MisTramitesService } from '../../../services/mis-tramites.service';
       }
     }
 
-    /* Clean notification bell styling */
     ::ng-deep .notifications-area .bell-btn {
       width: 36px;
       height: 36px;

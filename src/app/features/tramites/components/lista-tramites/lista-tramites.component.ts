@@ -12,13 +12,9 @@ import { BandejaTramitesService } from '../../../../services/bandeja-tramites.se
 import { firstValueFrom } from 'rxjs';
 import { NuevoTramiteModalComponent } from '../nuevo-tramite-modal/nuevo-tramite-modal.component';
 import { DetalleTramiteModalComponent } from '../detalle-tramite-modal/detalle-tramite-modal.component';
+import { EstadisticasTramites } from '../../../../shared/interfaces/estadistca_interface';
 
-interface EstadisticasTramites {
-  total: number;
-  enRevision: number;
-  aprobados: number;
-  finalizados: number;
-}
+
 
 @Component({
   selector: 'app-lista-tramites',

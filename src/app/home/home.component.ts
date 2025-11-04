@@ -1,22 +1,8 @@
 import { Component, OnInit, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { Module, Stat } from '../shared/interfaces/module.interface';
 
-interface Module {
-  id: string;
-  title: string;
-  subtitle: string;
-  icon: string;
-  gradient: string;
-  delay: number;
-  features: string[];
-}
-
-interface Stat {
-  value: string;
-  label: string;
-  icon: string;
-}
 
 @Component({
   selector: 'app-home',

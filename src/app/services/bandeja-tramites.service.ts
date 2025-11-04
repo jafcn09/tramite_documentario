@@ -481,7 +481,7 @@ export class BandejaTramitesService {
     }>(`${tramitesUrl}/${tramiteId}/permisos`)
       .pipe(
         tap(permisos => {
-          console.log(`[DEBUG FRONTEND] Permisos recibidos para trámite ${tramiteId}:`, permisos);
+ permisos;
         }),
         catchError(error => {
           return of({

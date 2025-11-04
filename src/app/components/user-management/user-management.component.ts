@@ -487,12 +487,22 @@ import { Area, Role, User } from './user.interface';
           <form [formGroup]="resetPasswordForm" (ngSubmit)="resetUserPassword()">
             <div class="form-group">
               <label for="newPassword">Nueva Contraseña (opcional)</label>
-              <input type="password" 
-                     id="newPassword" 
+              <input type="password"
+                     id="newPassword"
                      formControlName="newPassword"
                      class="form-control"
                      placeholder="Dejar vacío para generar automáticamente">
-              <small class="help-text">Si no especificas una contraseña, se generará una automáticamente y se enviará por email.</small>
+              <small class="help-text">
+                Si dejas este campo vacío, se generará una contraseña segura aleatoria (8-12 caracteres) y se enviará por correo electrónico.
+              </small>
+              <div class="error-message" *ngIf="resetPasswordForm.get('newPassword')?.invalid && resetPasswordForm.get('newPassword')?.touched">
+                <span *ngIf="resetPasswordForm.get('newPassword')?.errors?.['minlength']">
+                  La contraseña debe tener al menos 6 caracteres
+                </span>
+                <span *ngIf="resetPasswordForm.get('newPassword')?.errors?.['maxlength']">
+                  La contraseña no puede exceder 50 caracteres
+                </span>
+              </div>
             </div>
             
             <div class="form-group">
@@ -1297,6 +1307,14 @@ import { Area, Role, User } from './user.interface';
       color: #319795;
     }
 
+    .help-text {
+      display: block;
+      font-size: 12px;
+      color: #718096;
+      margin-top: 6px;
+      line-height: 1.4;
+    }
+
     /* Desktop/Mobile Toggle - Fixed */
     .desktop-only {
       display: block;
@@ -1837,7 +1855,7 @@ export class UserManagementComponent implements OnInit {
     });
 
     this.resetPasswordForm = this.fb.group({
-      newPassword: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(50)]],
+      newPassword: ['', [Validators.minLength(6), Validators.maxLength(50)]],
       reason: [''],
       mustChangePassword: [false]
     });
@@ -2098,15 +2116,22 @@ export class UserManagementComponent implements OnInit {
   }
 
   resetUserPassword() {
-    if (!this.selectedUserForPassword || this.resetPasswordForm.invalid) {
+    if (!this.selectedUserForPassword) {
+      return;
+    }
+
+    const passwordValue = this.resetPasswordForm.value.newPassword?.trim();
+
+    if (passwordValue && this.resetPasswordForm.get('newPassword')?.invalid) {
+      this.resetPasswordForm.get('newPassword')?.markAsTouched();
       return;
     }
 
     this.resettingPassword = true;
     const token = localStorage.getItem('auth_token');
     const request = {
-      newPassword: this.resetPasswordForm.value.newPassword,
-      reason: this.resetPasswordForm.value.reason || 'Restablecida por administrador',
+      newPassword: passwordValue || '',
+      reason: this.resetPasswordForm.value.reason?.trim() || '',
       mustChangePassword: this.resetPasswordForm.value.mustChangePassword || false
     };
 
@@ -2114,7 +2139,10 @@ export class UserManagementComponent implements OnInit {
       headers: { 'Authorization': `Bearer ${token}` }
     }).subscribe({
       next: (response: any) => {
-        this.showSuccess('Contraseña restablecida correctamente');
+        const message = passwordValue
+          ? 'Contraseña restablecida correctamente'
+          : 'Contraseña generada y enviada por correo electrónico';
+        this.showSuccess(message);
         this.loadUsers();
         this.closeResetPasswordModal();
       },

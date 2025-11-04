@@ -6,15 +6,16 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ModalBaseComponent } from '../../../../shared/components/modal-base/modal-base.component';
 import { TramiteService } from '../../../../services/tramite.service';
 import { ToastService } from '../../../../services/toast.service';
-import { 
-  Tramite, 
-  DocumentoTramite, 
-  HistorialTramite 
+import { AuthService } from '../../../../services/auth.service';
+import {
+  Tramite,
+  DocumentoTramite,
+  HistorialTramite
 } from '../../../../shared/interfaces/tramite.interface';
-import { 
-  MiTramite, 
-  DocumentoMiTramite, 
-  HistorialMiTramite 
+import {
+  MiTramite,
+  DocumentoMiTramite,
+  HistorialMiTramite
 } from '../../../../shared/interfaces/mis-tramites.interface';
 import { MisTramitesService } from '../../../../services/mis-tramites.service';
 
@@ -52,7 +53,8 @@ export class DetalleTramiteModalComponent implements OnInit, OnDestroy, OnChange
     private misTramitesService: MisTramitesService,
     private toastService: ToastService,
     private sanitizer: DomSanitizer,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private authService: AuthService
   ) {}
 
   ngOnChanges(changes: SimpleChanges) {
@@ -233,27 +235,37 @@ export class DetalleTramiteModalComponent implements OnInit, OnDestroy, OnChange
     return clases[prioridad] || 'prioridad-normal';
   }
 
-  formatearFecha(fecha: Date | string): string {
-    const fechaObj = typeof fecha === 'string' ? new Date(fecha) : fecha;
-    return fechaObj.toLocaleDateString('es-PE', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+  formatearFecha(fecha: Date | string | null | undefined): string {
+    if (!fecha) return 'Fecha no disponible';
+    try {
+      const fechaObj = typeof fecha === 'string' ? new Date(fecha) : fecha;
+      return fechaObj.toLocaleDateString('es-PE', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (error) {
+      return 'Fecha inválida';
+    }
   }
 
-  formatearFechaCompleta(fecha: Date | string): string {
-    const fechaObj = typeof fecha === 'string' ? new Date(fecha) : fecha;
-    return fechaObj.toLocaleDateString('es-PE', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+  formatearFechaCompleta(fecha: Date | string | null | undefined): string {
+    if (!fecha) return 'Fecha no disponible';
+    try {
+      const fechaObj = typeof fecha === 'string' ? new Date(fecha) : fecha;
+      return fechaObj.toLocaleDateString('es-PE', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (error) {
+      return 'Fecha inválida';
+    }
   }
 
   getEventoIcon(accion?: string): string {
@@ -309,11 +321,16 @@ export class DetalleTramiteModalComponent implements OnInit, OnDestroy, OnChange
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   }
 
-  getDiasTranscurridos(fecha: Date | string): number {
-    const fechaObj = typeof fecha === 'string' ? new Date(fecha) : fecha;
-    const hoy = new Date();
-    const diferencia = hoy.getTime() - fechaObj.getTime();
-    return Math.floor(diferencia / (1000 * 60 * 60 * 24));
+  getDiasTranscurridos(fecha: Date | string | null | undefined): number {
+    if (!fecha) return 0;
+    try {
+      const fechaObj = typeof fecha === 'string' ? new Date(fecha) : fecha;
+      const hoy = new Date();
+      const diferencia = hoy.getTime() - fechaObj.getTime();
+      return Math.floor(diferencia / (1000 * 60 * 60 * 24));
+    } catch (error) {
+      return 0;
+    }
   }
 
   getDiasVencimiento(fechaVencimiento?: Date | string): number | null {
@@ -364,7 +381,7 @@ export class DetalleTramiteModalComponent implements OnInit, OnDestroy, OnChange
     this.loading = true;
 
     this.subscriptions.add(
-      this.misTramitesService.descargarDocumento(this.tramite.id, documento.nombre!).subscribe({
+      this.misTramitesService.descargarDocumento(this.tramite.id, documento.nombre || '').subscribe({
         next: (blob: Blob) => {
 
           if (blob.size === 0) {
@@ -436,5 +453,77 @@ export class DetalleTramiteModalComponent implements OnInit, OnDestroy, OnChange
     ];
     const tipoLower = tipo?.toLowerCase() || '';
     return officeTypes.some(t => tipoLower.includes(t));
+  }
+
+  // Funciones para manejo de firma digital
+  get currentUserRole(): string {
+    return this.authService.currentUserValue?.role?.name || '';
+  }
+
+  get isAdminOrAdministrative(): boolean {
+    const role = this.currentUserRole;
+    return role === 'ADMINISTRADOR' || role === 'ADMINISTRATIVO';
+  }
+
+  get isUserRole(): boolean {
+    return this.currentUserRole === 'USUARIO';
+  }
+
+  tieneFirmaDigital(): boolean {
+    if (!this.tramiteCompleto) return false;
+    return this.tramiteCompleto.firmaDigitalActiva === true;
+  }
+
+  getNombreCompleto(usuario: any): string {
+    if (!usuario) return 'Usuario desconocido';
+    return `${usuario.nombre || ''} ${usuario.apellidos || ''}`.trim();
+  }
+
+  formatearFechaFirma(fecha: Date | string | null | undefined): string {
+    if (!fecha) return 'No disponible';
+    try {
+      const fechaObj = typeof fecha === 'string' ? new Date(fecha) : fecha;
+      return fechaObj.toLocaleDateString('es-PE', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      });
+    } catch (error) {
+      return 'Fecha inválida';
+    }
+  }
+
+  getMetodoVerificacion(metodo: string | null | undefined): string {
+    if (!metodo) return 'No especificado';
+    const metodos: { [key: string]: string } = {
+      'SIMPLE': 'Firma Digital Simple',
+      'AVANZADA': 'Firma Digital Avanzada',
+      'CUALIFICADA': 'Firma Digital Cualificada'
+    };
+    return metodos[metodo] || metodo;
+  }
+
+  mostrarFirmaSegunRol(): boolean {
+    if (!this.tieneFirmaDigital()) return false;
+
+    // ADMINISTRADOR y ADMINISTRATIVO ven todas las firmas
+    if (this.isAdminOrAdministrative) return true;
+
+    // USUARIO solo ve su propia firma
+    if (this.isUserRole) {
+      const currentUserId = this.authService.currentUserValue?.id;
+      const solicitanteId = this.tramiteCompleto?.usuarioSolicitante?.id;
+      return currentUserId === solicitanteId;
+    }
+
+    return false;
+  }
+
+  mostrarDatosPersonales(): boolean {
+    // ADMINISTRADOR y ADMINISTRATIVO ven datos personales del firmante
+    return this.isAdminOrAdministrative;
   }
 }

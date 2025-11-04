@@ -1,0 +1,262 @@
+/* Estilos específicos para la lista de firmas digitales */
+
+.container {
+  max-width: 1400px;
+}
+
+/* Botones principales */
+.btn-primary {
+  @apply bg-university-600 hover:bg-university-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center;
+}
+
+.btn-secondary {
+  @apply bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center;
+}
+
+/* Formularios */
+.form-input {
+  @apply mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-university-500 focus:border-university-500 sm:text-sm;
+}
+
+.form-select {
+  @apply mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-university-500 focus:border-university-500 sm:text-sm;
+}
+
+/* Tabla responsive */
+.table-container {
+  @apply overflow-x-auto;
+}
+
+@media (max-width: 768px) {
+  .table-container {
+    @apply -mx-4;
+  }
+
+  .table-container table {
+    min-width: 800px;
+  }
+}
+
+/* Estados de firma */
+.estado-pendiente {
+  @apply bg-yellow-100 text-yellow-800;
+}
+
+.estado-firmado {
+  @apply bg-green-100 text-green-800;
+}
+
+.estado-rechazado {
+  @apply bg-red-100 text-red-800;
+}
+
+.estado-expirado {
+  @apply bg-gray-100 text-gray-800;
+}
+
+.estado-revocado {
+  @apply bg-purple-100 text-purple-800;
+}
+
+.estado-verificado {
+  @apply bg-blue-100 text-blue-800;
+}
+
+/* Animaciones de carga */
+.loading-spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Efectos hover para filas de tabla */
+.table-row-hover {
+  @apply transition-colors duration-150;
+}
+
+.table-row-hover:hover {
+  @apply bg-gray-50;
+}
+
+/* Badges responsivos */
+.badge {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+}
+
+@media (max-width: 640px) {
+  .badge {
+    @apply px-2 py-1 text-xs;
+  }
+}
+
+/* Botones de acción */
+.action-button {
+  @apply p-2 rounded-full hover:bg-gray-100 transition-colors duration-200;
+}
+
+.action-button i {
+  @apply text-sm;
+}
+
+/* Panel de filtros */
+.filters-panel {
+  @apply transform transition-all duration-300 ease-in-out;
+}
+
+.filters-panel.show {
+  @apply max-h-96 opacity-100;
+}
+
+.filters-panel.hide {
+  @apply max-h-0 opacity-0 overflow-hidden;
+}
+
+/* Empty state */
+.empty-state {
+  @apply flex flex-col items-center justify-center py-12;
+}
+
+.empty-state-icon {
+  @apply text-gray-400 text-6xl mb-4;
+}
+
+/* Paginación */
+.pagination-button {
+  @apply px-3 py-2 text-sm font-medium border border-gray-300 rounded-md transition-colors duration-200;
+}
+
+.pagination-button:hover:not(:disabled) {
+  @apply bg-gray-50;
+}
+
+.pagination-button:disabled {
+  @apply opacity-50 cursor-not-allowed;
+}
+
+.pagination-button.active {
+  @apply bg-university-600 text-white border-university-600;
+}
+
+/* Avatar circular */
+.avatar {
+  @apply h-10 w-10 rounded-full flex items-center justify-center text-white text-sm font-medium;
+}
+
+/* Truncate text con tooltip */
+.truncate-text {
+  @apply max-w-xs truncate;
+}
+
+/* Ordenamiento de tabla */
+.sort-button {
+  @apply flex items-center space-x-1 hover:text-university-600 transition-colors duration-200;
+}
+
+.sort-icon {
+  @apply text-gray-400 text-xs;
+}
+
+/* Responsividad para móviles */
+@media (max-width: 640px) {
+  .container {
+    @apply px-2;
+  }
+
+  .mobile-hidden {
+    @apply hidden;
+  }
+
+  .mobile-stack {
+    @apply flex flex-col space-y-2;
+  }
+
+  .mobile-full {
+    @apply w-full;
+  }
+}
+
+/* Colores institucionales personalizados */
+.bg-university-50 {
+  background-color: #eff6ff;
+}
+
+.bg-university-100 {
+  background-color: #dbeafe;
+}
+
+.bg-university-600 {
+  background-color: #2563eb;
+}
+
+.bg-university-700 {
+  background-color: #1d4ed8;
+}
+
+.text-university-600 {
+  color: #2563eb;
+}
+
+.text-university-700 {
+  color: #1d4ed8;
+}
+
+.border-university-500 {
+  border-color: #3b82f6;
+}
+
+.ring-university-500 {
+  --tw-ring-color: #3b82f6;
+}
+
+/* Focus states mejorados */
+.focus-enhanced:focus {
+  @apply outline-none ring-2 ring-university-500 ring-offset-2;
+}
+
+/* Estados de loading para botones */
+.btn-loading {
+  @apply opacity-75 cursor-not-allowed;
+}
+
+.btn-loading::after {
+  content: '';
+  @apply inline-block w-4 h-4 ml-2 border-2 border-white border-t-transparent rounded-full;
+  animation: spin 1s linear infinite;
+}
+
+/* Sombras personalizadas */
+.shadow-university {
+  box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.1), 0 2px 4px -1px rgba(37, 99, 235, 0.06);
+}
+
+/* Transiciones suaves */
+.transition-all-smooth {
+  @apply transition-all duration-300 ease-in-out;
+}
+
+/* Estados de error */
+.error-state {
+  @apply bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg;
+}
+
+/* Estados de éxito */
+.success-state {
+  @apply bg-green-50 border border-green-200 text-green-700 p-4 rounded-lg;
+}
+
+/* Warning states */
+.warning-state {
+  @apply bg-yellow-50 border border-yellow-200 text-yellow-700 p-4 rounded-lg;
+}
+
+/* Info states */
+.info-state {
+  @apply bg-blue-50 border border-blue-200 text-blue-700 p-4 rounded-lg;
+}

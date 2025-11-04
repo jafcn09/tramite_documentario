@@ -1810,6 +1810,189 @@
   }
 }
 
+
+.firma-digital-content {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border: 2px solid #28a745;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-top: 1rem;
+  box-shadow: 0 4px 15px rgba(40, 167, 69, 0.1);
+}
+
+.firma-digital-info .info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.firma-digital-info .info-row:last-child {
+  border-bottom: none;
+}
+
+.firma-digital-info .info-row label {
+  font-weight: 600;
+  color: #495057;
+  font-size: 0.95rem;
+}
+
+.estado-firma {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+}
+
+.estado-firma.firma-valida {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.estado-firma.firma-invalida {
+  background-color: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeaa7;
+}
+
+.biometria-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #6f42c1;
+  font-weight: 500;
+}
+
+.firmante-info {
+  background: white;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 1.25rem;
+  margin-top: 1.5rem;
+}
+
+.firmante-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 1rem;
+  border-bottom: 2px solid #e9ecef;
+  padding-bottom: 0.5rem;
+}
+
+.firmante-details .info-row {
+  padding: 0.5rem 0;
+}
+
+.hash-firma {
+  font-family: 'Courier New', monospace;
+  background-color: #f8f9fa;
+  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  color: #6c757d;
+  word-break: break-all;
+}
+
+.firma-visual {
+  background: white;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 1.25rem;
+  margin-top: 1.5rem;
+}
+
+.firma-visual-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 1rem;
+}
+
+.firma-container {
+  display: flex;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.firma-placeholder {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 2rem;
+  border-radius: 12px;
+  text-align: center;
+  min-width: 300px;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.firma-placeholder i {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.9;
+}
+
+.firma-placeholder p {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0.5rem 0;
+}
+
+.firma-placeholder small {
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+.firma-legal-notice {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 2px solid #dee2e6;
+}
+
+.legal-box {
+  background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+  border: 1px solid #ffeaa7;
+  border-radius: 8px;
+  padding: 1rem;
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.legal-box i {
+  color: #856404;
+  font-size: 1.5rem;
+  margin-top: 0.2rem;
+}
+
+.legal-text {
+  flex: 1;
+}
+
+.legal-text strong {
+  color: #856404;
+  font-size: 1rem;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.legal-text p {
+  color: #856404;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
 @media (max-width: 768px) {
   .modal-dialog-custom {
     width: 95%;
@@ -1826,5 +2009,21 @@
 
   .modal-body-custom .preview-message {
     padding: 2rem 1rem;
+  }
+
+  .firma-digital-info .info-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .firma-placeholder {
+    min-width: 100%;
+    padding: 1.5rem;
+  }
+
+  .legal-box {
+    flex-direction: column;
+    gap: 0.75rem;
   }
 }

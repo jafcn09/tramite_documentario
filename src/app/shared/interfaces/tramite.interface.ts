@@ -19,6 +19,14 @@ export interface Tramite {
   respuesta?: string;
   documentos: DocumentoTramite[];
   historial: HistorialTramite[];
+
+  // Campos de firma digital - coinciden exactamente con backend
+  firmaDigitalActiva?: boolean;
+  requiereBiometria?: boolean;
+  firmaValida?: boolean;
+  hashFirma?: string;
+  fechaFirma?: Date;
+  metodoVerificacion?: string;
 }
 
 export interface TipoTramite {
@@ -145,4 +153,13 @@ export interface PaginacionResponse<T> {
   page: number;
   limit: number;
   totalPages: number;
+}
+
+export interface FirmaDigital {
+  activa: boolean;
+  requiereBiometria: boolean;
+  firmaValida: boolean;
+  hashFirma?: string | null;
+  fechaFirma?: Date | null;
+  metodoVerificacion?: string | null;
 }

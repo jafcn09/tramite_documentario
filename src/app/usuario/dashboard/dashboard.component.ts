@@ -612,8 +612,6 @@ export class UsuarioDashboardComponent implements OnInit {
     this.misTramitesService.getMisTramites(1, 100).subscribe({
       next: (response) => {
         const tramites = response.data || [];
-
-        // Contar por estados
         const estadosCount = {
           enRevision: 0,
           enProceso: 0,

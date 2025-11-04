@@ -1,0 +1,347 @@
+<div class="container mx-auto px-4 py-6">
+  <!-- Header -->
+  <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900">Firmas Digitales</h1>
+        <p class="text-gray-600 mt-1">Gestión de firmas digitales y autorizaciones</p>
+      </div>
+
+      <div class="flex flex-wrap gap-3">
+        <button
+          (click)="toggleFiltros()"
+          class="btn-secondary inline-flex items-center gap-2">
+          <i class="fas fa-filter"></i>
+          Filtros
+        </button>
+
+        <button
+          *ngIf="puedeCrear"
+          class="btn-primary inline-flex items-center gap-2">
+          <i class="fas fa-plus"></i>
+          Nueva Solicitud
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel de Filtros -->
+  <div *ngIf="mostrarFiltros" class="bg-white rounded-xl shadow-lg p-6 mb-6">
+    <h3 class="text-lg font-semibold text-gray-900 mb-4">Filtros de Búsqueda</h3>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+      <!-- Estado de Firma -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Estado de Firma</label>
+        <select
+          [(ngModel)]="estadoFirmaSeleccionado"
+          (change)="onFiltroChange()"
+          class="form-select w-full">
+          <option value="">Todos los estados</option>
+          <option *ngFor="let estado of estadosFirma" [value]="estado">
+            {{ getDescripcionEstadoFirma(estado) }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Estado de Autorización -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Estado de Autorización</label>
+        <select
+          [(ngModel)]="estadoAutorizacionSeleccionado"
+          (change)="onFiltroChange()"
+          class="form-select w-full">
+          <option value="">Todos los estados</option>
+          <option *ngFor="let estado of estadosAutorizacion" [value]="estado">
+            {{ getDescripcionEstadoAutorizacion(estado) }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Tipo de Firma -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Tipo de Firma</label>
+        <select
+          [(ngModel)]="tipoFirmaSeleccionado"
+          (change)="onFiltroChange()"
+          class="form-select w-full">
+          <option value="">Todos los tipos</option>
+          <option *ngFor="let tipo of tiposFirma" [value]="tipo">
+            {{ getDescripcionTipoFirma(tipo) }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Búsqueda por texto -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Búsqueda</label>
+        <input
+          type="text"
+          [(ngModel)]="filtroTexto"
+          (input)="onFiltroChange()"
+          placeholder="Buscar por firmante, razón..."
+          class="form-input w-full">
+      </div>
+    </div>
+
+    <div class="flex justify-end">
+      <button
+        (click)="limpiarFiltros()"
+        class="btn-secondary">
+        <i class="fas fa-times mr-2"></i>
+        Limpiar Filtros
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading Spinner -->
+  <div *ngIf="loading" class="flex justify-center items-center py-12">
+    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+  </div>
+
+  <!-- Tabla de Firmas -->
+  <div *ngIf="!loading" class="bg-white rounded-xl shadow-lg overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <button (click)="onSort('id')" class="flex items-center space-x-1">
+                <span>ID</span>
+                <span class="text-gray-400">{{ getSortIcon('id') }}</span>
+              </button>
+            </th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <button (click)="onSort('firmante')" class="flex items-center space-x-1">
+                <span>Firmante</span>
+                <span class="text-gray-400">{{ getSortIcon('firmante') }}</span>
+              </button>
+            </th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <button (click)="onSort('tipoFirma')" class="flex items-center space-x-1">
+                <span>Tipo</span>
+                <span class="text-gray-400">{{ getSortIcon('tipoFirma') }}</span>
+              </button>
+            </th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Estado Firma
+            </th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Estado Autorización
+            </th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <button (click)="onSort('fechaCreacion')" class="flex items-center space-x-1">
+                <span>Fecha Creación</span>
+                <span class="text-gray-400">{{ getSortIcon('fechaCreacion') }}</span>
+              </button>
+            </th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Razón
+            </th>
+            <th scope="col" class="relative px-6 py-3">
+              <span class="sr-only">Acciones</span>
+            </th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          <tr *ngFor="let firma of firmas; trackBy: trackByFirmaId" class="hover:bg-gray-50">
+            <!-- ID -->
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+              #{{ firma.id }}
+            </td>
+
+            <!-- Firmante -->
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="flex items-center">
+                <div class="h-10 w-10 rounded-full bg-university-600 flex items-center justify-center">
+                  <span class="text-white text-sm font-medium">
+                    {{ firma.nombreCompleto | slice:0:2 | uppercase }}
+                  </span>
+                </div>
+                <div class="ml-3">
+                  <div class="text-sm font-medium text-gray-900">{{ firma.nombreCompleto }}</div>
+                  <div class="text-sm text-gray-500">ID: {{ firma.firmante.id }}</div>
+                </div>
+              </div>
+            </td>
+
+            <!-- Tipo de Firma -->
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                {{ getDescripcionTipoFirma(firma.tipoFirma) }}
+              </span>
+            </td>
+
+            <!-- Estado Firma -->
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                    [ngClass]="getColorEstadoFirma(firma.estadoFirma)">
+                {{ getDescripcionEstadoFirma(firma.estadoFirma) }}
+              </span>
+            </td>
+
+            <!-- Estado Autorización -->
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                    [ngClass]="getColorEstadoAutorizacion(firma.estadoAutorizacion)">
+                {{ getDescripcionEstadoAutorizacion(firma.estadoAutorizacion) }}
+              </span>
+            </td>
+
+            <!-- Fecha Creación -->
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              {{ firma.fechaCreacion | date:'dd/MM/yyyy HH:mm' }}
+            </td>
+
+            <!-- Razón -->
+            <td class="px-6 py-4 text-sm text-gray-900">
+              <div class="max-w-xs truncate" [title]="firma.razonFirma">
+                {{ firma.razonFirma }}
+              </div>
+            </td>
+
+            <!-- Acciones -->
+            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+              <div class="flex items-center justify-end space-x-2">
+                <!-- Ver Detalle -->
+                <button
+                  (click)="verDetalle(firma)"
+                  class="text-blue-600 hover:text-blue-900"
+                  title="Ver detalle">
+                  <i class="fas fa-eye"></i>
+                </button>
+
+                <!-- Autorizar (solo si tiene permisos y está pendiente) -->
+                <button
+                  *ngIf="puedeAutorizar && requiereAutorizacion(firma)"
+                  (click)="abrirAutorizacion(firma)"
+                  class="text-green-600 hover:text-green-900"
+                  title="Autorizar">
+                  <i class="fas fa-check-circle"></i>
+                </button>
+
+                <!-- Firmar (solo si puede ser firmada por el usuario) -->
+                <button
+                  *ngIf="puedeSerFirmada(firma) && esFirmaDelUsuario(firma)"
+                  (click)="abrirFirmar(firma)"
+                  class="text-purple-600 hover:text-purple-900"
+                  title="Firmar documento">
+                  <i class="fas fa-signature"></i>
+                </button>
+
+                <!-- Verificar -->
+                <button
+                  *ngIf="firma.estadoFirma === 'FIRMADO'"
+                  (click)="verificarFirma(firma)"
+                  class="text-yellow-600 hover:text-yellow-900"
+                  title="Verificar firma">
+                  <i class="fas fa-shield-alt"></i>
+                </button>
+
+                <!-- Descargar -->
+                <button
+                  *ngIf="puedeDescargar(firma)"
+                  (click)="descargarDocumento(firma)"
+                  class="text-indigo-600 hover:text-indigo-900"
+                  title="Descargar documento firmado">
+                  <i class="fas fa-download"></i>
+                </button>
+
+                <!-- Eliminar -->
+                <button
+                  *ngIf="puedeEliminar"
+                  (click)="eliminarFirma(firma)"
+                  class="text-red-600 hover:text-red-900"
+                  title="Eliminar">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="firmas.length === 0" class="text-center py-12">
+      <i class="fas fa-signature text-gray-400 text-6xl mb-4"></i>
+      <h3 class="text-lg font-medium text-gray-900 mb-2">No hay firmas digitales</h3>
+      <p class="text-gray-500 mb-6">No se encontraron firmas que coincidan con los criterios de búsqueda.</p>
+      <button *ngIf="puedeCrear" class="btn-primary">
+        <i class="fas fa-plus mr-2"></i>
+        Crear Primera Solicitud
+      </button>
+    </div>
+
+    <!-- Paginación -->
+    <div *ngIf="firmas.length > 0" class="bg-white px-6 py-4 border-t border-gray-200">
+      <div class="flex items-center justify-between">
+        <div class="text-sm text-gray-700">
+          Mostrando
+          <span class="font-medium">{{ (currentPage * pageSize) + 1 }}</span>
+          a
+          <span class="font-medium">{{ Math.min((currentPage + 1) * pageSize, totalElements) }}</span>
+          de
+          <span class="font-medium">{{ totalElements }}</span>
+          resultados
+        </div>
+
+        <nav class="flex items-center space-x-2">
+          <button
+            (click)="onPageChange(currentPage - 1)"
+            [disabled]="currentPage === 0"
+            class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+            Anterior
+          </button>
+
+          <div class="flex space-x-1">
+            <button
+              *ngFor="let page of getPageNumbers()"
+              (click)="onPageChange(page)"
+              [ngClass]="{
+                'bg-blue-600 text-white': page === currentPage,
+                'text-gray-500 bg-white hover:bg-gray-50': page !== currentPage
+              }"
+              class="px-3 py-2 text-sm font-medium border border-gray-300 rounded-md">
+              {{ page + 1 }}
+            </button>
+          </div>
+
+          <button
+            (click)="onPageChange(currentPage + 1)"
+            [disabled]="currentPage >= totalPages - 1"
+            class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+            Siguiente
+          </button>
+        </nav>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modales -->
+<!-- TODO: Implementar modales de detalle, autorización y firma -->
+<!--
+<app-detalle-firma-modal
+  *ngIf="mostrarDetalle && firmaSeleccionada"
+  [firma]="firmaSeleccionada"
+  [show]="mostrarDetalle"
+  (close)="cerrarModal()">
+</app-detalle-firma-modal>
+
+<app-autorizacion-modal
+  *ngIf="mostrarAutorizacion && firmaSeleccionada"
+  [firma]="firmaSeleccionada"
+  [show]="mostrarAutorizacion"
+  (close)="cerrarModal()"
+  (autorizado)="onAutorizacionCompleta()">
+</app-autorizacion-modal>
+
+<app-firma-modal
+  *ngIf="mostrarFirmar && firmaSeleccionada"
+  [firma]="firmaSeleccionada"
+  [show]="mostrarFirmar"
+  (close)="cerrarModal()"
+  (firmado)="onFirmaCompleta()">
+</app-firma-modal>
+-->

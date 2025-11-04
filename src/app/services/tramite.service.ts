@@ -19,7 +19,7 @@ import {
   TIPOS_TRAMITE, 
   ESTADOS_TRAMITE, 
   PRIORIDADES_TRAMITE 
-} from '../shared/data/tramite-data';
+} from '../shared/data/tramite-data'
 import { ToastService } from './toast.service';
 
 @Injectable({
@@ -94,6 +94,20 @@ export class TramiteService {
       );
   }
 
+  getTramiteParaEdicion(id: number): Observable<Tramite> {
+    return this.http.get<any>(`${this.apiUrl}/${id}/edicion`)
+      .pipe(
+        map(tramiteBackend => this.mapTramiteFromBackendConFirma(tramiteBackend)),
+        catchError(error => {
+          this.toastService.error(
+            'Error al obtener trámite para edición',
+            'No se pudo obtener el trámite con la información de firma digital.'
+          );
+          throw error;
+        })
+      );
+  }
+
   responderTramite(tramiteId: number, formData: FormData): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/${tramiteId}/responder`, formData)
       .pipe(
@@ -139,13 +153,31 @@ export class TramiteService {
     formData.append('asunto', tramite.asunto);
     formData.append('descripcion', tramite.descripcion);
     formData.append('prioridadId', tramite.prioridadId.toString());
-    
+
     if (tramite.areaDestinoId) {
       formData.append('areaDestinoId', tramite.areaDestinoId.toString());
     }
-    
+
     if (tramite.fechaVencimiento) {
       formData.append('fechaVencimiento', tramite.fechaVencimiento.toISOString());
+    }
+    if ((tramite as any).requiereFirmaDigital !== undefined) {
+      formData.append('requiereFirmaDigital', (tramite as any).requiereFirmaDigital.toString());
+    }
+    if ((tramite as any).tipoFirma) {
+      formData.append('tipoFirma', (tramite as any).tipoFirma);
+    }
+    if ((tramite as any).razonFirma) {
+      formData.append('razonFirma', (tramite as any).razonFirma);
+    }
+    if ((tramite as any).ubicacionFirma) {
+      formData.append('ubicacionFirma', (tramite as any).ubicacionFirma);
+    }
+    if ((tramite as any).consentimientoFirma !== undefined) {
+      formData.append('consentimientoFirma', (tramite as any).consentimientoFirma.toString());
+    }
+    if ((tramite as any).firmaDigitalData) {
+      formData.append('firmaDigitalData', (tramite as any).firmaDigitalData);
     }
 
     if (tramite.documentos && tramite.documentos.length > 0) {
@@ -176,6 +208,14 @@ export class TramiteService {
   }
 
   crearTramiteConArchivos(tramiteData: any): Observable<Tramite> {
+    // 🔍 DEBUG: Log de datos recibidos en el servicio
+    console.log('🔍 DEBUG SERVICIO ANGULAR - Datos recibidos:', {
+      requiereFirmaDigital: tramiteData.requiereFirmaDigital,
+      tipoFirma: tramiteData.tipoFirma,
+      razonFirma: tramiteData.razonFirma,
+      ubicacionFirma: tramiteData.ubicacionFirma
+    });
+
     const request = {
       tipoTramiteId: tramiteData.tipoTramiteId,
       asunto: tramiteData.asunto,
@@ -184,8 +224,33 @@ export class TramiteService {
       fechaVencimiento: tramiteData.fechaVencimiento ? new Date(tramiteData.fechaVencimiento).toISOString() : null,
       areaDestinoId: tramiteData.areaDestinoId,
       observaciones: tramiteData.observaciones,
-      documentos: tramiteData.documentos || []
+      documentos: tramiteData.documentos || [],
+
+      // Campos de firma digital (NUEVOS - requeridos por backend)
+      requiereFirmaDigital: tramiteData.requiereFirmaDigital || false,
+      firmanteId: tramiteData.firmanteId || null,
+      tipoFirma: (tramiteData.tipoFirma && tramiteData.tipoFirma !== 'null') ? tramiteData.tipoFirma : null,
+      razonFirma: (tramiteData.razonFirma && tramiteData.razonFirma !== 'null') ? tramiteData.razonFirma : null,
+      ubicacionFirma: (tramiteData.ubicacionFirma && tramiteData.ubicacionFirma !== 'null') ? tramiteData.ubicacionFirma : null,
+      consentimientoFirma: tramiteData.consentimientoFirma || false,
+      firmaDigitalData: tramiteData.firmaDigitalData || null,
+
+      // Campos de firma digital (OBSOLETOS - mantener por compatibilidad)
+      firmaDigitalActiva: tramiteData.requiereFirmaDigital || false,
+      firmaDigitalRequiereBiometria: false,
+      firmaDigitalValida: false,
+      firmaDigitalHash: tramiteData.firmaDigitalData || null,
+      firmaDigitalFecha: tramiteData.requiereFirmaDigital ? new Date().toISOString() : null,
+      firmaDigitalMetodoVerificacion: (tramiteData.tipoFirma && tramiteData.tipoFirma !== 'null') ? tramiteData.tipoFirma : null
     };
+
+    // 🔍 DEBUG: Log de request que se enviará al backend
+    console.log('🔍 DEBUG SERVICIO ANGULAR - Request a enviar:', {
+      requiereFirmaDigital: request.requiereFirmaDigital,
+      tipoFirma: request.tipoFirma,
+      razonFirma: request.razonFirma,
+      ubicacionFirma: request.ubicacionFirma
+    });
 
     return this.http.post<Tramite>(`${this.apiUrl}/con-archivos`, request)
       .pipe(
@@ -213,7 +278,7 @@ export class TramiteService {
           );
           this.tramitesSubject.next(tramitesActualizados);
 
-          const estadoNuevo = ESTADOS_TRAMITE.find(e => e.id === request.nuevoEstadoId);
+          const estadoNuevo = ESTADOS_TRAMITE.find((e: EstadoTramite) => e.id === request.nuevoEstadoId);
           this.toastService.success(
             'Estado actualizado',
             `El trámite ${tramiteActualizado.codigo} cambió a "${estadoNuevo?.nombre}".`
@@ -483,11 +548,15 @@ export class TramiteService {
           const tramitesActuales = this.tramitesSubject.value;
           const tramitesActualizados = tramitesActuales.filter(t => t.id !== tramiteId);
           this.tramitesSubject.next(tramitesActualizados);
+          this.toastService.success(
+            'Trámite eliminado',
+            'El trámite se eliminó correctamente.'
+          );
         }),
         catchError(error => {
           this.toastService.error(
             'Error al eliminar trámite',
-            'No se pudo eliminar el trámite. Intente nuevamente.'
+            error.error?.error || 'No se pudo eliminar el trámite. Verifica tus permisos e inténtalo nuevamente.'
           );
           throw error;
         })
@@ -572,6 +641,22 @@ export class TramiteService {
       } : undefined,
       documentos: tramiteBackend.documentosAdjuntos || [],
       historial: tramiteBackend.historial || []
+    };
+  }
+
+  private mapTramiteFromBackendConFirma(tramiteBackend: any): any {
+    const tramite = this.mapTramiteFromBackend(tramiteBackend);
+
+    return {
+      ...tramite,
+      firmaDigital: {
+        activa: tramiteBackend.firmaDigitalActiva || false,
+        requiereBiometria: tramiteBackend.requiereBiometria || false,
+        firmaValida: tramiteBackend.firmaValida || false,
+        hashFirma: tramiteBackend.hashFirma || null,
+        fechaFirma: tramiteBackend.fechaFirma ? new Date(tramiteBackend.fechaFirma) : null,
+        metodoVerificacion: tramiteBackend.metodoVerificacion || null
+      }
     };
   }
 
@@ -740,22 +825,22 @@ export class TramiteService {
   }
 
   private getTipoTramiteNombre(tipoId: number): string {
-    const tipo = TIPOS_TRAMITE.find(t => t.id === tipoId);
+    const tipo = TIPOS_TRAMITE.find((t: TipoTramite) => t.id === tipoId);
     return tipo?.nombre || '';
   }
 
   private getPrioridadTramiteNombre(prioridadId: number): string {
-    const prioridad = PRIORIDADES_TRAMITE.find(p => p.id === prioridadId);
+    const prioridad = PRIORIDADES_TRAMITE.find((p: PrioridadTramite) => p.id === prioridadId);
     return prioridad?.nombre || '';
   }
 
   private mapTipoTramiteToEnum(tipoId: number): string {
     const tipoMap: { [key: number]: string } = {
-      1: 'TRAMITE_ADMINISTRATIVO',  // Resolución Rectoral
-      2: 'TRAMITE_ADMINISTRATIVO',  // Resolución Decanal
-      3: 'SOLICITUD_CERTIFICADO',   // Certificación de Documentos
-      4: 'AUTORIZACION',            // Autorización de Eventos
-      5: 'SOLICITUD_PERMISO',       // Permisos de Infraestructura
+      1: 'TRAMITE_ADMINISTRATIVO',  
+      2: 'TRAMITE_ADMINISTRATIVO',  
+      3: 'SOLICITUD_CERTIFICADO',  
+      4: 'AUTORIZACION',           
+      5: 'SOLICITUD_PERMISO',      
       6: 'TRAMITE_ADMINISTRATIVO'   // Convenios Interinstitucionales
     };
     return tipoMap[tipoId] || 'OTRO';
@@ -763,10 +848,9 @@ export class TramiteService {
 
   private mapPrioridadToEnum(prioridadId: number): string {
     const prioridadMap: { [key: number]: string } = {
-      1: 'BAJA',
-      2: 'NORMAL',
-      3: 'ALTA',
-      4: 'URGENTE'
+      1: 'NORMAL',
+      2: 'ALTA',
+      3: 'URGENTE'
     };
     return prioridadMap[prioridadId] || 'NORMAL';
   }

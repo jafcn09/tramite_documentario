@@ -3,7 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
-import { Areas, Usuario } from './areas.interface';
+import { Areas } from '../../shared/interfaces/areas.interface';
+import { Usuario } from '../../shared/interfaces/areas.interface';
+
 
 @Component({
   selector: 'app-areas',

@@ -248,7 +248,16 @@
           >
             <i class="fas fa-edit"></i>
           </button>
-          
+
+          <button
+            *ngIf="puedeEliminarTramite(tramite)"
+            class="btn-action delete"
+            (click)="$event.stopPropagation(); eliminarTramite(tramite)"
+            title="Eliminar trámite"
+          >
+            <i class="fas fa-trash"></i>
+          </button>
+
           <button
             [class]="'btn-action download ' + (estaVencido(tramite) ? 'disabled' : '')"
             [disabled]="estaVencido(tramite)"
@@ -268,7 +277,7 @@
           </div>
 
           <ng-container *ngIf="isAdministrativo && canProcessTramites && tramite.estado.id !== 7">
-       
+
             <button
               *ngIf="isAdministrativo"
               [class]="'btn-action approve ' + (estaVencido(tramite) || !puedeAprobar(tramite) ? 'disabled' : '')"
@@ -296,18 +305,18 @@
             >
               <i class="fas fa-route"></i>
             </button>
-
-       
-            <button
-              *ngIf="isAdministrativo"
-              [class]="'btn-action respond ' + (estaVencido(tramite) || !puedeResponder(tramite) ? 'disabled' : '')"
-              [disabled]="estaVencido(tramite) || !puedeResponder(tramite)"
-              (click)="handleResponderClick($event, tramite)"
-              [title]="estaVencido(tramite) ? 'Trámite vencido - No se puede responder' : (puedeResponder(tramite) ? 'Responder trámite' : 'No se puede responder en este estado')"
-            >
-              <i class="fas fa-paper-plane"></i>
-            </button>
           </ng-container>
+
+
+          <button
+            *ngIf="isAdministrativo"
+            [class]="'btn-action respond ' + (estaVencido(tramite) || !puedeResponder(tramite) ? 'disabled' : '')"
+            [disabled]="estaVencido(tramite) || !puedeResponder(tramite)"
+            (click)="handleResponderClick($event, tramite)"
+            [title]="estaVencido(tramite) ? 'Trámite vencido - No se puede responder' : (puedeResponder(tramite) ? 'Responder trámite' : 'No se puede responder en este estado')"
+          >
+            <i class="fas fa-paper-plane"></i>
+          </button>
      
 
         </div>
@@ -321,10 +330,10 @@
         >
           <i class="fas fa-clock"></i>
           <span *ngIf="getDiasVencimiento(tramite.fechaVencimiento)! < 0">
-            Vencido hace {{ -getDiasVencimiento(tramite.fechaVencimiento)! }} días hábiles
+            -{{ -getDiasVencimiento(tramite.fechaVencimiento)! }}d
           </span>
           <span *ngIf="getDiasVencimiento(tramite.fechaVencimiento)! >= 0">
-            {{ getDiasVencimiento(tramite.fechaVencimiento) }} días hábiles restantes
+            {{ getDiasVencimiento(tramite.fechaVencimiento) }}d
           </span>
         </div>
       </div>
@@ -388,6 +397,16 @@
                 >
                   <i class="fas fa-edit"></i>
                 </button>
+
+                <button
+                  *ngIf="puedeEliminarTramite(tramite)"
+                  class="btn-mini delete"
+                  (click)="eliminarTramite(tramite)"
+                  title="Eliminar"
+                >
+                  <i class="fas fa-trash"></i>
+                </button>
+
                 <button
                   [class]="'btn-mini download ' + (estaVencido(tramite) ? 'disabled' : '')"
                   [disabled]="estaVencido(tramite)"
@@ -647,8 +666,6 @@
           </div>
         </div>
       </div>
-
-      <!-- Área y asignación -->
       <div class="asignacion-section" *ngIf="tramiteSeleccionado.areaDestino && isAdministrativo">
         <h4><i class="fas fa-building"></i> Asignación</h4>
         <div class="info-item">
@@ -661,6 +678,41 @@
       </div>
 
 
+
+      <div class="firma-digital-section" *ngIf="mostrarFirmaDigitalEnDetalle(tramiteSeleccionado)">
+        <h3>
+          <i class="fas fa-signature"></i>
+          Firma Digital
+        </h3>
+        <div class="firma-digital-info-large">
+          <div class="firma-status-large">
+            <div class="status-badge-large success">
+              <i class="fas fa-check-circle"></i>
+              <span>Documento Firmado Digitalmente</span>
+            </div>
+          </div>
+          <div class="firma-two-columns">
+            <div class="column-left" *ngIf="tramiteSeleccionado.fechaFirma">
+              <div class="fecha-firma-large">
+                <i class="fas fa-calendar-alt"></i>
+                <div class="fecha-content">
+                  <span class="fecha-label">Fecha de Firma</span>
+                  <span class="fecha-value">{{ tramiteSeleccionado.fechaFirma | date:'dd/MM/yyyy HH:mm:ss' }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="column-right">
+              <div class="validez-legal-large">
+                <i class="fas fa-certificate"></i>
+                <div class="validez-content">
+                  <span class="validez-label">Validez Legal</span>
+                  <span class="validez-value">Firma digital con validez legal equivalente a manuscrita</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <div class="progreso-section">
         <h4><i class="fas fa-chart-line"></i> Progreso del Trámite</h4>
@@ -1037,6 +1089,186 @@
           </div>
         </div>
 
+        <div class="firma-digital-section">
+          <div class="firma-digital-header">
+            <div class="header-left">
+              <h4>
+                <i class="fas fa-signature"></i>
+                Firma Digital
+              </h4>
+              <span class="firma-status-badge" *ngIf="tramiteSeleccionado?.firmaDigitalActiva">
+                <i class="fas fa-check-circle"></i>
+                Activa
+              </span>
+            </div>
+            <div class="header-actions">
+              <button
+                type="button"
+                class="btn-edit-signature"
+                [class.active]="editarFirmaDigital"
+                (click)="toggleEditarFirmaDigital()"
+                title="Editar o crear nueva firma digital">
+                <i class="fas" [ngClass]="editarFirmaDigital ? 'fa-times' : 'fa-edit'"></i>
+                <span>{{ editarFirmaDigital ? 'Cancelar Edición' : 'Editar/Crear Firma' }}</span>
+              </button>
+            </div>
+          </div>
+          <div class="firma-actual" *ngIf="tramiteSeleccionado?.firmaDigitalActiva && !editarFirmaDigital">
+
+            <div class="firma-details">
+         
+              <div class="detail-row" *ngIf="tramiteSeleccionado.fechaFirma">
+                <span class="label">Fecha de Firma:</span>
+                <span class="value">{{ tramiteSeleccionado.fechaFirma | date:'dd/MM/yyyy HH:mm' }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="firma-edit-form" *ngIf="editarFirmaDigital || (!tramiteSeleccionado?.firmaDigitalActiva)">
+
+            <div class="form-group">
+              <label for="editTipoFirma">
+                <i class="fas fa-seal"></i>
+                Tipo de Firma Digital *
+              </label>
+              <select
+                id="editTipoFirma"
+                [(ngModel)]="editTipoFirma"
+                class="form-control">
+                <option *ngFor="let tipo of tiposFirmaEdit" [value]="tipo.value">
+                  {{ tipo.label }}
+                </option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="editRazonFirma">
+                <i class="fas fa-clipboard-list"></i>
+                Motivo de la Firma *
+              </label>
+              <input
+                id="editRazonFirma"
+                type="text"
+                [(ngModel)]="editRazonFirma"
+                class="form-control"
+                placeholder="Ej: Autorización de modificación del trámite"
+                maxlength="100">
+              <small class="form-hint">Especifique el motivo por el cual está firmando digitalmente</small>
+            </div>
+            <div class="form-group">
+              <label for="editUbicacionFirma">
+                <i class="fas fa-map-marker-alt"></i>
+                Ubicación *
+              </label>
+              <select
+                id="editUbicacionFirma"
+                [(ngModel)]="editUbicacionFirma"
+                class="form-control">
+                <option value="">Seleccione un departamento</option>
+                <option *ngFor="let departamento of departamentosPeruEdit" [value]="departamento">
+                  {{ departamento | titlecase }}
+                </option>
+              </select>
+              <small class="form-hint">Seleccione el departamento donde se encuentra firmando</small>
+            </div>
+            <div class="signature-canvas-section">
+              <div class="canvas-header">
+                <label class="canvas-label">
+                  <i class="fas fa-pencil-alt"></i>
+                  Dibuje su Firma Digital *
+                </label>
+                <div class="canvas-status" *ngIf="editSignatureExists">
+                  <i class="fas fa-check-circle text-success"></i>
+                  <span>Firma dibujada</span>
+                </div>
+              </div>
+
+              <div class="signature-canvas-wrapper">
+                <div class="canvas-container">
+                  <canvas
+                    #editSignatureCanvas
+                    class="signature-canvas"
+                    [class.has-signature]="editSignatureExists">
+                  </canvas>
+                  <div class="canvas-placeholder" *ngIf="!editSignatureExists">
+                    <i class="fas fa-signature"></i>
+                    <p>Firme aquí</p>
+                  </div>
+                </div>
+
+                <div class="canvas-actions">
+                  <button
+                    type="button"
+                    class="btn-canvas-action btn-clear"
+                    (click)="editClearCanvas()"
+                    [disabled]="!editSignatureExists"
+                    title="Limpiar firma y empezar de nuevo">
+                    <i class="fas fa-eraser"></i>
+                    <span>Limpiar</span>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn-canvas-action btn-capture"
+                    (click)="editCaptureSignature()"
+                    [disabled]="!editSignatureExists"
+                    title="Capturar firma para continuar">
+                    <i class="fas fa-camera"></i>
+                    <span>Capturar Firma</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="canvas-instructions">
+                <i class="fas fa-info-circle"></i>
+                <span>Dibuje su firma usando el mouse (escritorio) o dedo (móvil). Luego presione "Capturar Firma".</span>
+              </div>
+            </div>
+            <div class="signature-preview" *ngIf="editFirmaDigitalData">
+              <label>Vista Previa de la Firma:</label>
+              <div class="signature-preview-container">
+                <img [src]="editFirmaDigitalData" alt="Firma capturada" class="signature-image">
+                <div class="signature-info">
+                  <p><strong>Tipo:</strong> {{ editTipoFirma }}</p>
+                  <p><strong>Motivo:</strong> {{ editRazonFirma }}</p>
+                  <p><strong>Ubicación:</strong> {{ editUbicacionFirma }}</p>
+                </div>
+              </div>
+            </div>
+            <div class="signature-consent" *ngIf="editFirmaDigitalData">
+              <label class="consent-label">
+                <input
+                  type="checkbox"
+                  [(ngModel)]="editConsentimientoFirma">
+                <span class="consent-text">
+                  <i class="fas fa-shield-alt"></i>
+                  Confirmo que he dibujado mi firma digital y acepto que esta nueva firma
+                  reemplace la anterior y sea utilizada para validar los cambios en este trámite
+                </span>
+              </label>
+            </div>
+            <div class="signature-submit" *ngIf="editFirmaDigitalData && editConsentimientoFirma">
+              <button
+                type="button"
+                class="btn-confirm-signature"
+                (click)="mostrarEditConfirmationModal()">
+                <i class="fas fa-check-circle"></i>
+                Confirmar Nueva Firma Digital
+              </button>
+            </div>
+          </div>
+          <div class="no-firma-message" *ngIf="!tramiteSeleccionado?.firmaDigitalActiva && !editarFirmaDigital">
+            <div class="message-content">
+              <i class="fas fa-info-circle"></i>
+              <p>Este trámite no tiene firma digital. Puede activar la opción arriba para crear una nueva firma.</p>
+              <button
+                type="button"
+                class="btn-create-signature"
+                (click)="toggleEditarFirmaDigital()">
+                <i class="fas fa-plus"></i>
+                Crear Firma Digital
+              </button>
+            </div>
+          </div>
+        </div>
+
         <div class="info-message">
           <div class="info-icon">
             <i class="fas fa-envelope"></i>
@@ -1059,7 +1291,7 @@
       </button>
       <button
         class="btn-primary"
-        [disabled]="guardandoEdicion || !hayCambiosEnFormulario()"
+        [disabled]="guardandoEdicion || !puedeGuardarFormulario"
         (click)="guardarEdicion()">
         <i class="fas fa-spinner fa-spin" *ngIf="guardandoEdicion"></i>
         <i class="fas fa-save" *ngIf="!guardandoEdicion"></i>
@@ -1068,3 +1300,196 @@
     </div>
   </div>
 </div>
+<div *ngIf="showEditConfirmationModal" class="modal-overlay confirmation-modal-overlay">
+  <div class="confirmation-modal-container" (click)="$event.stopPropagation()">
+    <div class="confirmation-modal-header">
+      <div class="header-icon">
+        <i class="fas fa-certificate"></i>
+      </div>
+      <h2>Confirmación de Firma Digital</h2>
+      <p>Nueva firma para modificación de trámite</p>
+    </div>
+
+    <div class="confirmation-modal-body">
+      <div class="declaration-box">
+        <h3>
+          <i class="fas fa-gavel"></i>
+          Declaración de Responsabilidad
+        </h3>
+        <div class="declaration-content">
+          <ul class="declaration-list">
+            <li>
+              <i class="fas fa-check-circle"></i>
+              <span>Declaro que soy el titular legítimo de esta firma digital y tengo plena autoridad para utilizarla en este trámite</span>
+            </li>
+            <li>
+              <i class="fas fa-check-circle"></i>
+              <span>Confirmo que todos los datos proporcionados en este trámite son veraces y exactos</span>
+            </li>
+            <li>
+              <i class="fas fa-check-circle"></i>
+              <span>Acepto la responsabilidad legal de las modificaciones realizadas en este documento</span>
+            </li>
+            <li>
+              <i class="fas fa-check-circle"></i>
+              <span>Esta nueva firma digital reemplazará completamente la firma anterior del trámite</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="terms-box">
+        <h4>
+          <i class="fas fa-file-contract"></i>
+          Términos y Condiciones de Firma Digital
+        </h4>
+        <div class="terms-content">
+          <div class="terms-grid">
+            <div class="term-item">
+              <i class="fas fa-shield-alt"></i>
+              <div class="term-text">
+                <strong>Validez Legal:</strong>
+                <span>La firma digital tiene validez legal equivalente a la firma manuscrita</span>
+              </div>
+            </div>
+            <div class="term-item">
+              <i class="fas fa-lock"></i>
+              <div class="term-text">
+                <strong>Seguridad:</strong>
+                <span>Su firma será protegida con tecnología de encriptación avanzada</span>
+              </div>
+            </div>
+            <div class="term-item">
+              <i class="fas fa-archive"></i>
+              <div class="term-text">
+                <strong>Conservación:</strong>
+                <span>El documento firmado se conservará de manera permanente en nuestros sistemas</span>
+              </div>
+            </div>
+            <div class="term-item">
+              <i class="fas fa-edit"></i>
+              <div class="term-text">
+                <strong>Modificación:</strong>
+                <span>Esta nueva firma reemplazará la firma anterior y se aplicará a los cambios realizados</span>
+              </div>
+            </div>
+            <div class="term-item">
+              <i class="fas fa-clock"></i>
+              <div class="term-text">
+                <strong>Registro Temporal:</strong>
+                <span>Se registrará la fecha y hora exacta de esta nueva firma digital</span>
+              </div>
+            </div>
+            <div class="term-item">
+              <i class="fas fa-user-shield"></i>
+              <div class="term-text">
+                <strong>No Repudio:</strong>
+                <span>Una vez firmado, no podrá negar la autoría del documento</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="warning-box">
+        <div class="warning-header">
+          <i class="fas fa-exclamation-triangle"></i>
+          <h4>¡Importante! - Responsabilidades Legales</h4>
+        </div>
+        <div class="warning-content">
+          <p>
+            <strong>Al firmar digitalmente este documento, usted está:</strong>
+          </p>
+          <ul class="warning-list">
+            <li>Asumiendo plena responsabilidad por el contenido modificado del trámite</li>
+            <li>Confirmando que tiene autoridad para realizar estos cambios</li>
+            <li>Aceptando que esta firma tendrá validez legal completa</li>
+            <li>Entendiendo que la firma anterior será reemplazada permanentemente</li>
+          </ul>
+          <div class="legal-notice">
+            <i class="fas fa-info-circle"></i>
+            <span>Esta acción es irreversible y tiene implicaciones legales importantes</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="signature-summary">
+        <h4>
+          <i class="fas fa-clipboard-check"></i>
+          Resumen de la Nueva Firma
+        </h4>
+        <div class="summary-content">
+          <div class="summary-row">
+            <span class="summary-label">Tipo de Firma:</span>
+            <span class="summary-value">{{ editTipoFirma }}</span>
+          </div>
+          <div class="summary-row">
+            <span class="summary-label">Motivo:</span>
+            <span class="summary-value">{{ editRazonFirma }}</span>
+          </div>
+          <div class="summary-row">
+            <span class="summary-label">Ubicación:</span>
+            <span class="summary-value">{{ editUbicacionFirma }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="confirmation-modal-footer">
+      <button
+        class="btn-cancel-confirmation"
+        (click)="cerrarEditConfirmationModal()">
+        <i class="fas fa-times"></i>
+        Cancelar
+      </button>
+      <button
+        class="btn-proceed-confirmation"
+        (click)="confirmarEditFirmaDigital()">
+        <i class="fas fa-pen-nib"></i>
+        Acepto y Deseo Firmar
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal-delete-overlay" *ngIf="showDeleteConfirmModal" (click)="cancelarEliminacion()">
+  <div class="modal-delete-content" (click)="$event.stopPropagation()">
+    <div class="modal-delete-header">
+      <div class="modal-delete-icon">
+        <i class="fas fa-exclamation-triangle"></i>
+      </div>
+      <h3>Eliminar Trámite</h3>
+    </div>
+
+    <div class="modal-delete-body">
+      <p class="modal-delete-question">¿Está seguro de eliminar el trámite <strong>{{ tramiteParaEliminar?.codigo }}</strong>?</p>
+      <p class="modal-delete-warning">Esta acción no se puede deshacer.</p>
+    </div>
+
+    <div class="modal-delete-footer">
+      <button
+        class="btn-delete-cancel"
+        (click)="cancelarEliminacion()">
+        <i class="fas fa-times"></i>
+        Cancelar
+      </button>
+      <button
+        class="btn-delete-confirm"
+        (click)="confirmarEliminacion()">
+        <i class="fas fa-trash"></i>
+        Eliminar
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<app-nuevo-tramite-modal
+  [show]="showNuevoTramiteModal"
+  [modoEdicion]="modoEdicion"
+  [tramiteParaEditar]="tramiteParaEditar"
+  (close)="cerrarModalNuevoTramite()"
+  (tramiteCreado)="onTramiteCreado($event)"
+  (tramiteActualizado)="onTramiteActualizado($event)">
+</app-nuevo-tramite-modal>

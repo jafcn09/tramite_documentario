@@ -277,32 +277,562 @@
   cursor: not-allowed;
 }
 
+/* Estilos para Firma Digital */
+.signature-section {
+  background: linear-gradient(135deg, #f8f9ff 0%, #f0f4ff 100%);
+  border: 2px solid #e0e7ff;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px 0;
+}
+
+.signature-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e0e7ff;
+}
+
+.signature-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.toggle-label {
+  font-weight: 500;
+  color: #374151;
+  cursor: pointer;
+  user-select: none;
+}
+
+.signature-toggle input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #667eea;
+}
+
+.signature-config {
+  margin-top: 16px;
+  animation: slideDown 0.3s ease-out;
+}
+
+.signature-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.signature-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.signature-field.full-width {
+  grid-column: 1 / -1;
+}
+
+.signature-canvas-container {
+  margin: 16px 0;
+}
+
+.canvas-wrapper {
+  position: relative;
+  border: 2px dashed #667eea;
+  border-radius: 8px;
+  background: white;
+  padding: 16px;
+}
+
+.signature-canvas {
+  width: 100%;
+  height: 200px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  cursor: crosshair;
+  background: white;
+  touch-action: none;
+}
+
+.signature-canvas.has-signature {
+  border-color: #10b981;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.1);
+}
+
+.canvas-controls {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  justify-content: center;
+}
+
+.btn-canvas {
+  padding: 8px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: white;
+  color: #374151;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.btn-canvas:hover:not(:disabled) {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}
+
+.btn-canvas:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-canvas.clear {
+  color: #ef4444;
+  border-color: #fecaca;
+}
+
+.btn-canvas.clear:hover:not(:disabled) {
+  background: #fef2f2;
+  border-color: #ef4444;
+}
+
+.btn-canvas.capture {
+  color: #10b981;
+  border-color: #a7f3d0;
+}
+
+.btn-canvas.capture:hover:not(:disabled) {
+  background: #ecfdf5;
+  border-color: #10b981;
+}
+
+.signature-preview {
+  margin-top: 16px;
+  padding: 16px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+
+.preview-container {
+  position: relative;
+  display: inline-block;
+}
+
+.signature-image {
+  max-width: 200px;
+  max-height: 100px;
+  display: block;
+}
+
+.btn-remove-signature {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 50%;
+  background: #ef4444;
+  color: white;
+  cursor: pointer;
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease;
+}
+
+.btn-remove-signature:hover:not(:disabled) {
+  background: #dc2626;
+}
+
+.signature-consent {
+  margin: 16px 0;
+  padding: 16px;
+  background: #fef3c7;
+  border: 1px solid #f59e0b;
+  border-radius: 8px;
+}
+
+.consent-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.consent-text {
+  font-size: 0.875rem;
+  color: #92400e;
+  line-height: 1.5;
+}
+
+.signature-info {
+  margin-top: 16px;
+}
+
+.info-box {
+  padding: 16px;
+  background: #eff6ff;
+  border: 1px solid #dbeafe;
+  border-radius: 8px;
+  display: flex;
+  gap: 12px;
+}
+
+.info-content {
+  color: #1e40af;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.info-content strong {
+  color: #1d4ed8;
+}
+
+.info-content ul {
+  margin: 8px 0 0 16px;
+  padding: 0;
+}
+
+.info-content li {
+  margin-bottom: 4px;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @media (max-width: 768px) {
   .modal-content {
     padding: 1rem;
   }
-  
+
   .form-row {
     flex-direction: column;
     gap: 0.5rem;
   }
-  
+
   .file-item {
     flex-direction: column;
     align-items: stretch;
     gap: 0.75rem;
   }
-  
+
   .file-actions {
     max-width: none;
   }
-  
+
   .modal-footer-custom {
     flex-direction: column-reverse;
     gap: 0.5rem;
   }
-  
+
   .modal-footer-custom .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .signature-section {
+    margin: 16px 0;
+    padding: 16px;
+  }
+
+  .signature-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .signature-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .canvas-wrapper {
+    padding: 12px;
+  }
+
+  .signature-canvas {
+    height: 150px;
+  }
+
+  .canvas-controls {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .btn-canvas {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .signature-image {
+    max-width: 150px;
+    max-height: 75px;
+  }
+}
+
+/* Modal de Confirmación de Firma Digital */
+.confirmation-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1050;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.confirmation-modal-overlay.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.confirmation-modal-container {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  max-width: 600px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  transform: scale(0.9) translateY(-20px);
+  transition: transform 0.3s ease;
+}
+
+.confirmation-modal-overlay.show .confirmation-modal-container {
+  transform: scale(1) translateY(0);
+}
+
+.confirmation-modal-header {
+  display: flex;
+  align-items: center;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  color: white;
+  border-radius: 12px 12px 0 0;
+  position: relative;
+}
+
+.confirmation-modal-header .header-icon {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 1rem;
+}
+
+.confirmation-modal-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  flex: 1;
+}
+
+.confirmation-modal-header .close-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.25rem;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.confirmation-modal-header .close-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.confirmation-modal-body {
+  padding: 1.5rem;
+}
+
+.declaration-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.declaration-box h3 {
+  margin: 0 0 1rem 0;
+  color: #1e293b;
+  font-size: 1.1rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.declaration-box h3 i {
+  color: #10b981;
+}
+
+.declaration-text p {
+  margin: 0 0 0.75rem 0;
+  color: #475569;
+  font-weight: 500;
+}
+
+.declaration-text ul {
+  margin: 0;
+  padding-left: 1.25rem;
+  list-style-type: disc;
+}
+
+.declaration-text li {
+  margin-bottom: 0.5rem;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+.terms-box {
+  background: #fefce8;
+  border: 1px solid #fde047;
+  border-radius: 8px;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.terms-box h4 {
+  margin: 0 0 1rem 0;
+  color: #a16207;
+  font-size: 1rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.terms-content p {
+  margin: 0 0 0.5rem 0;
+  color: #a16207;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.warning-box {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 1rem;
+  color: #dc2626;
+  font-weight: 500;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.warning-box i {
+  color: #ef4444;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.confirmation-modal-footer {
+  padding: 1.5rem;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+
+.btn-cancel {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #64748b;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-cancel:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.btn-proceed {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  border: none;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+}
+
+.btn-proceed:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+  transform: translateY(-1px);
+}
+
+/* Responsive para modal de confirmación */
+@media (max-width: 768px) {
+  .confirmation-modal-container {
+    width: 95%;
+    margin: 1rem;
+  }
+
+  .confirmation-modal-header {
+    padding: 1rem;
+  }
+
+  .confirmation-modal-body {
+    padding: 1rem;
+  }
+
+  .confirmation-modal-footer {
+    padding: 1rem;
+    flex-direction: column;
+  }
+
+  .btn-cancel,
+  .btn-proceed {
     width: 100%;
     justify-content: center;
   }

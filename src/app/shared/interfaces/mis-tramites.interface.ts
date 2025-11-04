@@ -57,6 +57,24 @@ export interface MiTramite {
   estaVencido?: boolean;
   diasRestantes?: number;
   progreso?: number;
+  firmaDigitalActiva?: boolean;
+  requiereBiometria?: boolean;
+  firmaValida?: boolean;
+  hashFirma?: string;
+  fechaFirma?: Date;
+  metodoVerificacion?: string;
+  tipoFirma?: string;
+  razonFirma?: string;
+  ubicacionFirma?: string;
+}
+
+export interface FirmaDigital {
+  activa: boolean;
+  requiereBiometria: boolean;
+  firmaValida: boolean;
+  hashFirma?: string | null;
+  fechaFirma?: Date | null;
+  metodoVerificacion?: string | null;
 }
 
 export interface DocumentoMiTramite {
@@ -92,6 +110,11 @@ export interface EditarMiTramiteRequest {
   tipo?: string;
   prioridad?: string;
   areaDestinoId?: number;
+  tipoFirma?: string;
+  razonFirma?: string;
+  ubicacionFirma?: string;
+  firmaDigitalData?: string;
+  requiereFirmaDigital?: boolean;
 }
 
 export interface FiltrosMisTramites {

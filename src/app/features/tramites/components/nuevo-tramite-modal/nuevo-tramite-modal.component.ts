@@ -1,7 +1,8 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
 
 import { ModalBaseComponent } from '../../../../shared/components/modal-base/modal-base.component';
 import { BusinessDaysOnlyDirective } from '../../../../shared/directives/business-days-only.directive';
@@ -18,6 +19,7 @@ import {
   CrearTramiteRequest
 } from '../../../../shared/interfaces/tramite.interface';
 
+
 @Component({
   selector: 'app-nuevo-tramite-modal',
   standalone: true,
@@ -25,18 +27,30 @@ import {
   templateUrl: './nuevo-tramite-modal.component.html',
   styleUrl: './nuevo-tramite-modal.component.css'
 })
-export class NuevoTramiteModalComponent implements OnInit, OnDestroy {
+
+export class NuevoTramiteModalComponent implements OnInit, OnDestroy, AfterViewInit {
   @Input() show = false;
+  @Input() modoEdicion = false; 
+  @Input() tramiteParaEditar: any = null; 
   @Output() close = new EventEmitter<void>();
   @Output() tramiteCreado = new EventEmitter<Tramite>();
+  @Output() tramiteActualizado = new EventEmitter<Tramite>();
+
+  @ViewChild('signatureCanvas', { static: false }) signatureCanvas!: ElementRef<HTMLCanvasElement>;
 
 
-  nuevoTramite: Omit<Partial<Tramite>, 'fechaVencimiento'> & { tipoId?: number; prioridadId?: number; areaOrigenId?: number; fechaInicio?: string; fechaVencimiento?: string } = {
+  nuevoTramite: Omit<Partial<Tramite>, 'fechaVencimiento'> & {
+    tipoId?: number;
+    prioridadId?: number;
+    areaOrigenId?: number;
+    fechaInicio?: string;
+    numeroExpediente?: string;
+  } = {
     asunto: '',
     descripcion: '',
     observaciones: '',
-    fechaVencimiento: '',
-    fechaInicio: ''
+    fechaInicio: '',
+    prioridadId: 1 // Valor por defecto: NORMAL
   };
 
 
@@ -48,8 +62,28 @@ export class NuevoTramiteModalComponent implements OnInit, OnDestroy {
   archivosSeleccionados: File[] = [];
   documentosAdjuntos: Partial<DocumentoTramite>[] = [];
 
+  // Propiedades para firma digital
+  requiereFirmaDigital = false;
+  tipoFirma = 'CONFORMIDAD'; // Será actualizado dinámicamente desde backend
+  razonFirma = '';
+  ubicacionFirma = 'LIMA';
+  firmaDigitalData: string | null = null;
+  consentimientoFirma = false;
+  signatureExists = false;
+  showConfirmationModal = false;
+  pendingFormData: any = null;
+
+  // Arrays dinámicos poblados desde backend - NO más hardcoding
+  tiposFirmaCreacion: { value: string; label: string }[] = [];
+
+  departamentosPeru: { value: string; label: string }[] = []; // Poblado dinámicamente desde backend
 
   errors: { [key: string]: string } = {};
+  private canvas!: HTMLCanvasElement;
+  private ctx!: CanvasRenderingContext2D;
+  private isDrawing = false;
+  private startX = 0;
+  private startY = 0;
 
   private subscriptions = new Subscription();
 
@@ -57,13 +91,21 @@ export class NuevoTramiteModalComponent implements OnInit, OnDestroy {
     private tramiteService: TramiteService,
     private toastService: ToastService,
     private organigramaService: OrganigramaService,
-    private authService: AuthService
+    private authService: AuthService,
+    private http: HttpClient
   ) {}
 
   ngOnInit() {
     this.cargarDatosCatalogo();
     this.cargarAreas();
-    this.resetForm();
+    this.cargarTiposFirmaBackend();
+    this.cargarDepartamentosBackend();
+
+    if (this.modoEdicion && this.tramiteParaEditar) {
+      this.cargarDatosTramiteParaEdicion();
+    } else {
+      this.resetForm();
+    }
   }
 
   ngOnDestroy() {
@@ -85,7 +127,6 @@ export class NuevoTramiteModalComponent implements OnInit, OnDestroy {
   }
 
   private cargarAreas() {
-    // Solo cargar áreas si es necesario para mostrar información
     this.subscriptions.add(
       this.organigramaService.obtenerAreasPlanas().subscribe(
         areas => {
@@ -96,23 +137,127 @@ export class NuevoTramiteModalComponent implements OnInit, OnDestroy {
     );
   }
 
+  private cargarTiposFirmaBackend() {
+    this.subscriptions.add(
+      this.http.get<any[]>('http://localhost:8081/api/departamentos/tipos-firma').subscribe({
+        next: (tipos) => {
+          console.log('🔄 Tipos de firma obtenidos del backend:', tipos);
+
+          // Filtrar tipos de firma según rol del usuario
+          const currentUser = this.authService.currentUserValue;
+          const roleName = currentUser?.role?.name?.toUpperCase();
+
+          let tiposFiltrados = tipos;
+
+          if (roleName === 'ESTUDIANTE') {
+            // ESTUDIANTE: Solo permite firma SIMPLE
+            tiposFiltrados = tipos.filter(tipo => tipo.codigo === 'SIMPLE');
+            console.log('👨‍🎓 Rol ESTUDIANTE detectado - Mostrando solo firma SIMPLE');
+          } else {
+            // USUARIO/ADMINISTRATIVO/ADMIN: Todos los tipos excepto SIMPLE
+            tiposFiltrados = tipos.filter(tipo => tipo.codigo !== 'SIMPLE');
+            console.log('👔 Rol personal detectado - Mostrando firmas avanzadas');
+          }
+
+          this.tiposFirmaCreacion = tiposFiltrados.map(tipo => ({
+            value: tipo.codigo,
+            label: this.capitalizarPalabras(tipo.descripcion)
+          }));
+
+          if (this.tiposFirmaCreacion.length > 0) {
+            this.tipoFirma = this.tiposFirmaCreacion[0].value;
+          }
+
+          console.log('✅ Tipos de firma configurados:', this.tiposFirmaCreacion);
+        },
+        error: (error) => {
+          console.error('❌ Error al cargar tipos de firma del backend:', error);
+          this.toastService.warning('Advertencia', 'No se pudieron cargar los tipos de firma. Usando valores por defecto.');
+        }
+      })
+    );
+  }
+
+  private cargarDepartamentosBackend() {
+    this.subscriptions.add(
+      this.http.get<any[]>('http://localhost:8081/api/departamentos').subscribe({
+        next: (departamentos) => {
+          console.log('🔄 Departamentos obtenidos del backend:', departamentos);
+          this.departamentosPeru = departamentos.map(dept => ({
+            value: dept.codigo,
+            label: dept.nombre
+          }));
+      
+          const lima = this.departamentosPeru.find(d => d.value === 'LIMA');
+          if (lima) {
+            this.ubicacionFirma = lima.value;
+          } else if (this.departamentosPeru.length > 0) {
+            this.ubicacionFirma = this.departamentosPeru[0].value;
+          }
+        },
+        error: (error) => {
+          console.error('❌ Error al cargar departamentos del backend:', error);
+          this.toastService.warning('Advertencia', 'No se pudieron cargar los departamentos. Usando valores por defecto.');
+        }
+      })
+    );
+  }
+
+  private capitalizarPalabras(texto: string): string {
+    return texto.split(' ').map(palabra =>
+      palabra.charAt(0).toUpperCase() + palabra.slice(1).toLowerCase()
+    ).join(' ');
+  }
+
   private configurarAreaSegunRol() {
     const currentUser = this.authService.currentUserValue;
-
-    // Para usuarios con rol USUARIO: usar su área asignada (obligatorio y readonly)
     if (currentUser && currentUser.role?.name === 'USUARIO' && (currentUser as any).area?.id) {
       this.nuevoTramite.areaOrigenId = (currentUser as any).area.id;
     }
+  }
 
-    // Para ESTUDIANTE: el área se determinará automáticamente en el backend
-    // Para otros roles: no se configura área de origen
+  private cargarDatosTramiteParaEdicion() {
+    if (!this.tramiteParaEditar) return;
+
+    console.log('🔍 Cargando datos para edición:', this.tramiteParaEditar);
+
+    this.nuevoTramite = {
+      id: this.tramiteParaEditar.id,
+      asunto: this.tramiteParaEditar.asunto || '',
+      descripcion: this.tramiteParaEditar.descripcion || '',
+      observaciones: this.tramiteParaEditar.observaciones || '',
+      tipoId: this.tramiteParaEditar.tipo?.id || this.tramiteParaEditar.tipoId,
+      prioridadId: this.tramiteParaEditar.prioridad?.id || this.tramiteParaEditar.prioridadId,
+      areaOrigenId: this.tramiteParaEditar.areaOrigen?.id || this.tramiteParaEditar.areaOrigenId,
+      fechaInicio: this.tramiteParaEditar.fechaCreacion ? this.tramiteParaEditar.fechaCreacion.split('T')[0] : this.getCurrentDate(),
+      numeroExpediente: this.tramiteParaEditar.numeroExpediente || ''
+    };
+
+
+    if (this.tramiteParaEditar.firmaDigitalActiva) {
+      this.requiereFirmaDigital = true;
+      this.tipoFirma = this.tramiteParaEditar.tipoFirma || 'CONFORMIDAD';
+      this.razonFirma = this.tramiteParaEditar.razonFirma || `Edición de trámite - ${this.nuevoTramite.asunto}`;
+      this.ubicacionFirma = this.tramiteParaEditar.ubicacionFirma || 'LIMA';
+
+ 
+      if (this.tramiteParaEditar.hashFirma) {
+        this.firmaDigitalData = this.tramiteParaEditar.hashFirma;
+        this.signatureExists = true;
+        this.consentimientoFirma = true;
+      }
+    } else {
+      this.requiereFirmaDigital = false;
+    }
+    this.archivosSeleccionados = [];
+    this.documentosAdjuntos = [];
+
+    this.errors = {};
   }
 
   private resetForm() {
     const currentUser = this.authService.currentUserValue;
     let areaOrigenId = undefined;
-
-    // Solo para rol USUARIO se preselecciona su área (automático e inmutable)
     if (currentUser?.role?.name === 'USUARIO' && (currentUser as any).area?.id) {
       areaOrigenId = (currentUser as any).area.id;
     }
@@ -121,12 +266,22 @@ export class NuevoTramiteModalComponent implements OnInit, OnDestroy {
       asunto: '',
       descripcion: '',
       observaciones: '',
-      fechaVencimiento: '',
-      fechaInicio: this.getCurrentDate(), // Fecha de hoy precargada
-      areaOrigenId: areaOrigenId
+      fechaInicio: this.getCurrentDate(),
+      areaOrigenId: areaOrigenId,
+      prioridadId: 1
     };
     this.archivosSeleccionados = [];
     this.documentosAdjuntos = [];
+    this.requiereFirmaDigital = false;
+    this.tipoFirma = 'CONFORMIDAD';
+    this.razonFirma = '';
+    this.ubicacionFirma = 'LIMA';
+    this.firmaDigitalData = null;
+    this.consentimientoFirma = false;
+    this.signatureExists = false;
+    this.showConfirmationModal = false;
+    this.pendingFormData = null;
+
     this.errors = {};
   }
 
@@ -177,45 +332,57 @@ export class NuevoTramiteModalComponent implements OnInit, OnDestroy {
     this.errors = {};
     let esValido = true;
 
+    // En modo edición, TODOS los campos son opcionales
+    if (this.modoEdicion) {
+      return true;
+    }
+
+    // En modo creación, validar campos obligatorios
     if (!this.nuevoTramite.asunto?.trim()) {
       this.errors['asunto'] = 'El asunto es obligatorio';
       esValido = false;
     }
 
-    if (!this.nuevoTramite.descripcion?.trim()) {
-      this.errors['descripcion'] = 'La descripción es obligatoria';
-      esValido = false;
-    }
+    // Descripción es opcional
 
     if (!this.nuevoTramite.tipoId) {
       this.errors['tipoId'] = 'Debe seleccionar un tipo de trámite';
       esValido = false;
     }
 
-    if (!this.nuevoTramite.prioridadId) {
-      this.errors['prioridadId'] = 'Debe seleccionar una prioridad';
+    return esValido;
+  }
+
+  private validarFirmaDigital(): boolean {
+    if (!this.requiereFirmaDigital) {
+      return true;
+    }
+
+    let esValido = true;
+
+    if (!this.tipoFirma) {
+      this.errors['tipoFirma'] = 'Debe seleccionar un tipo de firma';
       esValido = false;
     }
 
-    // Área de origen se configura automáticamente, no necesita validación manual
+    if (!this.ubicacionFirma) {
+      this.errors['ubicacionFirma'] = 'Debe seleccionar un departamento';
+      esValido = false;
+    }
 
-    if (this.nuevoTramite.fechaVencimiento && this.nuevoTramite.fechaVencimiento.trim()) {
-      // Usar fecha local para evitar problemas de timezone
-      const fechaVencimiento = new Date(this.nuevoTramite.fechaVencimiento + 'T12:00:00');
-      const fechaInicioString = this.nuevoTramite.fechaInicio || this.getCurrentDate();
-      const fechaInicio = new Date(fechaInicioString + 'T12:00:00');
+    if (!this.razonFirma?.trim()) {
+      this.errors['razonFirma'] = 'Debe indicar la razón de la firma';
+      esValido = false;
+    }
 
-      // Verificar que no sea anterior al día de inicio
-      if (fechaVencimiento <= fechaInicio) {
-        this.errors['fechaVencimiento'] = 'La fecha de vencimiento debe ser posterior a la fecha de inicio';
-        esValido = false;
-      }
+    if (!this.consentimientoFirma) {
+      this.errors['consentimientoFirma'] = 'Debe aceptar los términos y condiciones';
+      esValido = false;
+    }
 
-      // Verificar que sea un día hábil (lunes a viernes)
-      if (fechaVencimiento.getDay() === 0 || fechaVencimiento.getDay() === 6) {
-        this.errors['fechaVencimiento'] = 'La fecha de vencimiento debe ser un día hábil (lunes a viernes)';
-        esValido = false;
-      }
+    if (!this.signatureExists || !this.firmaDigitalData) {
+      this.errors['firmaDigital'] = 'Debe dibujar su firma y presionar Capturar';
+      esValido = false;
     }
 
     return esValido;
@@ -227,33 +394,91 @@ export class NuevoTramiteModalComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Prevenir múltiples submits
     if (this.loading) {
       return;
     }
 
-    this.loading = true;
-
     try {
+      // 🔍 DEBUG: Log de valores antes de enviar
+      console.log('🔍 DEBUG FRONTEND - Valores antes de enviar:');
+      console.log('  - requiereFirmaDigital:', this.requiereFirmaDigital);
+      console.log('  - tipoFirma:', this.tipoFirma);
+      console.log('  - razonFirma:', this.razonFirma);
+      console.log('  - ubicacionFirma:', this.ubicacionFirma);
+      console.log('  - tiposFirmaCreacion.length:', this.tiposFirmaCreacion.length);
+      console.log('  - departamentosPeru.length:', this.departamentosPeru.length);
 
       const archivosBase64 = await this.procesarArchivosABase64();
-
 
       const tramiteData: any = {
         tipoTramiteId: Number(this.nuevoTramite.tipoId!),
         asunto: this.nuevoTramite.asunto!,
         descripcion: this.nuevoTramite.descripcion!,
         prioridadId: Number(this.nuevoTramite.prioridadId!),
-        fechaVencimiento: this.nuevoTramite.fechaVencimiento && this.nuevoTramite.fechaVencimiento.trim() ? new Date(this.nuevoTramite.fechaVencimiento + 'T12:00:00') : undefined,
         observaciones: this.nuevoTramite.observaciones,
-        documentos: archivosBase64
+        documentos: archivosBase64,
+        requiereFirmaDigital: this.requiereFirmaDigital
       };
 
-      // Solo agregar areaOrigenId para usuarios con rol USUARIO
+      // Solo enviar campos de firma digital si se requiere
+      if (this.requiereFirmaDigital) {
+        tramiteData.tipoFirma = this.tipoFirma;
+        tramiteData.razonFirma = this.razonFirma;
+        tramiteData.ubicacionFirma = this.ubicacionFirma;
+        tramiteData.consentimientoFirma = this.consentimientoFirma;
+        tramiteData.firmaDigitalData = this.firmaDigitalData;
+      }
+
+      console.log('🔍 DEBUG FRONTEND - tramiteData completo:', tramiteData);
+
       if (this.isUsuarioRole && this.nuevoTramite.areaOrigenId) {
         tramiteData.areaOrigenId = Number(this.nuevoTramite.areaOrigenId);
       }
 
+      if (this.requiereFirmaDigital) {
+        if (!this.validarFirmaDigital()) {
+          return;
+        }
+        this.submitTramite(tramiteData);
+      } else {
+        this.submitTramite(tramiteData);
+      }
+
+    } catch (error) {
+      console.error('Error en onSubmit:', error);
+      this.toastService.error('Error', 'Ocurrió un error inesperado al procesar los archivos');
+    }
+  }
+
+  private submitTramite(tramiteData: any) {
+    this.loading = true;
+
+    if (this.modoEdicion && this.tramiteParaEditar?.id) {
+      console.log('🔄 Actualizando trámite:', this.tramiteParaEditar.id, tramiteData);
+
+      this.subscriptions.add(
+        this.tramiteService.actualizarTramiteConArchivos(this.tramiteParaEditar.id, tramiteData).subscribe({
+          next: (tramiteActualizado) => {
+            this.loading = false;
+            this.toastService.success(
+              'Trámite actualizado',
+              `El trámite ${tramiteActualizado.codigo} ha sido actualizado exitosamente`
+            );
+            this.tramiteActualizado.emit(tramiteActualizado);
+            this.onClose();
+          },
+          error: (error) => {
+            console.error('Error al actualizar trámite:', error);
+            this.loading = false;
+            this.toastService.error(
+              'Error',
+              'No se pudo actualizar el trámite. Inténtelo nuevamente.'
+            );
+          }
+        })
+      );
+    } else {
+      console.log('🆕 Creando nuevo trámite:', tramiteData);
 
       this.subscriptions.add(
         this.tramiteService.crearTramiteConArchivos(tramiteData).subscribe({
@@ -263,11 +488,11 @@ export class NuevoTramiteModalComponent implements OnInit, OnDestroy {
               'Trámite creado',
               `El trámite ${tramiteCreado.codigo} y sus documentos han sido creados exitosamente`
             );
-
             this.tramiteCreado.emit(tramiteCreado);
             this.onClose();
           },
-          error: () => {
+          error: (error) => {
+            console.error('Error al crear trámite:', error);
             this.loading = false;
             this.toastService.error(
               'Error',
@@ -276,9 +501,6 @@ export class NuevoTramiteModalComponent implements OnInit, OnDestroy {
           }
         })
       );
-    } catch (error) {
-      this.loading = false;
-      this.toastService.error('Error', 'Ocurrió un error inesperado al procesar los archivos');
     }
   }
 
@@ -315,85 +537,6 @@ export class NuevoTramiteModalComponent implements OnInit, OnDestroy {
     return today.toISOString().split('T')[0];
   }
 
-  // Obtiene la fecha mínima para fecha de vencimiento (día siguiente al inicio, solo días hábiles)
-  getMinFechaVencimiento(): string {
-    if (!this.nuevoTramite.fechaInicio) {
-      return this.getCurrentDate();
-    }
-
-    // Usar fecha local para evitar problemas de timezone
-    const fechaInicio = new Date(this.nuevoTramite.fechaInicio + 'T12:00:00');
-    const siguienteDia = new Date(fechaInicio);
-    siguienteDia.setDate(fechaInicio.getDate() + 1);
-
-    // Buscar el siguiente día hábil (lunes a viernes)
-    while (siguienteDia.getDay() === 0 || siguienteDia.getDay() === 6) { // 0=domingo, 6=sábado
-      siguienteDia.setDate(siguienteDia.getDate() + 1);
-    }
-
-    return siguienteDia.toISOString().split('T')[0];
-  }
-
-  // Valida que la fecha de vencimiento sea un día hábil
-  onFechaVencimientoChange(event: Event): void {
-    this.validarYCorregirFecha(event);
-  }
-
-  private validarYCorregirFecha(event: Event): void {
-    const input = event.target as HTMLInputElement;
-
-    if (!input.value) {
-      this.nuevoTramite.fechaVencimiento = '';
-      return;
-    }
-
-    // Crear fechas usando la fecha local para evitar problemas de timezone
-    const fechaSeleccionada = new Date(input.value + 'T12:00:00');
-    const fechaInicioString = this.nuevoTramite.fechaInicio || this.getCurrentDate();
-    const fechaInicio = new Date(fechaInicioString + 'T12:00:00');
-
-    // Verificar si es anterior o igual a la fecha de inicio
-    if (fechaSeleccionada <= fechaInicio) {
-      this.toastService.warning(
-        'Fecha no válida',
-        'La fecha de vencimiento debe ser posterior a la fecha de inicio'
-      );
-
-      // Usar la fecha mínima permitida pero sin bloquear la interacción
-      const fechaMinima = this.getMinFechaVencimiento();
-
-      // Usar setTimeout para no interferir con el event loop
-      setTimeout(() => {
-        this.nuevoTramite.fechaVencimiento = fechaMinima;
-      }, 0);
-      return;
-    }
-
-    // Verificar si es fin de semana
-    if (fechaSeleccionada.getDay() === 0 || fechaSeleccionada.getDay() === 6) {
-      this.toastService.warning(
-        'Fecha no válida',
-        'Solo se permiten días hábiles (lunes a viernes) como fecha de vencimiento'
-      );
-
-      // Encontrar el siguiente día hábil
-      const siguienteDiaHabil = new Date(fechaSeleccionada);
-      while (siguienteDiaHabil.getDay() === 0 || siguienteDiaHabil.getDay() === 6) {
-        siguienteDiaHabil.setDate(siguienteDiaHabil.getDate() + 1);
-      }
-
-      const fechaHabilString = siguienteDiaHabil.toISOString().split('T')[0];
-
-      // Usar setTimeout para no interferir con el event loop
-      setTimeout(() => {
-        this.nuevoTramite.fechaVencimiento = fechaHabilString;
-      }, 0);
-    } else {
-      // Fecha válida (día hábil), actualizar el modelo
-      this.nuevoTramite.fechaVencimiento = input.value;
-    }
-  }
-
   getAreaNombre(areaId: number): string {
     const area = this.areasDisponibles.find(a => a.id === areaId);
     return area?.nombre || '';
@@ -408,8 +551,6 @@ export class NuevoTramiteModalComponent implements OnInit, OnDestroy {
     const currentUser = this.authService.currentUserValue;
     return currentUser?.role?.name === 'ESTUDIANTE';
   }
-
-  // Método para procesar archivos a base64
   private async procesarArchivosABase64(): Promise<any[]> {
     const archivosBase64: any[] = [];
 
@@ -439,7 +580,7 @@ export class NuevoTramiteModalComponent implements OnInit, OnDestroy {
       const reader = new FileReader();
 
       reader.onload = () => {
-        
+
         const base64 = (reader.result as string).split(',')[1];
         resolve(base64);
       };
@@ -450,5 +591,183 @@ export class NuevoTramiteModalComponent implements OnInit, OnDestroy {
 
       reader.readAsDataURL(archivo);
     });
+  }
+
+
+  private resetFirmaDigitalForm(): void {
+    if (this.tiposFirmaCreacion.length > 0) {
+      this.tipoFirma = this.tiposFirmaCreacion[0].value;
+    } else {
+      this.tipoFirma = 'CONFORMIDAD'; 
+    }
+
+    if (this.modoEdicion) {
+      this.razonFirma = `Modificación de trámite - ${this.nuevoTramite.asunto || 'Edición de trámite'}`;
+    } else {
+      this.razonFirma = `Creación de trámite - ${this.nuevoTramite.asunto || 'Nuevo trámite'}`;
+    }
+
+    if (this.departamentosPeru.length > 0) {
+      const lima = this.departamentosPeru.find(d => d.value === 'LIMA');
+      this.ubicacionFirma = lima ? lima.value : this.departamentosPeru[0].value;
+    } else {
+      this.ubicacionFirma = 'LIMA'; 
+    }
+
+    this.firmaDigitalData = null;
+    this.consentimientoFirma = false;
+    this.signatureExists = false;
+  }
+
+  private clearFirmaDigitalData(): void {
+    this.clearCanvas();
+    this.firmaDigitalData = null;
+    this.consentimientoFirma = false;
+    this.signatureExists = false;
+  }
+
+  onConfirmSignature(): void {
+    if (!this.validarFirmaDigital()) {
+      return;
+    }
+
+    this.showConfirmationModal = false;
+
+    if (this.pendingFormData) {
+      this.submitTramite(this.pendingFormData);
+      this.pendingFormData = null;
+    }
+  }
+
+  onCancelSignature(): void {
+    this.showConfirmationModal = false;
+    this.pendingFormData = null;
+  }
+
+  onProceedToSignature(): void {
+    this.showConfirmationModal = false;
+    this.toastService.info('Complete su firma', 'Dibuje su firma en el área designada y luego haga clic en "Capturar"');
+
+    setTimeout(() => {
+      this.initializeCanvas();
+    }, 100);
+  }
+
+  ngAfterViewInit(): void {
+    if (this.signatureCanvas && this.requiereFirmaDigital) {
+      this.initializeCanvas();
+    }
+  }
+
+  initializeCanvas(): void {
+    if (!this.signatureCanvas) return;
+
+    this.canvas = this.signatureCanvas.nativeElement;
+    this.ctx = this.canvas.getContext('2d')!;
+    this.canvas.width = 400;
+    this.canvas.height = 150;
+    this.ctx.strokeStyle = '#000';
+    this.ctx.lineWidth = 2;
+    this.ctx.lineCap = 'round';
+    this.canvas.addEventListener('mousedown', this.startDrawing.bind(this));
+    this.canvas.addEventListener('mousemove', this.draw.bind(this));
+    this.canvas.addEventListener('mouseup', this.stopDrawing.bind(this));
+
+    this.canvas.addEventListener('touchstart', this.startDrawingTouch.bind(this));
+    this.canvas.addEventListener('touchmove', this.drawTouch.bind(this));
+    this.canvas.addEventListener('touchend', this.stopDrawing.bind(this));
+  }
+
+  startDrawing(e: MouseEvent): void {
+    this.isDrawing = true;
+    const rect = this.canvas.getBoundingClientRect();
+    this.startX = e.clientX - rect.left;
+    this.startY = e.clientY - rect.top;
+  }
+
+  draw(e: MouseEvent): void {
+    if (!this.isDrawing) return;
+
+    const rect = this.canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    this.ctx.beginPath();
+    this.ctx.moveTo(this.startX, this.startY);
+    this.ctx.lineTo(x, y);
+    this.ctx.stroke();
+
+    this.startX = x;
+    this.startY = y;
+    this.signatureExists = true;
+  }
+
+  stopDrawing(): void {
+    this.isDrawing = false;
+  }
+
+  startDrawingTouch(e: TouchEvent): void {
+    e.preventDefault();
+    const touch = e.touches[0];
+    const rect = this.canvas.getBoundingClientRect();
+    this.isDrawing = true;
+    this.startX = touch.clientX - rect.left;
+    this.startY = touch.clientY - rect.top;
+  }
+
+  drawTouch(e: TouchEvent): void {
+    e.preventDefault();
+    if (!this.isDrawing) return;
+
+    const touch = e.touches[0];
+    const rect = this.canvas.getBoundingClientRect();
+    const x = touch.clientX - rect.left;
+    const y = touch.clientY - rect.top;
+
+    this.ctx.beginPath();
+    this.ctx.moveTo(this.startX, this.startY);
+    this.ctx.lineTo(x, y);
+    this.ctx.stroke();
+
+    this.startX = x;
+    this.startY = y;
+    this.signatureExists = true;
+  }
+
+  clearCanvas(): void {
+    if (this.ctx && this.canvas) {
+      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      this.signatureExists = false;
+      this.firmaDigitalData = null;
+    }
+  }
+
+  captureSignature(): void {
+    if (this.canvas && this.signatureExists) {
+      this.firmaDigitalData = this.canvas.toDataURL('image/png');
+      this.toastService.success('Firma capturada', 'Su firma ha sido capturada exitosamente');
+    }
+  }
+
+  onCheckboxChange(event: Event): void {
+    const checkbox = event.target as HTMLInputElement;
+    this.requiereFirmaDigital = checkbox.checked;
+
+    console.log('🔍 DEBUG - onCheckboxChange:', {
+      checked: this.requiereFirmaDigital,
+      tiposFirmaLength: this.tiposFirmaCreacion.length,
+      departamentosLength: this.departamentosPeru.length
+    });
+
+    if (this.requiereFirmaDigital) {
+      this.resetFirmaDigitalForm();
+      this.toastService.info('Firma digital activada', 'Complete los datos de la firma digital');
+
+      setTimeout(() => {
+        this.initializeCanvas();
+      }, 100);
+    } else {
+      this.clearFirmaDigitalData();
+    }
   }
 }

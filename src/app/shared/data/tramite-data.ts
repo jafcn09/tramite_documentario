@@ -137,13 +137,6 @@ export const ESTADOS_TRAMITE: EstadoTramite[] = [
 
 export const PRIORIDADES_TRAMITE: PrioridadTramite[] = [
   {
-    id: 1,
-    nombre: 'Baja',
-    nivel: 1,
-    color: '#28a745',
-    icono: 'fas fa-arrow-down'
-  },
-  {
     id: 2,
     nombre: 'Normal',
     nivel: 2,

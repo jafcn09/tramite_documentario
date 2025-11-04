@@ -1,0 +1,267 @@
+<app-modal-base
+  [show]="show"
+  [title]="modalTitle"
+  [size]="'lg'"
+  [closable]="!loading"
+  [showFooter]="false"
+  (close)="onClose()">
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-6">
+    <div class="bg-gray-50 p-4 rounded-lg">
+      <h3 class="text-lg font-medium text-gray-900 mb-4">Información Básica</h3>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div *ngIf="!tramiteId">
+          <label for="tramiteId" class="block text-sm font-medium text-gray-700 mb-2">
+            Trámite <span class="text-red-500">*</span>
+          </label>
+          <select
+            id="tramiteId"
+            formControlName="tramiteId"
+            class="form-select w-full"
+            [class.border-red-300]="isFieldInvalid('tramiteId')">
+            <option value="">Seleccione un trámite</option>
+            <option *ngFor="let tramite of tramites" [value]="tramite.id">
+              {{ tramite.codigo }} - {{ tramite.asunto }}
+            </option>
+          </select>
+          <p *ngIf="isFieldInvalid('tramiteId')" class="text-red-600 text-sm mt-1">
+            {{ getFieldError('tramiteId') }}
+          </p>
+        </div>
+
+        <!-- Firmante -->
+        <div>
+          <label for="firmanteId" class="block text-sm font-medium text-gray-700 mb-2">
+            Firmante <span class="text-red-500">*</span>
+          </label>
+          <select
+            id="firmanteId"
+            formControlName="firmanteId"
+            class="form-select w-full"
+            [class.border-red-300]="isFieldInvalid('firmanteId')">
+            <option value="">Seleccione un firmante</option>
+            <option *ngFor="let usuario of usuarios" [value]="usuario.id">
+              {{ usuario.nombre }} {{ usuario.apellidos }} - {{ usuario.email }}
+            </option>
+          </select>
+          <p *ngIf="isFieldInvalid('firmanteId')" class="text-red-600 text-sm mt-1">
+            {{ getFieldError('firmanteId') }}
+          </p>
+        </div>
+        <div>
+          <label for="tipoFirma" class="block text-sm font-medium text-gray-700 mb-2">
+            Tipo de Firma <span class="text-red-500">*</span>
+          </label>
+          <select
+            id="tipoFirma"
+            formControlName="tipoFirma"
+            class="form-select w-full"
+            [class.border-red-300]="isFieldInvalid('tipoFirma')">
+            <option *ngFor="let tipo of tiposFirma" [value]="tipo">
+              {{ getDescripcionTipoFirma(tipo) }}
+            </option>
+          </select>
+          <p *ngIf="isFieldInvalid('tipoFirma')" class="text-red-600 text-sm mt-1">
+            {{ getFieldError('tipoFirma') }}
+          </p>
+        </div>
+        <div>
+          <label for="nivelAutorizacionRequerido" class="block text-sm font-medium text-gray-700 mb-2">
+            Nivel de Autorización <span class="text-red-500">*</span>
+          </label>
+          <select
+            id="nivelAutorizacionRequerido"
+            formControlName="nivelAutorizacionRequerido"
+            class="form-select w-full"
+            [class.border-red-300]="isFieldInvalid('nivelAutorizacionRequerido')">
+            <option value="1">ADMINISTRADOR</option>
+            <option value="2">ADMINISTRATIVO</option>
+          </select>
+          <p *ngIf="isFieldInvalid('nivelAutorizacionRequerido')" class="text-red-600 text-sm mt-1">
+            {{ getFieldError('nivelAutorizacionRequerido') }}
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="bg-gray-50 p-4 rounded-lg">
+      <h3 class="text-lg font-medium text-gray-900 mb-4">Detalles de la Firma</h3>
+
+      <div class="space-y-4">
+        <div>
+          <label for="razonFirma" class="block text-sm font-medium text-gray-700 mb-2">
+            Razón de la Firma <span class="text-red-500">*</span>
+          </label>
+          <textarea
+            id="razonFirma"
+            formControlName="razonFirma"
+            rows="3"
+            class="form-textarea w-full"
+            [class.border-red-300]="isFieldInvalid('razonFirma')"
+            placeholder="Describa la razón por la cual se requiere esta firma...">
+          </textarea>
+          <p *ngIf="isFieldInvalid('razonFirma')" class="text-red-600 text-sm mt-1">
+            {{ getFieldError('razonFirma') }}
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label for="ubicacionFirma" class="block text-sm font-medium text-gray-700 mb-2">
+              Ubicación de Firma
+            </label>
+            <input
+              type="text"
+              id="ubicacionFirma"
+              formControlName="ubicacionFirma"
+              class="form-input w-full"
+              placeholder="Ej: Lima, Perú">
+          </div>
+          <div>
+            <label for="contactoFirmante" class="block text-sm font-medium text-gray-700 mb-2">
+              Contacto del Firmante
+            </label>
+            <input
+              type="text"
+              id="contactoFirmante"
+              formControlName="contactoFirmante"
+              class="form-input w-full"
+              placeholder="Email o teléfono de contacto">
+          </div>
+        </div>
+        <div>
+          <label for="observaciones" class="block text-sm font-medium text-gray-700 mb-2">
+            Observaciones
+          </label>
+          <textarea
+            id="observaciones"
+            formControlName="observaciones"
+            rows="3"
+            class="form-textarea w-full"
+            placeholder="Observaciones adicionales...">
+          </textarea>
+        </div>
+      </div>
+    </div>
+    <div class="bg-gray-50 p-4 rounded-lg">
+      <h3 class="text-lg font-medium text-gray-900 mb-4">Configuración Avanzada</h3>
+
+      <div class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label for="expiraEn" class="block text-sm font-medium text-gray-700 mb-2">
+              Fecha de Expiración
+            </label>
+            <input
+              type="datetime-local"
+              id="expiraEn"
+              formControlName="expiraEn"
+              class="form-input w-full">
+            <p class="text-sm text-gray-500 mt-1">Opcional. Fecha límite para completar la firma.</p>
+          </div>
+          <div class="flex items-center space-x-3 pt-8">
+            <input
+              type="checkbox"
+              id="requierePinAdicional"
+              formControlName="requierePinAdicional"
+              class="form-checkbox h-4 w-4 text-university-600 focus:ring-university-500 border-gray-300 rounded">
+            <label for="requierePinAdicional" class="text-sm font-medium text-gray-700">
+              Requiere PIN adicional para firmar
+            </label>
+          </div>
+        </div>
+
+        <div>
+          <label for="motivoSolicitud" class="block text-sm font-medium text-gray-700 mb-2">
+            Motivo de la Solicitud
+          </label>
+          <textarea
+            id="motivoSolicitud"
+            formControlName="motivoSolicitud"
+            rows="2"
+            class="form-textarea w-full"
+            placeholder="Motivo por el cual se solicita esta firma digital...">
+          </textarea>
+        </div>
+      </div>
+    </div>
+    <div class="bg-gray-50 p-4 rounded-lg">
+      <h3 class="text-lg font-medium text-gray-900 mb-4">Documentos Adjuntos</h3>
+      <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
+        <input
+          type="file"
+          multiple
+          accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+          (change)="onFileSelected($event)"
+          class="hidden"
+          #fileInput>
+
+        <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
+        <p class="text-sm text-gray-600 mb-2">
+          Haga clic para seleccionar archivos o arrástrelos aquí
+        </p>
+        <p class="text-xs text-gray-500">
+          PDF, DOC, DOCX, JPG, PNG (máximo 10MB por archivo)
+        </p>
+
+        <button
+          type="button"
+          (click)="fileInput.click()"
+          class="mt-3 px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-university-500">
+          Seleccionar Archivos
+        </button>
+      </div>
+      <div *ngIf="documentosAdjuntosArray.length > 0" class="mt-4 space-y-2">
+        <div
+          *ngFor="let documento of documentosAdjuntosArray.controls; let i = index"
+          class="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
+
+          <div class="flex items-center space-x-3">
+            <i class="fas fa-file text-gray-400"></i>
+            <div>
+              <p class="text-sm font-medium text-gray-900">
+                {{ documento.get('nombreArchivo')?.value }}
+              </p>
+              <p class="text-xs text-gray-500">
+                {{ formatFileSize(documento.get('tamaño')?.value) }}
+              </p>
+            </div>
+          </div>
+
+          <div class="flex items-center space-x-2">
+            <input
+              type="text"
+              [formControl]="documento.get('descripcion')!"
+              placeholder="Descripción opcional"
+              class="form-input text-sm w-32">
+            <button
+              type="button"
+              (click)="removeDocumento(i)"
+              class="text-red-600 hover:text-red-800 p-1">
+              <i class="fas fa-trash text-sm"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex justify-end space-x-3 pt-6 border-t">
+      <button
+        type="button"
+        (click)="onClose()"
+        [disabled]="loading"
+        class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-university-500 disabled:opacity-50 disabled:cursor-not-allowed">
+        Cancelar
+      </button>
+
+      <button
+        type="submit"
+        [disabled]="form.invalid || loading"
+        class="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-university-600 hover:bg-university-700 focus:outline-none focus:ring-2 focus:ring-university-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center">
+        <span *ngIf="loading" class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>
+        {{ isEditing ? 'Actualizar' : 'Crear' }} Solicitud
+      </button>
+    </div>
+  </form>
+
+</app-modal-base>

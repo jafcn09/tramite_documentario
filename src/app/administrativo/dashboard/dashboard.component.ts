@@ -645,8 +645,6 @@ export class DashboardComponent implements OnInit {
     puedeResponder: boolean;
     estaVencido: boolean;
   }> = new Map();
-
-  // Stats for USUARIO role
   userStats = {
     enRevision: 0,
     enProceso: 0,
@@ -942,23 +940,14 @@ export class DashboardComponent implements OnInit {
 
 
   private loadPendingTramitesWithPermissions() {
-    console.log('[DEBUG DASHBOARD] Cargando trámites pendientes...');
-    console.log('[DEBUG DASHBOARD] allTramites disponibles:', this.allTramites.length);
 
-    // Filter tramites that are truly pending (not expired)
     const filteredTramites = this.allTramites.filter(tramite => {
-      // El estado puede llegar como objeto {nombre: "En Proceso"} o como string "En Proceso"
       const estado = tramite.estado?.nombre || tramite.estado || '';
       const isPendingState = ['En Revisión', 'Aprobado', 'Derivado', 'Enviado', 'En Proceso'].includes(estado);
       const permisos = this.tramitePermisos.get(tramite.id);
       const isNotExpired = !permisos?.estaVencido;
-
-      console.log('[DEBUG DASHBOARD] Filtro pendiente - Trámite:', tramite.id, 'Estado:', estado, 'isPending:', isPendingState, 'notExpired:', isNotExpired);
-
       return isPendingState && isNotExpired;
     });
-
-    console.log('[DEBUG DASHBOARD] Trámites filtrados como pendientes:', filteredTramites.length);
 
     this.pendingTramites = filteredTramites
       .slice(0, 3)
@@ -975,8 +964,6 @@ export class DashboardComponent implements OnInit {
         tipoUsuario: this.determinarTipoUsuario(tramite),
         isExpired: false
       }));
-
-    console.log('[DEBUG DASHBOARD] Trámites pendientes mapeados:', this.pendingTramites);
   }
 
   private loadPendingTramites() {

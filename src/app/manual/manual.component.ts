@@ -1,13 +1,10 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { ManualSection } from '../shared/interfaces/manual_interface';
+import { AuthService } from '../services/auth.service';
 
-interface ManualSection {
-  id: string;
-  title: string;
-  content: string;
-  steps?: string[];
-}
+
 
 @Component({
   selector: 'app-manual',
@@ -17,7 +14,10 @@ interface ManualSection {
 })
 export class ManualComponent {
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private authService: AuthService
+  ) {}
 
   showIndex = false; 
 
@@ -134,7 +134,31 @@ export class ManualComponent {
   }
 
   goBack(): void {
-    this.router.navigate(['/']);
+    const user = this.authService.currentUserValue;
+
+    if (!user || !user.role) {
+      this.router.navigate(['/']);
+      return;
+    }
+
+    const roleName = user.role.name.toUpperCase();
+
+    switch (roleName) {
+      case 'USUARIO':
+        this.router.navigate(['/usuario/mis-tramites']);
+        break;
+      case 'ADMINISTRATIVO':
+        this.router.navigate(['/administrativo/dashboard']);
+        break;
+      case 'ADMIN':
+        this.router.navigate(['/admin/dashboard']);
+        break;
+      case 'ESTUDIANTE':
+        this.router.navigate(['/estudiante/tablero']);
+        break;
+      default:
+        this.router.navigate(['/']);
+    }
   }
 
 }

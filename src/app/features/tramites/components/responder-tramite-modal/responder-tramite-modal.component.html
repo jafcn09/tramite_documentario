@@ -15,11 +15,7 @@
         <i class="fas fa-times"></i>
       </button>
     </div>
-
-
     <div class="modal-body">
-      
- 
       <div class="tramite-info">
         <h3 class="section-title">
           <i class="fas fa-info-circle"></i>
@@ -52,10 +48,7 @@
           </div>
         </div>
       </div>
-
       <form (ngSubmit)="onSubmit()" #respuestaFormRef="ngForm" class="respuesta-form">
-        
-
         <div class="form-group">
           <label for="asunto" class="form-label required">
             <i class="fas fa-envelope"></i>
@@ -150,7 +143,150 @@
           </div>
         </div>
 
-        <!-- Advertencia importante -->
+        <div class="form-group signature-section">
+          <div class="signature-header">
+            <label class="form-label">
+              <i class="fas fa-signature"></i>
+              Firma Digital
+            </label>
+            <div class="signature-toggle">
+              <input
+                type="checkbox"
+                id="requiereFirmaDigital"
+                [(ngModel)]="respuestaForm.requiereFirmaDigital"
+                (change)="onRequiereFirmaChange()"
+                [disabled]="loading">
+              <label for="requiereFirmaDigital" class="toggle-label">
+                Firmar digitalmente esta respuesta
+              </label>
+            </div>
+          </div>
+
+
+          <div *ngIf="respuestaForm.requiereFirmaDigital" class="signature-config">
+            <div class="signature-row">
+              <div class="signature-field">
+                <label for="tipoFirma" class="form-label">
+                  <i class="fas fa-certificate"></i>
+                  Tipo de Firma
+                </label>
+                <select
+                  id="tipoFirma"
+                  class="form-control"
+                  [(ngModel)]="respuestaForm.tipoFirma"
+                  [disabled]="loading">
+                  <option *ngFor="let tipo of tiposFirmaRespuesta" [value]="tipo.value">
+                    {{ tipo.label }}
+                  </option>
+                </select>
+              </div>
+
+              <div class="signature-field">
+                <label for="ubicacionFirma" class="form-label">
+                  <i class="fas fa-map-marker-alt"></i>
+                  Departamento
+                </label>
+                <select
+                  id="ubicacionFirma"
+                  class="form-control"
+                  [(ngModel)]="respuestaForm.ubicacionFirma"
+                  [disabled]="loading">
+                  <option *ngFor="let depto of departamentosPeru" [value]="depto.value">
+                    {{ depto.label }}
+                  </option>
+                </select>
+              </div>
+            </div>
+            <div class="signature-field full-width">
+              <label for="razonFirma" class="form-label required">
+                <i class="fas fa-comment"></i>
+                Razón de la Firma
+              </label>
+              <input
+                type="text"
+                id="razonFirma"
+                class="form-control"
+                [(ngModel)]="respuestaForm.razonFirma"
+                placeholder="Motivo por el cual se firma esta respuesta"
+                required
+                [disabled]="loading">
+            </div>
+            <div class="signature-canvas-container">
+              <label class="form-label">
+                <i class="fas fa-pen-fancy"></i>
+                Dibuje su Firma
+              </label>
+              <div class="canvas-wrapper">
+                <canvas
+                  #signatureCanvas
+                  class="signature-canvas"
+                  [class.has-signature]="signatureExists">
+                </canvas>
+                <div class="canvas-controls">
+                  <button
+                    type="button"
+                    class="btn-canvas clear"
+                    (click)="clearCanvas()"
+                    [disabled]="loading">
+                    <i class="fas fa-eraser"></i>
+                    Limpiar
+                  </button>
+                  <button
+                    type="button"
+                    class="btn-canvas capture"
+                    (click)="captureSignature()"
+                    [disabled]="loading || !signatureExists">
+                    <i class="fas fa-save"></i>
+                    Capturar
+                  </button>
+                </div>
+              </div>
+              <div *ngIf="respuestaForm.firmaDigitalData" class="signature-preview">
+                <label class="form-label">
+                  <i class="fas fa-eye"></i>
+                  Firma Capturada
+                </label>
+                <div class="preview-container">
+                  <img [src]="respuestaForm.firmaDigitalData" alt="Firma digital capturada" class="signature-image">
+                  <button
+                    type="button"
+                    class="btn-remove-signature"
+                    (click)="clearCanvas(); respuestaForm.firmaDigitalData = null"
+                    [disabled]="loading">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="signature-consent">
+              <label class="consent-label">
+                <input
+                  type="checkbox"
+                  [(ngModel)]="respuestaForm.consentimientoFirma"
+                  [disabled]="loading">
+                <span class="consent-text">
+                  <i class="fas fa-shield-alt"></i>
+                  Confirmo que he dibujado mi firma digital y acepto que esta respuesta sea
+                  firmada electrónicamente bajo mi responsabilidad
+                </span>
+              </label>
+            </div>
+            <div class="signature-info">
+              <div class="info-box">
+                <i class="fas fa-info-circle"></i>
+                <div class="info-content">
+                  <strong>Información sobre la Firma Digital:</strong>
+                  <ul>
+                    <li>Su firma será asociada con su usuario y será auditable</li>
+                    <li>Se registrará la fecha, hora y ubicación de la firma</li>
+                    <li>El documento firmado tendrá validez legal</li>
+                    <li>No podrá ser modificado después de ser enviado</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
         <div class="important-notice">
           <div class="notice-header">
             <i class="fas fa-exclamation-triangle"></i>

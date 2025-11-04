@@ -126,12 +126,20 @@ export class MisTramitesService {
 
 
   getMiTramiteById(id: number): Observable<MiTramite> {
-
     return this.http.get<any>(`${this.apiUrl}/${id}`)
       .pipe(
         map(tramiteBackend => {
-
           const mappedTramite = this.mapSingleTramiteToFrontendFormat(tramiteBackend);
+
+          mappedTramite.firmaDigitalActiva = tramiteBackend.firmaDigitalActiva;
+          mappedTramite.requiereBiometria = tramiteBackend.requiereBiometria;
+          mappedTramite.firmaValida = tramiteBackend.firmaValida;
+          mappedTramite.hashFirma = tramiteBackend.hashFirma;
+          mappedTramite.fechaFirma = tramiteBackend.fechaFirma ? new Date(tramiteBackend.fechaFirma) : undefined;
+          mappedTramite.metodoVerificacion = tramiteBackend.metodoVerificacion;
+          mappedTramite.tipoFirma = tramiteBackend.tipoFirma;
+          mappedTramite.razonFirma = tramiteBackend.razonFirma;
+          mappedTramite.ubicacionFirma = tramiteBackend.ubicacionFirma;
 
           return mappedTramite;
         }),
@@ -139,6 +147,35 @@ export class MisTramitesService {
           this.toastService.error(
             'Error al obtener trámite',
             'No se pudo obtener el detalle del trámite.'
+          );
+          throw error;
+        })
+      );
+  }
+
+  getMiTramiteParaEdicion(id: number): Observable<MiTramite> {
+    // Usar el endpoint específico de edición que incluye datos de firma digital
+    return this.http.get<any>(`${this.apiUrl}/${id}/edicion`)
+      .pipe(
+        map(tramiteBackend => {
+          const mappedTramite = this.mapSingleTramiteToFrontendFormat(tramiteBackend);
+
+          mappedTramite.firmaDigitalActiva = tramiteBackend.firmaDigitalActiva;
+          mappedTramite.requiereBiometria = tramiteBackend.requiereBiometria;
+          mappedTramite.firmaValida = tramiteBackend.firmaValida;
+          mappedTramite.hashFirma = tramiteBackend.hashFirma;
+          mappedTramite.fechaFirma = tramiteBackend.fechaFirma ? new Date(tramiteBackend.fechaFirma) : undefined;
+          mappedTramite.metodoVerificacion = tramiteBackend.metodoVerificacion;
+          mappedTramite.tipoFirma = tramiteBackend.tipoFirma;
+          mappedTramite.razonFirma = tramiteBackend.razonFirma;
+          mappedTramite.ubicacionFirma = tramiteBackend.ubicacionFirma;
+
+          return mappedTramite;
+        }),
+        catchError(error => {
+          this.toastService.error(
+            'Error al obtener trámite para edición',
+            'No se pudo obtener el trámite con la información de firma digital.'
           );
           throw error;
         })
@@ -155,10 +192,6 @@ export class MisTramitesService {
           );
         }),
         catchError(error => {
-          this.toastService.error(
-            'Error al actualizar trámite',
-            'No se pudo actualizar el trámite. Verifica los datos e inténtalo nuevamente.'
-          );
           throw error;
         })
       );
@@ -362,11 +395,13 @@ export class MisTramitesService {
       puedeEditar: tramiteBackend.puedeEditar || false,
       puedeCalificar: tramiteBackend.puedeCalificar || false,
       estaVencido: tramiteBackend.estaVencido || false,
-      diasRestantes: tramiteBackend.diasRestantes
+      diasRestantes: tramiteBackend.diasRestantes,
+      progreso: tramiteBackend.progreso
     };
 
     return tramiteMapeado;
   }
+
 
   private mapTramitesToFrontendFormat(tramitesBackend: any[]): MiTramite[] {
     return tramitesBackend.map(tramiteBackend => ({

@@ -1,0 +1,328 @@
+
+.form-input {
+  @apply mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-university-500 focus:border-university-500 sm:text-sm transition-colors duration-200;
+}
+
+.form-input:focus {
+  @apply ring-2 ring-university-500 border-university-500;
+}
+
+.form-input.border-red-300 {
+  @apply border-red-300 focus:ring-red-500 focus:border-red-500;
+}
+
+.form-select {
+  @apply mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-university-500 focus:border-university-500 sm:text-sm transition-colors duration-200;
+}
+
+.form-select:focus {
+  @apply ring-2 ring-university-500 border-university-500;
+}
+
+.form-select.border-red-300 {
+  @apply border-red-300 focus:ring-red-500 focus:border-red-500;
+}
+
+.form-textarea {
+  @apply mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-university-500 focus:border-university-500 sm:text-sm resize-none transition-colors duration-200;
+}
+
+.form-textarea:focus {
+  @apply ring-2 ring-university-500 border-university-500;
+}
+
+.form-textarea.border-red-300 {
+  @apply border-red-300 focus:ring-red-500 focus:border-red-500;
+}
+
+.form-checkbox {
+  @apply h-4 w-4 text-university-600 focus:ring-university-500 border-gray-300 rounded;
+}
+
+/* Secciones del formulario */
+.form-section {
+  @apply bg-gray-50 p-4 rounded-lg space-y-4;
+}
+
+.form-section h3 {
+  @apply text-lg font-medium text-gray-900 mb-4;
+}
+
+/* Área de subida de archivos */
+.upload-area {
+  @apply border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors duration-200 cursor-pointer;
+}
+
+.upload-area:hover {
+  @apply border-university-400 bg-university-50;
+}
+
+.upload-area.dragover {
+  @apply border-university-500 bg-university-100;
+}
+
+.upload-icon {
+  @apply text-4xl text-gray-400 mb-4;
+}
+
+.upload-text {
+  @apply text-sm text-gray-600 mb-2;
+}
+
+.upload-hint {
+  @apply text-xs text-gray-500;
+}
+
+.upload-button {
+  @apply mt-3 px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-university-500 transition-colors duration-200;
+}
+
+/* Lista de archivos */
+.file-item {
+  @apply flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg hover:shadow-sm transition-shadow duration-200;
+}
+
+.file-info {
+  @apply flex items-center space-x-3;
+}
+
+.file-icon {
+  @apply text-gray-400;
+}
+
+.file-name {
+  @apply text-sm font-medium text-gray-900;
+}
+
+.file-size {
+  @apply text-xs text-gray-500;
+}
+
+.file-actions {
+  @apply flex items-center space-x-2;
+}
+
+.file-description-input {
+  @apply form-input text-sm w-32;
+}
+
+.file-remove-button {
+  @apply text-red-600 hover:text-red-800 p-1 rounded transition-colors duration-200;
+}
+
+/* Estados de validación */
+.field-error {
+  @apply text-red-600 text-sm mt-1;
+}
+
+.field-valid {
+  @apply border-green-300 focus:ring-green-500 focus:border-green-500;
+}
+
+.field-invalid {
+  @apply border-red-300 focus:ring-red-500 focus:border-red-500;
+}
+
+/* Botones */
+.btn-primary {
+  @apply px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-university-600 hover:bg-university-700 focus:outline-none focus:ring-2 focus:ring-university-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center transition-colors duration-200;
+}
+
+.btn-secondary {
+  @apply px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-university-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200;
+}
+
+/* Loading spinner */
+.loading-spinner {
+  @apply animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2;
+}
+
+
+.field-group {
+  @apply space-y-4;
+}
+
+.field-row {
+  @apply grid grid-cols-1 md:grid-cols-2 gap-4;
+}
+
+.field-full {
+  @apply col-span-full;
+}
+
+/* Labels */
+.field-label {
+  @apply block text-sm font-medium text-gray-700 mb-2;
+}
+
+.field-label.required::after {
+  content: ' *';
+  @apply text-red-500;
+}
+
+/* Hints y ayuda */
+.field-hint {
+  @apply text-sm text-gray-500 mt-1;
+}
+
+.field-help {
+  @apply text-xs text-gray-400 mt-1 italic;
+}
+
+
+.modal-header {
+  @apply px-6 py-4 border-b border-gray-200;
+}
+
+.modal-body {
+  @apply px-6 py-4 max-h-96 overflow-y-auto;
+}
+
+.modal-footer {
+  @apply px-6 py-4 border-t border-gray-200 flex justify-end space-x-3;
+}
+
+
+@media (max-width: 640px) {
+  .field-row {
+    @apply grid-cols-1;
+  }
+
+  .form-section {
+    @apply p-3;
+  }
+
+  .file-actions {
+    @apply flex-col space-y-2 space-x-0;
+  }
+
+  .file-description-input {
+    @apply w-full;
+  }
+
+  .modal-body {
+    @apply px-4 py-3;
+  }
+
+  .modal-footer {
+    @apply px-4 py-3 flex-col space-y-2 space-x-0;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    @apply w-full justify-center;
+  }
+}
+
+.bg-university-50 {
+  background-color: #eff6ff;
+}
+
+.bg-university-100 {
+  background-color: #dbeafe;
+}
+
+.bg-university-400 {
+  background-color: #60a5fa;
+}
+
+.bg-university-500 {
+  background-color: #3b82f6;
+}
+
+.bg-university-600 {
+  background-color: #2563eb;
+}
+
+.bg-university-700 {
+  background-color: #1d4ed8;
+}
+
+.text-university-600 {
+  color: #2563eb;
+}
+
+.border-university-400 {
+  border-color: #60a5fa;
+}
+
+.border-university-500 {
+  border-color: #3b82f6;
+}
+
+.ring-university-500 {
+  --tw-ring-color: #3b82f6;
+}
+
+/* Animaciones */
+.fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-up {
+  animation: slideUp 0.3s ease-in-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Focus states mejorados */
+.focus-ring:focus {
+  @apply outline-none ring-2 ring-university-500 ring-offset-2;
+}
+
+/* Estados hover mejorados */
+.hover-lift:hover {
+  @apply transform -translate-y-1 shadow-lg transition-all duration-200;
+}
+
+/* Indicadores de estado */
+.status-indicator {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+}
+
+.status-required {
+  @apply bg-red-100 text-red-800;
+}
+
+.status-optional {
+  @apply bg-gray-100 text-gray-800;
+}
+
+.status-filled {
+  @apply bg-green-100 text-green-800;
+}
+
+/* Tooltips */
+.tooltip {
+  @apply relative;
+}
+
+.tooltip:hover::after {
+  content: attr(data-tooltip);
+  @apply absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 rounded whitespace-nowrap z-50;
+}
+
+.tooltip:hover::before {
+  content: '';
+  @apply absolute bottom-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900 z-50;
+}

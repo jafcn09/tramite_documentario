@@ -1,71 +1,15 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { Subject, debounceTime, distinctUntilChanged, Subscription, catchError, of } from 'rxjs';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { environment } from '../../environments/environment';
+import { ApiSearchResponse, SearchResult, TramiteResponse } from '../shared/interfaces/search.interface';
+import { AuthService } from '../services/auth.service';
 
-interface TramiteResponse {
-  id: number;
-  codigo: string;
-  titulo: string;
-  descripcion: string;
-  tipo: string;
-  estado: string;
-  prioridad: string;
-  numeroExpediente?: string;
-  observaciones?: string;
-  usuarioSolicitante?: {
-    id: number;
-    nombre: string;
-    apellidos: string;
-    correo: string;
-    rol: string;
-  };
-  areaActual?: {
-    id: number;
-    nombre: string;
-    descripcion: string;
-  };
-  fechaCreacion: string;
-  fechaActualizacion: string;
-  fechaVencimiento?: string;
-  fechaCompletado?: string;
-  documentosAdjuntos?: {
-    nombre: string;
-    url: string;
-    tipo: string;
-    tamanio: number;
-    fechaSubida: string;
-  }[];
-}
 
-interface SearchResult {
-  expediente: string;
-  fecha: string;
-  tipo: string;
-  estado: string;
-  descripcion: string;
-  solicitante: string;
-  area: string;
-  id: number;
-  codigo: string;
-  titulo: string;
-}
-
-interface ApiSearchResponse {
-  content: TramiteResponse[];
-  totalElements: number;
-  totalPages: number;
-  size: number;
-  number: number;
-  first: boolean;
-  last: boolean;
-  numberOfElements: number;
-  empty: boolean;
-}
 
 @Component({
   selector: 'app-search',
@@ -94,8 +38,10 @@ export class SearchComponent implements OnInit, OnDestroy {
 
   constructor(
     private router: Router,
+    private route: ActivatedRoute,
     private sanitizer: DomSanitizer,
-    private http: HttpClient
+    private http: HttpClient,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -104,6 +50,14 @@ export class SearchComponent implements OnInit, OnDestroy {
       distinctUntilChanged()
     ).subscribe(query => {
       this.performSearch(query);
+    });
+
+    // Check for QR parameter and auto-search
+    this.route.queryParams.subscribe(params => {
+      const qrCode = params['qr'];
+      if (qrCode) {
+        this.searchByQRCode(qrCode);
+      }
     });
   }
 
@@ -225,6 +179,61 @@ export class SearchComponent implements OnInit, OnDestroy {
     this.searchQuery = result.expediente;
     this.possibleMatches = [];
     this.showSuccess = true;
+  }
+
+  searchByQRCode(qrCode: string): void {
+    // Usar el endpoint de verificación QR del backend
+    this.isSearching = true;
+    this.showError = false;
+    this.showSuccess = false;
+    this.errorMessage = '';
+
+    this.http.get<any>(`${this.apiUrl}/api/qr/verificar/${qrCode}`)
+      .pipe(
+        catchError(error => {
+          let errorMsg = 'Error verificando el código QR.';
+
+          if (error.status === 404) {
+            errorMsg = 'Código QR no válido o trámite no encontrado.';
+          } else if (error.status === 400) {
+            errorMsg = 'Formato de código QR inválido.';
+          } else if (error.status === 0) {
+            errorMsg = 'No se puede conectar con el servidor.';
+          }
+
+          this.errorMessage = errorMsg;
+          this.showError = true;
+          this.isSearching = false;
+          return of(null);
+        })
+      )
+      .subscribe(response => {
+        this.isSearching = false;
+
+        if (response && response.tramite) {
+          const tramite = response.tramite;
+          const searchResult: SearchResult = {
+            id: tramite.id || 0,
+            codigo: tramite.codigo,
+            expediente: tramite.numeroExpediente || tramite.codigo,
+            fecha: this.formatDate(tramite.fechaCreacion),
+            tipo: tramite.tipo,
+            estado: tramite.estado,
+            descripcion: tramite.asunto || 'N/A',
+            titulo: tramite.asunto || 'N/A',
+            solicitante: 'N/A', 
+            area: 'N/A'
+          };
+
+          this.selectedResult = searchResult;
+          this.searchQuery = searchResult.codigo;
+          this.showSuccess = true;
+          this.possibleMatches = [];
+
+          // Limpiar el QR de la URL para evitar búsquedas repetidas
+          this.router.navigate(['/buscar'], { queryParams: {} });
+        }
+      });
   }
 
   clearSearch(): void {
@@ -365,6 +374,30 @@ export class SearchComponent implements OnInit, OnDestroy {
   }
 
   goHome(): void {
-    this.router.navigate(['/']);
+    const user = this.authService.currentUserValue;
+
+    if (!user || !user.role) {
+      this.router.navigate(['/']);
+      return;
+    }
+
+    const roleName = user.role.name.toUpperCase();
+
+    switch (roleName) {
+      case 'USUARIO':
+        this.router.navigate(['/usuario/mis-tramites']);
+        break;
+      case 'ADMINISTRATIVO':
+        this.router.navigate(['/administrativo/dashboard']);
+        break;
+      case 'ADMIN':
+        this.router.navigate(['/admin/dashboard']);
+        break;
+      case 'ESTUDIANTE':
+        this.router.navigate(['/estudiante/tablero']);
+        break;
+      default:
+        this.router.navigate(['/']);
+    }
   }
 }

@@ -13,7 +13,7 @@
           <h2 class="tramite-titulo">{{ tramite.asunto }}</h2>
           <div class="tramite-meta">
             <span class="codigo">{{ tramite.codigo }}</span>
-            <span class="fecha">{{ formatearFecha(tramite.fechaCreacion!) }}</span>
+            <span class="fecha">{{ formatearFecha(tramite.fechaCreacion) }}</span>
           </div>
         </div>
         <div class="tramite-estado">
@@ -89,7 +89,7 @@
               </div>
               <div class="info-item">
                 <label>Fecha de Creación:</label>
-                <span>{{ formatearFecha(tramite.fechaCreacion!) }}</span>
+                <span>{{ formatearFecha(tramite.fechaCreacion) }}</span>
               </div>
               <div class="info-item" *ngIf="tramite.fechaVencimiento">
                 <label>Fecha de Vencimiento:</label>
@@ -147,8 +147,92 @@
                   </span>
                   <span class="fecha-respuesta" *ngIf="tramiteCompleto?.fechaRespuesta">
                     <i class="fas fa-calendar-check"></i>
-                    Fecha de respuesta: {{ tramiteCompleto && tramiteCompleto.fechaRespuesta ? formatearFecha(tramiteCompleto.fechaRespuesta) : 'No disponible' }}
+                    Fecha de respuesta: {{ formatearFecha(tramiteCompleto?.fechaRespuesta) }}
                   </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="info-section" *ngIf="mostrarFirmaSegunRol()">
+            <h3 class="section-title">
+              <i class="fas fa-signature"></i>
+              Firma Digital
+            </h3>
+            <div class="firma-digital-content">
+              <div class="firma-digital-info">
+                <div class="info-row">
+                  <label>Estado de la Firma:</label>
+                  <span class="estado-firma" [class.firma-valida]="tramiteCompleto?.firmaValida"
+                        [class.firma-invalida]="!tramiteCompleto?.firmaValida">
+                    <i class="fas" [class.fa-check-circle]="tramiteCompleto?.firmaValida"
+                       [class.fa-exclamation-triangle]="!tramiteCompleto?.firmaValida"></i>
+                    {{ tramiteCompleto?.firmaValida ? 'Firma Válida' : 'Firma Pendiente de Validación' }}
+                  </span>
+                </div>
+
+                <div class="info-row" *ngIf="tramiteCompleto?.fechaFirma">
+                  <label>Fecha de Firma:</label>
+                  <span>{{ formatearFechaFirma(tramiteCompleto?.fechaFirma) }}</span>
+                </div>
+
+                <div class="info-row" *ngIf="tramiteCompleto?.metodoVerificacion">
+                  <label>Método de Verificación:</label>
+                  <span>{{ getMetodoVerificacion(tramiteCompleto?.metodoVerificacion) }}</span>
+                </div>
+
+                <div class="info-row" *ngIf="tramiteCompleto?.requiereBiometria">
+                  <label>Biometría:</label>
+                  <span class="biometria-info">
+                    <i class="fas fa-fingerprint"></i>
+                    Verificación biométrica requerida
+                  </span>
+                </div>
+                <div class="firmante-info" *ngIf="mostrarDatosPersonales() && tramiteCompleto?.usuarioSolicitante">
+                  <h4 class="firmante-title">
+                    <i class="fas fa-user-check"></i>
+                    Información del Firmante
+                  </h4>
+                  <div class="firmante-details">
+                    <div class="info-row">
+                      <label>Nombre Completo:</label>
+                      <span>{{ getNombreCompleto(tramiteCompleto?.usuarioSolicitante) }}</span>
+                    </div>
+                    <div class="info-row">
+                      <label>Correo Electrónico:</label>
+                      <span>{{ tramiteCompleto?.usuarioSolicitante?.correo }}</span>
+                    </div>
+                    <div class="info-row" *ngIf="tramiteCompleto?.hashFirma">
+                      <label>Hash de Verificación:</label>
+                      <span class="hash-firma">{{ tramiteCompleto?.hashFirma }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="firma-visual" *ngIf="mostrarDatosPersonales() && tramiteCompleto?.hashFirma">
+                  <h4 class="firma-visual-title">
+                    <i class="fas fa-pen-fancy"></i>
+                    Firma Digital Capturada
+                  </h4>
+                  <div class="firma-container">
+                    <div class="firma-placeholder">
+                      <i class="fas fa-signature"></i>
+                      <p>Firma digital verificada</p>
+                      <small>{{ tramiteCompleto?.fechaFirma ? formatearFechaFirma(tramiteCompleto?.fechaFirma) : 'Fecha no disponible' }}</small>
+                    </div>
+                  </div>
+                </div>
+
+           
+                <div class="firma-legal-notice">
+                  <div class="legal-box">
+                    <i class="fas fa-shield-alt"></i>
+                    <div class="legal-text">
+                      <strong>Declaración Legal:</strong>
+                      <p>Este documento ha sido firmado digitalmente con validez legal.
+                         La firma digital tiene el mismo valor que una firma manuscrita
+                         según la legislación vigente sobre firma electrónica.</p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -168,14 +252,14 @@
             <div *ngFor="let documento of documentos" class="documento-item">
               <div class="documento-info">
                 <div class="documento-icon">
-                  <i [class]="getIconoTipoArchivo(documento.tipo!)" 
-                     [style.color]="getColorIconoArchivo(documento.tipo!)"></i>
+                  <i [class]="getIconoTipoArchivo(documento.tipo || '')"
+                     [style.color]="getColorIconoArchivo(documento.tipo || '')"></i>
                 </div>
                 <div class="documento-details">
                   <h4 class="documento-nombre">{{ documento.nombre }}</h4>
                   <div class="documento-meta">
                     <span class="tamanio">{{ formatearTamanioArchivo(documento.tamano) }}</span>
-                    <span class="fecha">{{ formatearFecha(documento.fechaSubida!) }}</span>
+                    <span class="fecha">{{ formatearFecha(documento.fechaSubida) }}</span>
                   </div>
                   <p class="documento-descripcion" *ngIf="documento.descripcion">
                     {{ documento.descripcion }}
@@ -217,7 +301,7 @@
             <h3>Historial del Trámite</h3>
             <div class="historial-stats">
               <span class="tiempo-transcurrido">
-                {{ getDiasTranscurridos(tramite.fechaCreacion!) }} días desde la creación
+                {{ getDiasTranscurridos(tramite.fechaCreacion) }} días desde la creación
               </span>
               <span class="modificaciones-count" *ngIf="totalModificaciones">
                 <i class="fas fa-edit"></i>
@@ -243,7 +327,7 @@
                     </div>
                     <div class="evento-time">
                       <i class="fas fa-clock"></i>
-                      <span>{{ formatearFechaCompleta(evento.fecha!) }}</span>
+                      <span>{{ formatearFechaCompleta(evento.fecha) }}</span>
                     </div>
                   </div>
 
@@ -329,20 +413,20 @@
       <div class="modal-body-custom">
        
         <iframe
-          *ngIf="documentoPreview && isPDF(documentoPreview.tipo!)"
+          *ngIf="documentoPreview && isPDF(documentoPreview.tipo || '')"
           [src]="previewUrl"
           class="document-preview-iframe">
         </iframe>
 
 
         <img
-          *ngIf="documentoPreview && isImage(documentoPreview.tipo!)"
+          *ngIf="documentoPreview && isImage(documentoPreview.tipo || '')"
           [src]="previewUrl"
           class="document-preview-image"
           [alt]="documentoPreview.nombre">
 
 
-        <div *ngIf="documentoPreview && isOfficeDocument(documentoPreview.tipo!)" class="preview-message">
+        <div *ngIf="documentoPreview && isOfficeDocument(documentoPreview.tipo || '')" class="preview-message">
           <i class="fas fa-file-word fa-5x mb-3 text-primary"></i>
           <h4>Documento de Office</h4>
           <p>La vista previa no está disponible para este tipo de archivo.</p>
