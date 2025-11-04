@@ -396,7 +396,7 @@ public class EmailTemplateService {
             <head>
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>🦋 Credenciales Actualizadas con Éxito</title>
+                <title> Credenciales Actualizadas con Éxito</title>
                 <style>
                     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
@@ -911,21 +911,21 @@ public class EmailTemplateService {
     }
 
 
-    public String createPasswordResetByAdminTemplate(Usuario usuario, String newPassword, String reason) {
+    public String createPasswordResetTemplate(Usuario usuario, String newPassword, String reason) {
         return String.format("""
             <!DOCTYPE html>
             <html lang="es">
             <head>
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Contraseña Restablecida</title>
+                <title>Contraseña Restablecida Exitosamente</title>
                 <style>
                     * { margin: 0; padding: 0; box-sizing: border-box; }
                     body {
                         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
                         line-height: 1.6;
                         color: #333333;
-                        background: linear-gradient(135deg, #f59e0b 0%%, #d97706 100%%);
+                        background: linear-gradient(135deg, #10b981 0%%, #059669 100%%);
                         margin: 0;
                         padding: 20px;
                     }
@@ -938,7 +938,7 @@ public class EmailTemplateService {
                         box-shadow: 0 20px 40px rgba(0,0,0,0.1);
                     }
                     .header {
-                        background: linear-gradient(135deg, #f59e0b 0%%, #d97706 100%%);
+                        background: linear-gradient(135deg, #10b981 0%%, #059669 100%%);
                         color: white;
                         padding: 40px 30px;
                         text-align: center;
@@ -953,7 +953,7 @@ public class EmailTemplateService {
                         font-size: 16px;
                         opacity: 0.9;
                     }
-                    .reset-icon {
+                    .success-icon {
                         font-size: 48px;
                         margin-bottom: 15px;
                         display: block;
@@ -976,35 +976,35 @@ public class EmailTemplateService {
                         text-align: center;
                         line-height: 1.7;
                     }
-                    .alert-card {
-                        background: linear-gradient(135deg, #fef3c7 0%%, #fbbf24 100%%);
-                        border: 2px solid #f59e0b;
+                    .success-card {
+                        background: linear-gradient(135deg, #d1fae5 0%%, #a7f3d0 100%%);
+                        border: 2px solid #10b981;
                         border-radius: 16px;
                         padding: 25px;
                         margin: 30px 0;
                         position: relative;
                     }
-                    .alert-card::before {
-                        content: '⚠️';
+                    .success-card::before {
+                        content: '✅';
                         position: absolute;
                         top: 15px;
                         right: 20px;
                         font-size: 24px;
                     }
-                    .alert-card h4 {
-                        color: #d97706;
+                    .success-card h4 {
+                        color: #065f46;
                         font-size: 16px;
                         margin-bottom: 10px;
                         font-weight: 700;
                     }
-                    .alert-card p {
-                        color: #92400e;
+                    .success-card p {
+                        color: #047857;
                         margin: 0;
                         font-weight: 500;
                     }
                     .new-password-card {
                         background: linear-gradient(135deg, #f8f9fa 0%%, #e9ecef 100%%);
-                        border: 2px solid #f59e0b;
+                        border: 2px solid #10b981;
                         border-radius: 16px;
                         padding: 30px;
                         margin: 30px 0;
@@ -1019,24 +1019,24 @@ public class EmailTemplateService {
                         font-size: 24px;
                     }
                     .new-password-card h3 {
-                        color: #d97706;
+                        color: #065f46;
                         font-size: 18px;
                         margin-bottom: 20px;
                         font-weight: 600;
                     }
                     .password-display {
                         background: white;
-                        border: 2px solid #f59e0b;
+                        border: 2px solid #10b981;
                         border-radius: 12px;
                         padding: 20px;
                         margin: 20px 0;
                         font-family: 'Courier New', monospace;
                         font-size: 24px;
                         font-weight: 700;
-                        color: #d97706;
+                        color: #065f46;
                         letter-spacing: 2px;
                         word-break: break-all;
-                        box-shadow: 0 4px 10px rgba(245, 158, 11, 0.2);
+                        box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);
                     }
                     .info-card {
                         background: #f8f9fb;
@@ -1069,19 +1069,45 @@ public class EmailTemplateService {
                     }
                     .btn-primary {
                         display: inline-block;
-                        background: linear-gradient(135deg, #f59e0b 0%%, #d97706 100%%);
+                        background: linear-gradient(135deg, #10b981 0%%, #059669 100%%);
                         color: white;
                         padding: 16px 40px;
                         text-decoration: none;
                         border-radius: 50px;
                         font-weight: 600;
                         font-size: 16px;
-                        box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+                        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
                         transition: all 0.3s ease;
                     }
                     .btn-primary:hover {
                         transform: translateY(-2px);
-                        box-shadow: 0 8px 25px rgba(245, 158, 11, 0.6);
+                        box-shadow: 0 8px 25px rgba(16, 185, 129, 0.6);
+                    }
+                    .security-notice {
+                        background: linear-gradient(135deg, #fef3c7 0%%, #fbbf24 100%%);
+                        border: 2px solid #f59e0b;
+                        border-radius: 16px;
+                        padding: 25px;
+                        margin: 30px 0;
+                        position: relative;
+                    }
+                    .security-notice::before {
+                        content: '🔒';
+                        position: absolute;
+                        top: 15px;
+                        right: 20px;
+                        font-size: 24px;
+                    }
+                    .security-notice h4 {
+                        color: #d97706;
+                        font-size: 16px;
+                        margin-bottom: 10px;
+                        font-weight: 700;
+                    }
+                    .security-notice p {
+                        color: #92400e;
+                        margin: 0;
+                        font-weight: 500;
                     }
                     .footer {
                         background: #2c3e50;
@@ -1102,7 +1128,7 @@ public class EmailTemplateService {
                     @media (max-width: 600px) {
                         .email-container { margin: 10px; }
                         .content, .header { padding: 25px 20px; }
-                        .new-password-card, .alert-card, .info-card { padding: 20px; }
+                        .new-password-card, .success-card, .info-card, .security-notice { padding: 20px; }
                         .header h1 { font-size: 28px; }
                         .password-display { font-size: 18px; letter-spacing: 1px; }
                     }
@@ -1111,9 +1137,9 @@ public class EmailTemplateService {
             <body>
                 <div class="email-container">
                     <div class="header">
-                        <span class="reset-icon">🔐</span>
+                        <span class="success-icon">🔑</span>
                         <h1>Contraseña Restablecida</h1>
-                        <p>Un administrador ha actualizado tu contraseña</p>
+                        <p>Tu nueva contraseña está lista</p>
                     </div>
 
                     <div class="content">
@@ -1122,17 +1148,19 @@ public class EmailTemplateService {
                         </div>
 
                         <div class="message">
-                            Un administrador del sistema ha <strong>restablecido tu contraseña</strong>
-                            en el Sistema de Trámite Documentario.
+                            Te confirmamos que tu <strong>contraseña ha sido restablecida exitosamente</strong>
+                            en el Sistema de Secretaria General.
                         </div>
 
-                        <div class="alert-card">
-                            <h4>📋 Motivo del Restablecimiento</h4>
-                            <p>%s</p>
+                        <div class="success-card">
+                            <h4>🎉 ¡Restablecimiento Exitoso!</h4>
+                            <p>Tu nueva contraseña temporal ha sido generada y está lista para usar.</p>
                         </div>
+
+                        %s
 
                         <div class="new-password-card">
-                            <h3>🔑 Tu Nueva Contraseña</h3>
+                            <h3>🔑 Tu Nueva Contraseña Temporal</h3>
                             <div class="password-display">%s</div>
                             <p style="color: #6b7280; font-size: 14px; margin-top: 15px;">
                                 Guarda esta contraseña en un lugar seguro
@@ -1141,7 +1169,7 @@ public class EmailTemplateService {
 
                         <div class="info-card">
                             <div class="info-row">
-                                <span class="info-label">📅 Fecha del restablecimiento:</span>
+                                <span class="info-label">📅 Fecha de restablecimiento:</span>
                                 <span class="info-value">%s</span>
                             </div>
                             <div class="info-row">
@@ -1150,8 +1178,16 @@ public class EmailTemplateService {
                             </div>
                             <div class="info-row">
                                 <span class="info-label">🔐 Estado:</span>
-                                <span class="info-value" style="color: #f59e0b; font-weight: 600;">%s</span>
+                                <span class="info-value" style="color: #10b981; font-weight: 600;">%s</span>
                             </div>
+                        </div>
+
+                        <div class="security-notice">
+                            <h4>🔒 Recomendación de Seguridad</h4>
+                            <p>
+                                Por tu seguridad, te recomendamos <strong>cambiar esta contraseña temporal</strong>
+                                después de tu primer inicio de sesión. Usa una contraseña segura y única.
+                            </p>
                         </div>
 
                         <div class="action-buttons">
@@ -1162,7 +1198,305 @@ public class EmailTemplateService {
                     </div>
 
                     <div class="footer">
-                        <h4>Sistema de Trámite Documentario</h4>
+                        <h4>Sistema de Secretaria General</h4>
+                        <p>Universidad Nacional de Tumbes</p>
+                        <p style="margin-top: 15px;">Este es un correo automático, por favor no respondas a este mensaje</p>
+                        <p style="margin-top: 10px; font-size: 12px;">© 2024 Todos los derechos reservados</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """,
+            usuario.getNombre(),
+            usuario.getApellidos(),
+            reason != null && !reason.isEmpty() ?
+                String.format("""
+                    <div class="info-card" style="background: #f0f9ff; border: 2px solid #0ea5e9;">
+                        <div class="info-row">
+                            <span class="info-label">📋 Motivo del restablecimiento:</span>
+                            <span class="info-value">%s</span>
+                        </div>
+                    </div>
+                    """, reason) : "",
+            newPassword,
+            LocalDateTime.now().format(DATE_FORMATTER),
+            usuario.getUsuario(),
+            usuario.isMustChangePassword() ? "Debe cambiar contraseña en el próximo inicio de sesión" : "Lista para usar",
+            appUrl
+        );
+    }
+
+    public String createPasswordResetByAdminTemplate(Usuario usuario, String newPassword, String reason) {
+        return String.format("""
+            <!DOCTYPE html>
+            <html lang="es">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Contraseña Restablecida</title>
+                <style>
+                    * { margin: 0; padding: 0; box-sizing: border-box; }
+                    body {
+                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+                        line-height: 1.6;
+                        color: #1f2937;
+                        background: #f3f4f6;
+                        margin: 0;
+                        padding: 20px;
+                    }
+                    .email-container {
+                        max-width: 600px;
+                        margin: 0 auto;
+                        background: #ffffff;
+                        border-radius: 16px;
+                        overflow: hidden;
+                        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+                    }
+                    .header {
+                        background: #dbeafe;
+                        color: #1e40af;
+                        padding: 40px 30px;
+                        text-align: center;
+                    }
+                    .header h1 {
+                        font-size: 32px;
+                        font-weight: 700;
+                        margin-bottom: 10px;
+                        color: #1e3a8a;
+                    }
+                    .header p {
+                        font-size: 16px;
+                        color: #1e40af;
+                        font-weight: 500;
+                    }
+                    .reset-icon {
+                        font-size: 48px;
+                        margin-bottom: 15px;
+                        display: block;
+                    }
+                    .content {
+                        padding: 40px 30px;
+                        background: #ffffff;
+                    }
+                    .greeting {
+                        font-size: 20px;
+                        font-weight: 600;
+                        color: #1e3a8a;
+                        margin-bottom: 20px;
+                        text-align: center;
+                    }
+                    .message {
+                        font-size: 16px;
+                        color: #374151;
+                        margin-bottom: 30px;
+                        text-align: center;
+                        line-height: 1.7;
+                    }
+                    .alert-card {
+                        background: #fff7ed;
+                        border: 2px solid #f59e0b;
+                        border-left: 5px solid #f59e0b;
+                        border-radius: 12px;
+                        padding: 25px;
+                        margin: 30px 0;
+                    }
+                    .alert-card h4 {
+                        color: #92400e;
+                        font-size: 16px;
+                        margin-bottom: 10px;
+                        font-weight: 700;
+                    }
+                    .alert-card p {
+                        color: #78350f;
+                        margin: 0;
+                        font-weight: 500;
+                    }
+                    .new-password-card {
+                        background: #dbeafe;
+                        border: 3px solid #3b82f6;
+                        border-radius: 16px;
+                        padding: 30px;
+                        margin: 30px 0;
+                        text-align: center;
+                    }
+                    .new-password-card h3 {
+                        color: #1e3a8a;
+                        font-size: 18px;
+                        margin-bottom: 20px;
+                        font-weight: 700;
+                    }
+                    .password-display {
+                        background: #ffffff;
+                        border: 3px solid #2563eb;
+                        border-radius: 12px;
+                        padding: 25px 20px;
+                        margin: 20px 0;
+                        font-family: 'Courier New', monospace;
+                        font-size: 26px;
+                        font-weight: 700;
+                        color: #1e40af;
+                        letter-spacing: 3px;
+                        word-break: break-all;
+                        box-shadow: 0 4px 15px rgba(37, 99, 235, 0.15);
+                    }
+                    .password-help {
+                        color: #1e40af;
+                        font-size: 14px;
+                        margin-top: 15px;
+                        font-weight: 600;
+                    }
+                    .info-card {
+                        background: #f9fafb;
+                        border: 2px solid #e5e7eb;
+                        border-radius: 16px;
+                        padding: 25px;
+                        margin: 30px 0;
+                    }
+                    .info-row {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        padding: 12px 0;
+                        border-bottom: 2px solid #e5e7eb;
+                    }
+                    .info-row:last-child {
+                        border-bottom: none;
+                    }
+                    .info-label {
+                        font-weight: 600;
+                        color: #374151;
+                        font-size: 14px;
+                    }
+                    .info-value {
+                        color: #1f2937;
+                        font-size: 14px;
+                        font-weight: 600;
+                    }
+                    .security-card {
+                        background: #fef3c7;
+                        border: 2px solid #f59e0b;
+                        border-left: 5px solid #f59e0b;
+                        border-radius: 12px;
+                        padding: 25px;
+                        margin: 30px 0;
+                    }
+                    .security-card h4 {
+                        color: #92400e;
+                        font-size: 16px;
+                        margin-bottom: 12px;
+                        font-weight: 700;
+                    }
+                    .security-card p {
+                        color: #78350f;
+                        margin: 0;
+                        line-height: 1.6;
+                        font-weight: 500;
+                    }
+                    .action-buttons {
+                        text-align: center;
+                        margin: 35px 0;
+                    }
+                    .btn-primary {
+                        display: inline-block;
+                        background: #2563eb;
+                        color: #ffffff;
+                        padding: 16px 40px;
+                        text-decoration: none;
+                        border-radius: 10px;
+                        font-weight: 700;
+                        font-size: 16px;
+                        box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+                    }
+                    .footer {
+                        background: #1f2937;
+                        color: #ffffff;
+                        padding: 30px;
+                        text-align: center;
+                    }
+                    .footer h4 {
+                        margin-bottom: 15px;
+                        font-size: 18px;
+                        font-weight: 600;
+                        color: #ffffff;
+                    }
+                    .footer p {
+                        margin: 5px 0;
+                        color: #d1d5db;
+                        font-size: 14px;
+                    }
+                    @media (max-width: 600px) {
+                        .email-container { margin: 10px; }
+                        .content, .header { padding: 25px 20px; }
+                        .new-password-card, .alert-card, .info-card, .security-card { padding: 20px; }
+                        .header h1 { font-size: 28px; }
+                        .password-display { font-size: 20px; letter-spacing: 2px; padding: 20px 15px; }
+                        .info-row { flex-direction: column; align-items: flex-start; gap: 5px; }
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="email-container">
+                    <div class="header">
+                        <span class="reset-icon">🔑</span>
+                        <h1>Contraseña Restablecida</h1>
+                        <p>Tu nueva contraseña está lista</p>
+                    </div>
+
+                    <div class="content">
+                        <div class="greeting">
+                            Hola %s %s 👋
+                        </div>
+
+                        <div class="message">
+                            Te confirmamos que tu <strong>contraseña ha sido restablecida exitosamente</strong>
+                            en el Sistema de Secretaria General.
+                        </div>
+
+                        <div class="alert-card">
+                            <h4>📋 Motivo del Restablecimiento</h4>
+                            <p>%s</p>
+                        </div>
+
+                        <div class="new-password-card">
+                            <h3>🔑 Tu Nueva Contraseña Temporal</h3>
+                            <div class="password-display">%s</div>
+                            <p class="password-help">
+                                Guarda esta contraseña en un lugar seguro
+                            </p>
+                        </div>
+
+                        <div class="info-card">
+                            <div class="info-row">
+                                <span class="info-label">📅 Fecha de restablecimiento:</span>
+                                <span class="info-value">%s</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">👤 Usuario:</span>
+                                <span class="info-value">%s</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">🔐 Estado:</span>
+                                <span class="info-value" style="color: #10b981;">%s</span>
+                            </div>
+                        </div>
+
+                        <div class="security-card">
+                            <h4>🔒 Recomendación de Seguridad</h4>
+                            <p>
+                                Por tu seguridad, te recomendamos <strong>cambiar esta contraseña temporal</strong>
+                                después de tu primer inicio de sesión. Usa una contraseña segura y única.
+                            </p>
+                        </div>
+
+                        <div class="action-buttons">
+                            <a href="%s/login" class="btn-primary">
+                                Iniciar Sesión Ahora →
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="footer">
+                        <h4>Sistema de Secretaria General</h4>
                         <p>Universidad Nacional de Tumbes</p>
                         <p style="margin-top: 15px;">Este es un correo automático, por favor no respondas a este mensaje</p>
                         <p style="margin-top: 10px; font-size: 12px;">© 2024 Todos los derechos reservados</p>
@@ -1177,7 +1511,7 @@ public class EmailTemplateService {
             newPassword,
             LocalDateTime.now().format(DATE_FORMATTER),
             usuario.getUsuario(),
-            usuario.isMustChangePassword() ? "Debe cambiar contraseña en el próximo inicio de sesión" : "Lista para usar",
+            usuario.isMustChangePassword() ? "Lista para usar" : "Lista para usar",
             appUrl
         );
     }
@@ -2072,381 +2406,6 @@ public class EmailTemplateService {
             cambiosRealizados,
             LocalDateTime.now().format(DATE_FORMATTER),
             usuario.getUsuario(),
-            LocalDateTime.now().getYear()
-        );
-    }
-
-    public String createPasswordResetTemplate(Usuario usuario, String newPassword, String reason, boolean mustChangePassword) {
-        return String.format("""
-            <!DOCTYPE html>
-            <html lang="es">
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Credencial Restablecida - Universidad Nacional de Tumbes</title>
-                <style>
-                    * {
-                        margin: 0;
-                        padding: 0;
-                        box-sizing: border-box;
-                    }
-
-                    body {
-                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                        line-height: 1.6;
-                        color: #2c3e50;
-                        background: #f1f5f9;
-                        margin: 0;
-                        padding: 20px;
-                    }
-
-                    .email-container {
-                        max-width: 600px;
-                        margin: 0 auto;
-                        background: #ffffff;
-                        border-radius: 12px;
-                        overflow: hidden;
-                        box-shadow: 0 8px 25px rgba(0,0,0,0.08);
-                        border: 1px solid #e2e8f0;
-                    }
-
-                    .header {
-                        background: linear-gradient(135deg, #1e40af 0%%, #3b82f6 100%%);
-                        color: white;
-                        padding: 30px;
-                        text-align: center;
-                        position: relative;
-                    }
-
-                    .header::before {
-                        content: '';
-                        position: absolute;
-                        top: 0;
-                        left: 0;
-                        right: 0;
-                        bottom: 0;
-                        background: url('data:image/svg+xml,<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd"><g fill="%%23ffffff" fill-opacity="0.05"><circle cx="36" cy="24" r="2"/><circle cx="6" cy="44" r="2"/><circle cx="36" cy="4" r="2"/></g></g></svg>');
-                        opacity: 0.4;
-                    }
-
-                    .logo {
-                        width: 60px;
-                        height: 60px;
-                        background: rgba(255, 255, 255, 0.15);
-                        border-radius: 50%%;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        margin: 0 auto 15px;
-                        font-size: 24px;
-                        font-weight: bold;
-                        position: relative;
-                        z-index: 1;
-                    }
-
-                    .header h1 {
-                        font-size: 24px;
-                        font-weight: 600;
-                        margin-bottom: 8px;
-                        position: relative;
-                        z-index: 1;
-                    }
-
-                    .header p {
-                        font-size: 16px;
-                        opacity: 0.9;
-                        font-weight: 400;
-                        position: relative;
-                        z-index: 1;
-                    }
-
-                    .content {
-                        padding: 35px 30px;
-                    }
-
-                    .greeting {
-                        margin-bottom: 25px;
-                    }
-
-                    .greeting h2 {
-                        color: #1e293b;
-                        font-size: 20px;
-                        font-weight: 600;
-                        margin-bottom: 8px;
-                    }
-
-                    .greeting p {
-                        color: #64748b;
-                        font-size: 16px;
-                        line-height: 1.5;
-                    }
-
-                    .main-message {
-                        background: #f8fafc;
-                        border-left: 4px solid #3b82f6;
-                        border-radius: 8px;
-                        padding: 20px;
-                        margin: 25px 0;
-                    }
-
-                    .main-message p {
-                        color: #374151;
-                        font-size: 16px;
-                        line-height: 1.6;
-                        margin-bottom: 15px;
-                    }
-
-                    .main-message p:last-child {
-                        margin-bottom: 0;
-                    }
-
-                    .credential-box {
-                        background: linear-gradient(135deg, #f0f9ff 0%%, #e0f2fe 100%%);
-                        border: 2px solid #0ea5e9;
-                        border-radius: 12px;
-                        padding: 25px;
-                        text-align: center;
-                        margin: 25px 0;
-                        position: relative;
-                    }
-
-                    .credential-box::before {
-                        content: '🔑';
-                        position: absolute;
-                        top: -15px;
-                        left: 50%%;
-                        transform: translateX(-50%%);
-                        background: white;
-                        padding: 8px 12px;
-                        border-radius: 50%%;
-                        font-size: 18px;
-                        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-                    }
-
-                    .credential-label {
-                        color: #0c4a6e;
-                        font-size: 14px;
-                        font-weight: 600;
-                        text-transform: uppercase;
-                        letter-spacing: 0.5px;
-                        margin-bottom: 10px;
-                    }
-
-                    .credential-value {
-                        background: #ffffff;
-                        color: #1e293b;
-                        font-size: 18px;
-                        font-weight: 700;
-                        font-family: 'Courier New', monospace;
-                        padding: 15px 20px;
-                        border-radius: 8px;
-                        border: 2px solid #e2e8f0;
-                        letter-spacing: 1px;
-                        word-break: break-all;
-                        box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
-                    }
-
-                    .warning-box {
-                        background: linear-gradient(135deg, #fef3c7 0%%, #fde68a 100%%);
-                        border: 2px solid #f59e0b;
-                        border-radius: 12px;
-                        padding: 20px;
-                        margin: 25px 0;
-                        display: flex;
-                        align-items: flex-start;
-                        gap: 15px;
-                    }
-
-                    .warning-icon {
-                        font-size: 24px;
-                        color: #d97706;
-                        flex-shrink: 0;
-                        margin-top: 2px;
-                    }
-
-                    .warning-content h3 {
-                        color: #92400e;
-                        font-size: 16px;
-                        font-weight: 600;
-                        margin-bottom: 8px;
-                    }
-
-                    .warning-content p {
-                        color: #78350f;
-                        font-size: 14px;
-                        line-height: 1.5;
-                        margin: 0;
-                    }
-
-                    .info-grid {
-                        display: grid;
-                        grid-template-columns: 1fr 1fr;
-                        gap: 20px;
-                        margin: 25px 0;
-                    }
-
-                    .info-card {
-                        background: #f8fafc;
-                        border: 1px solid #e2e8f0;
-                        border-radius: 8px;
-                        padding: 20px;
-                    }
-
-                    .info-card h4 {
-                        color: #374151;
-                        font-size: 14px;
-                        font-weight: 600;
-                        margin-bottom: 8px;
-                        text-transform: uppercase;
-                        letter-spacing: 0.5px;
-                    }
-
-                    .info-card p {
-                        color: #6b7280;
-                        font-size: 14px;
-                        margin: 0;
-                        word-break: break-word;
-                    }
-
-                    .action-button {
-                        display: inline-block;
-                        background: linear-gradient(135deg, #3b82f6 0%%, #2563eb 100%%);
-                        color: white;
-                        text-decoration: none;
-                        padding: 14px 28px;
-                        border-radius: 8px;
-                        font-weight: 600;
-                        font-size: 16px;
-                        text-align: center;
-                        margin: 25px auto;
-                        display: block;
-                        max-width: 200px;
-                        transition: all 0.3s ease;
-                        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-                    }
-
-                    .action-button:hover {
-                        transform: translateY(-2px);
-                        box-shadow: 0 6px 18px rgba(59, 130, 246, 0.4);
-                    }
-
-                    .footer {
-                        background: #1f2937;
-                        color: white;
-                        padding: 25px 30px;
-                        text-align: center;
-                    }
-
-                    .footer p {
-                        margin: 0 0 8px 0;
-                        font-size: 14px;
-                        opacity: 0.9;
-                    }
-
-                    .footer .year {
-                        font-size: 12px;
-                        opacity: 0.7;
-                        margin-top: 15px;
-                    }
-
-                    @media (max-width: 600px) {
-                        body {
-                            padding: 10px;
-                        }
-
-                        .email-container {
-                            border-radius: 8px;
-                        }
-
-                        .header,
-                        .content,
-                        .footer {
-                            padding: 20px;
-                        }
-
-                        .info-grid {
-                            grid-template-columns: 1fr;
-                            gap: 15px;
-                        }
-
-                        .credential-value {
-                            font-size: 16px;
-                            padding: 12px 15px;
-                        }
-                    }
-                </style>
-            </head>
-            <body>
-                <div class="email-container">
-                    <div class="header">
-                        <div class="logo">🎓</div>
-                        <h1>Credencial Restablecida</h1>
-                        <p>Sistema de Trámites Documentarios</p>
-                    </div>
-
-                    <div class="content">
-                        <div class="greeting">
-                            <h2>Hola, %s %s</h2>
-                            <p>Tu credencial de acceso ha sido restablecida exitosamente por un administrador del sistema.</p>
-                        </div>
-
-                        <div class="main-message">
-                            <p><strong>¿Qué significa esto?</strong></p>
-                            <p>Un administrador ha generado una nueva credencial para tu cuenta con el propósito de restaurar tu acceso al sistema.</p>
-                        </div>
-
-                        <div class="credential-box">
-                            <div class="credential-label">Nueva Credencial</div>
-                            <div class="credential-value">%s</div>
-                        </div>
-
-                        %s
-
-                        <div class="info-grid">
-                            <div class="info-card">
-                                <h4>Motivo</h4>
-                                <p>%s</p>
-                            </div>
-                            <div class="info-card">
-                                <h4>Fecha de Restablecimiento</h4>
-                                <p>%s</p>
-                            </div>
-                        </div>
-
-                        <a href="%s" class="action-button">Iniciar Sesión</a>
-
-                        <div class="main-message">
-                            <p><strong>Recomendaciones de seguridad:</strong></p>
-                            <p>• Utiliza esta credencial para acceder al sistema inmediatamente</p>
-                            <p>• Mantén tu credencial segura y no la compartas</p>
-                            <p>• Si tienes alguna duda, contacta al administrador del sistema</p>
-                        </div>
-                    </div>
-
-                    <div class="footer">
-                        <p><strong>Universidad Nacional de Tumbes</strong></p>
-                        <p>Sistema de Trámites Documentarios</p>
-                        <p class="year">© %d - Todos los derechos reservados</p>
-                    </div>
-                </div>
-            </body>
-            </html>
-            """,
-            usuario.getNombre(),
-            usuario.getApellidos(),
-            newPassword,
-            mustChangePassword ? """
-                <div class="warning-box">
-                    <div class="warning-icon">⚠️</div>
-                    <div class="warning-content">
-                        <h3>Cambio Obligatorio de Credencial</h3>
-                        <p>Debes cambiar esta credencial en tu próximo inicio de sesión por motivos de seguridad.</p>
-                    </div>
-                </div>
-                """ : "",
-            reason != null && !reason.trim().isEmpty() ? reason : "Restablecimiento administrativo",
-            LocalDateTime.now().format(DATE_FORMATTER),
-            appUrl,
             LocalDateTime.now().getYear()
         );
     }

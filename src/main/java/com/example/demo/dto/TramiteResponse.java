@@ -49,6 +49,16 @@ public class TramiteResponse {
     private List<DocumentoAdjunto> documentosAdjuntos;
     private List<TramiteHistorialResponse> historial;
 
+    private Boolean firmaDigitalActiva;
+    private Boolean requiereBiometria;
+    private Boolean firmaValida;
+    private String hashFirma;
+    private LocalDateTime fechaFirma;
+    private String metodoVerificacion;
+    private String tipoFirma;
+    private String razonFirma;
+    private String ubicacionFirma;
+
     @Data
     @Builder
     @NoArgsConstructor

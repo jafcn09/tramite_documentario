@@ -52,12 +52,17 @@ public class SecurityConfig {
                 .requestMatchers("/api/activities/public/**").permitAll()
                 .requestMatchers("/api/usuarios/public/**").permitAll()
                 .requestMatchers("/api/test/**").permitAll()
-
-                // Public trámite endpoints (no token required) - MUST come before protected tramites
                 .requestMatchers("/api/tramites/public/**").permitAll()
+
+                // Public QR endpoints (for email images and verification)
+                .requestMatchers("/api/qr/image/**").permitAll()
+                .requestMatchers("/api/qr/verificar/**").permitAll()
 
                 // Public organigrama endpoints (structural data)
                 .requestMatchers("/api/organigrama/**").permitAll()
+
+              
+                .requestMatchers("/api/departamentos/**").permitAll()
                 
                 // WebSocket endpoints
                 .requestMatchers("/ws/**").permitAll()
@@ -103,18 +108,13 @@ public class SecurityConfig {
             "Access-Control-Request-Method",
             "Access-Control-Request-Headers"
         ));
-        
-        // toddo los headers
+
         configuration.setAllowCredentials(true);
-        
-        //especificar los headers que se exponen al cliente
         configuration.setExposedHeaders(Arrays.asList(
             "Authorization",
             "Content-Length",
             "X-Requested-With"
         ));
-        
-        //maximo tiempo de vida de la configuración CORS
         configuration.setMaxAge(3600L);
         
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

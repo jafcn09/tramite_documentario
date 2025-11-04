@@ -46,8 +46,9 @@ public class UsuarioService {
     private final JavaMailSender mailSender;
     private final EmailTemplateService emailTemplateService;
     
-    private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
-    private static final int PASSWORD_LENGTH = 12;
+    private static final String PASSWORD_CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@!.";
+    private static final int PASSWORD_MIN_LENGTH = 8;
+    private static final int PASSWORD_MAX_LENGTH = 12;
     
     public List<UsuarioResponse> getAllUsuarios() {
         return usuarioRepository.findAll().stream()
@@ -360,12 +361,13 @@ public class UsuarioService {
     
     private String generateRandomPassword() {
         SecureRandom random = new SecureRandom();
-        StringBuilder password = new StringBuilder(PASSWORD_LENGTH);
-        
-        for (int i = 0; i < PASSWORD_LENGTH; i++) {
-            password.append(CHARACTERS.charAt(random.nextInt(CHARACTERS.length())));
+        int length = PASSWORD_MIN_LENGTH + random.nextInt(PASSWORD_MAX_LENGTH - PASSWORD_MIN_LENGTH + 1);
+        StringBuilder password = new StringBuilder(length);
+
+        for (int i = 0; i < length; i++) {
+            password.append(PASSWORD_CHARACTERS.charAt(random.nextInt(PASSWORD_CHARACTERS.length())));
         }
-        
+
         return password.toString();
     }
     
@@ -456,7 +458,6 @@ public class UsuarioService {
             usuario.setPasswordExpiry(LocalDateTime.now().plusDays(2));
             usuario.setMustChangePassword(false); 
             usuarioRepository.save(usuario);
-            System.out.println("Extendiendo credenciales expiradas para usuario: " + usuario.getUsuario() + " to " + usuario.getPasswordExpiry() + " and set mustChangePassword to false");
         });
     }
     
@@ -495,11 +496,9 @@ public class UsuarioService {
     }
     
     public List<UsuarioResponse> getUsersByArea(Long areaId) {
-        System.out.println("Getting users for area ID: " + areaId);
         List<Usuario> users = usuarioRepository.findAll().stream()
                 .filter(user -> user.getArea() != null && user.getArea().getId().equals(areaId))
                 .collect(Collectors.toList());
-        System.out.println("Found " + users.size() + " users for area " + areaId);
         return users.stream()
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());
@@ -579,17 +578,14 @@ public class UsuarioService {
     private void sendPasswordResetNotification(Usuario usuario, String newPassword, String reason) {
         try {
             MimeMessage message = mailSender.createMimeMessage();
-            message.setRecipients(MimeMessage.RecipientType.TO, usuario.getCorreo());
-            message.setSubject("Credencial Restablecida - Universidad Nacional de Tumbes", "UTF-8");
-            message.setContent(
-                emailTemplateService.createPasswordResetTemplate(
-                    usuario,
-                    newPassword,
-                    reason,
-                    usuario.isMustChangePassword()
-                ),
-                "text/html; charset=utf-8"
-            );
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setTo(usuario.getCorreo());
+            helper.setSubject("🔑 Contraseña Restablecida - Universidad Nacional de Tumbes");
+
+            String htmlContent = emailTemplateService.createPasswordResetTemplate(usuario, newPassword, reason);
+            helper.setText(htmlContent, true);
+
             mailSender.send(message);
         } catch (MessagingException e) {
             throw new RuntimeException("Error al enviar notificación de restablecimiento de credencial", e);
@@ -672,9 +668,9 @@ public class UsuarioService {
                     userWithWorkload.put("role", userResponse.getRole());
                     userWithWorkload.put("area", userResponse.getArea());
                     userWithWorkload.put("foto", userResponse.getFoto());
-                    
-                    // Add workload count
-                    Long workloadCount = tramiteRepository.countByUsuarioAsignadoId(user.getId());
+
+                    // Add workload count - solo cuenta trámites activos (excluye finalizados, rechazados, archivados, cancelados)
+                    Long workloadCount = tramiteRepository.countActiveTramitesByUsuarioAsignadoId(user.getId());
                     userWithWorkload.put("workloadCount", workloadCount != null ? workloadCount : 0);
                     
                     return userWithWorkload;

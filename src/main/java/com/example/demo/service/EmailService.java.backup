@@ -3,6 +3,7 @@ package com.example.demo.service;
 import java.io.File;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Base64;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -21,7 +22,11 @@ import com.example.demo.repository.UsuarioRepository;
 
 import lombok.extern.slf4j.Slf4j;
 
+import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+
+import java.io.IOException;
+import com.google.zxing.WriterException;
 
 @Service
 @Slf4j
@@ -68,11 +73,8 @@ public class EmailService {
                     String htmlContent = construirTemplateRespuesta(solicitante, tramite, datos);
                     helper.setText(htmlContent, true);
 
-                    adjuntarImagenQR(helper, tramite);
-
                     mailSender.send(message);
-                } catch (Exception e) {
-                    log.error("Error al enviar email de respuesta para trámite {}: {}", tramiteId, e.getMessage());
+                } catch (MessagingException e) {
                     throw new RuntimeException("Error al enviar email de respuesta", e);
                 }
             });
@@ -80,141 +82,72 @@ public class EmailService {
     }
 
     private String construirTemplateRespuesta(Usuario solicitante, Tramite tramite, Map<String, Object> datos) {
-        String qrSection = construirSeccionQR(tramite);
-        String prioridadFormateada = formatearPrioridad(tramite.getPrioridad());
-        String tipoFormateado = formatearTipoTramite(tramite.getTipo());
+        String qrSection = generarSeccionQR(tramite);
 
-        return String.format("""
-            <!DOCTYPE html>
-            <html lang='es'>
-            <head>
-                <meta charset='UTF-8'>
-                <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-                <style>
-                    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif; margin: 0; padding: 20px; background: #f5f7fa; }
-                    .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.07); }
-                    .header { background: linear-gradient(135deg, #3b82f6 0%%, #2563eb 100%%); color: white; padding: 40px 30px; text-align: center; }
-                    .header h1 { color: white; font-size: 28px; font-weight: 600; margin: 0; }
-                    .header p { margin: 10px 0 0 0; opacity: 0.9; font-size: 16px; }
-                    .content { padding: 35px 30px; }
-                    .success-badge { background: #d1fae5; color: #065f46; padding: 12px 24px; border-radius: 8px; display: inline-block; margin: 20px 0; font-weight: 600; }
-                    .info-card { background: #f8f9fb; border-left: 4px solid #10b981; padding: 25px; margin: 25px 0; border-radius: 8px; }
-                    .detail-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #e5e7eb; }
-                    .detail-row:last-child { border-bottom: none; }
-                    .detail-label { font-weight: 600; color: #6b7280; }
-                    .detail-value { color: #1f2937; text-align: right; max-width: 60%%; }
-                    .priority-normal { color: #fbbf24; font-weight: bold; }
-                    .priority-alta { color: #f59e0b; font-weight: bold; }
-                    .priority-urgente { color: #dc2626; font-weight: bold; }
-                    .response-box { background: #e8f5e9; border: 1px solid #4caf50; padding: 25px; margin: 25px 0; border-radius: 8px; }
-                    .response-box h3 { color: #2e7d32; margin-top: 0; font-size: 18px; }
-                    .evolution-box { background: #f0f9ff; border: 1px solid #3b82f6; padding: 20px; margin: 25px 0; border-radius: 8px; }
-                    .evolution-box h3 { color: #1e40af; margin-top: 0; font-size: 16px; }
-                    .timeline-item { padding: 10px 0; border-left: 3px solid #3b82f6; padding-left: 15px; margin-left: 10px; }
-                    .footer { background: #2c3e50; color: white; padding: 30px; text-align: center; }
-                    .footer p { margin: 5px 0; opacity: 0.9; font-size: 14px; }
-                    .button { display: inline-block; padding: 14px 32px; background: #10b981; color: white; text-decoration: none; border-radius: 8px; margin: 20px 0; font-weight: 600; }
-                </style>
-            </head>
-            <body>
-                <div class='container'>
-                    <div class='header'>
-                        <h1>✅ Trámite Respondido</h1>
-                        <p>Su solicitud ha sido procesada completamente</p>
-                    </div>
-                    <div class='content'>
-                        <p style='font-size: 18px; color: #2c3e50; margin-bottom: 10px;'>Estimado/a <strong>%s %s</strong>,</p>
-                        <p style='color: #4b5563; line-height: 1.6;'>Nos complace informarle que su trámite ha sido <strong>respondido y procesado exitosamente</strong>. A continuación encontrará todos los detalles:</p>
-
-                        <div class='success-badge'>
-                            ✅ Trámite finalizado
-                        </div>
-
-                        <div class='response-box'>
-                            <h3>📝 Respuesta Oficial</h3>
-                            <p style='margin: 5px 0; line-height: 1.6;'>%s</p>
-                        </div>
-
-                        <div class='info-card'>
-                            <h3 style='margin-top: 0; color: #2c3e50; font-size: 18px;'>📋 Información del Trámite</h3>
-                            <div class='detail-row'>
-                                <span class='detail-label'>Código:</span>
-                                <span class='detail-value'><strong style='font-family: monospace; font-size: 16px; color: #10b981;'>%s</strong></span>
-                            </div>
-                            <div class='detail-row'>
-                                <span class='detail-label'>Título:</span>
-                                <span class='detail-value'>%s</span>
-                            </div>
-                            <div class='detail-row'>
-                                <span class='detail-label'>Tipo:</span>
-                                <span class='detail-value'>%s</span>
-                            </div>
-                            <div class='detail-row'>
-                                <span class='detail-label'>Prioridad:</span>
-                                <span class='detail-value priority-%s'>%s</span>
-                            </div>
-                            <div class='detail-row'>
-                                <span class='detail-label'>Estado Final:</span>
-                                <span class='detail-value'><strong style='color: #10b981;'>FINALIZADO</strong></span>
-                            </div>
-                            <div class='detail-row'>
-                                <span class='detail-label'>Respondido por:</span>
-                                <span class='detail-value'>%s</span>
-                            </div>
-                            <div class='detail-row'>
-                                <span class='detail-label'>Fecha de Respuesta:</span>
-                                <span class='detail-value'>%s</span>
-                            </div>
-                        </div>
-
-                        <div class='evolution-box'>
-                            <h3>📊 Evolución del Trámite</h3>
-                            <div class='timeline-item'>
-                                <strong>✅ Creado</strong> - %s
-                            </div>
-                            <div class='timeline-item'>
-                                <strong>📝 Procesado</strong> - Durante el periodo de revisión
-                            </div>
-                            <div class='timeline-item'>
-                                <strong>✅ Finalizado</strong> - %s
-                            </div>
-                        </div>
-
-                        %s
-
-                        <center>
-                            <a href='%s/tramites/%s' class='button'>Ver Trámite Completo →</a>
-                        </center>
-
-                        <div style='background: #e0f2fe; padding: 20px; border-radius: 8px; margin: 25px 0; border-left: 4px solid #0284c7;'>
-                            <p style='margin: 0; color: #0c4a6e;'><strong>💡 Información:</strong> Si tiene alguna consulta adicional sobre la respuesta, no dude en contactarnos a través del sistema. Puede descargar los documentos adjuntos desde el enlace anterior.</p>
-                        </div>
-                    </div>
-                    <div class='footer'>
-                        <p><strong>Sistema de Trámite Documentario</strong></p>
-                        <p>Universidad Nacional de Tumbes</p>
-                        <p style='margin-top: 15px; font-size: 12px;'>Este es un correo automático, por favor no responder</p>
-                    </div>
-                </div>
-            </body>
-            </html>
-            """,
-            solicitante.getNombre(),
-            solicitante.getApellidos(),
-            datos.get("respuesta"),
-            tramite.getCodigo(),
-            tramite.getTitulo() != null ? tramite.getTitulo() : tramite.getAsunto(),
-            tipoFormateado,
-            tramite.getPrioridad() != null ? tramite.getPrioridad().name().toLowerCase() : "normal",
-            prioridadFormateada,
-            datos.get("administrativoNombre"),
-            datos.get("fechaRespuesta"),
-            tramite.getFechaCreacion() != null ? tramite.getFechaCreacion().format(DATE_FORMATTER) : "N/A",
-            datos.get("fechaRespuesta"),
-            qrSection,
-            appUrl,
-            tramite.getId()
-        );
+        return "<!DOCTYPE html>" +
+            "<html lang='es'>" +
+            "<head>" +
+            "    <meta charset='UTF-8'>" +
+            "    <meta name='viewport' content='width=device-width, initial-scale=1.0'>" +
+            "    <style>" +
+            "        body { font-family: 'Arial', sans-serif; line-height: 1.6; color: #333; background: #f4f4f4; margin: 0; padding: 0; }" +
+            "        .container { max-width: 600px; margin: 20px auto; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 0 20px rgba(0,0,0,0.1); }" +
+            "        .header { background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%); color: white; padding: 30px; text-align: center; }" +
+            "        .header h1 { margin: 0; font-size: 28px; }" +
+            "        .content { padding: 30px; }" +
+            "        .info-box { background: #f8f9fa; border-left: 4px solid #4a90e2; padding: 15px; margin: 20px 0; border-radius: 5px; }" +
+            "        .response-box { background: #e8f5e9; border: 1px solid #4caf50; padding: 20px; margin: 20px 0; border-radius: 8px; }" +
+            "        .response-box h3 { color: #2e7d32; margin-top: 0; }" +
+            "        .button { display: inline-block; padding: 12px 30px; background: #4a90e2; color: white; text-decoration: none; border-radius: 25px; margin: 20px 0; }" +
+            "        .footer { background: #f8f9fa; padding: 20px; text-align: center; color: #666; font-size: 12px; }" +
+            "        .badge { display: inline-block; padding: 5px 10px; background: #4a90e2; color: white; border-radius: 15px; font-size: 12px; }" +
+            "    </style>" +
+            "</head>" +
+            "<body>" +
+            "    <div class='container'>" +
+            "        <div class='header'>" +
+            "            <h1>✅ Trámite Respondido</h1>" +
+            "            <p style='margin: 10px 0 0 0; opacity: 0.9;'>Su solicitud ha sido procesada</p>" +
+            "        </div>" +
+            "        <div class='content'>" +
+            "            <p>Estimado/a <strong>" + solicitante.getNombre() + " " + solicitante.getApellidos() + "</strong>,</p>" +
+            "            <p>Nos complace informarle que su trámite ha sido <strong>respondido y procesado</strong> exitosamente.</p>" +
+            "            " +
+            "            <div class='info-box'>" +
+            "                <strong>📋 Detalles del Trámite:</strong><br>" +
+            "                <table style='margin-top: 10px; width: 100%;'>" +
+            "                    <tr><td style='padding: 5px 0;'><strong>Código:</strong></td><td>" + tramite.getCodigo() + "</td></tr>" +
+            "                    <tr><td style='padding: 5px 0;'><strong>Título:</strong></td><td>" + tramite.getTitulo() + "</td></tr>" +
+            "                    <tr><td style='padding: 5px 0;'><strong>Tipo:</strong></td><td>" + tramite.getTipo() + "</td></tr>" +
+            "                    <tr><td style='padding: 5px 0;'><strong>Estado:</strong></td><td><span class='badge'>FINALIZADO</span></td></tr>" +
+            "                    <tr><td style='padding: 5px 0;'><strong>Respondido por:</strong></td><td>" + datos.get("administrativoNombre") + "</td></tr>" +
+            "                    <tr><td style='padding: 5px 0;'><strong>Fecha de respuesta:</strong></td><td>" + datos.get("fechaRespuesta") + "</td></tr>" +
+            "                </table>" +
+            "            </div>" +
+            "            " +
+            "            <div class='response-box'>" +
+            "                <h3>📝 Respuesta del Administrativo:</h3>" +
+            "                <p>" + datos.get("respuesta") + "</p>" +
+            "            </div>" +
+            "            " +
+            "            <p>Para ver más detalles y descargar documentos adjuntos, puede acceder al sistema:</p>" +
+            "            <center>" +
+            "                <a href='" + appUrl + "/tramites/" + tramite.getId() + "' class='button'>Ver Trámite Completo</a>" +
+            "            </center>" +
+            "            " +
+            "            <p style='margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;'>" +
+            "                Si tiene alguna consulta adicional, no dude en contactarnos a través del sistema." +
+            "            </p>" +
+            qrSection +
+            "        </div>" +
+            "        <div class='footer'>" +
+            "            <p>Este es un correo automático del Sistema de Trámite Documentario</p>" +
+            "            <p>Por favor, no responda a este correo</p>" +
+            "            <p>© 2024 Sistema de Trámites - Todos los derechos reservados</p>" +
+            "        </div>" +
+            "    </div>" +
+            "</body>" +
+            "</html>";
     }
 
     @Async
@@ -241,6 +174,7 @@ public class EmailService {
     }
 
     private String construirTemplateNuevoTramite(Usuario trabajador, Tramite tramite, Long tramiteId) {
+        // Obtener información del área de origen
         String areaOrigenNombre = "N/A";
         if (tramite.getAreaOrigenId() != null) {
             try {
@@ -248,11 +182,11 @@ public class EmailService {
                     .map(AreaResponse::getNombre)
                     .orElse("N/A");
             } catch (Exception e) {
- 
+                // Continuar con valor por defecto
             }
         }
 
-
+        // Verificar si el solicitante es estudiante para ocultar área de origen
         boolean esEstudiante = false;
         try {
             Usuario solicitante = usuarioRepository.findById(tramite.getUsuarioSolicitanteId()).orElse(null);
@@ -271,8 +205,8 @@ public class EmailService {
             "    <style>" +
             "        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif; line-height: 1.6; color: #333; background: #f5f7fa; margin: 0; padding: 20px; }" +
             "        .container { max-width: 600px; margin: 0 auto; background: #fff; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }" +
-            "        .header { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; padding: 40px 30px; text-align: center; }" +
-            "        .header h1 { color: white; margin: 0; font-size: 28px; font-weight: 600; }" +
+            "        .header { background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%); color: white; padding: 40px 30px; text-align: center; }" +
+            "        .header h1 { margin: 0; font-size: 28px; font-weight: 600; }" +
             "        .header p { margin: 10px 0 0 0; opacity: 0.9; }" +
             "        .icon { font-size: 48px; margin-bottom: 15px; }" +
             "        .content { padding: 40px 30px; }" +
@@ -320,6 +254,7 @@ public class EmailService {
             "                    <span class='detail-label'>Solicitante:</span>" +
             "                    <span class='detail-value'>" + obtenerNombreSolicitante(tramite.getUsuarioSolicitanteId()) + "</span>" +
             "                </div>" +
+            // Solo mostrar área de origen si el solicitante NO es estudiante
             (!esEstudiante ?
                 "                <div class='detail-row'>" +
                 "                    <span class='detail-label'>Área de Origen:</span>" +
@@ -373,9 +308,9 @@ public class EmailService {
                             <style>
                                 @keyframes slideIn { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
                                 @keyframes pulse { 0%%, 100%% { transform: scale(1); } 50%% { transform: scale(1.05); } }
-                                body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background: linear-gradient(135deg, #3b82f6 0%%, #2563eb 100%%); }
+                                body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background: linear-gradient(135deg, #4a90e2 0%%, #357abd 100%%); }
                                 .container { max-width: 600px; margin: 40px auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
-                                .header { background: linear-gradient(135deg, #3b82f6 0%%, #2563eb 100%%); padding: 40px 30px; text-align: center; animation: slideIn 0.6s ease; }
+                                .header { background: linear-gradient(135deg, #4a90e2 0%%, #357abd 100%%); padding: 40px 30px; text-align: center; animation: slideIn 0.6s ease; }
                                 .header h1 { color: white; margin: 0; font-size: 28px; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
                                 .badge { display: inline-block; background: rgba(255,255,255,0.2); color: white; padding: 8px 16px; border-radius: 20px; font-size: 14px; margin-top: 10px; animation: pulse 2s infinite; }
                                 .content { padding: 40px 30px; }
@@ -589,18 +524,14 @@ public class EmailService {
                         tramite.getTipo(),
                         datos.get("trabajadorNombre"),
                         datos.get("tiempoEstimado"),
-                        construirSeccionQR(tramite),
+                        generarSeccionQR(tramite),
                         appUrl,
                         tramiteId
                     );
 
                     helper.setText(htmlContent, true);
-
-                    adjuntarImagenQR(helper, tramite);
-
                     mailSender.send(message);
                 } catch (Exception e) {
-                    log.error("Error enviando email de recepción para trámite {}: {}", tramiteId, e.getMessage());
                     throw new RuntimeException("Error enviando email de recepción", e);
                 }
             });
@@ -611,6 +542,7 @@ public class EmailService {
         return usuarioRepository.findById(usuarioId)
             .map(u -> {
                 String nombreCompleto = u.getNombre() + " " + u.getApellidos();
+                // Si el usuario es ESTUDIANTE, agregar el prefijo "Estudiante"
                 if (u.getRole() != null && "ESTUDIANTE".equals(u.getRole().getName())) {
                     return "Estudiante " + nombreCompleto;
                 }
@@ -699,12 +631,8 @@ public class EmailService {
                     );
 
                     helper.setText(htmlContent, true);
-
-                    adjuntarImagenQR(helper, tramite);
-
                     mailSender.send(message);
                 } catch (Exception e) {
-                    log.error("Error enviando correo de rechazo para trámite {}: {}", tramiteId, e.getMessage());
                     throw new RuntimeException("Error enviando correo de rechazo", e);
                 }
             });
@@ -723,38 +651,24 @@ public class EmailService {
                     helper.setTo(usuario.getCorreo());
                     helper.setSubject("✏️ Trámite Editado - " + tramite.getCodigo());
 
-                    String qrSection = construirSeccionQR(tramite);
-                    String prioridadFormateada = formatearPrioridad(tramite.getPrioridad());
-                    String tipoFormateado = formatearTipoTramite(tramite.getTipo());
-
                     String htmlContent = String.format("""
                         <!DOCTYPE html>
                         <html lang='es'>
                         <head>
                             <meta charset='UTF-8'>
-                            <meta name='viewport' content='width=device-width, initial-scale=1.0'>
                             <style>
                                 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif; margin: 0; padding: 20px; background: #f5f7fa; }
                                 .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.07); }
-                                .header { background: linear-gradient(135deg, #f59e0b 0%%, #d97706 100%%); color: white; padding: 40px 30px; text-align: center; }
-                                .header h1 { font-size: 26px; font-weight: 600; margin: 0; }
-                                .header p { margin: 10px 0 0 0; opacity: 0.9; font-size: 16px; }
+                                .header { background: linear-gradient(135deg, #4a90e2 0%%, #357abd 100%%); color: white; padding: 40px 30px; text-align: center; }
+                                .header h1 { font-size: 26px; font-weight: 600; margin-bottom: 8px; }
                                 .content { padding: 35px 30px; }
-                                .info-card { background: #f8f9fb; border-left: 4px solid #f59e0b; padding: 25px; margin: 25px 0; border-radius: 8px; }
-                                .detail-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #e5e7eb; }
-                                .detail-row:last-child { border-bottom: none; }
-                                .detail-label { font-weight: 600; color: #6b7280; }
-                                .detail-value { color: #1f2937; text-align: right; max-width: 60%%; }
-                                .priority-normal { color: #fbbf24; font-weight: bold; }
-                                .priority-alta { color: #f59e0b; font-weight: bold; }
-                                .priority-urgente { color: #dc2626; font-weight: bold; }
+                                .info-card { background: #f8f9fb; border-left: 4px solid #4a90e2; padding: 20px; margin: 25px 0; border-radius: 8px; }
                                 .changes-box { background: #fef3c7; border: 1px solid #fbbf24; padding: 20px; margin: 25px 0; border-radius: 8px; }
                                 .changes-box h3 { color: #92400e; margin-bottom: 15px; font-size: 16px; }
                                 .change-item { background: white; padding: 12px; margin-bottom: 10px; border-radius: 6px; }
                                 .change-label { font-size: 12px; color: #92400e; font-weight: 600; text-transform: uppercase; }
                                 .change-text { color: #1f2937; margin-top: 4px; }
                                 .footer { background: #2c3e50; color: white; padding: 30px; text-align: center; }
-                                .footer p { margin: 5px 0; opacity: 0.9; font-size: 14px; }
                             </style>
                         </head>
                         <body>
@@ -764,9 +678,12 @@ public class EmailService {
                                     <p>Su trámite ha sido modificado exitosamente</p>
                                 </div>
                                 <div class='content'>
-                                    <p style='font-size: 18px; color: #2c3e50; margin-bottom: 10px;'>Estimado/a <strong>%s %s</strong>,</p>
-                                    <p style='color: #4b5563; line-height: 1.6;'>Le informamos que su trámite ha sido <strong>editado</strong> correctamente en el sistema. A continuación encontrará la información actualizada:</p>
-
+                                    <p>Estimado/a <strong>%s %s</strong>,</p>
+                                    <p>Le informamos que su trámite ha sido <strong>editado</strong> correctamente en el sistema.</p>
+                                    <div class='info-card'>
+                                        <p><strong>📋 Código:</strong> %s</p>
+                                        <p><strong>📅 Fecha de Edición:</strong> %s</p>
+                                    </div>
                                     <div class='changes-box'>
                                         <h3>📝 Cambios Realizados</h3>
                                         <div class='change-item'>
@@ -778,45 +695,10 @@ public class EmailService {
                                             <div class='change-text'>%s</div>
                                         </div>
                                     </div>
-
-                                    <div class='info-card'>
-                                        <h3 style='margin-top: 0; color: #2c3e50; font-size: 18px;'>📋 Información Actualizada del Trámite</h3>
-                                        <div class='detail-row'>
-                                            <span class='detail-label'>Código:</span>
-                                            <span class='detail-value'><strong style='font-family: monospace; font-size: 16px; color: #f59e0b;'>%s</strong></span>
-                                        </div>
-                                        <div class='detail-row'>
-                                            <span class='detail-label'>Asunto:</span>
-                                            <span class='detail-value'>%s</span>
-                                        </div>
-                                        <div class='detail-row'>
-                                            <span class='detail-label'>Tipo:</span>
-                                            <span class='detail-value'>%s</span>
-                                        </div>
-                                        <div class='detail-row'>
-                                            <span class='detail-label'>Prioridad:</span>
-                                            <span class='detail-value priority-%s'>%s</span>
-                                        </div>
-                                        <div class='detail-row'>
-                                            <span class='detail-label'>Estado:</span>
-                                            <span class='detail-value'>%s</span>
-                                        </div>
-                                        <div class='detail-row'>
-                                            <span class='detail-label'>Fecha de Edición:</span>
-                                            <span class='detail-value'>%s</span>
-                                        </div>
-                                    </div>
-
-                                    %s
-
-                                    <div style='background: #e0f2fe; padding: 20px; border-radius: 8px; margin: 25px 0; border-left: 4px solid #0284c7;'>
-                                        <p style='margin: 0; color: #0c4a6e;'><strong>💡 Consejo:</strong> Utilice el código QR para realizar el seguimiento de su trámite en cualquier momento desde su dispositivo móvil.</p>
-                                    </div>
                                 </div>
                                 <div class='footer'>
                                     <p><strong>Sistema de Trámite Documentario</strong></p>
                                     <p>Universidad Nacional de Tumbes</p>
-                                    <p style='margin-top: 15px; font-size: 12px;'>Este es un correo automático, por favor no responder</p>
                                 </div>
                             </div>
                         </body>
@@ -824,306 +706,16 @@ public class EmailService {
                         """,
                         usuario.getNombre(),
                         usuario.getApellidos(),
+                        tramite.getCodigo(),
+                        LocalDateTime.now().format(DATE_FORMATTER),
                         tituloAnterior,
-                        tituloNuevo,
-                        tramite.getCodigo(),
-                        tramite.getAsunto() != null ? tramite.getAsunto() : "Sin asunto",
-                        tipoFormateado,
-                        tramite.getPrioridad() != null ? tramite.getPrioridad().name().toLowerCase() : "normal",
-                        prioridadFormateada,
-                        tramite.getEstado() != null ? tramite.getEstado().name() : "ENVIADO",
-                        LocalDateTime.now().format(DATE_FORMATTER),
-                        qrSection
+                        tituloNuevo
                     );
 
                     helper.setText(htmlContent, true);
                     mailSender.send(message);
                 } catch (Exception e) {
-                    log.error("Error enviando correo de edición al usuario {}: {}", usuarioId, e.getMessage());
-                }
-            });
-        });
-    }
-
-    @Async
-    public void notificarCreacionTramiteASolicitante(Long solicitanteId, Long tramiteId) {
-        usuarioRepository.findById(solicitanteId).ifPresent(solicitante -> {
-            tramiteRepository.findById(tramiteId).ifPresent(tramite -> {
-                try {
-                    MimeMessage message = mailSender.createMimeMessage();
-                    MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-
-                    helper.setFrom(fromEmail);
-                    helper.setTo(solicitante.getCorreo());
-                    helper.setSubject("✅ Trámite Creado Exitosamente - " + tramite.getCodigo());
-
-                    String qrSection = construirSeccionQR(tramite);
-                    String prioridadFormateada = formatearPrioridad(tramite.getPrioridad());
-                    String tipoFormateado = formatearTipoTramite(tramite.getTipo());
-
-                    String htmlContent = String.format("""
-                        <!DOCTYPE html>
-                        <html lang='es'>
-                        <head>
-                            <meta charset='UTF-8'>
-                            <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-                            <style>
-                                body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif; margin: 0; padding: 20px; background: #f5f7fa; }
-                                .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.07); }
-                                .header { background: linear-gradient(135deg, #10b981 0%%, #059669 100%%); color: white; padding: 40px 30px; text-align: center; }
-                                .header h1 { font-size: 28px; font-weight: 600; margin: 0; }
-                                .header p { margin: 10px 0 0 0; opacity: 0.9; font-size: 16px; }
-                                .content { padding: 35px 30px; }
-                                .success-badge { background: #d1fae5; color: #065f46; padding: 12px 24px; border-radius: 8px; display: inline-block; margin: 20px 0; font-weight: 600; }
-                                .info-card { background: #f8f9fb; border-left: 4px solid #10b981; padding: 25px; margin: 25px 0; border-radius: 8px; }
-                                .detail-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #e5e7eb; }
-                                .detail-row:last-child { border-bottom: none; }
-                                .detail-label { font-weight: 600; color: #6b7280; }
-                                .detail-value { color: #1f2937; text-align: right; max-width: 60%%; }
-                                .priority-normal { color: #fbbf24; font-weight: bold; }
-                                .priority-alta { color: #f59e0b; font-weight: bold; }
-                                .priority-urgente { color: #dc2626; font-weight: bold; }
-                                .alert-box { background: #fef3c7; border: 1px solid #fbbf24; padding: 20px; margin: 25px 0; border-radius: 8px; }
-                                .footer { background: #2c3e50; color: white; padding: 30px; text-align: center; }
-                                .footer p { margin: 5px 0; opacity: 0.9; font-size: 14px; }
-                            </style>
-                        </head>
-                        <body>
-                            <div class='container'>
-                                <div class='header'>
-                                    <h1>✅ Trámite Creado Exitosamente</h1>
-                                    <p>Su solicitud ha sido registrada en el sistema</p>
-                                </div>
-                                <div class='content'>
-                                    <p style='font-size: 18px; color: #2c3e50; margin-bottom: 10px;'>Estimado/a <strong>%s %s</strong>,</p>
-                                    <p style='color: #4b5563; line-height: 1.6;'>Su trámite ha sido <strong>creado exitosamente</strong> en el Sistema de Trámite Documentario de la Universidad Nacional de Tumbes. A continuación encontrará toda la información detallada:</p>
-
-                                    <div class='success-badge'>
-                                        🎉 Trámite registrado correctamente
-                                    </div>
-
-                                    <div class='info-card'>
-                                        <h3 style='margin-top: 0; color: #2c3e50; font-size: 18px;'>📋 Información del Trámite</h3>
-                                        <div class='detail-row'>
-                                            <span class='detail-label'>Código:</span>
-                                            <span class='detail-value'><strong style='font-family: monospace; font-size: 16px; color: #10b981;'>%s</strong></span>
-                                        </div>
-                                        <div class='detail-row'>
-                                            <span class='detail-label'>Asunto:</span>
-                                            <span class='detail-value'>%s</span>
-                                        </div>
-                                        <div class='detail-row'>
-                                            <span class='detail-label'>Tipo:</span>
-                                            <span class='detail-value'>%s</span>
-                                        </div>
-                                        <div class='detail-row'>
-                                            <span class='detail-label'>Prioridad:</span>
-                                            <span class='detail-value priority-%s'>%s</span>
-                                        </div>
-                                        <div class='detail-row'>
-                                            <span class='detail-label'>Estado:</span>
-                                            <span class='detail-value'>%s</span>
-                                        </div>
-                                        <div class='detail-row'>
-                                            <span class='detail-label'>Fecha de Creación:</span>
-                                            <span class='detail-value'>%s</span>
-                                        </div>
-                                        <div class='detail-row'>
-                                            <span class='detail-label'>Fecha de Vencimiento:</span>
-                                            <span class='detail-value'><strong>%s</strong></span>
-                                        </div>
-                                    </div>
-
-                                    %s
-
-                                    <div class='alert-box'>
-                                        <p style='margin: 0; color: #92400e;'><strong>⏰ Importante:</strong> Su trámite será procesado en un plazo máximo de <strong>3 días hábiles</strong>. Recibirá notificaciones sobre cualquier actualización.</p>
-                                    </div>
-
-                                    <div style='background: #e0f2fe; padding: 20px; border-radius: 8px; margin: 25px 0; border-left: 4px solid #0284c7;'>
-                                        <p style='margin: 0; color: #0c4a6e;'><strong>💡 Consejo:</strong> Puede escanear el código QR con su dispositivo móvil para acceder rápidamente a la información de su trámite y realizar el seguimiento en cualquier momento.</p>
-                                    </div>
-                                </div>
-                                <div class='footer'>
-                                    <p><strong>Sistema de Trámite Documentario</strong></p>
-                                    <p>Universidad Nacional de Tumbes</p>
-                                    <p style='margin-top: 15px; font-size: 12px;'>Este es un correo automático, por favor no responder</p>
-                                </div>
-                            </div>
-                        </body>
-                        </html>
-                        """,
-                        solicitante.getNombre(),
-                        solicitante.getApellidos(),
-                        tramite.getCodigo(),
-                        tramite.getAsunto() != null ? tramite.getAsunto() : "Sin asunto",
-                        tipoFormateado,
-                        tramite.getPrioridad() != null ? tramite.getPrioridad().name().toLowerCase() : "normal",
-                        prioridadFormateada,
-                        tramite.getEstado() != null ? tramite.getEstado().name() : "ENVIADO",
-                        tramite.getFechaCreacion() != null ? tramite.getFechaCreacion().format(DATE_FORMATTER) : LocalDateTime.now().format(DATE_FORMATTER),
-                        tramite.getFechaVencimiento() != null ? tramite.getFechaVencimiento().format(DATE_FORMATTER) : "Por determinar",
-                        qrSection
-                    );
-
-                    helper.setText(htmlContent, true);
-
-                    adjuntarImagenQR(helper, tramite);
-
-                    mailSender.send(message);
-                } catch (Exception e) {
-                    log.error("Error enviando correo de creación al solicitante {}: {}", solicitanteId, e.getMessage());
-                }
-            });
-        });
-    }
-
-    @Async
-    public void notificarDerivacionASolicitante(Long solicitanteId, Long tramiteId, String motivo, String areaDestino) {
-        usuarioRepository.findById(solicitanteId).ifPresent(solicitante -> {
-            tramiteRepository.findById(tramiteId).ifPresent(tramite -> {
-                try {
-                    MimeMessage message = mailSender.createMimeMessage();
-                    MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-
-                    helper.setFrom(fromEmail);
-                    helper.setTo(solicitante.getCorreo());
-                    helper.setSubject("🔄 Su Trámite Ha Sido Derivado - " + tramite.getCodigo());
-
-                    String qrSection = construirSeccionQR(tramite);
-                    String prioridadFormateada = formatearPrioridad(tramite.getPrioridad());
-                    String tipoFormateado = formatearTipoTramite(tramite.getTipo());
-
-                    String htmlContent = String.format("""
-                        <!DOCTYPE html>
-                        <html lang='es'>
-                        <head>
-                            <meta charset='UTF-8'>
-                            <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-                            <style>
-                                body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif; margin: 0; padding: 20px; background: #f5f7fa; }
-                                .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.07); }
-                                .header { background: linear-gradient(135deg, #8b5cf6 0%%, #6d28d9 100%%); color: white; padding: 40px 30px; text-align: center; }
-                                .header h1 { font-size: 26px; font-weight: 600; margin: 0; }
-                                .header p { margin: 10px 0 0 0; opacity: 0.9; font-size: 16px; }
-                                .content { padding: 35px 30px; }
-                                .status-badge { background: #ede9fe; color: #6d28d9; padding: 12px 24px; border-radius: 8px; display: inline-block; margin: 20px 0; font-weight: 600; }
-                                .info-card { background: #f8f9fb; border-left: 4px solid #8b5cf6; padding: 25px; margin: 25px 0; border-radius: 8px; }
-                                .detail-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #e5e7eb; }
-                                .detail-row:last-child { border-bottom: none; }
-                                .detail-label { font-weight: 600; color: #6b7280; }
-                                .detail-value { color: #1f2937; text-align: right; max-width: 60%%; }
-                                .priority-normal { color: #fbbf24; font-weight: bold; }
-                                .priority-alta { color: #f59e0b; font-weight: bold; }
-                                .priority-urgente { color: #dc2626; font-weight: bold; }
-                                .alert-box { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 20px; margin: 25px 0; border-radius: 8px; }
-                                .alert-box h3 { color: #92400e; margin-top: 0; font-size: 16px; }
-                                .evolution-box { background: #f0f9ff; border: 1px solid #3b82f6; padding: 20px; margin: 25px 0; border-radius: 8px; }
-                                .evolution-box h3 { color: #1e40af; margin-top: 0; font-size: 16px; }
-                                .timeline-item { padding: 10px 0; border-left: 3px solid #3b82f6; padding-left: 15px; margin-left: 10px; }
-                                .footer { background: #2c3e50; color: white; padding: 30px; text-align: center; }
-                                .footer p { margin: 5px 0; opacity: 0.9; font-size: 14px; }
-                            </style>
-                        </head>
-                        <body>
-                            <div class='container'>
-                                <div class='header'>
-                                    <h1>🔄 Trámite Derivado</h1>
-                                    <p>Su trámite está siendo procesado por otra área</p>
-                                </div>
-                                <div class='content'>
-                                    <p style='font-size: 18px; color: #2c3e50; margin-bottom: 10px;'>Estimado/a <strong>%s %s</strong>,</p>
-                                    <p style='color: #4b5563; line-height: 1.6;'>Le informamos que su trámite ha sido <strong>derivado</strong> para su procesamiento especializado.</p>
-
-                                    <div class='status-badge'>
-                                        🔄 Trámite en proceso de derivación
-                                    </div>
-
-                                    <div class='alert-box'>
-                                        <h3>📌 Motivo de la Derivación</h3>
-                                        <p style='margin: 5px 0;'>%s</p>
-                                    </div>
-
-                                    <div class='info-card'>
-                                        <h3 style='margin-top: 0; color: #2c3e50; font-size: 18px;'>📋 Información del Trámite</h3>
-                                        <div class='detail-row'>
-                                            <span class='detail-label'>Código:</span>
-                                            <span class='detail-value'><strong style='font-family: monospace; font-size: 16px; color: #8b5cf6;'>%s</strong></span>
-                                        </div>
-                                        <div class='detail-row'>
-                                            <span class='detail-label'>Asunto:</span>
-                                            <span class='detail-value'>%s</span>
-                                        </div>
-                                        <div class='detail-row'>
-                                            <span class='detail-label'>Tipo:</span>
-                                            <span class='detail-value'>%s</span>
-                                        </div>
-                                        <div class='detail-row'>
-                                            <span class='detail-label'>Prioridad:</span>
-                                            <span class='detail-value priority-%s'>%s</span>
-                                        </div>
-                                        <div class='detail-row'>
-                                            <span class='detail-label'>Estado Actual:</span>
-                                            <span class='detail-value'>%s</span>
-                                        </div>
-                                        <div class='detail-row'>
-                                            <span class='detail-label'>Derivado a:</span>
-                                            <span class='detail-value'><strong>%s</strong></span>
-                                        </div>
-                                        <div class='detail-row'>
-                                            <span class='detail-label'>Fecha de Derivación:</span>
-                                            <span class='detail-value'>%s</span>
-                                        </div>
-                                    </div>
-
-                                    <div class='evolution-box'>
-                                        <h3>📊 Evolución del Trámite</h3>
-                                        <div class='timeline-item'>
-                                            <strong>✅ Creado</strong> - %s
-                                        </div>
-                                        <div class='timeline-item'>
-                                            <strong>🔄 Derivado</strong> - %s (Ahora)
-                                        </div>
-                                        <div class='timeline-item' style='opacity: 0.5;'>
-                                            <strong>⏳ En Proceso</strong> - Próximo paso
-                                        </div>
-                                    </div>
-
-                                    %s
-
-                                    <div style='background: #e0f2fe; padding: 20px; border-radius: 8px; margin: 25px 0; border-left: 4px solid #0284c7;'>
-                                        <p style='margin: 0; color: #0c4a6e;'><strong>💡 Información:</strong> La derivación de su trámite es parte del proceso normal. El área especializada se encargará de darle seguimiento. Recibirá notificaciones de cualquier actualización.</p>
-                                    </div>
-                                </div>
-                                <div class='footer'>
-                                    <p><strong>Sistema de Trámite Documentario</strong></p>
-                                    <p>Universidad Nacional de Tumbes</p>
-                                    <p style='margin-top: 15px; font-size: 12px;'>Este es un correo automático, por favor no responder</p>
-                                </div>
-                            </div>
-                        </body>
-                        </html>
-                        """,
-                        solicitante.getNombre(),
-                        solicitante.getApellidos(),
-                        motivo != null ? motivo : "El trámite requiere atención especializada de otro empleado o área.",
-                        tramite.getCodigo(),
-                        tramite.getAsunto() != null ? tramite.getAsunto() : "Sin asunto",
-                        tipoFormateado,
-                        tramite.getPrioridad() != null ? tramite.getPrioridad().name().toLowerCase() : "normal",
-                        prioridadFormateada,
-                        tramite.getEstado() != null ? tramite.getEstado().name() : "DERIVADO",
-                        areaDestino != null ? areaDestino : "Área Especializada o Empleado Asignado",
-                        LocalDateTime.now().format(DATE_FORMATTER),
-                        tramite.getFechaCreacion() != null ? tramite.getFechaCreacion().format(DATE_FORMATTER) : "N/A",
-                        LocalDateTime.now().format(DATE_FORMATTER),
-                        qrSection
-                    );
-
-                    helper.setText(htmlContent, true);
-                    mailSender.send(message);
-                } catch (Exception e) {
-                    log.error("Error enviando correo de derivación al solicitante {}: {}", solicitanteId, e.getMessage());
+                    throw new RuntimeException("Error enviando correo de edición", e);
                 }
             });
         });
@@ -1376,11 +968,8 @@ public class EmailService {
                         }
                     }
 
-                    adjuntarImagenQR(helper, tramite);
-
                     mailSender.send(mimeMessage);
-                } catch (Exception e) {
-                    log.error("Error enviando email con archivo adjunto para trámite {}: {}", tramiteId, e.getMessage());
+                } catch (MessagingException e) {
                     throw new RuntimeException("Error enviando email con archivo adjunto", e);
                 }
             });
@@ -1458,6 +1047,7 @@ public class EmailService {
                 asignado = usuarioService.obtenerUsuarioPorId(tramite.getUsuarioAsignadoId());
             }
         } catch (Exception e) {
+            // Continuar sin información de usuarios
         }
 
         StringBuilder html = new StringBuilder();
@@ -1719,6 +1309,8 @@ public class EmailService {
 
         html.append("</table>")
             .append("</div>");
+
+        // Información de personas y áreas
         html.append("<div class='info-section'>")
             .append("<div class='section-title'>Personas y Áreas Involucradas</div>")
             .append("<table class='info-table'>");
@@ -1751,6 +1343,8 @@ public class EmailService {
 
         html.append("</table>")
             .append("</div>");
+
+        // Descripción
         if (tramite.getDescripcion() != null && !tramite.getDescripcion().trim().isEmpty()) {
             html.append("<div class='content-section'>")
                 .append("<div class='section-title'>Descripción del Trámite</div>")
@@ -1759,6 +1353,8 @@ public class EmailService {
                 .append("</div>")
                 .append("</div>");
         }
+
+        // Observaciones
         if (tramite.getObservaciones() != null && !tramite.getObservaciones().trim().isEmpty()) {
             html.append("<div class='content-section'>")
                 .append("<div class='section-title'>Observaciones</div>")
@@ -1767,6 +1363,8 @@ public class EmailService {
                 .append("</div>")
                 .append("</div>");
         }
+
+        // Respuesta
         if (tramite.getRespuesta() != null && !tramite.getRespuesta().trim().isEmpty()) {
             html.append("<div class='content-section'>")
                 .append("<div class='section-title'>Respuesta Oficial</div>")
@@ -1775,6 +1373,8 @@ public class EmailService {
                 .append("</div>")
                 .append("</div>");
         }
+
+        // Footer con firmas
         html.append("<div class='footer'>")
             .append("<div class='signatures'>")
             .append("<div class='signature-box'>")
@@ -1818,6 +1418,7 @@ public class EmailService {
         if (prioridad == null) return "Normal";
 
         return switch (prioridad) {
+            case BAJA -> "Baja";
             case NORMAL -> "Normal";
             case ALTA -> "Alta";
             case URGENTE -> "Urgente";
@@ -1828,11 +1429,13 @@ public class EmailService {
     // Envío de correo de confirmación al remitente
     @Async
     public void enviarCorreoConfirmacionRemitente(Long remitenteId, Long tramiteId) {
+        System.out.println("🚀 Iniciando envío de email de confirmación al remitente ID: " + remitenteId + " para trámite ID: " + tramiteId);
 
         usuarioRepository.findById(remitenteId).ifPresent(remitente -> {
-      
+            System.out.println("📧 Usuario remitente encontrado: " + remitente.getNombre() + " (" + remitente.getCorreo() + ")");
 
             tramiteRepository.findById(tramiteId).ifPresent(tramite -> {
+                System.out.println("📄 Trámite encontrado: " + tramite.getCodigo() + " - " + tramite.getAsunto());
                 try {
                     MimeMessage message = mailSender.createMimeMessage();
                     MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
@@ -1840,197 +1443,116 @@ public class EmailService {
                     helper.setFrom(fromEmail);
                     helper.setTo(remitente.getCorreo());
                     helper.setSubject("✅ Trámite Enviado - " + tramite.getCodigo());
+
                     String htmlContent = construirTemplateConfirmacionRemitente(remitente, tramite);
                     helper.setText(htmlContent, true);
 
-                    adjuntarImagenQR(helper, tramite);
-
                     mailSender.send(message);
+                    System.out.println("✅ Email de confirmación enviado exitosamente al remitente: " + remitente.getCorreo() + " para trámite: " + tramite.getCodigo());
                 } catch (Exception e) {
-                    log.error("Error enviando email de confirmación al remitente {} para trámite {}: {}",
-                        remitente.getCorreo(), tramite.getCodigo(), e.getMessage());
+                    System.err.println("❌ Error enviando email de confirmación al remitente " + remitente.getCorreo() + " para trámite " + tramite.getCodigo() + ": " + e.getMessage());
+                    e.printStackTrace();
                 }
             });
         });
     }
 
     private String construirTemplateConfirmacionRemitente(Usuario remitente, Tramite tramite) {
-        try {
-            String estado = tramite.getEstado() != null ? tramite.getEstado().toString() : "ENVIADO";
-            String nombre = remitente.getNombre() != null ? remitente.getNombre() : "";
-            String apellidos = remitente.getApellidos() != null ? remitente.getApellidos() : "";
-            String codigo = tramite.getCodigo() != null ? tramite.getCodigo() : "";
-            String asunto = tramite.getAsunto() != null ? tramite.getAsunto() : "";
-            String tipo = tramite.getTipo() != null ? tramite.getTipo().toString() : "";
-            String fecha = tramite.getFechaCreacion() != null ? tramite.getFechaCreacion().toString() : "";
+        String qrSection = generarSeccionQR(tramite);
+        String rolDescripcion = obtenerDescripcionRol(remitente);
+        String qrImageBase64 = qrSection != null ? qrSection : "";
+        String qrUrl = "https://tramites.untumbes.edu.pe";
 
-            String seccionQR = construirSeccionQR(tramite);
-            return String.format("""
-                <!DOCTYPE html>
-                <html lang='es'>
-                <head>
-                    <meta charset='UTF-8'>
-                    <style>
-                        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background: #f5f7fa; }
-                        .container { max-width: 600px; margin: 40px auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
-                        .header { background: #10b981 !important; color: white !important; padding: 40px; text-align: center; }
-                        .header h1 { margin: 0; font-size: 28px; font-weight: 600; color: white !important; }
-                        .badge { display: inline-block; background: rgba(255,255,255,0.2); color: white; padding: 8px 16px; border-radius: 20px; margin-top: 10px; font-size: 14px; }
-                        .content { padding: 40px 30px; }
-                        .greeting { font-size: 18px; color: #1f2937; margin-bottom: 20px; }
-                        .info-card { background: #f0fdf4; border-left: 4px solid #10b981; padding: 25px; margin: 25px 0; border-radius: 8px; }
-                        .detail-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #d1fae5; }
-                        .detail-row:last-child { border-bottom: none; }
-                        .detail-label { font-weight: 600; color: #047857; }
-                        .detail-value { color: #1f2937; }
-                        .success-message { background: #dbeafe; border: 1px solid #3b82f6; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center; }
-                        .footer { background: #f9fafb; padding: 25px; text-align: center; color: #6b7280; font-size: 13px; border-top: 1px solid #e5e7eb; }
-                    </style>
-                </head>
-                <body>
-                    <div class='container'>
-                        <div class='header' style='background: #10b981 !important; color: white !important; padding: 40px; text-align: center;'>
-                            <h1 style='margin: 0; font-size: 28px; font-weight: 600; color: white !important;'>✅ Trámite Enviado Exitosamente</h1>
-                            <div class='badge' style='display: inline-block; background: rgba(255,255,255,0.2); color: white; padding: 8px 16px; border-radius: 20px; margin-top: 10px; font-size: 14px;'>%s</div>
-                        </div>
-                        <div class='content'>
-                            <p class='greeting'>Estimado/a <strong>%s %s</strong>,</p>
-                            <div class='success-message'>
-                                <h3 style='margin-top: 0; color: #1e40af;'>🎉 ¡Su trámite ha sido enviado correctamente!</h3>
-                                <p style='margin-bottom: 0; color: #1f2937;'>
-                                    Hemos recibido su solicitud y comenzaremos a procesarla a la brevedad posible.
-                                </p>
-                            </div>
-
-                            <div class='info-card'>
-                                <h3 style='margin-top: 0; color: #047857;'>📋 Detalles de su Trámite</h3>
-                                <div class='detail-row'>
-                                    <span class='detail-label'>Código de Seguimiento:</span>
-                                    <span class='detail-value'><strong>%s</strong></span>
-                                </div>
-                                <div class='detail-row'>
-                                    <span class='detail-label'>Asunto:</span>
-                                    <span class='detail-value'>%s</span>
-                                </div>
-                                <div class='detail-row'>
-                                    <span class='detail-label'>Tipo:</span>
-                                    <span class='detail-value'>%s</span>
-                                </div>
-                                <div class='detail-row'>
-                                    <span class='detail-label'>Estado Actual:</span>
-                                    <span class='detail-value'><strong style='color: #10b981;'>%s</strong></span>
-                                </div>
-                                <div class='detail-row'>
-                                    <span class='detail-label'>Fecha de Envío:</span>
-                                    <span class='detail-value'>%s</span>
-                                </div>
-                            </div>
-
-                            %s
-
-                            <p style='margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; color: #6b7280; font-size: 14px;'>
-                                💡 <strong>Importante:</strong> Guarde este código de seguimiento (<strong>%s</strong>) para futuras consultas.
-                                Recibirá notificaciones por email sobre cualquier actualización en su trámite.
+        String template = """
+            <!DOCTYPE html>
+            <html lang='es'>
+            <head>
+                <meta charset='UTF-8'>
+                <style>
+                    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background: #f5f7fa; }
+                    .container { max-width: 600px; margin: 40px auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+                    .header { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 40px; text-align: center; }
+                    .header h1 { margin: 0; font-size: 28px; font-weight: 600; color: white; }
+                    .badge { display: inline-block; background: #f0f0f0; color: #333; padding: 8px 16px; border-radius: 20px; margin-top: 10px; font-size: 14px; }
+                    .content { padding: 40px 30px; }
+                    .greeting { font-size: 18px; color: #1f2937; margin-bottom: 20px; }
+                    .info-card { background: #f0fdf4; border-left: 4px solid #10b981; padding: 25px; margin: 25px 0; border-radius: 8px; }
+                    .detail-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #d1fae5; }
+                    .detail-row:last-child { border-bottom: none; }
+                    .detail-label { font-weight: 600; color: #047857; }
+                    .detail-value { color: #1f2937; }
+                    .success-message { background: #dbeafe; border: 1px solid #3b82f6; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center; }
+                    .footer { background: #f9fafb; padding: 25px; text-align: center; color: #6b7280; font-size: 13px; border-top: 1px solid #e5e7eb; }
+                </style>
+            </head>
+            <body>
+                <div class='container'>
+                    <div class='header'>
+                        <h1>✅ Trámite Enviado Exitosamente</h1>
+                        <div class='badge'>%s</div>
+                    </div>
+                    <div class='content'>
+                        <p class='greeting'>Estimado/a <strong>%s %s</strong>,</p>
+                        <div class='success-message'>
+                            <h3 style='margin-top: 0; color: #1e40af;'>🎉 ¡Su trámite ha sido enviado correctamente!</h3>
+                            <p style='margin-bottom: 0; color: #1f2937;'>
+                                Hemos recibido su solicitud y comenzaremos a procesarla a la brevedad posible.
                             </p>
                         </div>
-                        <div class='footer'>
-                            <p><strong>Sistema de Trámite Documentario</strong></p>
-                            <p>Universidad Nacional de Tumbes</p>
-                            <p style='margin-top: 10px;'>Este es un correo automático, por favor no responda</p>
+
+                        <div class='info-card'>
+                            <h3 style='margin-top: 0; color: #047857;'>📋 Detalles de su Trámite</h3>
+                            <div class='detail-row'>
+                                <span class='detail-label'>Código de Seguimiento:</span>
+                                <span class='detail-value'><strong>%s</strong></span>
+                            </div>
+                            <div class='detail-row'>
+                                <span class='detail-label'>Asunto:</span>
+                                <span class='detail-value'>%s</span>
+                            </div>
+                            <div class='detail-row'>
+                                <span class='detail-label'>Tipo:</span>
+                                <span class='detail-value'>%s</span>
+                            </div>
+                            <div class='detail-row'>
+                                <span class='detail-label'>Estado Actual:</span>
+                                <span class='detail-value'><strong style='color: #10b981;'>ENVIADO</strong></span>
+                            </div>
+                            <div class='detail-row'>
+                                <span class='detail-label'>Fecha de Envío:</span>
+                                <span class='detail-value'>%s</span>
+                            </div>
                         </div>
+
+                        %s
+
+                        <p style='margin-top: 30px; padding-top: 20px; border-top: 1px solid #000000; color: #6b7280; font-size: 14px;'>
+                            💡 <strong>Importante:</strong> Guarde este código de seguimiento (<strong>%s</strong>) para futuras consultas.
+                            Recibirá notificaciones por email sobre cualquier actualización en su trámite.
+                        </p>
                     </div>
-                </body>
-                </html>
-                """, estado, nombre, apellidos, codigo, asunto, tipo, estado, fecha, seccionQR, codigo);
-
-        } catch (Exception e) {
-            return construirTemplateSimple(remitente, tramite);
-        }
-    }
-
-    private void adjuntarImagenQR(MimeMessageHelper helper, Tramite tramite) {
-        if (tramite == null) {
-            log.warn("Trámite es null, no se puede adjuntar QR");
-            return;
-        }
-
-        if (tramite.getQrCode() == null || tramite.getQrCode().isEmpty()) {
-            log.debug("Trámite {} no tiene código QR, saltando adjunto", tramite.getId());
-            return;
-        }
-
-        try {
-            log.info("Adjuntando imagen QR para trámite {} con código QR: {}", tramite.getId(), tramite.getQrCode());
-
-            byte[] imagenQR = qrCodeService.generarQRTramite(
-                tramite.getQrCode(),
-                tramite.getCodigo(),
-                tramite.getNumeroExpediente() != null ? tramite.getNumeroExpediente() : "N/A",
-                tramite.getTipo().toString(),
-                tramite.getEstado().toString()
-            );
-
-            log.debug("Imagen QR generada: {} bytes", imagenQR.length);
-
-            org.springframework.core.io.ByteArrayResource qrResource =
-                new org.springframework.core.io.ByteArrayResource(imagenQR);
-
-            helper.addInline("qrCodeImage", qrResource, "image/png");
-            log.info("✅ Imagen QR adjuntada exitosamente con CID para trámite {}", tramite.getId());
-        } catch (Exception e) {
-            log.error("❌ Error adjuntando imagen QR para trámite {}: {}", tramite.getId(), e.getMessage(), e);
-        }
-    }
-
-    private String construirSeccionQR(Tramite tramite) {
-        try {
-            String qrCode = tramite.getQrCode();
-            if (qrCode == null || qrCode.isEmpty()) {
-                return "<div style='text-align: center; padding: 20px; color: #6b7280;'>Código QR se generará próximamente</div>";
-            }
-
-            return String.format("""
-                <div style='background: linear-gradient(135deg, #f8fafc 0%%, #e2e8f0 100%%); padding: 30px; border-radius: 16px; margin: 30px 0; text-align: center; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); border: 2px solid #3b82f6;'>
-                    <h3 style='margin: 0 0 15px 0; color: #1e293b; font-size: 20px; font-weight: 600;'>📱 Código QR para Seguimiento</h3>
-                    <div style='background: #ffffff; padding: 25px; border-radius: 12px; display: inline-block; margin: 20px 0; box-shadow: 0 2px 10px rgba(0,0,0,0.1);'>
-                        <img src='cid:qrCodeImage' alt='Código QR del trámite %s' style='width: 200px; height: 200px; display: block; margin: 0 auto;' />
-                        <p style='margin: 15px 0 0 0; font-family: monospace; font-size: 14px; color: #1e40af; font-weight: 700;'>Código: %s</p>
+                    <div class='footer'>
+                        <p><strong>Sistema de Trámite Documentario</strong></p>
+                        <p>Universidad Nacional de Tumbes</p>
+                        <p style='margin-top: 10px;'>Este es un correo automático, por favor no responda</p>
                     </div>
-                    <p style='margin: 15px 0 0 0; font-size: 12px; color: #64748b;'>Escanee el código QR con su dispositivo móvil para seguimiento rápido</p>
-                </div>
-                """, tramite.getCodigo(), qrCode);
-
-        } catch (Exception e) {
-            log.error("Error construyendo sección QR para trámite {}: {}", tramite.getId(), e.getMessage());
-            return "<div style='text-align: center; padding: 20px; color: #dc2626;'>⚠️ Error generando código QR</div>";
-        }
-    }
-
-    private String construirTemplateSimple(Usuario remitente, Tramite tramite) {
-        return String.format("""
-            <html>
-            <body style='font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5;'>
-                <div style='max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px;'>
-                    <h2 style='color: #10b981; text-align: center;'>✅ Trámite Enviado Exitosamente</h2>
-                    <p>Estimado/a <strong>%s %s</strong>,</p>
-                    <p>Su trámite con código <strong>%s</strong> ha sido enviado correctamente.</p>
-                    <p><strong>Asunto:</strong> %s</p>
-                    <p><strong>Tipo:</strong> %s</p>
-                    <p><strong>Estado:</strong> %s</p>
-                    <p>Recibirá notificaciones sobre el progreso de su trámite.</p>
-                    <hr>
-                    <p style='font-size: 12px; color: #666; text-align: center;'>Sistema de Trámite Documentario - Universidad Nacional de Tumbes</p>
                 </div>
             </body>
             </html>
-            """,
-            remitente.getNombre() != null ? remitente.getNombre() : "",
-            remitente.getApellidos() != null ? remitente.getApellidos() : "",
-            tramite.getCodigo() != null ? tramite.getCodigo() : "",
-            tramite.getAsunto() != null ? tramite.getAsunto() : "",
-            tramite.getTipo() != null ? tramite.getTipo().toString() : "",
-            tramite.getEstado() != null ? tramite.getEstado().toString() : "ENVIADO"
-        );
+            """;
+
+        return String.format(template,
+            tramite.getEstado().toString(),
+            remitente.getNombre(),
+            remitente.getApellidos(),
+            tramite.getCodigo(),
+            tramite.getAsunto(),
+            tramite.getTipo().toString(),
+            tramite.getFechaCreacion().toString(),
+            qrImageBase64.isEmpty() ?
+                "<p style='color: #dc2626; font-weight: 600;'>⚠️ Error generando código QR</p>" :
+                String.format("<img src='%s' alt='Código QR del trámite %s' style='width: 200px; height: 200px; display: block; margin: 0 auto; border: 2px solid #374151; border-radius: 8px;' />", qrImageBase64, tramite.getCodigo()),
+            tramite.getCodigo());
     }
 
     private String obtenerDescripcionRol(Usuario usuario) {
@@ -2043,6 +1565,94 @@ public class EmailService {
             };
         }
         return "Usuario";
+    }
+
+ 
+    // Generar sección de código QR para el email
+    
+    private String generarSeccionQR(Tramite tramite) {
+        // Solo generar QR para trámites que no estén concluidos
+        if (tramite.getEstado() == Tramite.EstadoTramite.FINALIZADO ||
+            tramite.getEstado() == Tramite.EstadoTramite.ARCHIVADO ||
+            tramite.getEstado() == Tramite.EstadoTramite.CANCELADO ||
+            tramite.getQrCode() == null || tramite.getQrCode().isEmpty()) {
+            return ""; 
+        }
+
+        String qrUrl = qrCodeService.generarUrlVerificacion(tramite.getQrCode());
+        // Generar QR code si no existe
+        if (tramite.getQrCode() == null || tramite.getQrCode().isEmpty()) {
+            log.info("Generando QR automáticamente para trámite {} en email", tramite.getId());
+            String codigoQR = qrCodeService.generarCodigoQR();
+            String urlVerificacion = qrCodeService.generarUrlVerificacion(codigoQR);
+
+            tramite.setQrCode(codigoQR);
+            tramite.setQrUrl(urlVerificacion);
+            tramite.setQrGeneradoFecha(LocalDateTime.now());
+
+            tramiteRepository.save(tramite);
+        }
+
+        // Generar imagen QR como base64 para embebido en email
+        String qrImageBase64;
+        try {
+            byte[] imagenQR = qrCodeService.generarQRTramite(
+                tramite.getQrCode(),
+                tramite.getCodigo(),
+                tramite.getNumeroExpediente() != null ? tramite.getNumeroExpediente() : "N/A",
+                tramite.getTipo().toString(),
+                tramite.getEstado().toString()
+            );
+            qrImageBase64 = "data:image/png;base64," + Base64.getEncoder().encodeToString(imagenQR);
+        } catch (Exception e) {
+            log.error("Error generando imagen QR para email del trámite {}: {}", tramite.getId(), e.getMessage());
+            qrImageBase64 = ""; // Fallback vacío si falla la generación
+        }
+
+        return String.format("""
+            <div style='background: linear-gradient(135deg, #f8fafc 0%%, #e2e8f0 100%%); padding: 30px; border-radius: 16px; margin: 30px 0; text-align: center; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); border: 2px solid #3b82f6;'>
+                <h3 style='margin: 0 0 15px 0; color: #1e293b; font-size: 20px; font-weight: 600;'>
+                    📱 Código QR para Seguimiento
+                </h3>
+                <p style='margin: 0 0 20px 0; font-size: 15px; color: #475569; line-height: 1.4;'>
+                    Escanee este código QR con su celular para verificar el estado de su trámite en cualquier momento
+                </p>
+
+                <div style='background: #ffffff; padding: 25px; border-radius: 12px; display: inline-block; margin: 20px 0; box-shadow: 0 2px 10px rgba(0,0,0,0.1); border: 3px solid #2563eb;'>
+                    %s
+                    <div style='margin-top: 15px; padding: 12px; background: #dbeafe; border-radius: 8px; border: 2px solid #2563eb;'>
+                        <p style='margin: 0; font-family: monospace; font-size: 14px; color: #1e40af; font-weight: 700; letter-spacing: 1px;'>
+                            Código: %s
+                        </p>
+                    </div>
+                </div>
+
+                <div style='margin: 20px 0;'>
+                    <a href='%s'
+                       style='display: inline-block; background: #2563eb; color: #ffffff; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);'>
+                        🔗 Verificar en Navegador
+                    </a>
+                </div>
+
+                <p style='margin: 15px 0 0 0; font-size: 13px; color: #374151; line-height: 1.4;'>
+                    💡 <strong>Importante:</strong> Guarde este código de seguimiento <strong>(%s)</strong> para futuras consultas.<br/>
+                    Recibirá notificaciones por email sobre cualquier actualización en su trámite.
+                </p>
+            </div>
+            """;
+
+        return String.format(template,
+            tramite.getEstado().toString(),
+            remitente.getNombre(),
+            remitente.getApellidos(),
+            tramite.getCodigo(),
+            tramite.getAsunto(),
+            tramite.getTipo().toString(),
+            tramite.getFechaCreacion().toString(),
+            qrImageBase64.isEmpty() ?
+                "<p style='color: #dc2626; font-weight: 600;'>⚠️ Error generando código QR</p>" :
+                String.format("<img src='%s' alt='Código QR del trámite %s' style='width: 200px; height: 200px; display: block; margin: 0 auto; border: 2px solid #374151; border-radius: 8px;' />", qrImageBase64, tramite.getCodigo()),
+            tramite.getCodigo());
     }
 
 }

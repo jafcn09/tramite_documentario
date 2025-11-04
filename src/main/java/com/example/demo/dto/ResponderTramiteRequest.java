@@ -1,5 +1,6 @@
 package com.example.demo.dto;
 
+import com.example.demo.enums.DepartamentoPeru;
 import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -12,4 +13,12 @@ public class ResponderTramiteRequest {
     private List<MultipartFile> archivosRespuesta;
     private boolean notificarPorEmail = true;
     private String asunto;
+
+ 
+    private Boolean requiereFirmaDigital = false;
+    private String tipoFirma;
+    private String razonFirma;
+    private DepartamentoPeru ubicacionFirma;
+    private Boolean consentimientoFirma = false;
+    private MultipartFile firmaDigitalArchivo;
 }

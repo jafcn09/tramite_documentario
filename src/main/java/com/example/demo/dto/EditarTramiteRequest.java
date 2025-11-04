@@ -19,4 +19,9 @@ public class EditarTramiteRequest {
     private String tipo;
     private String prioridad;
     private Long areaDestinoId;
+    private String tipoFirma;
+    private String razonFirma;
+    private String ubicacionFirma;
+    private String firmaDigitalData;
+    private Boolean requiereFirmaDigital;
 }

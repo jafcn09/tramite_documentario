@@ -59,13 +59,10 @@ public class AuthController {
             HttpServletRequest httpRequest) {
         
         try {
-            System.out.println("Login request received for user: " + loginRequest.getUsuario());
             LoginResponse response = authService.login(loginRequest, httpRequest);
-            System.out.println("Login response created: " + response);
-            
+
             // Si hay un token, el login fue exitoso
             if (response.getToken() != null) {
-                System.out.println("Login successful, returning token");
                 return ResponseEntity.ok()
                     .header("Content-Type", "application/json")
                     .body(response);

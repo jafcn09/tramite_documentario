@@ -98,6 +98,36 @@ public class Tramite {
     @Column(name = "asunto", length = 255, nullable = false)
     private String asunto;
 
+    @Column(name = "qr_code", length = 255, unique = true)
+    private String qrCode;
+
+    @Column(name = "qr_url", length = 512)
+    private String qrUrl;
+
+    @Column(name = "qr_generado_fecha")
+    private LocalDateTime qrGeneradoFecha;
+
+    @Column(name = "qr_escaneos")
+    private Integer qrEscaneos = 0;
+
+    @Column(name = "firma_digital_activa")
+    private Boolean firmaDigitalActiva = false;
+
+    @Column(name = "requiere_biometria")
+    private Boolean requiereBiometria = false;
+
+    @Column(name = "firma_valida")
+    private Boolean firmaValida = false;
+
+    @Column(name = "hash_firma", columnDefinition = "TEXT")
+    private String hashFirma;
+
+    @Column(name = "fecha_firma")
+    private LocalDateTime fechaFirma;
+
+    @Column(name = "metodo_verificacion", length = 100)
+    private String metodoVerificacion;
+
     @CreationTimestamp
     @Column(name = "fecha_creacion", nullable = false, updatable = false)
     private LocalDateTime fechaCreacion;
@@ -105,6 +135,9 @@ public class Tramite {
     @UpdateTimestamp
     @Column(name = "fecha_actualizacion")
     private LocalDateTime fechaActualizacion;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 
     public enum TipoTramite {
         SOLICITUD_CERTIFICADO,
@@ -136,7 +169,6 @@ public class Tramite {
     }
     
     public enum PrioridadTramite {
-        BAJA,
         NORMAL,
         ALTA,
         URGENTE

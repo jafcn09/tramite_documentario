@@ -23,4 +23,19 @@ public class TramiteConArchivosRequest {
     private LocalDateTime fechaVencimiento;
     private String observaciones;
     private List<DocumentoBase64Request> documentos;
+    private Boolean requiereFirmaDigital;
+    private Long firmanteId;
+    private String tipoFirma;
+    private String razonFirma;
+    private String ubicacionFirma; 
+    private Boolean consentimientoFirma;
+    private String firmaDigitalData;
+
+
+    private Boolean firmaDigitalActiva;
+    private Boolean firmaDigitalRequiereBiometria;
+    private Boolean firmaDigitalValida;
+    private String firmaDigitalHash;
+    private LocalDateTime firmaDigitalFecha;
+    private String firmaDigitalMetodoVerificacion;
 }
