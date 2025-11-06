@@ -115,7 +115,6 @@ public interface TramiteRepository extends JpaRepository<Tramite, Long> {
     @Query("SELECT COUNT(t) FROM Tramite t WHERE t.deletedAt IS NULL AND t.usuarioAsignadoId = :usuarioAsignadoId")
     Long countByUsuarioAsignadoId(@Param("usuarioAsignadoId") Long usuarioAsignadoId);
 
-    // Contar solo trámites activos en proceso (excluye finalizados, rechazados, archivados, cancelados)
     @Query("SELECT COUNT(t) FROM Tramite t WHERE t.deletedAt IS NULL AND t.usuarioAsignadoId = :usuarioAsignadoId " +
            "AND t.estado NOT IN ('FINALIZADO', 'RECHAZADO', 'ARCHIVADO', 'CANCELADO')")
     Long countActiveTramitesByUsuarioAsignadoId(@Param("usuarioAsignadoId") Long usuarioAsignadoId);
@@ -147,7 +146,7 @@ public interface TramiteRepository extends JpaRepository<Tramite, Long> {
     @Query("SELECT t FROM Tramite t WHERE t.deletedAt IS NULL AND t.descripcion = :descripcion")
     List<Tramite> findByDescripcion(@Param("descripcion") String descripcion);
 
-    // Método para verificar si existe un trámite eliminado con los mismos datos
+    
     @Query("SELECT COUNT(t) > 0 FROM Tramite t WHERE " +
            "t.deletedAt IS NOT NULL AND " +
            "t.asunto = :asunto AND " +
@@ -158,4 +157,78 @@ public interface TramiteRepository extends JpaRepository<Tramite, Long> {
         @Param("tipo") Tramite.TipoTramite tipo,
         @Param("usuarioId") Long usuarioId
     );
+
+    @Query("SELECT t FROM Tramite t " +
+           "JOIN Usuario u ON t.usuarioSolicitanteId = u.id " +
+           "WHERE t.deletedAt IS NULL AND u.numDocumento = :numDocumento " +
+           "ORDER BY t.id DESC")
+    Page<Tramite> findByUsuarioSolicitanteNumDocumento(
+        @Param("numDocumento") String numDocumento,
+        Pageable pageable
+    );
+
+    @Query("SELECT DISTINCT t FROM Tramite t " +
+           "LEFT JOIN Usuario solicitante ON t.usuarioSolicitanteId = solicitante.id " +
+           "LEFT JOIN Usuario respondio ON t.usuarioRespondioId = respondio.id " +
+           "WHERE t.deletedAt IS NULL " +
+           "AND (solicitante.numDocumento = :numDocumento OR respondio.numDocumento = :numDocumento) " +
+           "ORDER BY t.id DESC")
+    Page<Tramite> findByUsuarioNumDocumento(
+        @Param("numDocumento") String numDocumento,
+        Pageable pageable
+    );
+
+    
+    @Query("SELECT t FROM Tramite t WHERE t.deletedAt IS NULL AND t.usuarioRespondioId IS NOT NULL " +
+           "AND (LOWER(t.titulo) LIKE LOWER(CONCAT('%', :texto, '%')) " +
+           "OR LOWER(t.descripcion) LIKE LOWER(CONCAT('%', :texto, '%')))")
+    Page<Tramite> findByTituloOrDescripcionContainingWithResponse(@Param("texto") String texto, Pageable pageable);
+
+    
+    @Query("SELECT t FROM Tramite t WHERE t.deletedAt IS NULL AND t.usuarioRespondioId IS NOT NULL " +
+           "AND t.codigo LIKE CONCAT('%', :codigo, '%') ORDER BY t.id DESC")
+    Page<Tramite> findByCodigoContainingWithResponse(@Param("codigo") String codigo, Pageable pageable);
+
+   
+    @Query("SELECT DISTINCT t FROM Tramite t " +
+           "JOIN Usuario solicitante ON t.usuarioSolicitanteId = solicitante.id " +
+           "WHERE t.deletedAt IS NULL AND t.usuarioRespondioId IS NOT NULL AND solicitante.numDocumento = :numDocumento " +
+           "ORDER BY t.id DESC")
+    Page<Tramite> findByUsuarioRespondioNumDocumento(
+        @Param("numDocumento") String numDocumento,
+        Pageable pageable
+    );
+
+    
+    @Query("SELECT t FROM Tramite t WHERE t.deletedAt IS NULL AND t.estado = :estado " +
+           "AND t.usuarioRespondioId IS NOT NULL ORDER BY t.id DESC")
+    Page<Tramite> findByEstadoWithResponse(@Param("estado") Tramite.EstadoTramite estado, Pageable pageable);
+
+
+    @Query("SELECT DISTINCT t FROM Tramite t " +
+           "WHERE t.deletedAt IS NULL AND (t.usuarioSolicitanteId = :usuarioId OR t.usuarioRespondioId = :usuarioId) " +
+           "AND (LOWER(t.titulo) LIKE LOWER(CONCAT('%', :texto, '%')) " +
+           "OR LOWER(t.descripcion) LIKE LOWER(CONCAT('%', :texto, '%')))")
+    Page<Tramite> findByTituloOrDescripcionContainingForUser(@Param("texto") String texto, @Param("usuarioId") Long usuarioId, Pageable pageable);
+
+    
+    @Query("SELECT DISTINCT t FROM Tramite t " +
+           "WHERE t.deletedAt IS NULL AND (t.usuarioSolicitanteId = :usuarioId OR t.usuarioRespondioId = :usuarioId) " +
+           "AND (LOWER(t.titulo) LIKE LOWER(CONCAT('%', :texto, '%')) " +
+           "OR LOWER(t.descripcion) LIKE LOWER(CONCAT('%', :texto, '%'))) " +
+           "ORDER BY t.id DESC")
+    Page<Tramite> findByTituloOrDescripcionForAuthenticatedUser(@Param("texto") String texto, @Param("usuarioId") Long usuarioId, Pageable pageable);
+
+    @Query("SELECT DISTINCT t FROM Tramite t " +
+           "WHERE t.deletedAt IS NULL AND (t.usuarioSolicitanteId = :usuarioId OR t.usuarioRespondioId = :usuarioId) " +
+           "AND t.codigo LIKE CONCAT('%', :codigo, '%') " +
+           "ORDER BY t.id DESC")
+    Page<Tramite> findByCodigoForAuthenticatedUser(@Param("codigo") String codigo, @Param("usuarioId") Long usuarioId, Pageable pageable);
+
+    @Query("SELECT DISTINCT t FROM Tramite t " +
+           "JOIN Usuario solicitante ON t.usuarioSolicitanteId = solicitante.id " +
+           "WHERE t.deletedAt IS NULL AND (t.usuarioSolicitanteId = :usuarioId OR t.usuarioRespondioId = :usuarioId) " +
+           "AND solicitante.numDocumento = :numDocumento " +
+           "ORDER BY t.id DESC")
+    Page<Tramite> findByUsuarioNumDocumentoForAuthenticatedUser(@Param("numDocumento") String numDocumento, @Param("usuarioId") Long usuarioId, Pageable pageable);
 }

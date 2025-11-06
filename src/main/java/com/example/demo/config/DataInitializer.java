@@ -79,6 +79,26 @@ public class DataInitializer {
                     return usuarioRepository.save(usuario);
                 });
 
+            Usuario publicoUser = usuarioRepository.findByUsuario("publico")
+                .orElseGet(() -> {
+                    Usuario usuario = new Usuario();
+                    usuario.setUsuario("publico");
+                    usuario.setClave(passwordEncoder.encode("publico123"));
+                    usuario.setCorreo("tramites.publicos@sistema.gob.pe");
+                    usuario.setNombre("Usuario");
+                    usuario.setApellidos("Público");
+                    usuario.setTipoDocumento("DNI");
+                    usuario.setNumDocumento("99999999");
+                    usuario.setCelular("000000000");
+                    usuario.setDireccion("Sistema de Trámites");
+                    usuario.setRole(userRole);
+                    usuario.setAccountLocked(false);
+                    usuario.setAccountEnabled(true);
+                    usuario.setMustChangePassword(false);
+
+                    return usuarioRepository.save(usuario);
+                });
+
             jwtService.generateToken(
                 adminUser.getUsuario(),
                 adminUser.getRole().getName(),

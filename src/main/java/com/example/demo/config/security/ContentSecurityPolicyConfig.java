@@ -36,6 +36,7 @@ public class ContentSecurityPolicyConfig extends OncePerRequestFilter {
             "img-src 'self' data: https:; " +
             "font-src 'self' data:; " +
             "connect-src 'self' " + appUrl + " http://localhost:" + serverPort + " ws://localhost:" + serverPort + "; " +
+            "frame-src 'self' blob:; " +
             "frame-ancestors 'none'; " +
             "base-uri 'self'; " +
             "form-action 'self'"

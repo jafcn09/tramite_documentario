@@ -35,15 +35,30 @@ public class NotificacionController {
     private final NotificacionService notificacionService;
     private final UsuarioService usuarioService;
 
-   
+
     private Long getUserId(Principal principal) {
+        System.out.println("🔍 getUserId - Principal: " + (principal != null ? principal.getName() : "NULL"));
+
+        if (principal == null) {
+            System.out.println("❌ getUserId - Principal es NULL!");
+            return null;
+        }
+
         try {
-     
-            return Long.parseLong(principal.getName());
+            Long id = Long.parseLong(principal.getName());
+            System.out.println("✅ getUserId - Parsed ID: " + id);
+            return id;
         } catch (NumberFormatException e) {
-            // If it's a username, look up the user
+            System.out.println("🔍 getUserId - No es un ID numérico, buscando por username: " + principal.getName());
             var usuario = usuarioService.findByUsuario(principal.getName());
-            return usuario != null ? usuario.getId() : null;
+
+            if (usuario != null) {
+                System.out.println("✅ getUserId - Usuario encontrado: ID=" + usuario.getId() + ", Username=" + usuario.getUsuario() + ", Role=" + usuario.getRole().getName());
+                return usuario.getId();
+            } else {
+                System.out.println("❌ getUserId - Usuario NO encontrado para username: " + principal.getName());
+                return null;
+            }
         }
     }
 
@@ -149,19 +164,31 @@ public class NotificacionController {
             @RequestParam(name = "soloNoLeidas", required = false) Boolean soloNoLeidas,
             Principal principal) {
 
+        System.out.println("🔍 obtenerMisNotificaciones - Iniciando petición");
+        System.out.println("🔍 Parámetros - page: " + page + ", size: " + size + ", soloNoLeidas: " + soloNoLeidas);
+
         Sort.Direction direction = sortDir.equalsIgnoreCase("desc") ?
             Sort.Direction.DESC : Sort.Direction.ASC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
 
         Long usuarioId = getUserId(principal);
+        System.out.println("🔍 usuarioId obtenido: " + usuarioId);
+
+        if (usuarioId == null) {
+            System.out.println("❌ ERROR: usuarioId es NULL, devolviendo página vacía");
+            return ResponseEntity.ok(Page.empty());
+        }
 
         Page<NotificacionResponse> notificaciones;
         if (Boolean.TRUE.equals(soloNoLeidas)) {
+            System.out.println("🔍 Obteniendo solo notificaciones no leídas");
             notificaciones = notificacionService.obtenerNotificacionesNoLeidas(usuarioId, pageable);
         } else {
+            System.out.println("🔍 Obteniendo todas las notificaciones del usuario");
             notificaciones = notificacionService.obtenerNotificacionesUsuario(usuarioId, pageable);
         }
 
+        System.out.println("✅ Notificaciones obtenidas: " + notificaciones.getTotalElements() + " total");
         return ResponseEntity.ok(notificaciones);
     }
 

@@ -45,7 +45,6 @@ public class TramiteResponse {
     private LocalDateTime fechaCompletado;
     private Integer progreso;
 
-    @JsonProperty("documentos")
     private List<DocumentoAdjunto> documentosAdjuntos;
     private List<TramiteHistorialResponse> historial;
 

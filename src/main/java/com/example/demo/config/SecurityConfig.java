@@ -38,25 +38,28 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
-                .maximumSessions(3) // Máximo 3 sesiones por usuario
+                .maximumSessions(3) 
                 .maxSessionsPreventsLogin(false)
             )
             .authorizeHttpRequests(authz -> authz
-                // Public endpoints first (order matters!)
+                
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/error").permitAll()
                 .requestMatchers("/").permitAll()
 
-                // Public endpoints for demo/testing
+
                 .requestMatchers("/api/notificaciones/public/**").permitAll()
                 .requestMatchers("/api/activities/public/**").permitAll()
                 .requestMatchers("/api/usuarios/public/**").permitAll()
                 .requestMatchers("/api/test/**").permitAll()
                 .requestMatchers("/api/tramites/public/**").permitAll()
 
-                // Public QR endpoints (for email images and verification)
+                
                 .requestMatchers("/api/qr/image/**").permitAll()
                 .requestMatchers("/api/qr/verificar/**").permitAll()
+
+               
+                .requestMatchers("/api/captcha/**").permitAll()
 
                 // Public organigrama endpoints (structural data)
                 .requestMatchers("/api/organigrama/**").permitAll()
@@ -64,12 +67,12 @@ public class SecurityConfig {
               
                 .requestMatchers("/api/departamentos/**").permitAll()
                 
-                // WebSocket endpoints
+                // WebSocket 
                 .requestMatchers("/ws/**").permitAll()
                 .requestMatchers("/topic/**").permitAll()
                 .requestMatchers("/queue/**").permitAll()
                 
-                // Protected endpoints requiring authentication (after public ones)
+                
                 .requestMatchers("/api/roles/**").authenticated()
                 .requestMatchers("/api/usuarios/**").authenticated()
                 .requestMatchers("/api/tramites/**").authenticated()
@@ -78,7 +81,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/activities/**").authenticated()
                 .requestMatchers("/api/cache/**").authenticated()
                 
-                // All other routes require authentication
+              
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
@@ -93,12 +96,12 @@ public class SecurityConfig {
         
         configuration.setAllowedOrigins(Arrays.asList(allowedOrigins.split(",")));
         
-        // Allow specific methods
+
         configuration.setAllowedMethods(Arrays.asList(
             "GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"
         ));
         
-        // Allow specific headers
+  
         configuration.setAllowedHeaders(Arrays.asList(
             "Authorization",
             "Content-Type",

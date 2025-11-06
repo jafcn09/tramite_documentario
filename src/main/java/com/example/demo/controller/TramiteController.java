@@ -33,6 +33,7 @@ import com.example.demo.dto.AprobarTramiteRequest;
 import com.example.demo.dto.AprobarTramiteResponse;
 import com.example.demo.dto.EditarTramiteRequest;
 import com.example.demo.dto.TramiteConArchivosRequest;
+import com.example.demo.dto.TramitePublicoRequest;
 import com.example.demo.dto.TramiteRequest;
 import com.example.demo.dto.TramiteResponse;
 import com.example.demo.enums.DepartamentoPeru;
@@ -40,6 +41,7 @@ import com.example.demo.model.FirmaDigital;
 import com.example.demo.service.FileValidationService;
 import com.example.demo.service.InputSanitizerService;
 import com.example.demo.service.JwtService;
+import com.example.demo.service.TramitePublicoService;
 import com.example.demo.service.TramiteService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -52,14 +54,16 @@ import lombok.RequiredArgsConstructor;
 public class TramiteController {
 
     private final TramiteService tramiteService;
+    private final TramitePublicoService tramitePublicoService;
     private final JwtService jwtService;
     private final FileValidationService fileValidationService;
     private final InputSanitizerService inputSanitizerService;
-    
+
 
     @GetMapping("/public/buscar")
     public ResponseEntity<Page<TramiteResponse>> buscarTramitesPublico(
             @RequestParam(name = "codigo", required = false) String codigo,
+            @RequestParam(name = "dni", required = false) String dni,
             @RequestParam(name = "texto", required = false) String texto,
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "size", defaultValue = "5") int size,
@@ -73,19 +77,81 @@ public class TramiteController {
 
         String sortField = "fechaCreacion".equals(sortBy) ? "id" : sortBy;
         Pageable pageable = PageRequest.of(page, limitedSize, Sort.by(direction, sortField));
-        
+
         Page<TramiteResponse> tramites;
         if (codigo != null && !codigo.trim().isEmpty()) {
             tramites = tramiteService.buscarPorCodigo(codigo, pageable);
+        } else if (dni != null && !dni.trim().isEmpty()) {
+            tramites = tramiteService.buscarPorDni(dni, pageable);
         } else if (texto != null && !texto.trim().isEmpty()) {
             tramites = tramiteService.buscarTramites(texto, pageable);
         } else {
             tramites = tramiteService.obtenerTramitesPublicos(pageable);
         }
-        
+
         return ResponseEntity.ok(tramites);
     }
-    
+
+    @PostMapping(value = "/public/crear", consumes = {"multipart/form-data"})
+    public ResponseEntity<?> crearTramitePublico(
+            @RequestParam("tipoDocumento") String tipoDocumento,
+            @RequestParam("numeroDocumento") String numeroDocumento,
+            @RequestParam("nombres") String nombres,
+            @RequestParam("apellidos") String apellidos,
+            @RequestParam("email") String email,
+            @RequestParam(value = "telefono", required = false) String telefono,
+            @RequestParam("tipoTramite") String tipoTramite,
+            @RequestParam("asunto") String asunto,
+            @RequestParam("descripcion") String descripcion,
+            @RequestParam("captchaToken") String captchaToken,
+            @RequestParam("captchaCode") String captchaCode,
+            @RequestParam(value = "archivos", required = false) List<MultipartFile> archivos) {
+
+        try {
+            TramitePublicoRequest request = new TramitePublicoRequest();
+            request.setTipoDocumento(tipoDocumento);
+            request.setNumeroDocumento(numeroDocumento);
+            request.setNombres(nombres);
+            request.setApellidos(apellidos);
+            request.setEmail(email);
+            request.setTelefono(telefono);
+            request.setTipoTramite(tipoTramite);
+            request.setAsunto(asunto);
+            request.setDescripcion(descripcion);
+            request.setCaptchaToken(captchaToken);
+            request.setCaptchaCode(captchaCode);
+            request.setArchivos(archivos);
+
+            TramiteResponse response = tramitePublicoService.crearTramitePublico(request);
+
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "Trámite creado exitosamente",
+                "codigo", response.getCodigo(),
+                "tramite", response
+            ));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                "success", false,
+                "error", e.getMessage()
+            ));
+        } catch (SecurityException e) {
+            return ResponseEntity.status(403).body(Map.of(
+                "success", false,
+                "error", "Contenido no permitido: " + e.getMessage()
+            ));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(500).body(Map.of(
+                "success", false,
+                "error", e.getMessage()
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of(
+                "success", false,
+                "error", "Error inesperado: " + e.getMessage()
+            ));
+        }
+    }
 
     @GetMapping("/public/{codigo}/archivo/{nombreArchivo}")
     public ResponseEntity<byte[]> descargarArchivoPublico(
@@ -253,7 +319,6 @@ public class TramiteController {
         }
         return ResponseEntity.ok(tramite);
     }
-    
 
     @PutMapping(value = "/{id}/editar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('USUARIO') or hasRole('ADMIN')")
@@ -287,12 +352,6 @@ public class TramiteController {
                     request.setFirmaDigitalData((String) firmaData.get("firmaDigitalData"));
                     request.setRequiereFirmaDigital(firmaData.get("firmaDigitalData") != null);
 
-                    System.out.println("✅ Firma digital procesada correctamente:");
-                    System.out.println("- Tipo: " + request.getTipoFirma());
-                    System.out.println("- Razón: " + request.getRazonFirma());
-                    System.out.println("- Ubicación: " + request.getUbicacionFirma());
-                    System.out.println("- Tiene firma: " + (request.getFirmaDigitalData() != null));
-
                 } catch (JsonProcessingException e) {
                     System.err.println("❌ Error al procesar JSON de firma digital: " + e.getMessage());
                     return ResponseEntity.badRequest().body("Error al procesar datos de firma digital");
@@ -310,8 +369,6 @@ public class TramiteController {
             throw e;
         }
     }
-    
-
     @PostMapping("/{id}/recepcionar")
     @PreAuthorize("hasRole('ADMINISTRATIVO') or hasRole('ADMIN')")
     public ResponseEntity<TramiteResponse> recepcionarTramite(
@@ -366,8 +423,6 @@ public class TramiteController {
             throw e;
         }
     }
-    
-
     @PostMapping("/{id}/aprobar")
     @PreAuthorize("hasRole('ADMINISTRATIVO') or hasRole('ADMIN')")
     public ResponseEntity<AprobarTramiteResponse> aprobarTramite(
@@ -485,8 +540,6 @@ public class TramiteController {
             return ResponseEntity.badRequest().body(errorResponse);
         }
     }
-
-
     @GetMapping("/{id}/requiere-firma")
     @PreAuthorize("hasRole('ADMINISTRATIVO') or hasRole('ADMIN')")
     public ResponseEntity<Map<String, Object>> verificarRequiereFirma(@PathVariable Long id) {
@@ -522,8 +575,6 @@ public class TramiteController {
         TramiteResponse tramite = tramiteService.cambiarEstado(id, nuevoEstado, usuarioId, observaciones);
         return ResponseEntity.ok(tramite);
     }
-    
-
     @PostMapping("/{id}/finalizar")
     @PreAuthorize("hasRole('ADMINISTRATIVO') or hasRole('ADMIN')")
     public ResponseEntity<TramiteResponse> finalizarConArchivo(
@@ -680,16 +731,6 @@ public class TramiteController {
             throw new RuntimeException("No se pudo obtener el ID del usuario del token");
         }
         String rol = getRole(principal);
-
-        // 🔍 DEBUG: Log del request recibido en controller
-        System.out.println("🔍 DEBUG CONTROLLER - TramiteConArchivosRequest recibido:");
-        System.out.println("  - requiereFirmaDigital: " + request.getRequiereFirmaDigital());
-        System.out.println("  - tipoFirma: '" + request.getTipoFirma() + "'");
-        System.out.println("  - razonFirma: '" + request.getRazonFirma() + "'");
-        System.out.println("  - ubicacionFirma: '" + request.getUbicacionFirma() + "'");
-        System.out.println("  - consentimientoFirma: " + request.getConsentimientoFirma());
-        System.out.println("  - firmaDigitalData presente: " + (request.getFirmaDigitalData() != null && !request.getFirmaDigitalData().isEmpty()));
-
         TramiteResponse tramiteCreado;
         try {
             tramiteCreado = tramiteService.crearTramiteConArchivos(request, usuarioId, rol);
@@ -716,16 +757,6 @@ public class TramiteController {
             throw new RuntimeException("No se pudo obtener el ID del usuario del token");
         }
 
-        // 🔍 DEBUG: Log del request recibido en controller
-        System.out.println("🔍 DEBUG CONTROLLER - Editar TramiteConArchivosRequest recibido:");
-        System.out.println("  - tramiteId: " + id);
-        System.out.println("  - requiereFirmaDigital: " + request.getRequiereFirmaDigital());
-        System.out.println("  - tipoFirma: '" + request.getTipoFirma() + "'");
-        System.out.println("  - razonFirma: '" + request.getRazonFirma() + "'");
-        System.out.println("  - ubicacionFirma: '" + request.getUbicacionFirma() + "'");
-        System.out.println("  - consentimientoFirma: " + request.getConsentimientoFirma());
-
-        // Convertir TramiteConArchivosRequest a EditarTramiteRequest
         EditarTramiteRequest editarRequest = EditarTramiteRequest.builder()
                 .asunto(request.getAsunto())
                 .descripcion(request.getDescripcion())
@@ -905,8 +936,6 @@ public class TramiteController {
 
         return ResponseEntity.ok(tipos);
     }
-    
-   
     @GetMapping("/prioridades")
     public ResponseEntity<List<java.util.Map<String, Object>>> obtenerPrioridadesTramite() {
         List<java.util.Map<String, Object>> prioridades = new java.util.ArrayList<>();
@@ -915,9 +944,8 @@ public class TramiteController {
         int id = 1;
         for (int i = 0; i < enumValues.length; i++) {
             com.example.demo.model.Tramite.PrioridadTramite prioridad = enumValues[i];
-
             java.util.Map<String, Object> prioridadMap = new java.util.HashMap<>();
-            prioridadMap.put("id", id++); // Use sequential IDs starting from 1
+            prioridadMap.put("id", id++); 
             prioridadMap.put("nombre", formatearNombrePrioridad(prioridad.name()));
             prioridadMap.put("nivel", id - 1);
             prioridadMap.put("color", obtenerColorPrioridad(prioridad.name()));
