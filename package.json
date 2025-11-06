@@ -10,6 +10,22 @@
     "serve:ssr:tramite_documentario": "node dist/tramite_documentario/server/server.mjs"
   },
   "private": true,
+  "browser": {
+    "net": false,
+    "tls": false,
+    "fs": false,
+    "path": false,
+    "crypto": false,
+    "stream": false,
+    "util": false,
+    "buffer": false,
+    "events": false,
+    "assert": false,
+    "http": false,
+    "https": false,
+    "zlib": false,
+    "querystring": false
+  },
   "dependencies": {
     "@angular/animations": "^17.3.0",
     "@angular/common": "^17.3.0",
