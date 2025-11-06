@@ -1,0 +1,277 @@
+<div class="areas-container">
+  <div class="header">
+    <h1>
+      <i class="fas fa-building"></i>
+      Gestión de Áreas
+    </h1>
+    <button class="btn-primary" (click)="openCreateModal()">
+      <i class="fas fa-plus"></i>
+      Nueva Área
+    </button>
+  </div>
+
+
+  <div class="search-container">
+    <div class="search-box">
+      <i class="fas fa-search"></i>
+      <input type="text"
+             placeholder="Buscar áreas por nombre..."
+             [(ngModel)]="searchTerm"
+             (input)="filterAreas()"
+             class="search-input">
+      <button *ngIf="searchTerm"
+              class="clear-search"
+              (click)="clearSearch()"
+              title="Limpiar búsqueda">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+  </div>
+
+
+  <div class="search-results" *ngIf="searchTerm && filteredAreas.length === 0">
+    <div class="no-results">
+      <i class="fas fa-search"></i>
+      <p>No se encontraron áreas que coincidan con "{{ searchTerm }}"</p>
+      <button class="btn-secondary" (click)="clearSearch()">Ver todas las áreas</button>
+    </div>
+  </div>
+
+  <div class="search-info" *ngIf="searchTerm && filteredAreas.length > 0">
+    <p>Mostrando {{ paginatedAreas.length }} de {{ filteredAreas.length }} resultado(s) para "{{ searchTerm }}"</p>
+    <button class="btn-link" (click)="clearSearch()">Ver todas</button>
+  </div>
+
+  <div class="areas-grid">
+    <div class="area-card" *ngFor="let area of paginatedAreas">
+      <div class="area-header">
+        <div class="area-info" (click)="selectArea(area)">
+          <h3>{{ area.nombre }}</h3>
+          <p>{{ area.descripcion || 'Sin descripción' }}</p>
+        </div>
+        <div class="area-actions-menu">
+          <button class="menu-trigger" (click)="toggleMenu(area.id); $event.stopPropagation()" title="Opciones">
+            <i class="fas fa-ellipsis-v"></i>
+          </button>
+          <div class="dropdown-menu" *ngIf="openMenuId === area.id" (click)="$event.stopPropagation()">
+            <button class="dropdown-item" (click)="editArea(area); closeMenu()">
+              <i class="fas fa-edit"></i>
+              Editar
+            </button>
+            <button class="dropdown-item" (click)="toggleAreaStatus(area); closeMenu()">
+              <i [class]="area.activa ? 'fas fa-toggle-off' : 'fas fa-toggle-on'"></i>
+              {{ area.activa ? 'Desactivar' : 'Activar' }}
+            </button>
+            <button class="dropdown-item delete" (click)="confirmDeleteArea(area); closeMenu()">
+              <i class="fas fa-trash"></i>
+              Eliminar
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="area-stats">
+        <div class="stat">
+          <i class="fas fa-users"></i>
+          <span>{{ area.usuariosCount }} usuarios</span>
+        </div>
+        <div class="stat">
+          <i class="fas fa-circle" [class.text-success]="area.activa" [class.text-danger]="!area.activa"></i>
+          <span>{{ area.activa ? 'Activa' : 'Inactiva' }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="pagination" *ngIf="totalPages > 1">
+    <button class="pagination-btn"
+            (click)="goToPage(currentPage - 1)"
+            [disabled]="currentPage === 1">
+      <i class="fas fa-chevron-left"></i>
+    </button>
+
+    <span class="pagination-info">
+      {{ currentPage }} de {{ totalPages }} ({{ totalAreas }} área(s))
+    </span>
+
+    <button class="pagination-btn"
+            (click)="goToPage(currentPage + 1)"
+            [disabled]="currentPage === totalPages">
+      <i class="fas fa-chevron-right"></i>
+    </button>
+  </div>
+
+
+  <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>{{ isEditing ? 'Editar Área' : 'Nueva Área' }}</h2>
+        <button class="btn-icon modal-close" (click)="closeModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <form [formGroup]="areaForm" (ngSubmit)="saveArea()">
+        <div class="form-group">
+          <label for="nombre">Nombre del Área *</label>
+          <input type="text"
+                 id="nombre"
+                 formControlName="nombre"
+                 placeholder="Ingrese el nombre del área"
+                 [class.error]="areaForm.get('nombre')?.invalid && areaForm.get('nombre')?.touched">
+          <div class="error-message" *ngIf="areaForm.get('nombre')?.invalid && areaForm.get('nombre')?.touched">
+            <span *ngIf="areaForm.get('nombre')?.errors?.['required']">El nombre es obligatorio</span>
+            <span *ngIf="areaForm.get('nombre')?.errors?.['maxlength']">El nombre no puede tener más de 100 caracteres</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="descripcion">Descripción</label>
+          <textarea id="descripcion"
+                    formControlName="descripcion"
+                    placeholder="Ingrese la descripción del área"
+                    rows="3"
+                    [class.error]="areaForm.get('descripcion')?.invalid && areaForm.get('descripcion')?.touched">
+          </textarea>
+          <div class="error-message" *ngIf="areaForm.get('descripcion')?.invalid && areaForm.get('descripcion')?.touched">
+            <span *ngIf="areaForm.get('descripcion')?.errors?.['maxlength']">La descripción no puede tener más de 500 caracteres</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="checkbox-label">
+            <input type="checkbox" formControlName="activa">
+            <span>Área activa</span>
+          </label>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" (click)="closeModal()">
+            Cancelar
+          </button>
+          <button type="submit" class="btn-primary" [disabled]="areaForm.invalid || isLoading">
+            <i class="fas fa-save" *ngIf="!isLoading"></i>
+            <i class="fas fa-spinner fa-spin" *ngIf="isLoading"></i>
+            {{ isLoading ? 'Guardando...' : (isEditing ? 'Actualizar' : 'Crear') }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Area Detail Modal -->
+  <div class="modal-overlay" *ngIf="showDetailModal" (click)="closeDetailModal()">
+    <div class="modal modal-large" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>
+          <i class="fas fa-building"></i>
+          {{ selectedArea?.nombre }}
+        </h2>
+        <button class="btn-icon modal-close" (click)="closeDetailModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="area-detail-content">
+        <div class="area-info-section">
+          <div class="info-item">
+            <label>Descripción:</label>
+            <p>{{ selectedArea?.descripcion || 'Sin descripción' }}</p>
+          </div>
+          <div class="info-item">
+            <label>Estado:</label>
+            <span class="status-badge" [class.active]="selectedArea?.activa" [class.inactive]="!selectedArea?.activa">
+              <i class="fas fa-circle"></i>
+              {{ selectedArea?.activa ? 'Activa' : 'Inactiva' }}
+            </span>
+          </div>
+        </div>
+
+        <div class="users-section">
+          <h3>
+            <i class="fas fa-users"></i>
+            Usuarios Asignados ({{ areaUsers.length }})
+          </h3>
+
+          <div class="users-list" *ngIf="areaUsers.length > 0; else noUsers">
+            <div class="user-card" *ngFor="let user of areaUsers">
+              <div class="user-avatar">
+                <img *ngIf="user.foto" [src]="user.foto" [alt]="user.nombre">
+                <i *ngIf="!user.foto" class="fas fa-user"></i>
+              </div>
+              <div class="user-info">
+                <div class="user-name">{{ user.nombre }} {{ user.apellidos }}</div>
+                <div class="user-details">
+                  <span class="user-email">{{ user.correo }}</span>
+                  <span class="user-role">{{ user.role.name }}</span>
+                </div>
+                <div class="user-status">
+                  <span class="status-indicator" [class.enabled]="user.accountEnabled" [class.disabled]="!user.accountEnabled">
+                    {{ user.accountEnabled ? 'Habilitado' : 'Deshabilitado' }}
+                  </span>
+                  <span *ngIf="user.accountLocked" class="locked">Bloqueado</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <ng-template #noUsers>
+            <div class="no-users">
+              <i class="fas fa-user-slash"></i>
+              <p>No hay usuarios asignados a esta área</p>
+            </div>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div class="modal-overlay" *ngIf="showDeleteModal" (click)="cancelDelete()">
+    <div class="modal modal-small" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>
+          <i class="fas fa-exclamation-triangle text-warning"></i>
+          Confirmar eliminación
+        </h2>
+        <button class="btn-icon modal-close" (click)="cancelDelete()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="delete-content">
+        <p>¿Estás seguro de que deseas eliminar el área <strong>"{{ areaToDelete?.nombre }}"</strong>?</p>
+        <div class="warning-box" *ngIf="areaToDelete && areaToDelete.usuariosCount && areaToDelete.usuariosCount > 0">
+          <i class="fas fa-users"></i>
+          <span>Esta área tiene {{ areaToDelete?.usuariosCount }} usuario(s) asignado(s). No se puede eliminar.</span>
+        </div>
+        <p class="warning-text">Esta acción no se puede deshacer.</p>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn-secondary" (click)="cancelDelete()">
+          Cancelar
+        </button>
+        <button type="button"
+                class="btn-danger"
+                (click)="executeDelete()"
+                [disabled]="!!(areaToDelete && areaToDelete.usuariosCount && areaToDelete.usuariosCount > 0)">
+          <i class="fas fa-trash"></i>
+          Eliminar
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="alert alert-success" *ngIf="successMessage">
+    <i class="fas fa-check-circle"></i>
+    {{ successMessage }}
+  </div>
+
+  <div class="alert alert-error" *ngIf="errorMessage">
+    <i class="fas fa-exclamation-circle"></i>
+    {{ errorMessage }}
+  </div>
+</div>

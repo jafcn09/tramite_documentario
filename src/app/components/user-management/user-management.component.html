@@ -1,0 +1,651 @@
+<div class="user-management-container">
+  <div class="header">
+    <h1>
+      <i class="fas fa-users-cog"></i>
+      Gestión de Usuarios
+    </h1>
+    <div class="header-actions">
+      <button class="btn-primary" (click)="openCreateUserModal()">
+        <i class="fas fa-plus"></i>
+        Nuevo Usuario
+      </button>
+    </div>
+  </div>
+  <div class="search-filters">
+    <div class="search-section">
+      <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input type="text"
+               [(ngModel)]="searchTerm"
+               (input)="filterUsers()"
+               placeholder="Buscar por nombre, email, usuario..."
+               class="search-input">
+        <button *ngIf="searchTerm"
+                class="clear-search"
+                (click)="clearSearch()"
+                title="Limpiar búsqueda">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="search-results" *ngIf="searchTerm">
+        <small>{{ filteredUsers.length }} resultado(s) encontrado(s)</small>
+      </div>
+    </div>
+  </div>
+
+  <div class="filters">
+    <div class="filter-group">
+      <label>Estado:</label>
+      <select [(ngModel)]="statusFilter" (change)="filterUsers()" class="filter-select">
+        <option value="">Todos los estados</option>
+        <option value="enabled">Habilitados</option>
+        <option value="disabled">Deshabilitados</option>
+        <option value="locked">Bloqueados</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Área:</label>
+      <select [(ngModel)]="areaFilter" (change)="filterUsers()" class="filter-select">
+        <option value="">Todas las áreas</option>
+        <option value="no-area">Sin área asignada</option>
+        <option *ngFor="let area of areas" [value]="area.id">{{ area.nombre }}</option>
+      </select>
+    </div>
+  </div>
+  <div class="users-table-container desktop-only">
+    <table class="users-table">
+      <thead>
+        <tr>
+          <th>Usuario</th>
+          <th>Información Personal</th>
+          <th>Rol</th>
+          <th>Área</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of filteredUsers" [class.disabled-user]="!user.accountEnabled">
+          <td>
+            <div class="user-info">
+              <img [src]="user.foto || '/assets/default-avatar.png'"
+                   [alt]="user.nombre"
+                   class="user-avatar"
+                   onerror="this.src='/assets/default-avatar.png'">
+              <div class="user-details">
+                <strong>{{ user.nombre }} {{ user.apellidos }}</strong>
+                <small>{{ user.usuario }}</small>
+              </div>
+            </div>
+          </td>
+
+          <td>
+            <div class="contact-info">
+              <div><i class="fas fa-envelope"></i> {{ user.correo }}</div>
+              <div *ngIf="user.celular"><i class="fas fa-phone"></i> {{ user.celular }}</div>
+              <div *ngIf="user.direccion"><i class="fas fa-map-marker-alt"></i> {{ user.direccion }}</div>
+            </div>
+          </td>
+
+          <td>
+            <span class="role-badge" [class]="'role-' + user.role.name.toLowerCase()">
+              {{ user.role.name }}
+            </span>
+          </td>
+
+          <td>
+            <div class="area-info">
+              <span *ngIf="user.area" class="area-badge" [class.inactive]="!user.area.activa">
+                {{ user.area.nombre }}
+              </span>
+              <span *ngIf="!user.area" class="no-area">Sin área</span>
+              <button class="btn-icon btn-small" (click)="openAreaAssignModal(user)" title="Asignar área">
+                <i class="fas fa-building"></i>
+              </button>
+            </div>
+          </td>
+
+          <td>
+            <div class="status-indicators">
+              <span class="status-badge"
+                    [class.success]="user.accountEnabled"
+                    [class.danger]="!user.accountEnabled">
+                {{ user.accountEnabled ? 'Habilitado' : 'Deshabilitado' }}
+              </span>
+              <span *ngIf="user.accountLocked" class="status-badge danger">
+                <i class="fas fa-lock"></i> Bloqueado
+              </span>
+              <span *ngIf="user.mustChangePassword" class="status-badge warning">
+                <i class="fas fa-key"></i> Cambiar contraseña
+              </span>
+            </div>
+          </td>
+
+          <td>
+            <div class="user-actions">
+              <button class="btn-icon"
+                      (click)="editUser(user)"
+                      title="Editar datos del usuario">
+                <i class="fas fa-user-edit"></i>
+              </button>
+
+              <button class="btn-icon toggle-btn"
+                      [class.btn-danger]="user.accountEnabled"
+                      [class.btn-success]="!user.accountEnabled"
+                      (click)="toggleUserStatus(user)"
+                      [title]="user.accountEnabled ? 'Deshabilitar usuario' : 'Habilitar usuario'"
+                      [attr.data-status]="user.accountEnabled ? 'enabled' : 'disabled'">
+                <i class="fas" [class.fa-user-slash]="user.accountEnabled" [class.fa-user-check]="!user.accountEnabled"></i>
+              </button>
+
+              <button class="btn-icon toggle-btn"
+                      [class.btn-warning]="!user.accountLocked"
+                      [class.btn-info]="user.accountLocked"
+                      (click)="toggleUserLock(user)"
+                      [title]="user.accountLocked ? 'Desbloquear acceso' : 'Bloquear acceso'"
+                      [attr.data-lock]="user.accountLocked ? 'locked' : 'unlocked'">
+                <i class="fas" [class.fa-lock-open]="user.accountLocked" [class.fa-user-lock]="!user.accountLocked"></i>
+              </button>
+
+              <button class="btn-icon btn-secondary"
+                      (click)="openResetPasswordModal(user)"
+                      title="Restablecer contraseña">
+                <i class="fas fa-shield-alt"></i>
+              </button>
+
+              <button class="btn-icon btn-danger"
+                      (click)="deleteUser(user)"
+                      title="Eliminar usuario permanentemente">
+                <i class="fas fa-user-times"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="users-cards-container mobile-only">
+    <div class="user-card" *ngFor="let user of filteredUsers" [class.disabled-user]="!user.accountEnabled">
+      <div class="card-header">
+        <div class="user-main">
+          <div class="avatar-section">
+            <img [src]="user.foto || '/assets/default-avatar.png'"
+                 [alt]="user.nombre"
+                 class="avatar"
+                 onerror="this.src='/assets/default-avatar.png'">
+            <div class="status-indicator"
+                 [class.active]="user.accountEnabled"
+                 [class.locked]="user.accountLocked"></div>
+          </div>
+          <div class="user-data">
+            <h3>{{ user.nombre }} {{ user.apellidos }}</h3>
+            <p class="username">{{ '@' + user.usuario }}</p>
+            <p class="email">{{ user.correo }}</p>
+            <p class="phone" *ngIf="user.celular">{{ user.celular }}</p>
+          </div>
+        </div>
+      </div>
+      <div class="card-content">
+        <div class="info-row">
+          <span class="info-label">Rol</span>
+          <span class="role-tag" [class]="'role-' + user.role.name.toLowerCase()">
+            {{ user.role.name }}
+          </span>
+        </div>
+
+        <div class="info-row">
+          <span class="info-label">Área</span>
+          <div class="area-container">
+            <span *ngIf="user.area" class="area-tag" [class.inactive]="!user.area.activa">
+              {{ user.area.nombre }}
+            </span>
+            <span *ngIf="!user.area" class="area-tag no-area">Sin área</span>
+            <button class="edit-btn" (click)="openAreaAssignModal(user)" title="Cambiar área">
+              <i class="fas fa-building"></i>
+            </button>
+          </div>
+        </div>
+        <div class="alerts" *ngIf="user.accountLocked || user.mustChangePassword">
+          <div *ngIf="user.accountLocked" class="alert locked">
+            <i class="fas fa-lock"></i>
+            <span>Usuario bloqueado</span>
+          </div>
+          <div *ngIf="user.mustChangePassword" class="alert password">
+            <i class="fas fa-key"></i>
+            <span>Debe cambiar contraseña</span>
+          </div>
+        </div>
+      </div>
+      <div class="card-actions">
+        <button class="action-btn primary" (click)="editUser(user)">
+          <i class="fas fa-user-edit"></i>
+          Editar Datos
+        </button>
+
+        <button class="action-btn"
+                [class.enable]="!user.accountEnabled"
+                [class.disable]="user.accountEnabled"
+                (click)="toggleUserStatus(user)">
+          <i class="fas" [class.fa-user-check]="!user.accountEnabled" [class.fa-user-slash]="user.accountEnabled"></i>
+          {{ user.accountEnabled ? 'Deshabilitar' : 'Habilitar' }}
+        </button>
+
+        <button class="action-btn warning"
+                (click)="toggleUserLock(user)">
+          <i class="fas" [class.fa-lock-open]="user.accountLocked" [class.fa-user-lock]="!user.accountLocked"></i>
+          {{ user.accountLocked ? 'Desbloquear' : 'Bloquear' }}
+        </button>
+
+        <button class="action-btn secondary" (click)="openResetPasswordModal(user)">
+          <i class="fas fa-shield-alt"></i>
+          Restablecer Contraseña
+        </button>
+
+        <button class="action-btn danger" (click)="deleteUser(user)">
+          <i class="fas fa-user-times"></i>
+          Eliminar Usuario
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" *ngIf="showAreaModal" (click)="closeAreaModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Asignar Área</h2>
+        <button class="btn-icon" (click)="closeAreaModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="modal-content">
+        <p>Usuario: <strong>{{ selectedUser?.nombre }} {{ selectedUser?.apellidos }}</strong></p>
+        <p>Área actual: <strong>{{ selectedUser?.area?.nombre || 'Sin área asignada' }}</strong></p>
+
+        <div class="form-group">
+          <label for="areaSelect">Nueva área:</label>
+          <select id="areaSelect" [(ngModel)]="selectedAreaId" class="form-control">
+            <option value="">Sin área</option>
+            <option *ngFor="let area of activeAreas" [value]="area.id">
+              {{ area.nombre }}
+            </option>
+          </select>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn-secondary" (click)="closeAreaModal()">
+            Cancelar
+          </button>
+          <button class="btn-primary" (click)="assignArea()" [disabled]="isLoading">
+            <i class="fas fa-save" *ngIf="!isLoading"></i>
+            <i class="fas fa-spinner fa-spin" *ngIf="isLoading"></i>
+            {{ isLoading ? 'Asignando...' : 'Asignar' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-overlay" *ngIf="showCreateModal" (click)="closeCreateModal()">
+    <div class="modal create-user-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>
+          <i class="fas fa-user-plus"></i>
+          Crear Nuevo Usuario
+        </h2>
+        <button class="btn-icon" (click)="closeCreateModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <form [formGroup]="createUserForm" class="modal-content">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="nombre">Nombre <span class="required">*</span></label>
+            <input type="text" id="nombre" formControlName="nombre"
+                   class="form-control" placeholder="Ingrese el nombre">
+            <div class="error-message" *ngIf="createUserForm.get('nombre')?.invalid && createUserForm.get('nombre')?.touched">
+              El nombre es requerido
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="apellidos">Apellidos <span class="required">*</span></label>
+            <input type="text" id="apellidos" formControlName="apellidos"
+                   class="form-control" placeholder="Ingrese los apellidos">
+            <div class="error-message" *ngIf="createUserForm.get('apellidos')?.invalid && createUserForm.get('apellidos')?.touched">
+              Los apellidos son requeridos
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="tipoDocumento">Tipo de Documento <span class="required">*</span></label>
+            <select id="tipoDocumento" formControlName="tipoDocumento" class="form-control">
+              <option value="">Seleccione...</option>
+              <option value="DNI">DNI</option>
+              <option value="CE">Carnet de Extranjería</option>
+              <option value="PASAPORTE">Pasaporte</option>
+            </select>
+            <div class="error-message" *ngIf="createUserForm.get('tipoDocumento')?.invalid && createUserForm.get('tipoDocumento')?.touched">
+              El tipo de documento es requerido
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="numDocumento">Número de Documento <span class="required">*</span></label>
+            <input type="text" id="numDocumento" formControlName="numDocumento"
+                   class="form-control" placeholder="Número de documento" maxlength="8">
+            <div class="error-message" *ngIf="createUserForm.get('numDocumento')?.invalid && createUserForm.get('numDocumento')?.touched">
+              <span *ngIf="createUserForm.get('numDocumento')?.errors?.['required']">El número de documento es requerido</span>
+              <span *ngIf="createUserForm.get('numDocumento')?.errors?.['minlength'] || createUserForm.get('numDocumento')?.errors?.['maxlength']">Debe tener exactamente 8 dígitos</span>
+              <span *ngIf="createUserForm.get('numDocumento')?.errors?.['pattern']">Solo se permiten números</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="correo">Correo Electrónico <span class="required">*</span></label>
+            <input type="email" id="correo" formControlName="correo"
+                   class="form-control" placeholder="ejemplo@correo.com">
+            <div class="error-message" *ngIf="createUserForm.get('correo')?.invalid && createUserForm.get('correo')?.touched">
+              <span *ngIf="createUserForm.get('correo')?.errors?.['required']">El correo es requerido</span>
+              <span *ngIf="createUserForm.get('correo')?.errors?.['email']">Ingrese un correo válido</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="auto-generate-info">
+          <i class="fas fa-info-circle"></i>
+          <span>El nombre de usuario y contraseña se generarán automáticamente</span>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="celular">Celular</label>
+            <input type="text" id="celular" formControlName="celular"
+                   class="form-control" placeholder="999999999" maxlength="9">
+            <div class="error-message" *ngIf="createUserForm.get('celular')?.invalid && createUserForm.get('celular')?.touched">
+              <span *ngIf="createUserForm.get('celular')?.errors?.['minlength'] || createUserForm.get('celular')?.errors?.['maxlength']">Debe tener exactamente 9 dígitos</span>
+              <span *ngIf="createUserForm.get('celular')?.errors?.['pattern']">Solo se permiten números</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="direccion">Dirección</label>
+            <input type="text" id="direccion" formControlName="direccion"
+                   class="form-control" placeholder="Dirección completa">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="roleId">Rol <span class="required">*</span></label>
+            <select id="roleId" formControlName="roleId" class="form-control">
+              <option value="">Seleccione un rol...</option>
+              <option *ngFor="let role of roles" [value]="role.id">
+                {{ role.name }} - {{ role.description }}
+              </option>
+            </select>
+            <div class="error-message" *ngIf="createUserForm.get('roleId')?.invalid && createUserForm.get('roleId')?.touched">
+              El rol es requerido
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="areaId">Área (Opcional)</label>
+            <select id="areaId" formControlName="areaId" class="form-control">
+              <option value="">Sin área asignada</option>
+              <option *ngFor="let area of activeAreas" [value]="area.id">
+                {{ area.nombre }}
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-check">
+            <input type="checkbox" id="mustChangePassword" formControlName="mustChangePassword"
+                   class="form-check-input">
+            <label for="mustChangePassword" class="form-check-label">
+              El usuario debe cambiar contraseña en el primer inicio de sesión
+            </label>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" (click)="closeCreateModal()">
+            Cancelar
+          </button>
+          <button type="submit" class="btn-primary"
+                  (click)="createUser()"
+                  [disabled]="createUserForm.invalid || isLoading">
+            <i class="fas fa-save" *ngIf="!isLoading"></i>
+            <i class="fas fa-spinner fa-spin" *ngIf="isLoading"></i>
+            {{ isLoading ? 'Creando...' : 'Crear Usuario' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="alert alert-success" *ngIf="successMessage">
+    <i class="fas fa-check-circle"></i>
+    {{ successMessage }}
+  </div>
+
+  <div class="alert alert-error" *ngIf="errorMessage">
+    <i class="fas fa-exclamation-circle"></i>
+    {{ errorMessage }}
+  </div>
+</div>
+<div class="modal-overlay" *ngIf="showResetPasswordModal" (click)="closeResetPasswordModal()">
+  <div class="modal reset-password-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>
+        <i class="fas fa-key"></i>
+        Cambiar Contraseña
+      </h2>
+      <button class="btn-icon" (click)="closeResetPasswordModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="modal-content">
+      <div class="user-info-section">
+        <p><strong>Usuario:</strong> {{ selectedUserForPassword?.nombre }} {{ selectedUserForPassword?.apellidos }}</p>
+        <p><strong>Email:</strong> {{ selectedUserForPassword?.correo }}</p>
+      </div>
+
+      <form [formGroup]="resetPasswordForm" (ngSubmit)="resetUserPassword()">
+        <div class="form-group">
+          <label for="newPassword">Nueva Contraseña (opcional)</label>
+          <input type="password"
+                 id="newPassword"
+                 formControlName="newPassword"
+                 class="form-control"
+                 placeholder="Dejar vacío para generar automáticamente">
+          <small class="help-text">
+            Si dejas este campo vacío, se generará una contraseña segura aleatoria (8-12 caracteres) y se enviará por correo electrónico.
+          </small>
+          <div class="error-message" *ngIf="resetPasswordForm.get('newPassword')?.invalid && resetPasswordForm.get('newPassword')?.touched">
+            <span *ngIf="resetPasswordForm.get('newPassword')?.errors?.['minlength']">
+              La contraseña debe tener al menos 6 caracteres
+            </span>
+            <span *ngIf="resetPasswordForm.get('newPassword')?.errors?.['maxlength']">
+              La contraseña no puede exceder 50 caracteres
+            </span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="reason">Motivo del cambio (opcional)</label>
+          <textarea id="reason"
+                   formControlName="reason"
+                   class="form-control"
+                   rows="3"
+                   placeholder="Ej: Solicitud del usuario, política de seguridad, etc."></textarea>
+        </div>
+
+        <div class="form-check">
+          <input type="checkbox"
+                 id="mustChangePasswordReset"
+                 formControlName="mustChangePassword"
+                 class="form-check-input">
+          <label for="mustChangePasswordReset" class="form-check-label">
+            El usuario debe cambiar la contraseña en su próximo inicio de sesión
+          </label>
+        </div>
+      </form>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="btn-secondary" (click)="closeResetPasswordModal()">
+        Cancelar
+      </button>
+      <button type="submit"
+              class="btn-primary"
+              (click)="resetUserPassword()"
+              [disabled]="resettingPassword">
+        <i class="fas fa-key" *ngIf="!resettingPassword"></i>
+        <i class="fas fa-spinner fa-spin" *ngIf="resettingPassword"></i>
+        {{ resettingPassword ? 'Cambiando...' : 'Cambiar Contraseña' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit User Modal -->
+<div class="modal-overlay" *ngIf="showEditModal" (click)="closeEditModal()">
+  <div class="modal edit-user-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>
+        <i class="fas fa-user-edit"></i>
+        Editar Usuario
+      </h2>
+      <button class="btn-icon" (click)="closeEditModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <form [formGroup]="editUserForm" class="modal-content">
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="editNombre">Nombre <span class="required">*</span></label>
+          <input type="text" id="editNombre" formControlName="nombre"
+                 class="form-control" placeholder="Ingrese el nombre">
+          <div class="error-message" *ngIf="editUserForm.get('nombre')?.invalid && editUserForm.get('nombre')?.touched">
+            El nombre es requerido
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="editApellidos">Apellidos <span class="required">*</span></label>
+          <input type="text" id="editApellidos" formControlName="apellidos"
+                 class="form-control" placeholder="Ingrese los apellidos">
+          <div class="error-message" *ngIf="editUserForm.get('apellidos')?.invalid && editUserForm.get('apellidos')?.touched">
+            Los apellidos son requeridos
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="editTipoDocumento">Tipo de Documento <span class="required">*</span></label>
+          <select id="editTipoDocumento" formControlName="tipoDocumento" class="form-control">
+            <option value="">Seleccione...</option>
+            <option value="DNI">DNI</option>
+            <option value="CE">Carnet de Extranjería</option>
+            <option value="PASAPORTE">Pasaporte</option>
+          </select>
+          <div class="error-message" *ngIf="editUserForm.get('tipoDocumento')?.invalid && editUserForm.get('tipoDocumento')?.touched">
+            El tipo de documento es requerido
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="editNumDocumento">Número de Documento <span class="required">*</span></label>
+          <input type="text" id="editNumDocumento" formControlName="numDocumento"
+                 class="form-control" placeholder="Número de documento" maxlength="8">
+          <div class="error-message" *ngIf="editUserForm.get('numDocumento')?.invalid && editUserForm.get('numDocumento')?.touched">
+            <span *ngIf="editUserForm.get('numDocumento')?.errors?.['required']">El número de documento es requerido</span>
+            <span *ngIf="editUserForm.get('numDocumento')?.errors?.['minlength'] || editUserForm.get('numDocumento')?.errors?.['maxlength']">Debe tener exactamente 8 dígitos</span>
+            <span *ngIf="editUserForm.get('numDocumento')?.errors?.['pattern']">Solo se permiten números</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="editCorreo">Correo Electrónico <span class="required">*</span></label>
+          <input type="email" id="editCorreo" formControlName="correo"
+                 class="form-control" placeholder="ejemplo@correo.com">
+          <div class="error-message" *ngIf="editUserForm.get('correo')?.invalid && editUserForm.get('correo')?.touched">
+            <span *ngIf="editUserForm.get('correo')?.errors?.['required']">El correo es requerido</span>
+            <span *ngIf="editUserForm.get('correo')?.errors?.['email']">Ingrese un correo válido</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="editCelular">Celular</label>
+          <input type="text" id="editCelular" formControlName="celular"
+                 class="form-control" placeholder="999999999" maxlength="9">
+          <div class="error-message" *ngIf="editUserForm.get('celular')?.invalid && editUserForm.get('celular')?.touched">
+            <span *ngIf="editUserForm.get('celular')?.errors?.['minlength'] || editUserForm.get('celular')?.errors?.['maxlength']">Debe tener exactamente 9 dígitos</span>
+            <span *ngIf="editUserForm.get('celular')?.errors?.['pattern']">Solo se permiten números</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="editDireccion">Dirección</label>
+          <input type="text" id="editDireccion" formControlName="direccion"
+                 class="form-control" placeholder="Dirección completa">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="editRoleId">Rol <span class="required">*</span></label>
+          <select id="editRoleId" formControlName="roleId" class="form-control">
+            <option value="">Seleccione un rol...</option>
+            <option *ngFor="let role of roles" [value]="role.id">
+              {{ role.name }} - {{ role.description }}
+            </option>
+          </select>
+          <div class="error-message" *ngIf="editUserForm.get('roleId')?.invalid && editUserForm.get('roleId')?.touched">
+            El rol es requerido
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="editAreaId">Área</label>
+          <select id="editAreaId" formControlName="areaId" class="form-control">
+            <option value="">Sin área asignada</option>
+            <option *ngFor="let area of activeAreas" [value]="area.id">
+              {{ area.nombre }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn-secondary" (click)="closeEditModal()">
+          Cancelar
+        </button>
+        <button type="submit" class="btn-primary"
+                (click)="updateUser()"
+                [disabled]="editUserForm.invalid || updatingUser">
+          <i class="fas fa-save" *ngIf="!updatingUser"></i>
+          <i class="fas fa-spinner fa-spin" *ngIf="updatingUser"></i>
+          {{ updatingUser ? 'Actualizando...' : 'Actualizar Usuario' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

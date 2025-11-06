@@ -1,0 +1,75 @@
+<div *ngIf="isVisible" class="modal-backdrop" (click)="closeModal()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+
+    <div *ngIf="cargando" class="loading">
+      <i class="fas fa-spinner fa-spin"></i>
+      <span>Cargando...</span>
+    </div>
+
+    <div *ngIf="error" class="error">
+      <i class="fas fa-exclamation-triangle"></i>
+      <p>{{ error }}</p>
+      <button class="retry-btn" (click)="loadNotification()">Reintentar</button>
+    </div>
+
+    <div *ngIf="notificacion && !cargando && !error" class="notification-content">
+      <div class="header">
+        <div class="type-indicator" [ngClass]="'type-' + notificacion.tipo.toLowerCase()">
+          <i [class]="getIcono(notificacion.tipo)"></i>
+        </div>
+        <div class="title-section">
+          <h3>{{ notificacion.titulo }}</h3>
+          <div class="meta">
+            <span class="time">{{ formatearTiempo(notificacion.fechaCreacion) }}</span>
+            <span class="priority" [ngClass]="'priority-' + notificacion.prioridad.toLowerCase()">
+              {{ notificacion.prioridad }}
+            </span>
+          </div>
+        </div>
+        <button class="close-btn" (click)="closeModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="message">
+        {{ notificacion.mensaje }}
+      </div>
+
+      <div class="actions">
+        <button *ngIf="!notificacion.esLeida" class="action-btn mark-read" (click)="marcarComoLeida()">
+          <i class="fas fa-check"></i>
+          Marcar leída
+        </button>
+
+        <button *ngIf="notificacion.rutaDestino" class="action-btn view-content" (click)="irARutaDestino()">
+          <i class="fas fa-external-link-alt"></i>
+          Ver contenido
+        </button>
+
+        <button *ngIf="shouldShowTramiteButton()" class="action-btn view-tramite" (click)="verTramite()">
+          <i class="fas fa-file-alt"></i>
+          Ver trámite
+        </button>
+
+        <button class="action-btn delete" (click)="confirmDelete()">
+          <i class="fas fa-trash-alt"></i>
+          Eliminar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="showDeleteConfirm" class="confirm-backdrop" (click)="cancelDelete()">
+  <div class="confirm-dialog" (click)="$event.stopPropagation()">
+    <div class="confirm-content">
+      <i class="fas fa-trash-alt delete-icon"></i>
+      <h4>¿Eliminar notificación?</h4>
+      <p>Esta acción no se puede deshacer</p>
+      <div class="confirm-actions">
+        <button class="cancel-btn" (click)="cancelDelete()">Cancelar</button>
+        <button class="delete-btn" (click)="executeDelete()">Eliminar</button>
+      </div>
+    </div>
+  </div>
+</div>

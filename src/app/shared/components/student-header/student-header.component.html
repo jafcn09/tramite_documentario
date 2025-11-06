@@ -1,0 +1,103 @@
+<header class="student-header">
+  <div class="header-content">
+
+    <div class="header-left">
+      <div class="logo-section">
+        <div class="university-logo">
+          <i class="fas fa-university"></i>
+        </div>
+        <div class="title-section">
+          <h1>Portal Estudiantil</h1>
+          <p>Universidad Nacional de Tumbes</p>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="header-right">
+
+      <div class="student-notifications">
+        <app-notification-bell></app-notification-bell>
+      </div>
+
+
+      <div class="quick-actions">
+        <button class="action-btn" (click)="navigateToTramites()" title="Mis Trámites">
+          <i class="fas fa-folder-open"></i>
+        </button>
+        <button class="action-btn" (click)="createNewTramite()" title="Nueva Solicitud">
+          <i class="fas fa-plus"></i>
+        </button>
+      </div>
+
+
+      <div class="user-section" *ngIf="currentUser">
+        <button class="user-profile-btn" (click)="toggleUserDropdown()">
+          <img
+            [src]="currentUser?.foto || '/assets/default-avatar.png'"
+            [alt]="currentUser?.nombre"
+            class="user-avatar"
+            onerror="this.src='/assets/default-avatar.png'"
+          >
+          <span class="user-name">{{ getFirstName(currentUser?.nombre) }}</span>
+          <i class="fas fa-chevron-down dropdown-arrow" [class.rotated]="showUserDropdown"></i>
+        </button>
+
+
+        <div class="user-dropdown" [class.show]="showUserDropdown">
+          <div class="dropdown-header">
+            <div class="user-info">
+              <div class="name">{{ currentUser?.nombre }} {{ currentUser?.apellidos }}</div>
+              <div class="email">{{ currentUser?.correo }}</div>
+              <div class="role-badge">Estudiante</div>
+            </div>
+          </div>
+          <div class="dropdown-divider"></div>
+          <a href="#" class="dropdown-item" (click)="viewProfile($event)">
+            <i class="fas fa-user"></i>
+            <span>Mi Perfil</span>
+          </a>
+          <a href="#" class="dropdown-item" (click)="viewNotifications($event)">
+            <i class="fas fa-bell"></i>
+            <span>Notificaciones</span>
+          </a>
+          <a href="#" class="dropdown-item" (click)="changePassword($event)">
+            <i class="fas fa-key"></i>
+            <span>Cambiar Contraseña</span>
+          </a>
+          <div class="dropdown-divider"></div>
+          <a href="#" class="dropdown-item logout-item" (click)="logout($event)">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Cerrar Sesión</span>
+          </a>
+        </div>
+      </div>
+
+
+      <button class="mobile-menu-btn" (click)="toggleMobileMenu()">
+        <i class="fas fa-bars"></i>
+      </button>
+    </div>
+  </div>
+
+
+  <div class="status-bar">
+    <div class="status-content">
+      <div class="welcome-message">
+        <span>¡Hola, {{ getFirstName(currentUser?.nombre) }}!</span>
+        <span class="status-text">Gestiona tus trámites universitarios</span>
+      </div>
+      <div class="quick-stats" *ngIf="stats">
+        <div class="stat-item">
+          <span class="stat-number">{{ stats.tramitesActivos || 0 }}</span>
+          <span class="stat-label">Activos</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <span class="stat-number">{{ stats.tramitesCompletados || 0 }}</span>
+          <span class="stat-label">Completados</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>

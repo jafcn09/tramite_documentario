@@ -1,0 +1,131 @@
+<div class="dashboard-container">
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon users">
+        <i class="fas fa-users"></i>
+      </div>
+      <div class="stat-content">
+        <h3 [class.loading]="loadingUserCount">{{ loadingUserCount ? '...' : stats.totalUsers }}</h3>
+        <p>Total de Usuarios</p>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon tramites">
+        <i class="fas fa-file-alt"></i>
+      </div>
+      <div class="stat-content">
+        <h3>{{ stats.totalTramites }}</h3>
+        <p>Trámites Registrados</p>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon pending">
+        <i class="fas fa-clock"></i>
+      </div>
+      <div class="stat-content">
+        <h3>{{ stats.pendingTramites }}</h3>
+        <p>Trámites Pendientes</p>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon completed">
+        <i class="fas fa-check-circle"></i>
+      </div>
+      <div class="stat-content">
+        <h3>{{ stats.completedTramites }}</h3>
+        <p>Trámites Completados</p>
+        <small *ngIf="getTramitesVencidos() > 0" class="expired-note">
+          (incluye {{ getTramitesVencidos() }} vencidos)
+        </small>
+      </div>
+    </div>
+  </div>
+
+  <div class="content-grid">
+    <div class="card recent-activity">
+      <div class="card-header">
+        <h3>Actividad Reciente</h3>
+      </div>
+      <div class="card-content">
+        <div class="activity-list-container">
+          <div class="activity-list" #activityList>
+            <div *ngFor="let activity of recentActivities; trackBy: trackByActivity" class="activity-item">
+              <div class="activity-icon" [class]="activity.type">
+                <i [class]="activity.icon"></i>
+              </div>
+              <div class="activity-content">
+                <p>{{ activity.description }}</p>
+                <div class="activity-meta">
+                  <span class="activity-role"
+                        [class.role-admin]="activity.role === 'ADMIN'"
+                        [class.role-administrativo]="activity.role === 'ADMINISTRATIVO'"
+                        [class.role-usuario]="activity.role === 'USUARIO'"
+                        *ngIf="activity.role">{{ activity.role }}</span>
+                  <span class="activity-status"
+                        [class.status-completed]="activity.status === 'completed'"
+                        [class.status-pending]="activity.status === 'pending'"
+                        *ngIf="activity.status">{{ activity.status }}</span>
+                  <span class="activity-time">{{ activity.time }}</span>
+                </div>
+              </div>
+            </div>
+
+
+            <div *ngIf="loadingActivities" class="activity-item loading-item">
+              <div class="activity-icon loading">
+                <i class="fas fa-spinner fa-spin"></i>
+              </div>
+              <div class="activity-content">
+                <p>Cargando más actividades...</p>
+              </div>
+            </div>
+
+
+            <div *ngIf="canLoadMore && !loadingActivities && recentActivities.length > 0"
+                 class="activity-item load-more-item">
+              <button class="load-more-btn" (click)="loadMoreActivities()">
+                <i class="fas fa-chevron-down"></i>
+                Cargar más actividades
+              </button>
+            </div>
+
+
+            <div *ngIf="recentActivities.length === 0 && !loadingActivities" class="activity-item empty-state">
+              <div class="activity-icon empty">
+                <i class="fas fa-inbox"></i>
+              </div>
+              <div class="activity-content">
+                <p>No hay actividades recientes</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card quick-actions">
+      <div class="card-header">
+        <h3>Acciones Rápidas</h3>
+      </div>
+      <div class="card-content">
+        <div class="actions-grid">
+          <button class="action-btn" (click)="manageUsers()">
+            <i class="fas fa-users"></i>
+            <span>Gestionar Usuarios</span>
+          </button>
+          <button class="action-btn" (click)="viewReports()">
+            <i class="fas fa-chart-bar"></i>
+            <span>Ver Reportes</span>
+          </button>
+          <button class="action-btn" (click)="manageDocuments()">
+            <i class="fas fa-file-alt"></i>
+            <span>Gestionar Trámites</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

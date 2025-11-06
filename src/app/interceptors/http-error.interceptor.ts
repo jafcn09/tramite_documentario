@@ -28,7 +28,9 @@ export class HttpErrorInterceptor implements HttpInterceptor {
         } else if (error.status === 401) {
     
         } else if (error.status === 403) {
-       
+          console.error('ERROR 403 - URL:', error.url);
+          console.error('ERROR 403 - Message:', error.message);
+          console.error('ERROR 403 - Error completo:', error);
           if (!error.url?.includes('/usuarios/recent') && !error.url?.includes('/usuarios/stats')) {
             this.toastService.error('No tienes permisos para realizar esta acción', 'Acceso Denegado');
             this.router.navigate(['/access-denied']);

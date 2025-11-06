@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { OrganigramaService } from '../../services/organigrama.service';
-import { AreaJerarquica } from '../../models/organigrama.interface';
+import { AreaJerarquica } from '../../shared/interfaces/organigrama.interface';
 
 @Component({
   selector: 'app-organigrama',

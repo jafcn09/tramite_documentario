@@ -1,10 +1,14 @@
+export interface EstadoInfo {
+  nombre: string;
+}
+
 export interface TramiteResponse {
   id: number;
   codigo: string;
   titulo: string;
   descripcion: string;
   tipo: string;
-  estado: string;
+  estado: string | EstadoInfo;
   prioridad: string;
   numeroExpediente?: string;
   observaciones?: string;
@@ -24,6 +28,23 @@ export interface TramiteResponse {
   fechaActualizacion: string;
   fechaVencimiento?: string;
   fechaCompletado?: string;
+  respuesta?: string;
+  fechaRespuesta?: string;
+  usuarioRespondio?: {
+    id: number;
+    nombre: string;
+    apellidos: string;
+    correo: string;
+    rol: string;
+  };
+  archivosRespuesta?: {
+    nombre: string;
+    url: string;
+    tipo: string;
+    tamanio: number;
+    fechaSubida: string;
+    contenido?: string;
+  }[];
   documentosAdjuntos?: {
     nombre: string;
     url: string;

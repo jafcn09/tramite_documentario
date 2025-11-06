@@ -1,0 +1,262 @@
+<div class="profile-container">
+  <div class="profile-header">
+    <button class="back-btn" (click)="goBack()" title="Volver">
+      <i class="fas fa-arrow-left"></i>
+      <span>Volver</span>
+    </button>
+
+    <div class="profile-info">
+      <div class="avatar-section">
+        <div class="avatar-container" [class.uploading]="isUploadingPhoto">
+          <img
+            [src]="currentUser?.foto || '/assets/default-avatar.png'"
+            [alt]="currentUser?.nombre"
+            class="profile-avatar"
+            onerror="this.src='/assets/default-avatar.png'"
+          >
+          <div class="upload-overlay" *ngIf="isUploadingPhoto">
+            <i class="fas fa-spinner fa-spin"></i>
+            <span>Subiendo...</span>
+          </div>
+          <input type="file"
+                 #fileInput
+                 accept="image/*"
+                 (change)="onFileSelected($event)"
+                 style="display: none;">
+          <button class="avatar-edit-btn"
+                  [title]="updateAttempts >= 2 ? 'Límite de actualizaciones alcanzado' : 'Cambiar foto'"
+                  (click)="fileInput.click()"
+                  [disabled]="updateAttempts >= 2 || isUploadingPhoto">
+            <i class="fas"
+               [class.fa-camera]="!isUploadingPhoto"
+               [class.fa-spinner]="isUploadingPhoto"
+               [class.fa-spin]="isUploadingPhoto"></i>
+          </button>
+        </div>
+        <div class="online-indicator"></div>
+      </div>
+
+      <div class="user-details">
+        <h1 class="user-name">{{ currentUser?.nombre }} {{ currentUser?.apellidos }}</h1>
+        <p class="user-role">{{ currentUser?.role?.name }}</p>
+        <p class="user-email">{{ currentUser?.correo }}</p>
+
+        <div class="profile-stats">
+          <div class="stat-item">
+            <i class="fas fa-calendar"></i>
+            <span>Miembro desde {{ getJoinDate() }}</span>
+          </div>
+          <div class="stat-item" *ngIf="currentUser?.role?.name">
+            <i class="fas fa-shield-alt"></i>
+            <span>{{ getRoleDescription() }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="profile-content">
+    <div class="profile-grid">
+      <div class="profile-card user-info-full">
+        <div class="card-header">
+          <h2>
+            <i class="fas fa-user"></i>
+            Información del Usuario
+          </h2>
+          <button class="edit-btn"
+                  [title]="updateAttempts >= 2 ? 'Límite de ediciones alcanzado' : 'Editar información'"
+                  (click)="toggleEditMode()"
+                  [disabled]="updateAttempts >= 2"
+                  [class.disabled]="updateAttempts >= 2">
+            <i class="fas" [class.fa-edit]="!isEditMode" [class.fa-times]="isEditMode" [class.fa-lock]="updateAttempts >= 2"></i>
+          </button>
+        </div>
+
+        <div class="card-content">
+          <div class="alert alert-success" *ngIf="successMessage">
+            <i class="fas fa-check-circle"></i>
+            {{ successMessage }}
+          </div>
+
+          <div class="alert alert-error" *ngIf="errorMessages['general']">
+            <i class="fas fa-exclamation-circle"></i>
+            {{ errorMessages['general'] }}
+          </div>
+
+          <form [formGroup]="editForm" *ngIf="isEditMode" class="edit-form">
+            <div class="info-grid-full">
+              <div class="info-item">
+                <label>Nombres</label>
+                <input type="text" class="form-control readonly" [value]="currentUser?.nombre" disabled>
+              </div>
+              <div class="info-item">
+                <label>Apellidos</label>
+                <input type="text" class="form-control readonly" [value]="currentUser?.apellidos" disabled>
+              </div>
+              <div class="info-item">
+                <label>Correo Electrónico</label>
+                <input
+                  type="email"
+                  class="form-control"
+                  formControlName="correo"
+                  [class.error]="editForm.get('correo')?.invalid && editForm.get('correo')?.touched"
+                  placeholder="Ingrese correo electrónico"
+                >
+                <span class="error-message" *ngIf="(editForm.get('correo')?.invalid && editForm.get('correo')?.touched) || errorMessages['correo']">
+                  <i class="fas fa-exclamation-circle"></i>
+                  {{ getErrorMessage('correo') }}
+                </span>
+              </div>
+              <div class="info-item">
+                <label>Usuario</label>
+                <input type="text" class="form-control readonly" [value]="currentUser?.usuario" disabled>
+              </div>
+              <div class="info-item">
+                <label>Teléfono</label>
+                <input
+                  type="tel"
+                  class="form-control"
+                  formControlName="celular"
+                  [class.error]="editForm.get('celular')?.invalid && editForm.get('celular')?.touched"
+                  placeholder="Ingrese número de teléfono"
+                  maxlength="9"
+                >
+                <span class="error-message" *ngIf="(editForm.get('celular')?.invalid && editForm.get('celular')?.touched) || errorMessages['celular']">
+                  <i class="fas fa-exclamation-circle"></i>
+                  {{ getErrorMessage('celular') }}
+                </span>
+              </div>
+              <div class="info-item">
+                <label>Dirección</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  formControlName="direccion"
+                  [class.error]="editForm.get('direccion')?.invalid && editForm.get('direccion')?.touched"
+                  placeholder="Ingrese dirección"
+                >
+                <span class="error-message" *ngIf="(editForm.get('direccion')?.invalid && editForm.get('direccion')?.touched) || errorMessages['direccion']">
+                  <i class="fas fa-exclamation-circle"></i>
+                  {{ getErrorMessage('direccion') }}
+                </span>
+              </div>
+              <div class="info-item">
+                <label>Tipo de Documento</label>
+                <input type="text" class="form-control readonly" [value]="currentUser?.tipoDocumento" disabled>
+              </div>
+              <div class="info-item">
+                <label>Número de Documento</label>
+                <input type="text" class="form-control readonly" [value]="currentUser?.numDocumento" disabled>
+              </div>
+
+              <div class="form-actions">
+                <button type="button" class="btn-secondary" (click)="cancelEdit()" [disabled]="isUpdating">
+                  <i class="fas fa-times"></i>
+                  Cancelar
+                </button>
+                <button type="button" class="btn-primary" (click)="saveProfile()" [disabled]="editForm.invalid || isUpdating">
+                  <i class="fas fa-save" *ngIf="!isUpdating"></i>
+                  <i class="fas fa-spinner fa-spin" *ngIf="isUpdating"></i>
+                  {{ isUpdating ? 'Guardando...' : 'Guardar Cambios' }}
+                </button>
+              </div>
+            </div>
+          </form>
+
+          <div class="info-grid-full" *ngIf="!isEditMode">
+            <div class="info-item">
+              <label>Nombres</label>
+              <div class="value">{{ currentUser?.nombre || 'No especificado' }}</div>
+            </div>
+            <div class="info-item">
+              <label>Apellidos</label>
+              <div class="value">{{ currentUser?.apellidos || 'No especificado' }}</div>
+            </div>
+            <div class="info-item">
+              <label>Correo Electrónico</label>
+              <div class="value email">
+                <i class="fas fa-envelope"></i>
+                {{ currentUser?.correo }}
+              </div>
+            </div>
+            <div class="info-item">
+              <label>Usuario</label>
+              <div class="value">
+                <i class="fas fa-at"></i>
+                {{ currentUser?.usuario }}
+              </div>
+            </div>
+            <div class="info-item">
+              <label>Teléfono</label>
+              <div class="value">
+                <i class="fas fa-phone"></i>
+                {{ currentUser?.celular || 'No especificado' }}
+              </div>
+            </div>
+            <div class="info-item">
+              <label>Dirección</label>
+              <div class="value">
+                <i class="fas fa-map-marker-alt"></i>
+                {{ currentUser?.direccion || 'No especificada' }}
+              </div>
+            </div>
+            <div class="info-item">
+              <label>Tipo de Documento</label>
+              <div class="value">{{ currentUser?.tipoDocumento || 'No especificado' }}</div>
+            </div>
+            <div class="info-item">
+              <label>Número de Documento</label>
+              <div class="value">
+                <i class="fas fa-id-card"></i>
+                {{ currentUser?.numDocumento || 'No especificado' }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="profile-card activity-info">
+        <div class="card-header">
+          <h2>
+            <i class="fas fa-chart-line"></i>
+            Actividad Reciente
+          </h2>
+        </div>
+
+        <div class="card-content">
+          <div class="activity-list">
+            <div class="activity-item">
+              <div class="activity-icon login">
+                <i class="fas fa-sign-in-alt"></i>
+              </div>
+              <div class="activity-details">
+                <span class="activity-title">Último inicio de sesión</span>
+                <span class="activity-time">Hoy, {{ getCurrentTime() }}</span>
+              </div>
+            </div>
+
+            <div class="activity-item">
+              <div class="activity-icon profile">
+                <i class="fas fa-user-edit"></i>
+              </div>
+              <div class="activity-details">
+                <span class="activity-title">Perfil visualizado</span>
+                <span class="activity-time">Hace unos segundos</span>
+              </div>
+            </div>
+
+            <div class="activity-item">
+              <div class="activity-icon security">
+                <i class="fas fa-shield-alt"></i>
+              </div>
+              <div class="activity-details">
+                <span class="activity-title">Sesión activa</span>
+                <span class="activity-time">Estado: Segura</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

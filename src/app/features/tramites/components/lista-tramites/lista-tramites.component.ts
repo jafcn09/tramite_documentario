@@ -632,7 +632,9 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
     this.showCambiarEstadoModal = true;
   }
 
-  obtenerEstadosDisponibles(estadoActual: string) {
+  obtenerEstadosDisponibles(estadoActual: any) {
+    // Manejo de estado que puede ser string o objeto
+    const estadoKey = (estadoActual?.nombre || estadoActual || '').toUpperCase();
 
     const transicionesEstado: { [key: string]: string[] } = {
       'BORRADOR': ['ENVIADO', 'CANCELADO'],
@@ -647,8 +649,8 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
       'ARCHIVADO': [],
       'CANCELADO': []
     };
-    
-    this.estadosDisponibles = transicionesEstado[estadoActual] || [];
+
+    this.estadosDisponibles = transicionesEstado[estadoKey] || [];
   }
 
   confirmarCambioEstado() {
@@ -694,7 +696,9 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
     this.estadosDisponibles = [];
   }
 
-  getEstadoNombre(estadoEnum: string): string {
+  getEstadoNombre(estadoEnum: string | undefined): string {
+    if (!estadoEnum) return 'Sin estado';
+
     const estadosMap: { [key: string]: string } = {
       'BORRADOR': 'Borrador',
       'ENVIADO': 'Enviado',
@@ -706,7 +710,7 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
       'RECHAZADO': 'Rechazado',
       'FINALIZADO': 'Finalizado',
       'ARCHIVADO': 'Archivado',
-      'CANCELADO': 'Cancelado'
+      'CANCELADO': 'Cancelado',
     };
     return estadosMap[estadoEnum] || estadoEnum;
   }
@@ -950,6 +954,16 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
     };
     const nombreEstado = estado?.nombre || estado;
     return clases[nombreEstado] || 'estado-default';
+  }
+
+  getPrioridadNombre(prioridadEnum: string): string {
+    const prioridadesMap: { [key: string]: string } = {
+      'BAJA': 'Baja',
+      'NORMAL': 'Normal',
+      'ALTA': 'Alta',
+      'URGENTE': 'Urgente'
+    };
+    return prioridadesMap[prioridadEnum] || prioridadEnum;
   }
 
   getPrioridadClase(prioridad: any): string {

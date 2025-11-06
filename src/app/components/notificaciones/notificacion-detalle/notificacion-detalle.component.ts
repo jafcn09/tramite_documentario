@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NotificacionService } from '../../../services/notificacion.service';
-import { Notificacion } from '../notificacion.interface';
+import { Notificacion } from '../../../shared/interfaces/notificacion.interface';
 
 @Component({
   selector: 'app-notificacion-detalle',

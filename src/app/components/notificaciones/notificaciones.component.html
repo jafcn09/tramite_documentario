@@ -1,5 +1,4 @@
 <div class="min-h-screen bg-gray-50">
-  <!-- Header -->
   <div class="bg-white border-b border-gray-200 sticky top-0 z-40">
     <div class="px-3 sm:px-4 lg:px-6 max-w-7xl mx-auto">
       <div class="flex flex-col space-y-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:py-4 sm:space-y-0">
@@ -14,7 +13,6 @@
             <h1 class="text-lg sm:text-xl font-semibold text-gray-900 truncate">Centro de Notificaciones</h1>
             <p class="text-xs sm:text-sm text-gray-500 hidden sm:block">Mantente al día con tus actualizaciones</p>
           </div>
-          <!-- Connection badge -->
           <div class="flex items-center">
             <div class="flex items-center space-x-1">
               <div class="w-2 h-2 rounded-full"
@@ -25,8 +23,6 @@
             </div>
           </div>
         </div>
-
-        <!-- Right side -->
         <div class="flex flex-nowrap gap-2 justify-end overflow-x-auto">
           <button class="inline-flex items-center justify-center px-2 sm:px-3 py-2 border border-gray-300 rounded-lg text-xs sm:text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors min-h-[36px] min-w-[36px] sm:min-w-0 touch-manipulation"
                   (click)="abrirModalCrear()"
@@ -53,11 +49,8 @@
       </div>
     </div>
   </div>
-
-  <!-- Stats Dashboard -->
   <div class="px-3 sm:px-4 lg:px-6 max-w-7xl mx-auto py-4 sm:py-6">
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-      <!-- Total -->
       <div class="bg-white rounded-lg border border-gray-200 p-3 sm:p-4">
         <div class="flex items-center">
           <div class="w-6 h-6 sm:w-8 sm:h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -69,8 +62,6 @@
           </div>
         </div>
       </div>
-
-      <!-- Sin leer -->
       <div class="bg-white rounded-lg border border-gray-200 p-3 sm:p-4">
         <div class="flex items-center">
           <div class="w-6 h-6 sm:w-8 sm:h-8 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -83,7 +74,6 @@
         </div>
       </div>
 
-      <!-- Leídas -->
       <div class="bg-white rounded-lg border border-gray-200 p-3 sm:p-4">
         <div class="flex items-center">
           <div class="w-6 h-6 sm:w-8 sm:h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -95,8 +85,6 @@
           </div>
         </div>
       </div>
-
-      <!-- Este mes -->
       <div class="bg-white rounded-lg border border-gray-200 p-3 sm:p-4">
         <div class="flex items-center">
           <div class="w-6 h-6 sm:w-8 sm:h-8 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -111,10 +99,8 @@
     </div>
   </div>
 
-  <!-- Search and Filter Bar -->
   <div class="px-3 sm:px-4 lg:px-6 max-w-7xl mx-auto pb-4 sm:pb-6">
     <div class="bg-white rounded-lg border border-gray-200 p-3 sm:p-4">
-      <!-- Search -->
       <div class="flex flex-col gap-3 mb-3 sm:flex-row sm:gap-4 sm:mb-4">
         <div class="flex-1 relative">
           <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -135,8 +121,6 @@
           <span class="sm:hidden">Limpiar</span>
         </button>
       </div>
-
-      <!-- Quick Filters -->
       <div class="flex flex-wrap gap-2">
         <button class="inline-flex items-center px-4 py-2 sm:px-3 sm:py-1.5 rounded-full text-sm font-medium transition-colors min-h-[40px] sm:min-h-auto touch-manipulation"
                 [class]="filtros.esLeida === undefined ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
@@ -160,8 +144,6 @@
       </div>
     </div>
   </div>
-
-  <!-- Loading State -->
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" *ngIf="cargando">
     <div class="bg-white rounded-lg border border-gray-200 p-8 text-center">
       <div class="inline-flex items-center justify-center w-12 h-12 bg-blue-100 rounded-lg mb-4">
@@ -171,8 +153,6 @@
       <p class="text-sm text-gray-500">Obteniendo tus últimas actualizaciones...</p>
     </div>
   </div>
-
-  <!-- Notifications List -->
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6" *ngIf="!cargando">
     <div class="notification-group" 
          *ngFor="let grupo of notificacionesAgrupadas; trackBy: trackGroup" 
@@ -199,15 +179,12 @@
           
           <div class="p-4">
             <div class="flex items-start space-x-3">
-              <!-- Icon -->
               <div class="flex-shrink-0 relative">
                 <div class="w-10 h-10 rounded-lg flex items-center justify-center" [ngClass]="getClaseTipo(notificacion.tipo)">
                   <i [class]="getIcono(notificacion.tipo)" class="text-sm"></i>
                 </div>
                 <div class="absolute -top-1 -right-1 w-3 h-3 bg-blue-400 rounded-full" *ngIf="!notificacion.esLeida"></div>
               </div>
-
-              <!-- Content -->
               <div class="flex-1 min-w-0">
                 <div class="flex items-start justify-between">
                   <h4 class="text-sm font-semibold text-gray-900 truncate pr-2">{{ notificacion.titulo }}</h4>
@@ -229,10 +206,7 @@
                       Urgente
                     </span>
                   </div>
-
-                  <!-- Actions -->
                   <div class="flex items-center gap-1">
-                    <!-- Acciones rápidas de trámite -->
                     <button class="p-1.5 rounded transition-colors text-purple-600 hover:bg-purple-50"
                             *ngIf="esTramiteNotificacion(notificacion.tipo) && notificacion.referenciaId && !esNotificacionAntigua(notificacion) && esAdministrativo()"
                             (click)="asignarseTramite(notificacion, $event)"
@@ -253,8 +227,6 @@
                             title="Derivar trámite">
                       <i class="fas fa-arrow-right text-xs"></i>
                     </button>
-
-                    <!-- Acciones generales -->
                     <button class="p-1.5 rounded transition-colors"
                             *ngIf="!notificacion.esLeida"
                             [class]="esNotificacionAntigua(notificacion) ? 'text-gray-300 cursor-not-allowed' : 'text-gray-400 hover:text-green-600 hover:bg-green-50'"
@@ -271,8 +243,6 @@
         </div>
       </div>
     </div>
-
-    <!-- Empty State -->
     <div class="bg-white rounded-lg border border-gray-200 p-12 text-center" *ngIf="notificacionesAgrupadas.length === 0">
       <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
         <i class="fas fa-bell-slash text-gray-400 text-xl"></i>
@@ -282,8 +252,6 @@
       <p class="text-sm text-gray-500">No tienes notificaciones que coincidan con los filtros seleccionados.</p>
     </div>
   </div>
-
-  <!-- Load More -->
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8" *ngIf="!isLastPage && !cargando && notificacionesAgrupadas.length > 0">
     <div class="text-center">
       <button class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors" 
@@ -293,8 +261,6 @@
       </button>
     </div>
   </div>
-
-  <!-- Admin Panel -->
   <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pb-8" *ngIf="esAdmin()">
     <div class="bg-white rounded-lg border border-gray-200 p-3 sm:p-4">
 
@@ -325,9 +291,7 @@
         </button>
       </div>
       
-      <!-- Form -->
       <form (ngSubmit)="crearNotificacion()" #notificacionForm="ngForm" class="p-6 space-y-4">
-        <!-- Tipo de Destinatario -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">Destinatario</label>
           <div class="space-y-2">
@@ -363,8 +327,6 @@
             {{ getError('destinatario') }}
           </p>
         </div>
-
-        <!-- Usuario Específico -->
         <div *ngIf="tipoDestinatario === 'USUARIO_ESPECIFICO'">
           <label class="block text-sm font-medium text-gray-700 mb-2">Seleccionar Usuario</label>
           <select class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -381,8 +343,6 @@
             {{ getError('usuarioDestinatarioId') }}
           </p>
         </div>
-
-        <!-- Selección de Rol -->
         <div *ngIf="tipoDestinatario === 'ROL_COMPLETO'">
           <label class="block text-sm font-medium text-gray-700 mb-2">Seleccionar Rol</label>
           <select class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -399,8 +359,6 @@
             {{ getError('roleDestinatario') }}
           </p>
         </div>
-
-        <!-- Confirmación para todos los usuarios -->
         <div *ngIf="tipoDestinatario === 'TODOS_USUARIOS'" class="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
           <div class="flex">
             <i class="fas fa-exclamation-triangle text-yellow-400 mt-0.5 mr-2"></i>
@@ -410,8 +368,6 @@
             </div>
           </div>
         </div>
-        
-        <!-- Título -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">Título</label>
           <input type="text" 
@@ -444,8 +400,6 @@
             {{ getError('mensaje') }}
           </p>
         </div>
-        
-        <!-- Tipo -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">Tipo</label>
           <select class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -486,8 +440,6 @@
           </p>
         </div>
   
-        
-        <!-- Botones -->
         <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
           <button type="button" 
                   class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
@@ -511,8 +463,6 @@
     </div>
   </div>
 </div>
-
-<!-- Modal de Editar Notificación -->
 <div class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 p-4" *ngIf="mostrarModalEditar" @slideDown>
   <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-screen overflow-y-auto">
     <div class="flex items-center justify-between p-6 border-b border-gray-200">
@@ -528,7 +478,6 @@
     </div>
     
     <form (ngSubmit)="confirmarEditarNotificacion()" #editarForm="ngForm" class="p-6">
-      <!-- Título -->
       <div class="mb-6">
         <label class="block text-sm font-medium text-gray-700 mb-2">Título *</label>
         <input type="text" 
@@ -539,8 +488,7 @@
                maxlength="200"
                placeholder="Título de la notificación">
       </div>
-      
-      <!-- Mensaje -->
+
       <div class="mb-6">
         <label class="block text-sm font-medium text-gray-700 mb-2">Mensaje *</label>
         <textarea class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 min-h-[100px]"
@@ -551,8 +499,6 @@
                   placeholder="Contenido del mensaje..."
                   rows="4"></textarea>
       </div>
-      
-      <!-- Tipo -->
       <div class="mb-6">
         <label class="block text-sm font-medium text-gray-700 mb-2">Tipo *</label>
         <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
@@ -580,8 +526,6 @@
           <option value="ALTA">Alta</option>
         </select>
       </div>
-      
-      <!-- Ruta Destino (opcional) -->
       <div class="mb-6">
         <label class="block text-sm font-medium text-gray-700 mb-2">Ruta Destino (opcional)</label>
         <input type="text" 
@@ -590,8 +534,6 @@
                name="rutaDestino"
                placeholder="/dashboard, /tramites/123, etc.">
       </div>
-      
-      <!-- Botones -->
       <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
         <button type="button" 
                 class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-colors"
@@ -614,8 +556,6 @@
     </form>
   </div>
 </div>
-
-<!-- Modal de Confirmar Eliminar -->
 <div class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 p-4" *ngIf="mostrarModalEliminar" @slideDown>
   <div class="bg-white rounded-xl shadow-xl max-w-md w-full">
     <div class="flex items-center justify-between p-6 border-b border-gray-200">
@@ -650,8 +590,6 @@
           Esta acción no se puede deshacer.
         </p>
       </div>
-      
-      <!-- Botones -->
       <div class="flex justify-end space-x-3">
         <button type="button" 
                 class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors"
@@ -675,8 +613,6 @@
     </div>
   </div>
 </div>
-
-<!-- Modal de Limpiar Notificaciones Antiguas -->
 <div class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 p-4" *ngIf="mostrarModalLimpiar" @slideDown>
   <div class="bg-white rounded-xl shadow-xl max-w-md w-full">
     <div class="flex items-center justify-between p-6 border-b border-gray-200">
@@ -728,8 +664,6 @@
           Esta acción no se puede deshacer.
         </p>
       </div>
-      
-      <!-- Botones -->
       <div class="flex justify-end space-x-3">
         <button type="button" 
                 class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors"

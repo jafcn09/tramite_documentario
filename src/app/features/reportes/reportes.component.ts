@@ -93,9 +93,9 @@ export class ReportesComponent implements OnInit {
 
   obtenerEstadoUrgente(tramite: any): string {
     if (tramite.diasVencido > 0) {
-      return `VENCIDO (${tramite.diasVencido} ${tramite.diasVencido === 1 ? 'día' : 'días'})`;
+      return `VENCIDO HACE ${tramite.diasVencido} ${tramite.diasVencido === 1 ? 'DÍA' : 'DÍAS'}`;
     } else if (tramite.diasVencido === 0) {
-      return 'VENCE HOY';
+      return 'VENCE HOY A LAS 23:59 HRS';
     } else if (tramite.diasVencido === -1) {
       return 'VENCE MAÑANA';
     } else {

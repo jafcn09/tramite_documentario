@@ -10,7 +10,7 @@ import { MisTramitesService } from '../../services/mis-tramites.service';
 import { BandejaTramitesService } from '../../services/bandeja-tramites.service';
 import { TramiteService } from '../../services/tramite.service';
 import { ToastService } from '../../services/toast.service';
-import { AuthService, AdministrativeUser } from '../../services/auth.service';
+import { AuthService } from '../../services/auth.service';
 import {
   MiTramite,
   EstadisticasMisTramites,
@@ -20,6 +20,7 @@ import { TipoFirma, FirmaDigitalResponse } from '../../shared/interfaces/firma-d
 import { FirmaDigitalService } from '../../services/firma-digital.service';
 import { ResponderTramiteModalComponent } from '../tramites/components/responder-tramite-modal/responder-tramite-modal.component';
 import { NuevoTramiteModalComponent } from '../tramites/components/nuevo-tramite-modal/nuevo-tramite-modal.component';
+import { AdministrativeUser } from '../../shared/interfaces/auth.interface';
 
 @Component({
   selector: 'app-mis-tramites',
@@ -96,16 +97,16 @@ export class MisTramitesComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   get isAdministrativo(): boolean {
-    return this.userRole === 'ADMINISTRATIVO';
+    return this.userRole === 'administrativo';
   }
 
   get isUsuario(): boolean {
-    return this.userRole === 'USUARIO';
+    return this.userRole === 'usuario';
   }
 
   get shouldShowCreateButton(): boolean {
 
-    return this.authService.hasRole('USUARIO');
+    return this.authService.hasRole('usuario');
   }
 
   get canProcessTramites(): boolean {
@@ -507,7 +508,7 @@ export class MisTramitesComponent implements OnInit, OnDestroy, AfterViewInit {
     );
   }
   puedeEditarTramite(tramite: MiTramite): boolean {
-    if (this.userRole !== 'USUARIO') {
+    if (this.userRole !== 'usuario') {
       return false;
     }
     if (this.estaVencido(tramite)) {
@@ -1018,7 +1019,7 @@ export class MisTramitesComponent implements OnInit, OnDestroy, AfterViewInit {
 
   puedeRechazar(tramite: MiTramite): boolean {
 
-    if (this.userRole === 'ESTUDIANTE') {
+    if (this.userRole === 'estudiante') {
       return false;
     }
     if (!this.isAdministrativo) {
@@ -1037,7 +1038,7 @@ export class MisTramitesComponent implements OnInit, OnDestroy, AfterViewInit {
 
   puedeDerivar(tramite: MiTramite): boolean {
     // ESTUDIANTES nunca pueden derivar
-    if (this.userRole === 'ESTUDIANTE') {
+    if (this.userRole === 'estudiante') {
       return false;
     }
 
@@ -2040,7 +2041,7 @@ export class MisTramitesComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   puedeEliminarTramite(tramite: MiTramite): boolean {
-    if (this.userRole !== 'USUARIO' && this.userRole !== 'ESTUDIANTE') {
+    if (this.userRole !== 'usuario' && this.userRole !== 'estudiante') {
       return false;
     }
 

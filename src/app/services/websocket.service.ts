@@ -3,11 +3,10 @@ import { Subject, BehaviorSubject } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { AuthService } from './auth.service';
 import { NotificacionService } from './notificacion.service';
-import { Notificacion } from '../components/notificaciones/notificacion.interface';
+import { Notificacion } from '../shared/interfaces/notificacion.interface';
 import { ToastService } from './toast.service';
-
-declare const SockJS: any;
-declare const Stomp: any;
+import SockJS from 'sockjs-client';
+import Stomp from 'stompjs';
 
 @Injectable({
   providedIn: 'root'
@@ -39,12 +38,12 @@ export class WebSocketService implements OnDestroy {
 
   private conectar(): void {
     if (this.stompClient && this.stompClient.connected) {
-      return; 
+      return;
     }
 
-    const serverUrl = environment.apiUrl || `${environment.apiUrl}/ws`;
-    const socket = new SockJS(serverUrl);
-    this.stompClient = Stomp.over(socket);
+    const serverUrl = (environment as any).wsUrl || 'ws://localhost:8081/ws';
+    const socket = new (SockJS as any)(serverUrl);
+    this.stompClient = (Stomp as any).over(socket);
     
    
     const token = this.authService.getToken();

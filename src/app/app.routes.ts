@@ -12,13 +12,13 @@ export const routes: Routes = [
   { path: 'ingresar', component: AdminLoginComponent },
   { path: 'servicios-administrativos', component: AdminLoginComponent },
   { path: 'manual', component: ManualComponent },
-  { path: 'buscar', component: SearchComponent },
+  { path: 'verificar', component: SearchComponent },
 
  
   {
     path: 'admin',
     canActivate: [AuthGuard, RoleGuard],
-    data: { roles: ['ADMIN'] },
+    data: { roles: ['admin'] },
     loadComponent: () => import('./shared/layout/layout.component').then(m => m.LayoutComponent),
     children: [
       {
@@ -81,7 +81,7 @@ export const routes: Routes = [
   {
     path: 'administrativo',
     canActivate: [AuthGuard, RoleGuard],
-    data: { roles: ['ADMINISTRATIVO'] },
+    data: { roles: ['administrativo'] },
     loadComponent: () => import('./shared/layout/layout.component').then(m => m.LayoutComponent),
     children: [
       {
@@ -124,7 +124,7 @@ export const routes: Routes = [
   {
     path: 'usuario',
     canActivate: [AuthGuard, RoleGuard],
-    data: { roles: ['USUARIO'] },
+    data: { roles: ['usuario'] },
     loadComponent: () => import('./shared/layout/layout.component').then(m => m.LayoutComponent),
     children: [
       {
@@ -167,7 +167,7 @@ export const routes: Routes = [
   {
     path: 'estudiante',
     canActivate: [AuthGuard, RoleGuard],
-    data: { roles: ['ESTUDIANTE'] },
+    data: { roles: ['estudiante'] },
     loadComponent: () => import('./shared/layout/layout.component').then(m => m.LayoutComponent),
     children: [
       {

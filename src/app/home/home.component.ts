@@ -178,7 +178,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
   
   handleModuleClick(module: Module): void {
     if (module.id === 'search') {
-      this.router.navigate(['/buscar']);
+      this.router.navigate(['/verificar']);
     } else if (module.id === 'external') {
       this.router.navigate(['/tramites-externos']);
     } else if (module.id === 'internal') {

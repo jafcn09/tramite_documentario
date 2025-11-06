@@ -14,7 +14,7 @@ import {
   PaginatedResponse,
   TipoDestinatario,
   RoleInfo
-} from './notificacion.interface';
+} from '../../shared/interfaces/notificacion.interface';
 import { NotificacionService } from '../../services/notificacion.service';
 import { WebSocketService } from '../../services/websocket.service';
 import { AuthService } from '../../services/auth.service';
@@ -177,24 +177,32 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
 
   cargarNotificaciones(): void {
     this.cargando = true;
-    
-    const observable = this.esAdmin() 
+
+    console.log('🔍 Cargando notificaciones...');
+    console.log('🔍 Usuario actual:', this.authService.currentUserValue);
+    console.log('🔍 Es Admin?', this.esAdmin());
+
+    const observable = this.esAdmin()
       ? this.notificacionService.obtenerTodasNotificaciones(
-          this.currentPage, 
-          this.pageSize, 
-          'fechaCreacion', 
+          this.currentPage,
+          this.pageSize,
+          'fechaCreacion',
           'desc'
         )
       : this.notificacionService.obtenerMisNotificaciones(
-          this.currentPage, 
-          this.pageSize, 
-          'fechaCreacion', 
+          this.currentPage,
+          this.pageSize,
+          'fechaCreacion',
           'desc'
         );
-    
+
+    console.log('🔍 Observable creado, haciendo petición...');
+
     this.subscriptions.push(
       observable.subscribe({
         next: (response: PaginatedResponse<Notificacion>) => {
+          console.log('✅ Respuesta recibida:', response);
+          console.log('✅ Cantidad de notificaciones:', response.content?.length);
 
           if (this.currentPage === 0) {
             this.notificaciones = response.content;
@@ -205,13 +213,17 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
           this.totalElements = response.totalElements;
           this.totalPages = response.totalPages;
           this.isLastPage = response.last;
-          
+
           this.aplicarFiltros();
           this.agruparNotificaciones();
 
           this.cargando = false;
         },
         error: (error) => {
+          console.error('❌ Error al cargar notificaciones:', error);
+          console.error('❌ Status:', error.status);
+          console.error('❌ Message:', error.message);
+          console.error('❌ URL:', error.url);
           this.cargando = false;
         }
       })

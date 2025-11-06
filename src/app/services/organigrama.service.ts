@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
-import { AreaJerarquica } from '../models/organigrama.interface';
+import { AreaJerarquica } from '../shared/interfaces/organigrama.interface';
 
 @Injectable({
   providedIn: 'root'

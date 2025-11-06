@@ -6,65 +6,9 @@ import { Router } from '@angular/router';
 import { isPlatformBrowser } from '@angular/common';
 import { environment } from '../../environments/environment';
 import { ModalService } from './modal.service';
+import { AdministrativeUser, ChangePasswordRequest, LoginRequest, LoginResponse, User } from '../shared/interfaces/auth.interface';
 
-export interface LoginRequest {
-  usuario: string;
-  password: string;
-}
 
-export interface LoginResponse {
-  token: string;
-  refreshToken: string;
-  redirectUrl?: string;
-  role?: string;
-  usuario?: any;
-  message?: string;
-}
-
-export interface ChangePasswordRequest {
-  currentPassword: string;
-  newPassword: string;
-  confirmPassword: string;
-}
-
-export interface User {
-  id: number;
-  usuario: string;
-  nombre: string;
-  apellidos: string;
-  correo: string;
-  foto?: string;
-  tipoDocumento?: string;
-  numDocumento?: string;
-  direccion?: string;
-  celular?: string;
-  role: {
-    id: number;
-    name: string;
-    description: string;
-  };
-}
-
-export interface AdministrativeUser {
-  id: number;
-  usuario: string;
-  nombre: string;
-  apellidos: string;
-  correo: string;
-  foto?: string;
-  role: {
-    id: number;
-    name: string;
-    description: string;
-  };
-  area?: {
-    id: number;
-    nombre: string;
-    descripcion: string;
-    activa: boolean;
-  };
-  workloadCount: number;
-}
 
 @Injectable({
   providedIn: 'root'
@@ -111,29 +55,25 @@ export class AuthService {
   }
 
   login(credentials: LoginRequest): Observable<LoginResponse> {
-   
     return this.http.post<LoginResponse>(`${environment.apiUrl}/api/auth/login`, credentials)
       .pipe(
         tap(response => {
-
           if (response.token) {
-          
             this.modalService.clearAllModals();
 
+            // Store tokens first
             this.storeTokens(response.token, response.refreshToken);
-            if (response.usuario) {
 
+            if (response.usuario) {
+              // Store user in localStorage immediately
               this.storeUser(response.usuario);
+
+              // Then update the BehaviorSubject
               this.currentUserSubject.next(response.usuario);
 
               this.startInactivityTimer();
               this.setupUserActivityListeners();
-            } else {
-
             }
-           
-          } else {
-
           }
         }),
         catchError(error => {
@@ -261,13 +201,14 @@ export class AuthService {
 
   hasRole(role: string): boolean {
     const user = this.currentUserValue;
-    return user?.role?.name === role;
+    if (!user || !user.role || !user.role.name) return false;
+    return user.role.name.toLowerCase() === role.toLowerCase();
   }
 
   hasAnyRole(roles: string[]): boolean {
     const user = this.currentUserValue;
     if (!user || !user.role) return false;
-    return roles.some(role => role.toUpperCase() === user.role.name.toUpperCase());
+    return roles.some(role => role.toLowerCase() === user.role.name.toLowerCase());
   }
 
   private storeTokens(token: string, refreshToken: string): void {
@@ -394,22 +335,5 @@ export class AuthService {
           return throwError(() => error);
         })
       );
-  }
-
-  private redirectBasedOnRole(role?: string): void {
-    if (!role) {
-      this.router.navigate(['/home']);
-      return;
-    }
-
-    const roleRoutes: { [key: string]: string } = {
-      'ADMIN': '/admin/tablero',
-      'USUARIO': '/usuario/tablero',
-      'ADMINISTRATIVO': '/administrativo/tablero',
-      'ESTUDIANTE': '/estudiante/tablero'
-    };
-
-    const route = roleRoutes[role] || '/home';
-    this.router.navigate([route]);
   }
 }

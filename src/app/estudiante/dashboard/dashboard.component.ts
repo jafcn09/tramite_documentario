@@ -1,11 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
-import { AuthService, User } from '../../services/auth.service';
+import { AuthService } from '../../services/auth.service';
 import { MisTramitesService } from '../../services/mis-tramites.service';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { StudentDashboardLayoutComponent } from './student-dashboard-layout.component';
+import { User } from '../../shared/interfaces/auth.interface';
 
 @Component({
   selector: 'app-estudiante-dashboard',

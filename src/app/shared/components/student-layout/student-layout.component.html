@@ -1,0 +1,102 @@
+<div class="student-layout">
+
+  <header class="student-header">
+    <div class="header-container">
+
+      <div class="header-left">
+        <div class="logo-section">
+          <div class="university-icon">
+            <i class="fas fa-graduation-cap"></i>
+          </div>
+
+        </div>
+        <nav class="main-nav">
+          <a routerLink="/estudiante/tablero" routerLinkActive="active" class="nav-item">
+            <i class="fas fa-home"></i>
+            <span>Inicio</span>
+          </a>
+          <a routerLink="/estudiante/mis-tramites" routerLinkActive="active" class="nav-item">
+            <i class="fas fa-folder-open"></i>
+            <span>Mis Trámites</span>
+          </a>
+        </nav>
+      </div>
+      <div class="header-right">
+
+        <div class="notifications-area">
+          <app-notification-bell></app-notification-bell>
+        </div>
+        <div class="user-profile" *ngIf="currentUser">
+          <button class="profile-btn" (click)="toggleUserMenu()">
+            <img
+              [src]="currentUser?.foto || '/assets/default-avatar.png'"
+              [alt]="currentUser?.nombre"
+              class="profile-avatar"
+              onerror="this.src='/assets/default-avatar.png'"
+            >
+            <div class="profile-info">
+              <span class="profile-name">{{ getFirstName(currentUser?.nombre) }}</span>
+              <span class="profile-role">Estudiante</span>
+            </div>
+            <i class="fas fa-chevron-down" [class.rotated]="showUserMenu"></i>
+          </button>
+          <div class="user-menu" [class.show]="showUserMenu">
+            <div class="menu-header">
+              <div class="user-details">
+                <div class="full-name">{{ currentUser?.nombre }} {{ currentUser?.apellidos }}</div>
+                <div class="email">{{ currentUser?.correo }}</div>
+              </div>
+            </div>
+            <div class="menu-divider"></div>
+            <a href="#" class="menu-item" (click)="viewProfile($event)">
+              <i class="fas fa-user"></i>
+              Mi Perfil
+            </a>
+            <a href="#" class="menu-item" (click)="viewNotifications($event)">
+              <i class="fas fa-bell"></i>
+              Notificaciones
+            </a>
+            <a href="#" class="menu-item" (click)="changePassword($event)">
+              <i class="fas fa-key"></i>
+              Cambiar Contraseña
+            </a>
+            <div class="menu-divider"></div>
+            <a href="#" class="menu-item logout" (click)="logout($event)">
+              <i class="fas fa-sign-out-alt"></i>
+              Cerrar Sesión
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="status-bar" *ngIf="studentStats">
+      <div class="status-container">
+        <div class="welcome-text">
+          <span class="greeting">¡Hola, {{ getFirstName(currentUser?.nombre) }}!</span>
+
+        </div>
+        <div class="quick-stats">
+          <div class="stat">
+            <span class="number">{{ studentStats.tramitesActivos || 0 }}</span>
+            <span class="label">En Proceso</span>
+          </div>
+          <div class="divider"></div>
+          <div class="stat">
+            <span class="number">{{ studentStats.tramitesCompletados || 0 }}</span>
+            <span class="label">Completados</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+
+  <main class="main-content">
+    <router-outlet></router-outlet>
+  </main>
+
+  <app-modal></app-modal>
+  <app-toast></app-toast>
+</div>

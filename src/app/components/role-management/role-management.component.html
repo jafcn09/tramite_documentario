@@ -1,0 +1,214 @@
+<div class="container">
+  <header class="header">
+    <h1><i class="fas fa-university"></i>Gestión de Roles</h1>
+    <button class="btn-primary" (click)="openCreateModal()">
+      <i class="fas fa-plus-circle"></i>Nuevo Rol
+    </button>
+  </header>
+
+  <section class="search-box">
+    <div class="search-input-wrapper">
+      <i class="fas fa-search"></i>
+      <input
+        type="text"
+        [(ngModel)]="searchTerm"
+        (input)="filterRoles()"
+        placeholder="Buscar roles por nombre o descripción...">
+      <button
+        *ngIf="searchTerm"
+        class="clear-btn"
+        (click)="clearSearch()">
+        <i class="fas fa-times-circle"></i>
+      </button>
+    </div>
+    <div *ngIf="searchTerm" class="search-results">
+      <small class="results-count" [class.no-results]="!hasSearchResults()">
+        {{ searchMessage() }}
+      </small>
+    </div>
+  </section>
+
+  <section class="table-wrapper" *ngIf="!isMobile()">
+    <div class="table-info">
+      <span>Mostrando {{ filteredRoles().length }} de {{ roles().length }} roles</span>
+    </div>
+
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Rol</th>
+          <th>Descripción</th>
+          <th>Usuarios</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let role of filteredRoles()">
+          <td>
+            <div class="role-cell">
+              <div class="role-icon" [class]="getRoleClass(role.name)">
+                <i [class]="getRoleIcon(role.name)"></i>
+              </div>
+              <div>
+                <strong>{{ role.name }}</strong>
+              </div>
+            </div>
+          </td>
+          <td class="desc-cell">{{ role.description }}</td>
+          <td class="center">
+            <span class="count-badge">
+              {{ role.userCount }}
+            </span>
+          </td>
+          <td class="center">
+            <div class="action-group">
+              <button class="btn-icon edit" (click)="editRole(role)">
+                <i class="fas fa-pencil-alt"></i>
+              </button>
+              <button
+                class="btn-icon delete"
+                (click)="confirmDelete(role)"
+                [disabled]="role.userCount > 0">
+                <i class="fas fa-trash-alt"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="cards-wrapper" *ngIf="isMobile()">
+    <article class="role-card" *ngFor="let role of filteredRoles()">
+      <header class="card-header">
+        <div class="role-icon-lg" [class]="getRoleClass(role.name)">
+          <i [class]="getRoleIcon(role.name)"></i>
+        </div>
+        <div class="card-info">
+          <h3>{{ role.name }}</h3>
+          <p>{{ role.description }}</p>
+        </div>
+      </header>
+
+      <div class="card-stats">
+        <div class="stat">
+          <span class="info-label">Usuarios:</span>
+          <strong>{{ role.userCount }}</strong>
+        </div>
+      </div>
+
+      <footer class="card-actions">
+        <button class="btn-action primary" (click)="editRole(role)">
+          <i class="fas fa-pencil-alt"></i>Editar
+        </button>
+        <button
+          class="btn-action danger"
+          (click)="confirmDelete(role)"
+          [disabled]="role.userCount > 0">
+          <i class="fas fa-trash-alt"></i>Eliminar
+        </button>
+      </footer>
+    </article>
+  </section>
+
+  <div *ngIf="filteredRoles().length === 0" class="empty-state">
+    <i class="fas fa-search"></i>
+    <h3>No se encontraron roles</h3>
+    <p>{{ searchTerm ? 'No hay coincidencias para "' + searchTerm + '"' : 'No hay roles registrados' }}</p>
+    <button *ngIf="!searchTerm" class="btn-primary" (click)="openCreateModal()">
+      <i class="fas fa-plus-circle"></i>Crear Primer Rol
+    </button>
+  </div>
+
+  <div class="modal-overlay" *ngIf="showModal()" (click)="closeModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <header class="modal-header">
+        <h2>
+          <i [class]="isEditing() ? 'fas fa-pencil-alt' : 'fas fa-plus-circle'"></i>
+          {{ isEditing() ? 'Editar Rol' : 'Crear Nuevo Rol' }}
+        </h2>
+        <button class="btn-close" (click)="closeModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </header>
+
+      <form [formGroup]="roleForm" class="modal-body">
+        <div class="form-field">
+          <label>Nombre del Rol <span class="required">*</span></label>
+          <input
+            type="text"
+            formControlName="name"
+            placeholder="Ej: Administrador"
+            [class.error]="isFieldInvalid('name')">
+          <span class="error-msg" *ngIf="isFieldInvalid('name')">
+            {{ getFieldError('name') }}
+          </span>
+        </div>
+
+        <div class="form-field">
+          <label>Descripción <span class="required">*</span></label>
+          <textarea
+            formControlName="description"
+            rows="3"
+            placeholder="Describe las responsabilidades..."
+            [class.error]="isFieldInvalid('description')"></textarea>
+          <span class="error-msg" *ngIf="isFieldInvalid('description')">
+            {{ getFieldError('description') }}
+          </span>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" (click)="closeModal()">
+            Cancelar
+          </button>
+          <button
+            type="button"
+            class="btn-primary"
+            (click)="saveRole()"
+            [disabled]="roleForm.invalid || isLoading()">
+            <i [class]="isLoading() ? 'fas fa-spinner fa-spin' : 'fas fa-check-circle'"></i>
+            {{ isLoading() ? 'Guardando...' : (isEditing() ? 'Actualizar' : 'Crear') }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-overlay" *ngIf="showDeleteModal()" (click)="cancelDelete()">
+    <div class="modal delete" (click)="$event.stopPropagation()">
+      <header class="modal-header">
+        <h2><i class="fas fa-exclamation-triangle"></i>Confirmar Eliminación</h2>
+        <button class="btn-close" (click)="cancelDelete()">
+          <i class="fas fa-times"></i>
+        </button>
+      </header>
+
+      <div class="modal-body">
+        <p>¿Eliminar el rol <strong>"{{ roleToDelete()?.name }}"</strong>?</p>
+        <div class="warning" *ngIf="roleToDelete()?.userCount && roleToDelete()!.userCount > 0">
+          <i class="fas fa-users"></i>
+          <span>Este rol tiene {{ roleToDelete()?.userCount }} usuario(s) asignado(s).</span>
+        </div>
+        <p class="text-muted">Esta acción no se puede deshacer.</p>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-secondary" (click)="cancelDelete()">Cancelar</button>
+        <button
+          class="btn-danger"
+          (click)="executeDelete()"
+          [disabled]="(roleToDelete()?.userCount || 0) > 0">
+          <i class="fas fa-trash"></i>Eliminar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast success" *ngIf="successMessage()">
+    <i class="fas fa-check-circle"></i>{{ successMessage() }}
+  </div>
+
+  <div class="toast error" *ngIf="errorMessage()">
+    <i class="fas fa-exclamation-circle"></i>{{ errorMessage() }}
+  </div>
+</div>

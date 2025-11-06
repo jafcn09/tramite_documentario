@@ -70,7 +70,7 @@
               [class.border-green-400]="loginForm.get('usuario')?.valid && loginForm.get('usuario')?.touched"
               [class.border-gray-300]="!loginForm.get('usuario')?.touched"
               placeholder="Ingresa tu nombre de usuario"
-              [disabled]="isLoading">
+              [attr.disabled]="isLoading ? true : null">
             <div class="absolute left-4 top-1/2 transform -translate-y-1/2">
               <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
@@ -99,7 +99,7 @@
               [class.border-green-400]="loginForm.get('password')?.valid && loginForm.get('password')?.touched"
               [class.border-gray-300]="!loginForm.get('password')?.touched"
               placeholder="Ingresa tu credenciales"
-              [disabled]="isLoading">
+              [attr.disabled]="isLoading ? true : null">
             <div class="absolute left-4 top-1/2 transform -translate-y-1/2">
               <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
@@ -129,7 +129,7 @@
               type="checkbox"
               formControlName="rememberMe"
               class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2 transition-all duration-300"
-              [disabled]="isLoading">
+              [attr.disabled]="isLoading ? true : null">
             <span class="ml-2 text-sm text-gray-700">Recuérdame</span>
           </label>
         </div>

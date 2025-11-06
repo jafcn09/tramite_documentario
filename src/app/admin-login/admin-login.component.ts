@@ -92,19 +92,26 @@ export class AdminLoginComponent implements OnInit {
             const currentUser = this.authService.currentUserValue;
             if (currentUser && currentUser.role) {
               const roleRoutes: { [key: string]: string } = {
-                'ADMIN': '/admin/tablero',
-                'ADMINISTRATIVO': '/administrativo/tablero',
-                'USUARIO': '/usuario/tablero',
-                'ESTUDIANTE': '/estudiante/tablero'
+                'admin': '/admin/tablero',
+                'administrativo': '/administrativo/tablero',
+                'usuario': '/usuario/tablero',
+                'estudiante': '/estudiante/tablero'
               };
 
-              redirectRoute = roleRoutes[currentUser.role.name] || '/';
+              redirectRoute = roleRoutes[currentUser.role.name.toLowerCase()] || '/';
 
             }
           }
 
-      
-          this.router.navigate([redirectRoute]);
+          setTimeout(() => {
+            try {
+              this.router.navigateByUrl(redirectRoute);
+            } catch (err) {
+              console.error('Navigation error:', err);
+
+              window.location.href = redirectRoute;
+            }
+          }, 100);
         },
         error: (error) => {
           this.isLoading = false;

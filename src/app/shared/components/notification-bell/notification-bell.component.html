@@ -1,0 +1,83 @@
+<div class="relative inline-block" *ngIf="usuarioAutenticado">
+
+  <div class="bell-btn" (click)="toggleDropdown()">
+    <i class="fas fa-bell"></i>
+    <span class="badge" *ngIf="contadorNoLeidas > 0">{{ contadorNoLeidas }}</span>
+  </div>
+</div>
+
+
+<div *ngIf="mostrarDropdown" class="backdrop" (click)="cerrarDropdown()"></div>
+<div *ngIf="mostrarDropdown" class="dropdown">
+
+  <div class="header">
+    <span>Notificaciones ({{ contadorNoLeidas }})</span>
+    <div class="header-actions">
+      <button *ngIf="notificacionesRecientes.length > 0"
+              class="clear-all"
+              (click)="eliminarTodasNotificaciones($event)"
+              title="Eliminar todas">
+        <i class="fas fa-trash-alt"></i>
+      </button>
+      <button class="close" (click)="cerrarDropdown()">×</button>
+    </div>
+  </div>
+
+  <div class="list" #notificationsList (scroll)="onScroll($event)">
+
+
+    <div *ngIf="cargando && notificacionesRecientes.length === 0" class="loading">
+      <div class="spinner"></div>
+      <span>Cargando...</span>
+    </div>
+
+
+    <div *ngFor="let notif of notificacionesRecientes; trackBy: trackNotification"
+         class="item"
+         [class.unread]="!notif.esLeida">
+      <div class="dot" *ngIf="!notif.esLeida"></div>
+      <div class="content" (click)="abrirNotificacion(notif)">
+        <div class="title">{{ notif.titulo }}</div>
+        <div class="message">{{ getMessagePreview(notif.mensaje) }}</div>
+        <div class="time">{{ formatearTiempo(notif.fechaCreacion) }}</div>
+      </div>
+      <div class="actions">
+        <button class="delete-btn"
+                (click)="eliminarNotificacion(notif.id, $event)"
+                title="Eliminar notificación">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    </div>
+
+
+    <div *ngIf="loadingMore" class="loading-more">
+      <div class="spinner-sm"></div>
+      <span>Cargando más...</span>
+    </div>
+
+    <div *ngIf="showEndMessage && !hasMoreNotifications && notificacionesRecientes.length > 0"
+         class="end">
+      <i class="fas fa-check"></i>
+      <span>No hay más notificaciones</span>
+    </div>
+
+    <div *ngIf="notificacionesRecientes.length === 0 && !cargando" class="empty">
+      <i class="fas fa-bell-slash"></i>
+      <span>Sin notificaciones</span>
+    </div>
+  </div>
+
+
+  <div class="footer">
+    <button class="view-all" (click)="verTodasNotificaciones()">
+      Ver todas
+    </button>
+  </div>
+</div>
+
+<app-notification-detail-modal
+  [isVisible]="modalVisible"
+  [notificationId]="selectedNotificationId"
+  (modalClosed)="closeModal()">
+</app-notification-detail-modal>

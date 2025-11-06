@@ -1,12 +1,15 @@
 <div class="reportes-container">
   <div class="encabezado">
-    <h1>
-      <i class="fas fa-chart-bar"></i>
-      REPORTES DE TRÁMITES
-    </h1>
+    <div>
+      <h1>
+        <i class="fas fa-chart-bar"></i>
+        REPORTES DE TRÁMITES
+      </h1>
+      <p style="color: #666; font-size: 14px; margin: 5px 0 0 0;">Análisis completo del estado de procesos documentarios</p>
+    </div>
     <div class="botones">
       <button class="btn btn-excel" (click)="exportarExcel()">
-        <i class="fas fa-file-excel"></i> EXCEL
+        <i class="fas fa-file-excel"></i> EXPORTAR
       </button>
       <button class="btn btn-imprimir" (click)="imprimirReporte()">
         <i class="fas fa-print"></i> IMPRIMIR
@@ -17,13 +20,14 @@
 
   <div class="seccion resumen">
     <h2>RESUMEN GENERAL - {{ fechaGeneracion | date:'MMMM yyyy' | uppercase }}</h2>
-    
+    <p style="color: #666; font-size: 13px; margin: 10px 0 20px 0;">Indicadores clave del desempeño del sistema de trámites documentarios</p>
+
     <div *ngIf="cargando" class="cargando">Cargando datos...</div>
 
     <div *ngIf="!cargando" class="tarjetas">
       <div class="tarjeta total">
         <div class="numero">{{ resumenGeneral.totalTramites || 0 | number }}</div>
-        <div class="texto">TOTAL TRÁMITES</div>
+        <div class="texto">TRÁMITES REGISTRADOS</div>
       </div>
 
       <div class="tarjeta completado">
@@ -33,7 +37,7 @@
 
       <div class="tarjeta proceso">
         <div class="numero">{{ resumenGeneral.enProceso || 0 | number }}</div>
-        <div class="texto">EN PROCESO</div>
+        <div class="texto">EN CURSO</div>
       </div>
 
       <div class="tarjeta vencido">
@@ -44,15 +48,16 @@
   </div>
 
   <div class="seccion">
-    <h2>TRÁMITES POR TIPO DE DOCUMENTO</h2>
-    
+    <h2>DISTRIBUCIÓN DE TRÁMITES POR TIPO DE DOCUMENTO</h2>
+    <p style="color: #666; font-size: 13px; margin: 10px 0 15px 0;">Análisis cuantitativo de procesos documentarios clasificados por tipología</p>
+
     <div class="tabla-responsive">
       <table class="tabla">
         <thead>
           <tr>
             <th>TIPO DE DOCUMENTO</th>
-            <th class="centro">CANTIDAD</th>
-            <th class="centro">COMPLETADOS</th>
+            <th class="centro">TOTAL</th>
+            <th class="centro">FINALIZADOS</th>
             <th class="centro">PENDIENTES</th>
           </tr>
         </thead>
@@ -81,17 +86,18 @@
   <div class="seccion alerta">
     <h2>
       <i class="fas fa-exclamation-triangle"></i>
-      TRÁMITES QUE REQUIEREN ATENCIÓN URGENTE
+      TRÁMITES PENDIENTES DE ATENCIÓN
     </h2>
-    
+    <p style="color: #666; font-size: 13px; margin: 10px 0 15px 0;">Procesos documentarios próximos al vencimiento o que requieren seguimiento inmediato</p>
+
     <div class="tabla-responsive">
       <table class="tabla tabla-urgente">
         <thead>
           <tr>
             <th>CÓDIGO</th>
-            <th>DOCUMENTO</th>
-            <th class="centro">ESTADO</th>
-            <th>ÁREA</th>
+            <th>ASUNTO</th>
+            <th class="centro">ESTADO DE VENCIMIENTO</th>
+            <th>ÁREA RESPONSABLE</th>
             <th>RESPONSABLE</th>
           </tr>
         </thead>
@@ -115,8 +121,9 @@
   <div class="pie">
     <div class="linea"></div>
     <p>
-      <strong>UNIVERSIDAD NACIONAL DE TUMBES</strong><br>
-      Reporte generado el {{ fechaGeneracion | date:'dd \'de\' MMMM \'del\' yyyy - hh:mm a' }}
+      <strong>SISTEMA DE GESTIÓN DE TRÁMITES DOCUMENTARIOS</strong><br>
+      Universidad Nacional de Tumbes<br>
+      <span style="font-size: 12px; color: #999;">Reporte generado el {{ fechaGeneracion | date:'dd \'de\' MMMM \'del\' yyyy \'a las\' hh:mm a' }}</span>
     </p>
   </div>
 </div>

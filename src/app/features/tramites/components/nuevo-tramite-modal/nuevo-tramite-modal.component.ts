@@ -10,7 +10,7 @@ import { TramiteService } from '../../../../services/tramite.service';
 import { ToastService } from '../../../../services/toast.service';
 import { OrganigramaService } from '../../../../services/organigrama.service';
 import { AuthService } from '../../../../services/auth.service';
-import { AreaJerarquica } from '../../../../models/organigrama.interface';
+import { AreaJerarquica } from '../../../../shared/interfaces/organigrama.interface';
 import {
   Tramite,
   TipoTramite,
@@ -141,9 +141,7 @@ export class NuevoTramiteModalComponent implements OnInit, OnDestroy, AfterViewI
     this.subscriptions.add(
       this.http.get<any[]>('http://localhost:8081/api/departamentos/tipos-firma').subscribe({
         next: (tipos) => {
-          console.log('🔄 Tipos de firma obtenidos del backend:', tipos);
-
-          // Filtrar tipos de firma según rol del usuario
+       
           const currentUser = this.authService.currentUserValue;
           const roleName = currentUser?.role?.name?.toUpperCase();
 
@@ -152,11 +150,11 @@ export class NuevoTramiteModalComponent implements OnInit, OnDestroy, AfterViewI
           if (roleName === 'ESTUDIANTE') {
             // ESTUDIANTE: Solo permite firma SIMPLE
             tiposFiltrados = tipos.filter(tipo => tipo.codigo === 'SIMPLE');
-            console.log('👨‍🎓 Rol ESTUDIANTE detectado - Mostrando solo firma SIMPLE');
+
           } else {
             // USUARIO/ADMINISTRATIVO/ADMIN: Todos los tipos excepto SIMPLE
             tiposFiltrados = tipos.filter(tipo => tipo.codigo !== 'SIMPLE');
-            console.log('👔 Rol personal detectado - Mostrando firmas avanzadas');
+         
           }
 
           this.tiposFirmaCreacion = tiposFiltrados.map(tipo => ({
@@ -168,7 +166,7 @@ export class NuevoTramiteModalComponent implements OnInit, OnDestroy, AfterViewI
             this.tipoFirma = this.tiposFirmaCreacion[0].value;
           }
 
-          console.log('✅ Tipos de firma configurados:', this.tiposFirmaCreacion);
+        
         },
         error: (error) => {
           console.error('❌ Error al cargar tipos de firma del backend:', error);
@@ -182,7 +180,7 @@ export class NuevoTramiteModalComponent implements OnInit, OnDestroy, AfterViewI
     this.subscriptions.add(
       this.http.get<any[]>('http://localhost:8081/api/departamentos').subscribe({
         next: (departamentos) => {
-          console.log('🔄 Departamentos obtenidos del backend:', departamentos);
+
           this.departamentosPeru = departamentos.map(dept => ({
             value: dept.codigo,
             label: dept.nombre
@@ -219,7 +217,7 @@ export class NuevoTramiteModalComponent implements OnInit, OnDestroy, AfterViewI
   private cargarDatosTramiteParaEdicion() {
     if (!this.tramiteParaEditar) return;
 
-    console.log('🔍 Cargando datos para edición:', this.tramiteParaEditar);
+
 
     this.nuevoTramite = {
       id: this.tramiteParaEditar.id,
@@ -399,14 +397,6 @@ export class NuevoTramiteModalComponent implements OnInit, OnDestroy, AfterViewI
     }
 
     try {
-      // 🔍 DEBUG: Log de valores antes de enviar
-      console.log('🔍 DEBUG FRONTEND - Valores antes de enviar:');
-      console.log('  - requiereFirmaDigital:', this.requiereFirmaDigital);
-      console.log('  - tipoFirma:', this.tipoFirma);
-      console.log('  - razonFirma:', this.razonFirma);
-      console.log('  - ubicacionFirma:', this.ubicacionFirma);
-      console.log('  - tiposFirmaCreacion.length:', this.tiposFirmaCreacion.length);
-      console.log('  - departamentosPeru.length:', this.departamentosPeru.length);
 
       const archivosBase64 = await this.procesarArchivosABase64();
 
@@ -429,7 +419,6 @@ export class NuevoTramiteModalComponent implements OnInit, OnDestroy, AfterViewI
         tramiteData.firmaDigitalData = this.firmaDigitalData;
       }
 
-      console.log('🔍 DEBUG FRONTEND - tramiteData completo:', tramiteData);
 
       if (this.isUsuarioRole && this.nuevoTramite.areaOrigenId) {
         tramiteData.areaOrigenId = Number(this.nuevoTramite.areaOrigenId);
@@ -454,7 +443,7 @@ export class NuevoTramiteModalComponent implements OnInit, OnDestroy, AfterViewI
     this.loading = true;
 
     if (this.modoEdicion && this.tramiteParaEditar?.id) {
-      console.log('🔄 Actualizando trámite:', this.tramiteParaEditar.id, tramiteData);
+  
 
       this.subscriptions.add(
         this.tramiteService.actualizarTramiteConArchivos(this.tramiteParaEditar.id, tramiteData).subscribe({
@@ -478,7 +467,7 @@ export class NuevoTramiteModalComponent implements OnInit, OnDestroy, AfterViewI
         })
       );
     } else {
-      console.log('🆕 Creando nuevo trámite:', tramiteData);
+   
 
       this.subscriptions.add(
         this.tramiteService.crearTramiteConArchivos(tramiteData).subscribe({
@@ -753,11 +742,7 @@ export class NuevoTramiteModalComponent implements OnInit, OnDestroy, AfterViewI
     const checkbox = event.target as HTMLInputElement;
     this.requiereFirmaDigital = checkbox.checked;
 
-    console.log('🔍 DEBUG - onCheckboxChange:', {
-      checked: this.requiereFirmaDigital,
-      tiposFirmaLength: this.tiposFirmaCreacion.length,
-      departamentosLength: this.departamentosPeru.length
-    });
+  
 
     if (this.requiereFirmaDigital) {
       this.resetFirmaDigitalForm();

@@ -10,7 +10,7 @@ import {
   PaginatedResponse,
   NotificacionFiltro,
   RoleInfo
-} from '../components/notificaciones/notificacion.interface';
+} from '../shared/interfaces/notificacion.interface';
 import { AuthService } from './auth.service';
 
 @Injectable({

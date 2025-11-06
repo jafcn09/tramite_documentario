@@ -217,13 +217,13 @@
           <td data-label="Estado">
             <span class="estado-badge" [ngClass]="getEstadoClase(tramite.estado)">
               <i class="fas fa-circle"></i>
-              {{ tramite.estado || 'Sin estado' }}
+              {{ getEstadoNombre(tramite.estado?.nombre || tramite.estado) || 'Sin estado' }}
             </span>
           </td>
           <td data-label="Prioridad">
             <span class="prioridad-badge" [ngClass]="getPrioridadClase(tramite.prioridad)">
               <i class="fas fa-flag"></i>
-              {{ tramite.prioridad || 'Sin prioridad' }}
+              {{ getPrioridadNombre(tramite.prioridad?.nombre || tramite.prioridad) || 'Sin prioridad' }}
             </span>
           </td>
           <td class="solicitante-column" data-label="Solicitante">
@@ -311,11 +311,11 @@
         <div class="card-badges">
           <span class="estado-badge" [ngClass]="getEstadoClase(tramite.estado)">
             <i class="fas fa-circle"></i>
-            {{ tramite.estado || 'Sin estado' }}
+            {{ getEstadoNombre(tramite.estado?.nombre || tramite.estado) || 'Sin estado' }}
           </span>
           <span class="prioridad-badge" [ngClass]="getPrioridadClase(tramite.prioridad)">
             <i class="fas fa-flag"></i>
-            {{ tramite.prioridad || 'Sin prioridad' }}
+            {{ getPrioridadNombre(tramite.prioridad?.nombre || tramite.prioridad) || 'Sin prioridad' }}
           </span>
         </div>
       </div>
@@ -473,7 +473,7 @@
             {{ tramiteSeleccionado.codigo }}
           </span>
           <span class="current-state-badge" [ngClass]="getEstadoClase(tramiteSeleccionado.estado)">
-            {{ getEstadoNombre(tramiteSeleccionado.estado) }}
+            {{ getEstadoNombre(tramiteSeleccionado.estado?.nombre || tramiteSeleccionado.estado) }}
           </span>
         </div>
         <div class="tramite-title" *ngIf="tramiteSeleccionado.titulo">
