@@ -70,7 +70,6 @@ export class MisTramitesComponent implements OnInit, OnDestroy, AfterViewInit {
   showResponderTramiteModal = false;
   tramiteSeleccionado: MiTramite | null = null;
 
-  // Nuevas propiedades para el modal unificado
   modoEdicion = false;
   tramiteParaEditar: MiTramite | null = null;
   
@@ -137,7 +136,6 @@ export class MisTramitesComponent implements OnInit, OnDestroy, AfterViewInit {
 
 
   ngAfterViewInit(): void {
-    // Se inicializa después de que se abra el modal de edición
   }
 
   ngOnDestroy() {
@@ -449,7 +447,6 @@ export class MisTramitesComponent implements OnInit, OnDestroy, AfterViewInit {
       return 8;
     }
 
-    // Por defecto
     return 9;
   }
 
@@ -477,13 +474,11 @@ export class MisTramitesComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   onTramiteCreado(nuevoTramite: any) {
-    console.log('Trámite creado:', nuevoTramite);
     this.cargarMisTramites();
     this.cerrarModalNuevoTramite();
   }
 
   onTramiteActualizado(tramiteActualizado: any) {
-    console.log('Trámite actualizado:', tramiteActualizado);
   
     const index = this.misTramites.findIndex(t => t.id === tramiteActualizado.id);
     if (index !== -1) {
@@ -573,7 +568,6 @@ export class MisTramitesComponent implements OnInit, OnDestroy, AfterViewInit {
                                       !!this.editRazonFirma?.trim() &&
                                       !!this.editUbicacionFirma?.trim();
         if (!firmaCompletaParaEnvio) {
-          console.log('⚠️ Firma dibujada pero faltan datos críticos - bloqueando guardar');
           return false;
         }
       }
@@ -626,14 +620,12 @@ export class MisTramitesComponent implements OnInit, OnDestroy, AfterViewInit {
 
         formData.append('firmaDigital', JSON.stringify(firmaDigitalData));
 
-        console.log('📤 Enviando datos de firma digital:', firmaDigitalData);
 
         this.toastService.info(
           'Datos de firma incluidos',
           'Los campos de firma digital serán guardados junto con los cambios del trámite'
         );
       } else {
-        console.log('ℹ️ No hay datos de firma para enviar');
       }
     }
 
@@ -799,7 +791,6 @@ export class MisTramitesComponent implements OnInit, OnDestroy, AfterViewInit {
     if (cantidadDocumentos === 1) {
       this.descargarDocumentoIndividual(tramite.id, tramite.documentos[0]);
     } else {
-      // Múltiples documentos: descargar como ZIP
       this.descargarDocumentosComoZip(tramite);
     }
   }
@@ -869,7 +860,6 @@ export class MisTramitesComponent implements OnInit, OnDestroy, AfterViewInit {
         next: (tramiteActualizado) => {
           this.tramiteSeleccionado = tramiteActualizado;
           this.showDetalleTramiteModal = true;
-          console.log('✅ Trámite actualizado y modal de detalle reabierto:', tramiteActualizado);
 
           this.toastService.info(
             'Vista actualizada',
@@ -877,8 +867,6 @@ export class MisTramitesComponent implements OnInit, OnDestroy, AfterViewInit {
           );
         },
         error: (error) => {
-          console.error('❌ Error al recargar trámite para detalle:', error);
-          // Si falla la recarga, al menos mostrar desde la lista local si existe
           const tramiteEnLista = this.misTramites.find(t => t.id === tramiteId);
           if (tramiteEnLista) {
             this.tramiteSeleccionado = tramiteEnLista;
@@ -901,7 +889,6 @@ export class MisTramitesComponent implements OnInit, OnDestroy, AfterViewInit {
   cerrarModalEditar() {
     this.showEditarTramiteModal = false;
 
-    // Solo limpiar tramiteSeleccionado si el modal de detalle no está abierto
     if (!this.showDetalleTramiteModal) {
       this.tramiteSeleccionado = null;
     }
@@ -946,7 +933,6 @@ export class MisTramitesComponent implements OnInit, OnDestroy, AfterViewInit {
     );
   }
 
-  // Utilidades
   getEstadoClase(estado: string): string {
     const clases: { [key: string]: string } = {
       'Borrador': 'estado-borrador',
@@ -1037,7 +1023,6 @@ export class MisTramitesComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   puedeDerivar(tramite: MiTramite): boolean {
-    // ESTUDIANTES nunca pueden derivar
     if (this.userRole === 'estudiante') {
       return false;
     }
@@ -1046,7 +1031,6 @@ export class MisTramitesComponent implements OnInit, OnDestroy, AfterViewInit {
       return false;
     }
 
-    // Si el trámite ya tiene respuesta, no se puede derivar
     if (tramite.respuesta && tramite.respuesta.trim().length > 0) {
       return false;
     }
@@ -1263,17 +1247,9 @@ export class MisTramitesComponent implements OnInit, OnDestroy, AfterViewInit {
   
   usarDatosBasicosFirmaDigital(tramiteId: number): void {
     if (!this.tramiteSeleccionado) {
-      console.log('❌ No hay trámite seleccionado para usar como fallback');
       return;
     }
 
-    console.log('📋 Datos básicos del trámite disponibles:');
-    console.log('- metodoVerificacion:', this.tramiteSeleccionado.metodoVerificacion);
-    console.log('- tipoFirma:', this.tramiteSeleccionado.tipoFirma);
-    console.log('- razonFirma:', this.tramiteSeleccionado.razonFirma);
-    console.log('- ubicacionFirma:', this.tramiteSeleccionado.ubicacionFirma);
-    console.log('- fechaFirma:', this.tramiteSeleccionado.fechaFirma);
-    console.log('- hashFirma:', this.tramiteSeleccionado.hashFirma);
 
     const firmaFallback = {
       tipoFirma: this.tramiteSeleccionado.tipoFirma ?
@@ -1288,7 +1264,6 @@ export class MisTramitesComponent implements OnInit, OnDestroy, AfterViewInit {
       hashFirma: this.tramiteSeleccionado.hashFirma
     };
 
-    console.log('🔄 Usando datos fallback:', firmaFallback);
     this.inicializarCamposFirmaDigitalFallback(firmaFallback);
   }
   extraerTipoFirmaDeMetodo(metodoVerificacion?: string): TipoFirma | null {
@@ -1304,22 +1279,13 @@ export class MisTramitesComponent implements OnInit, OnDestroy, AfterViewInit {
     return null;
   }
   inicializarCamposFirmaDigitalFallback(firmaFallback: any): void {
-    console.log('🎯 Inicializando campos con datos fallback:');
-    console.log('- tipoFirma:', firmaFallback.tipoFirma);
-    console.log('- razonFirma:', firmaFallback.razonFirma);
-    console.log('- ubicacionFirma:', firmaFallback.ubicacionFirma);
 
     this.editTipoFirma = firmaFallback.tipoFirma;
     this.editRazonFirma = firmaFallback.razonFirma;
     this.editUbicacionFirma = firmaFallback.ubicacionFirma;
 
-    // Forzar detección de cambios
     this.cdr.detectChanges();
     setTimeout(() => {
-      console.log('🔄 Después de setTimeout (fallback):');
-      console.log('- editTipoFirma:', this.editTipoFirma);
-      console.log('- editRazonFirma:', this.editRazonFirma);
-      console.log('- editUbicacionFirma:', this.editUbicacionFirma);
       this.cdr.detectChanges();
     }, 100);
 
@@ -1331,64 +1297,42 @@ export class MisTramitesComponent implements OnInit, OnDestroy, AfterViewInit {
 
 
   cargarDatosDetalladosFirmaDigital(tramiteId: number): void {
-    console.log('🔍 Cargando datos detallados de firma digital para trámite:', tramiteId);
 
     this.subscriptions.add(
       this.firmaDigitalService.obtenerFirmasPorTramite(tramiteId).subscribe({
         next: (firmas: FirmaDigitalResponse[]) => {
-          console.log('📥 Respuesta del backend - firmas:', firmas);
 
           if (firmas && firmas.length > 0) {
             this.firmaDigitalDetallada = firmas[0];
-            console.log('✅ Firma digital encontrada:', this.firmaDigitalDetallada);
             this.inicializarCamposFirmaDigitalExistente(this.firmaDigitalDetallada);
           } else {
-            console.log('⚠️ No se encontraron firmas digitales detalladas para este trámite');
-            console.log('🔄 Intentando usar datos básicos del trámite como fallback...');
             this.usarDatosBasicosFirmaDigital(tramiteId);
           }
         },
         error: (error) => {
-          console.error('❌ Error al cargar datos detallados de firma digital:', error);
         }
       })
     );
   }
   inicializarCamposFirmaDigitalExistente(firma: FirmaDigitalResponse): void {
-    console.log('🎯 Inicializando campos con los siguientes datos:');
-    console.log('- tipoFirma:', firma.tipoFirma);
-    console.log('- razonFirma:', firma.razonFirma);
-    console.log('- ubicacionFirma:', firma.ubicacionFirma);
 
     if (firma.tipoFirma) {
-      console.log('✅ Asignando tipoFirma:', firma.tipoFirma);
       this.editTipoFirma = firma.tipoFirma;
-      console.log('✅ editTipoFirma después de asignar:', this.editTipoFirma);
     } else {
-      console.log('⚠️ tipoFirma está vacío o undefined');
     }
 
     if (firma.razonFirma) {
-      console.log('✅ Asignando razonFirma:', firma.razonFirma);
       this.editRazonFirma = firma.razonFirma;
     } else {
-      console.log('⚠️ razonFirma está vacío o undefined');
     }
 
     if (firma.ubicacionFirma) {
-      console.log('✅ Asignando ubicacionFirma:', firma.ubicacionFirma);
       this.editUbicacionFirma = firma.ubicacionFirma;
     } else {
-      console.log('⚠️ ubicacionFirma está vacío o undefined');
     }
 
-    // Forzar detección de cambios
     this.cdr.detectChanges();
     setTimeout(() => {
-      console.log('🔄 Después de setTimeout:');
-      console.log('- editTipoFirma:', this.editTipoFirma);
-      console.log('- editRazonFirma:', this.editRazonFirma);
-      console.log('- editUbicacionFirma:', this.editUbicacionFirma);
       this.cdr.detectChanges();
     }, 100);
 
@@ -1822,7 +1766,6 @@ export class MisTramitesComponent implements OnInit, OnDestroy, AfterViewInit {
     };
   }
 
-  // Métodos para funcionalidad de firma digital
   mostrarFirmaDigitalEnDetalle(tramite?: MiTramite): boolean {
     if (!tramite) {
       return false;
@@ -1953,11 +1896,9 @@ export class MisTramitesComponent implements OnInit, OnDestroy, AfterViewInit {
     this.editarFirmaDigital = !this.editarFirmaDigital;
 
     if (this.editarFirmaDigital) {
-      // Resetear los campos de edición
       this.resetEditFirmaDigitalForm();
       this.toastService.info('Edición de firma activada', 'Complete los datos para crear una nueva firma digital');
 
-      // Inicializar canvas después de que se muestre
       setTimeout(() => {
         this.initializeEditCanvas();
       }, 100);
@@ -2031,7 +1972,6 @@ export class MisTramitesComponent implements OnInit, OnDestroy, AfterViewInit {
       return;
     }
 
-    // Aquí se agregaría la nueva firma digital al formulario de edición
     this.toastService.success(
       'Firma digital agregada',
       'La nueva firma digital se guardará al confirmar la edición del trámite'
@@ -2055,7 +1995,6 @@ export class MisTramitesComponent implements OnInit, OnDestroy, AfterViewInit {
     return currentUserId === solicitanteId;
   }
 
-  // Variables para el modal de eliminación
   showDeleteConfirmModal = false;
   tramiteParaEliminar: MiTramite | null = null;
 
@@ -2068,7 +2007,6 @@ export class MisTramitesComponent implements OnInit, OnDestroy, AfterViewInit {
       return;
     }
 
-    // Abrir modal de confirmación
     this.tramiteParaEliminar = tramite;
     this.showDeleteConfirmModal = true;
   }
@@ -2091,7 +2029,6 @@ export class MisTramitesComponent implements OnInit, OnDestroy, AfterViewInit {
             this.cargarEstadisticas();
           },
           error: (error) => {
-            console.error('Error al eliminar trámite:', error);
             this.showDeleteConfirmModal = false;
             this.tramiteParaEliminar = null;
           }

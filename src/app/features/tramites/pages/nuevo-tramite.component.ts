@@ -101,7 +101,6 @@ export class NuevoTramitePageComponent {
   }
   
   onTramiteCreado(tramite: Tramite) {
-    // El trámite se creó exitosamente, redirigir
     this.goBack();
   }
 }

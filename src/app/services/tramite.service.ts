@@ -208,14 +208,6 @@ export class TramiteService {
   }
 
   crearTramiteConArchivos(tramiteData: any): Observable<Tramite> {
-    // 🔍 DEBUG: Log de datos recibidos en el servicio
-    console.log('🔍 DEBUG SERVICIO ANGULAR - Datos recibidos:', {
-      requiereFirmaDigital: tramiteData.requiereFirmaDigital,
-      tipoFirma: tramiteData.tipoFirma,
-      razonFirma: tramiteData.razonFirma,
-      ubicacionFirma: tramiteData.ubicacionFirma
-    });
-
     const request = {
       tipoTramiteId: tramiteData.tipoTramiteId,
       asunto: tramiteData.asunto,
@@ -243,14 +235,6 @@ export class TramiteService {
       firmaDigitalFecha: tramiteData.requiereFirmaDigital ? new Date().toISOString() : null,
       firmaDigitalMetodoVerificacion: (tramiteData.tipoFirma && tramiteData.tipoFirma !== 'null') ? tramiteData.tipoFirma : null
     };
-
-    // 🔍 DEBUG: Log de request que se enviará al backend
-    console.log('🔍 DEBUG SERVICIO ANGULAR - Request a enviar:', {
-      requiereFirmaDigital: request.requiereFirmaDigital,
-      tipoFirma: request.tipoFirma,
-      razonFirma: request.razonFirma,
-      ubicacionFirma: request.ubicacionFirma
-    });
 
     return this.http.post<Tramite>(`${this.apiUrl}/con-archivos`, request)
       .pipe(

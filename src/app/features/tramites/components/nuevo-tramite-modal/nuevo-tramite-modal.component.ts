@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../../../environments/environment';
 
 import { ModalBaseComponent } from '../../../../shared/components/modal-base/modal-base.component';
 import { BusinessDaysOnlyDirective } from '../../../../shared/directives/business-days-only.directive';
@@ -62,7 +63,6 @@ export class NuevoTramiteModalComponent implements OnInit, OnDestroy, AfterViewI
   archivosSeleccionados: File[] = [];
   documentosAdjuntos: Partial<DocumentoTramite>[] = [];
 
-  // Propiedades para firma digital
   requiereFirmaDigital = false;
   tipoFirma = 'CONFORMIDAD'; // Será actualizado dinámicamente desde backend
   razonFirma = '';
@@ -73,7 +73,6 @@ export class NuevoTramiteModalComponent implements OnInit, OnDestroy, AfterViewI
   showConfirmationModal = false;
   pendingFormData: any = null;
 
-  // Arrays dinámicos poblados desde backend - NO más hardcoding
   tiposFirmaCreacion: { value: string; label: string }[] = [];
 
   departamentosPeru: { value: string; label: string }[] = []; // Poblado dinámicamente desde backend
@@ -139,7 +138,7 @@ export class NuevoTramiteModalComponent implements OnInit, OnDestroy, AfterViewI
 
   private cargarTiposFirmaBackend() {
     this.subscriptions.add(
-      this.http.get<any[]>('http://localhost:8081/api/departamentos/tipos-firma').subscribe({
+      this.http.get<any[]>(`${environment.apiUrl}/api/departamentos/tipos-firma`).subscribe({
         next: (tipos) => {
        
           const currentUser = this.authService.currentUserValue;
@@ -148,11 +147,9 @@ export class NuevoTramiteModalComponent implements OnInit, OnDestroy, AfterViewI
           let tiposFiltrados = tipos;
 
           if (roleName === 'ESTUDIANTE') {
-            // ESTUDIANTE: Solo permite firma SIMPLE
             tiposFiltrados = tipos.filter(tipo => tipo.codigo === 'SIMPLE');
 
           } else {
-            // USUARIO/ADMINISTRATIVO/ADMIN: Todos los tipos excepto SIMPLE
             tiposFiltrados = tipos.filter(tipo => tipo.codigo !== 'SIMPLE');
          
           }
@@ -169,7 +166,6 @@ export class NuevoTramiteModalComponent implements OnInit, OnDestroy, AfterViewI
         
         },
         error: (error) => {
-          console.error('❌ Error al cargar tipos de firma del backend:', error);
           this.toastService.warning('Advertencia', 'No se pudieron cargar los tipos de firma. Usando valores por defecto.');
         }
       })
@@ -178,7 +174,7 @@ export class NuevoTramiteModalComponent implements OnInit, OnDestroy, AfterViewI
 
   private cargarDepartamentosBackend() {
     this.subscriptions.add(
-      this.http.get<any[]>('http://localhost:8081/api/departamentos').subscribe({
+      this.http.get<any[]>(`${environment.apiUrl}/api/departamentos`).subscribe({
         next: (departamentos) => {
 
           this.departamentosPeru = departamentos.map(dept => ({
@@ -194,7 +190,6 @@ export class NuevoTramiteModalComponent implements OnInit, OnDestroy, AfterViewI
           }
         },
         error: (error) => {
-          console.error('❌ Error al cargar departamentos del backend:', error);
           this.toastService.warning('Advertencia', 'No se pudieron cargar los departamentos. Usando valores por defecto.');
         }
       })
@@ -330,18 +325,15 @@ export class NuevoTramiteModalComponent implements OnInit, OnDestroy, AfterViewI
     this.errors = {};
     let esValido = true;
 
-    // En modo edición, TODOS los campos son opcionales
     if (this.modoEdicion) {
       return true;
     }
 
-    // En modo creación, validar campos obligatorios
     if (!this.nuevoTramite.asunto?.trim()) {
       this.errors['asunto'] = 'El asunto es obligatorio';
       esValido = false;
     }
 
-    // Descripción es opcional
 
     if (!this.nuevoTramite.tipoId) {
       this.errors['tipoId'] = 'Debe seleccionar un tipo de trámite';
@@ -410,7 +402,6 @@ export class NuevoTramiteModalComponent implements OnInit, OnDestroy, AfterViewI
         requiereFirmaDigital: this.requiereFirmaDigital
       };
 
-      // Solo enviar campos de firma digital si se requiere
       if (this.requiereFirmaDigital) {
         tramiteData.tipoFirma = this.tipoFirma;
         tramiteData.razonFirma = this.razonFirma;
@@ -434,7 +425,6 @@ export class NuevoTramiteModalComponent implements OnInit, OnDestroy, AfterViewI
       }
 
     } catch (error) {
-      console.error('Error en onSubmit:', error);
       this.toastService.error('Error', 'Ocurrió un error inesperado al procesar los archivos');
     }
   }
@@ -457,7 +447,6 @@ export class NuevoTramiteModalComponent implements OnInit, OnDestroy, AfterViewI
             this.onClose();
           },
           error: (error) => {
-            console.error('Error al actualizar trámite:', error);
             this.loading = false;
             this.toastService.error(
               'Error',
@@ -481,7 +470,6 @@ export class NuevoTramiteModalComponent implements OnInit, OnDestroy, AfterViewI
             this.onClose();
           },
           error: (error) => {
-            console.error('Error al crear trámite:', error);
             this.loading = false;
             this.toastService.error(
               'Error',

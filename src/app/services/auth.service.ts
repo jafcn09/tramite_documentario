@@ -61,14 +61,11 @@ export class AuthService {
           if (response.token) {
             this.modalService.clearAllModals();
 
-            // Store tokens first
             this.storeTokens(response.token, response.refreshToken);
 
             if (response.usuario) {
-              // Store user in localStorage immediately
               this.storeUser(response.usuario);
 
-              // Then update the BehaviorSubject
               this.currentUserSubject.next(response.usuario);
 
               this.startInactivityTimer();

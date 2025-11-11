@@ -1,5 +1,5 @@
-import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../services/auth.service';
@@ -8,7 +8,8 @@ import { AuthService } from '../services/auth.service';
   selector: 'app-admin-login',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './admin-login.component.html'
+  templateUrl: './admin-login.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AdminLoginComponent implements OnInit {
   loginForm: FormGroup;
@@ -19,16 +20,13 @@ export class AdminLoginComponent implements OnInit {
   mustChangePassword = false;
   currentYear = new Date().getFullYear();
   returnUrl: string = '/';
-  private isBrowser: boolean;
 
   constructor(
     private fb: FormBuilder,
     private router: Router,
     private route: ActivatedRoute,
-    private authService: AuthService,
-    @Inject(PLATFORM_ID) platformId: Object
+    private authService: AuthService
   ) {
-    this.isBrowser = isPlatformBrowser(platformId);
     this.loginForm = this.fb.group({
       usuario: ['', [Validators.required, Validators.minLength(3)]],
       password: ['', [Validators.required, Validators.minLength(6)]],
@@ -37,24 +35,19 @@ export class AdminLoginComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // Get return URL
     this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
-    
-    // If already authenticated, redirect
+
     if (this.authService.isAuthenticated()) {
       this.router.navigate([this.returnUrl]);
       return;
     }
 
-    // Check if user credentials are saved in localStorage (only in browser)
-    if (this.isBrowser) {
-      const savedCredentials = this.getSavedCredentials();
-      if (savedCredentials) {
-        this.loginForm.patchValue({
-          usuario: savedCredentials.usuario,
-          rememberMe: true
-        });
-      }
+    const savedCredentials = this.getSavedCredentials();
+    if (savedCredentials) {
+      this.loginForm.patchValue({
+        usuario: savedCredentials.usuario,
+        rememberMe: true
+      });
     }
   }
 
@@ -67,56 +60,39 @@ export class AdminLoginComponent implements OnInit {
       this.isLoading = true;
       this.loginError = '';
       this.mustChangePassword = false;
-      
+
       const { usuario, password, rememberMe } = this.loginForm.value;
-      
+
       this.authService.login({ usuario, password }).subscribe({
         next: (response) => {
-          this.isLoading = false;
-          this.loginSuccess = true;
-          
           if (rememberMe) {
             this.saveCredentials(usuario);
           } else {
             this.clearSavedCredentials();
           }
-          
 
           let redirectRoute = '/';
 
+          // Usar el usuario de la respuesta en lugar de currentUserValue para evitar race condition
           if (response.redirectUrl) {
-
             redirectRoute = response.redirectUrl;
-          } else {
-
-            const currentUser = this.authService.currentUserValue;
-            if (currentUser && currentUser.role) {
-              const roleRoutes: { [key: string]: string } = {
-                'admin': '/admin/tablero',
-                'administrativo': '/administrativo/tablero',
-                'usuario': '/usuario/tablero',
-                'estudiante': '/estudiante/tablero'
-              };
-
-              redirectRoute = roleRoutes[currentUser.role.name.toLowerCase()] || '/';
-
-            }
+          } else if (response.usuario && response.usuario.role) {
+            const roleRoutes: { [key: string]: string } = {
+              'admin': '/admin/tablero',
+              'administrativo': '/administrativo/tablero',
+              'usuario': '/usuario/tablero',
+              'estudiante': '/estudiante/tablero'
+            };
+            redirectRoute = roleRoutes[response.usuario.role.name.toLowerCase()] || '/';
           }
 
-          setTimeout(() => {
-            try {
-              this.router.navigateByUrl(redirectRoute);
-            } catch (err) {
-              console.error('Navigation error:', err);
-
-              window.location.href = redirectRoute;
-            }
-          }, 100);
+          this.isLoading = false;
+          this.router.navigate([redirectRoute]);
         },
         error: (error) => {
           this.isLoading = false;
-          
-          if (error.status === 428) { 
+
+          if (error.status === 428) {
             this.mustChangePassword = true;
             this.loginError = 'Debes cambiar tu contraseña temporal';
           } else if (error.status === 403) {
@@ -139,22 +115,27 @@ export class AdminLoginComponent implements OnInit {
   }
 
   private saveCredentials(usuario: string): void {
-    if (this.isBrowser) {
+    try {
       localStorage.setItem('adminCredentials', JSON.stringify({ usuario }));
+    } catch (e) {
+      // localStorage no disponible
     }
   }
 
   private getSavedCredentials(): any {
-    if (this.isBrowser) {
+    try {
       const saved = localStorage.getItem('adminCredentials');
       return saved ? JSON.parse(saved) : null;
+    } catch (e) {
+      return null;
     }
-    return null;
   }
 
   private clearSavedCredentials(): void {
-    if (this.isBrowser) {
+    try {
       localStorage.removeItem('adminCredentials');
+    } catch (e) {
+      // localStorage no disponible
     }
   }
 

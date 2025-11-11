@@ -105,7 +105,6 @@ export class NotificationDetailModalComponent implements OnChanges {
 
       const role = user.role?.name;
 
-      // Redirigir según el rol del usuario
       if (role === 'ADMIN') {
         this.router.navigate(['/admin/tramites']);
       } else if (role === 'ADMINISTRATIVO') {
@@ -117,7 +116,6 @@ export class NotificationDetailModalComponent implements OnChanges {
       } else if (role === 'EXTERNO') {
         this.router.navigate(['/externo/mis-tramites']);
       } else {
-        // Fallback a una ruta genérica
         this.router.navigate(['/home']);
       }
 
@@ -145,7 +143,6 @@ export class NotificationDetailModalComponent implements OnChanges {
           }
         }
 
-        // Navegar a mis-tramites con el ID del trámite como query parameter
         this.router.navigate([baseRoute, 'mis-tramites'], {
           queryParams: { tramiteId: this.notificacion!.referenciaId }
         });

@@ -27,36 +27,30 @@ export class ListaFirmasComponent implements OnInit, OnDestroy {
   firmas: FirmaDigitalResponse[] = [];
   loading = false;
 
-  // Paginación
   currentPage = 0;
   pageSize = 10;
   totalPages = 0;
   totalElements = 0;
 
-  // Filtros
   filtros: FiltrosFirma = {};
   filtroTexto = '';
   estadoFirmaSeleccionado = '';
   estadoAutorizacionSeleccionado = '';
   tipoFirmaSeleccionado = '';
 
-  // Opciones para selects
   estadosFirma = Object.values(EstadoFirma);
   estadosAutorizacion = Object.values(EstadoAutorizacion);
   tiposFirma = Object.values(TipoFirma);
 
-  // Ordenamiento
   sortField = 'fechaCreacion';
   sortDirection: 'asc' | 'desc' = 'desc';
 
-  // Modales
   mostrarFiltros = false;
   firmaSeleccionada: FirmaDigitalResponse | null = null;
   mostrarDetalle = false;
   mostrarAutorizacion = false;
   mostrarFirmar = false;
 
-  // Permisos
   puedeAutorizar = false;
   puedeCrear = false;
   puedeEditar = false;
@@ -116,7 +110,6 @@ export class ListaFirmasComponent implements OnInit, OnDestroy {
           this.totalElements = response.totalElements;
         },
         error: (error) => {
-          console.error('Error al cargar firmas:', error);
         }
       })
     );
@@ -205,7 +198,6 @@ export class ListaFirmasComponent implements OnInit, OnDestroy {
               this.cargarFirmas();
             },
             error: (error) => {
-              console.error('Error al eliminar firma:', error);
             }
           })
         );
@@ -228,7 +220,6 @@ export class ListaFirmasComponent implements OnInit, OnDestroy {
             window.URL.revokeObjectURL(url);
           },
           error: (error) => {
-            console.error('Error al descargar documento:', error);
           }
         })
       );
@@ -242,7 +233,6 @@ export class ListaFirmasComponent implements OnInit, OnDestroy {
           this.cargarFirmas();
         },
         error: (error) => {
-          console.error('Error al verificar firma:', error);
         }
       })
     );
@@ -265,7 +255,6 @@ export class ListaFirmasComponent implements OnInit, OnDestroy {
     this.cargarFirmas();
   }
 
-  // Métodos de utilidad para el template
   getDescripcionTipoFirma(tipo: TipoFirma): string {
     return this.firmaDigitalService.getDescripcionTipoFirma(tipo);
   }
@@ -327,6 +316,5 @@ export class ListaFirmasComponent implements OnInit, OnDestroy {
     return pages;
   }
 
-  // Hacer Math disponible en el template
   Math = Math;
 }

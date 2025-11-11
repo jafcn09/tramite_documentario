@@ -1,0 +1,48 @@
+<div class="bg-white rounded-2xl shadow-lg p-8 mb-8">
+  <!-- Search Input -->
+  <div class="flex flex-col gap-4">
+    <div class="relative">
+      <input
+        type="text"
+        [(ngModel)]="searchQuery"
+        (input)="onInputChange()"
+        (keyup.enter)="performSearch()"
+        placeholder="Ingresa tu número de documento o código de expediente"
+        class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-university-500 transition-colors"
+      />
+      <button
+        (click)="performSearch()"
+        [disabled]="isSearching || !searchQuery"
+        class="absolute right-2 top-1/2 -translate-y-1/2 px-4 py-2 bg-university-600 text-white rounded-lg hover:bg-university-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+      >
+        <span *ngIf="!isSearching">Buscar</span>
+        <span *ngIf="isSearching">Buscando...</span>
+      </button>
+    </div>
+
+    <!-- Error Message -->
+    <div *ngIf="showError" class="bg-red-50 border-l-4 border-red-500 p-4 rounded">
+      <p class="text-red-700">{{ errorMessage }}</p>
+    </div>
+
+    <!-- Success Message -->
+    <div *ngIf="showSuccess" class="bg-green-50 border-l-4 border-green-500 p-4 rounded">
+      <p class="text-green-700">Trámite encontrado exitosamente</p>
+    </div>
+
+    <!-- Possible Matches Dropdown -->
+    <div *ngIf="possibleMatches.length > 0" class="bg-gray-50 rounded-lg p-4">
+      <p class="text-sm font-medium text-gray-600 mb-3">Resultados encontrados:</p>
+      <div class="space-y-2">
+        <button
+          *ngFor="let match of possibleMatches"
+          (click)="selectMatch(match)"
+          class="w-full text-left p-3 bg-white border border-gray-200 rounded-lg hover:bg-university-50 hover:border-university-300 transition-colors"
+        >
+          <p class="font-medium text-gray-800">{{ match.expediente }}</p>
+          <p class="text-sm text-gray-600">{{ match.tipo }} - {{ match.estado }}</p>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

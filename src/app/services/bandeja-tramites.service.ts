@@ -178,7 +178,6 @@ export class BandejaTramitesService {
       );
   }
 
-  // Cambiar estado de trámite
   cambiarEstado(request: CambiarEstadoRequest): Observable<TramiteBandeja> {
     const formData = new FormData();
     formData.append('nuevoEstadoId', request.nuevoEstadoId.toString());

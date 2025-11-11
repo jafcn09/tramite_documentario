@@ -1,0 +1,78 @@
+<div class="bg-white rounded-2xl shadow-lg p-8" *ngIf="selectedResult">
+
+  <div class="flex justify-between items-center mb-6">
+    <h2 class="text-2xl font-bold text-gray-800">Detalles del Trámite</h2>
+    <button
+      (click)="clearSearch()"
+      class="text-gray-600 hover:text-gray-800 transition-colors"
+    >
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+      </svg>
+    </button>
+  </div>
+
+  <div *ngIf="showError" class="bg-red-50 border-l-4 border-red-500 p-4 rounded mb-6">
+    <p class="text-red-700">{{ errorMessage }}</p>
+  </div>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+    <div>
+      <label class="block text-sm font-medium text-gray-600 mb-2">Expediente</label>
+      <p class="text-lg font-semibold text-gray-800">{{ selectedResult.expediente }}</p>
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-gray-600 mb-2">Estado</label>
+      <span [ngClass]="getStatusClass(selectedResult.estado)" class="inline-block px-3 py-1 rounded-full text-sm font-medium">
+        {{ selectedResult.estado }}
+      </span>
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-gray-600 mb-2">Fecha de Creación</label>
+      <p class="text-lg font-semibold text-gray-800">{{ selectedResult.fecha }}</p>
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-gray-600 mb-2">Tipo</label>
+      <p class="text-lg font-semibold text-gray-800">{{ selectedResult.tipo }}</p>
+    </div>
+    <div class="md:col-span-2">
+      <label class="block text-sm font-medium text-gray-600 mb-2">Solicitante</label>
+      <p class="text-lg font-semibold text-gray-800">{{ selectedResult.solicitante }}</p>
+    </div>
+    <div class="md:col-span-2">
+      <label class="block text-sm font-medium text-gray-600 mb-2">Área Actual</label>
+      <p class="text-lg font-semibold text-gray-800">{{ selectedResult.area }}</p>
+    </div>
+  </div>
+
+  <div class="bg-gray-50 rounded-lg p-4 mb-6">
+    <label class="block text-sm font-medium text-gray-600 mb-2">Descripción</label>
+    <p class="text-gray-700">{{ selectedResult.descripcion }}</p>
+  </div>
+  <div class="flex gap-4">
+    <button
+      (click)="viewDocument()"
+      [disabled]="loadingDocuments"
+      class="flex items-center gap-2 px-6 py-3 bg-university-600 text-white rounded-lg hover:bg-university-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+    >
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+      </svg>
+      <span *ngIf="!loadingDocuments">Ver Documentos</span>
+      <span *ngIf="loadingDocuments">Cargando...</span>
+    </button>
+  </div>
+
+  <div *ngIf="selectedTramite && selectedTramite.archivosRespuesta && selectedTramite.archivosRespuesta.length > 0" class="mt-8 pt-8 border-t border-gray-200">
+    <h3 class="text-xl font-bold text-gray-800 mb-4">Documentos de Respuesta</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <button
+        *ngFor="let archivo of selectedTramite.archivosRespuesta"
+        (click)="viewResponseDoc(archivo)"
+        class="p-4 border border-gray-200 rounded-lg hover:bg-university-50 hover:border-university-300 transition-colors text-left"
+      >
+        <p class="font-medium text-gray-800">{{ archivo.nombre }}</p>
+        <p class="text-sm text-gray-600">{{ archivo.tipo }}</p>
+      </button>
+    </div>
+  </div>
+</div>

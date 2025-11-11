@@ -57,10 +57,8 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
     ultimoMes: 0
   };
 
-  // Contador directo para el template
   contadorNoLeidas = 0;
 
-  // Getter para estadísticas calculadas localmente
   get estadisticasLocales(): NotificacionEstadisticas {
     const now = new Date();
     const mesAnterior = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
@@ -73,39 +71,31 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
     };
   }
   
-  // Paginación
   currentPage = 0;
   pageSize = 20;
   totalElements = 0;
   totalPages = 0;
   isLastPage = true;
   
-  // Filtros
   filtros: NotificacionFiltro = {};
   mostrarFiltros = false;
   
-  // Estado
   cargando = false;
   estaConectadoWs = false;
   
-  // Suscripciones
   private subscriptions: Subscription[] = [];
   
-  // Modal de crear notificación
   mostrarModalCrear = false;
   enviandoNotificacion = false;
   
-  // Modal de editar notificación
   mostrarModalEditar = false;
   editandoNotificacion = false;
   notificacionEditando: Notificacion | null = null;
   
-  // Modal de eliminar notificación
   mostrarModalEliminar = false;
   eliminandoNotificacion = false;
   notificacionEliminar: Notificacion | null = null;
   
-  // Modal de limpiar notificaciones antiguas
   mostrarModalLimpiar = false;
   limpiandoAntiguas = false;
   cargandoPreview = false;
@@ -122,7 +112,6 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
     prioridad: 'NORMAL'
   };
   
-  // Validaciones
   validationErrors: NotificacionValidationErrors = {};
   
   constructor(
@@ -144,30 +133,25 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
   }
 
   private inicializarComponente(): void {
-    // Cargar notificaciones iniciales
     this.cargarNotificaciones();
 
-    // Cargar usuarios y roles si es admin (sin estadísticas del backend)
     if (this.esAdmin()) {
       this.cargarUsuarios();
       this.cargarRoles();
     }
 
-    // Suscribirse a nuevas notificaciones en tiempo real
     this.subscriptions.push(
       this.notificacionService.nuevaNotificacion$.subscribe(notificacion => {
         this.agregarNuevaNotificacion(notificacion);
       })
     );
 
-    // Suscribirse al contador de no leídas
     this.subscriptions.push(
       this.notificacionService.contadorNoLeidas$.subscribe(count => {
         this.contadorNoLeidas = count;
       })
     );
 
-    // Suscribirse al estado de conexión WebSocket
     this.subscriptions.push(
       this.webSocketService.connected$.subscribe(conectado => {
         this.estaConectadoWs = conectado;
@@ -178,9 +162,6 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
   cargarNotificaciones(): void {
     this.cargando = true;
 
-    console.log('🔍 Cargando notificaciones...');
-    console.log('🔍 Usuario actual:', this.authService.currentUserValue);
-    console.log('🔍 Es Admin?', this.esAdmin());
 
     const observable = this.esAdmin()
       ? this.notificacionService.obtenerTodasNotificaciones(
@@ -196,13 +177,10 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
           'desc'
         );
 
-    console.log('🔍 Observable creado, haciendo petición...');
 
     this.subscriptions.push(
       observable.subscribe({
         next: (response: PaginatedResponse<Notificacion>) => {
-          console.log('✅ Respuesta recibida:', response);
-          console.log('✅ Cantidad de notificaciones:', response.content?.length);
 
           if (this.currentPage === 0) {
             this.notificaciones = response.content;
@@ -220,10 +198,6 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
           this.cargando = false;
         },
         error: (error) => {
-          console.error('❌ Error al cargar notificaciones:', error);
-          console.error('❌ Status:', error.status);
-          console.error('❌ Message:', error.message);
-          console.error('❌ URL:', error.url);
           this.cargando = false;
         }
       })
@@ -304,14 +278,12 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
   crearNotificacion(): void {
     if (!this.esAdmin()) return;
     
-    // Validar formulario antes de enviar
     if (!this.validarFormulario()) {
       return;
     }
     
     this.enviandoNotificacion = true;
     
-    // Preparar la request según el tipo de destinatario
     const request: NotificacionRequest = {
       titulo: this.nuevaNotificacion.titulo.trim(),
       mensaje: this.nuevaNotificacion.mensaje.trim(),
@@ -320,7 +292,6 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
       rutaDestino: this.nuevaNotificacion.rutaDestino?.trim() || undefined
     };
     
-    // Configurar destinatario según el tipo seleccionado
     switch (this.tipoDestinatario) {
       case TipoDestinatario.USUARIO_ESPECIFICO:
         request.usuarioDestinatarioId = this.nuevaNotificacion.usuarioDestinatarioId;
@@ -352,9 +323,7 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
   abrirNotificacion(notificacion: Notificacion): void {
     this.marcarLeida(notificacion);
 
-    // Si es una notificación de trámite y tiene referenciaId, navegar al trámite
     if (this.esTramiteNotificacion(notificacion.tipo) && notificacion.referenciaId) {
-      // Determinar la ruta según el rol del usuario
       const userRole = this.authService.currentUserValue?.role?.name;
       if (userRole === 'ADMINISTRATIVO' || userRole === 'ADMIN') {
         this.router.navigate(['/administrativo/mis-tramites'], {
@@ -368,18 +337,15 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
     } else if (notificacion.rutaDestino) {
       this.router.navigate([notificacion.rutaDestino]);
     } else {
-      // Mostrar modal con detalles de la notificación
       this.mostrarDetalleNotificacion(notificacion);
     }
   }
 
-  // Verificar si la notificación es de tipo trámite
   esTramiteNotificacion(tipo: string): boolean {
     if (!tipo) return false;
     return tipo.includes('TRAMITE') || tipo === 'DERIVACION';
   }
 
-  // Verificar si la notificación es antigua (más de 24 horas)
   esNotificacionAntigua(notificacion: Notificacion): boolean {
     const ahora = new Date();
     const fechaCreacion = new Date(notificacion.fechaCreacion);
@@ -387,7 +353,6 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
     return diferenciaHoras > 24;
   }
 
-  // Verificar si se puede interactuar con la notificación
   puedeInteractuarConNotificacion(notificacion: Notificacion): boolean {
     return !notificacion.esLeida || !this.esNotificacionAntigua(notificacion);
   }
@@ -401,7 +366,6 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
     event.stopPropagation();
     if (!notificacion.referenciaId) return;
 
-    // Verificar restricciones de rol
     if (!this.puedeAsignarseAsiMismo()) {
       return;
     }
@@ -433,12 +397,10 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
     event.stopPropagation();
     if (!notificacion.referenciaId) return;
 
-    // Verificar restricciones de rol
     if (!this.puedeDerivarTramite()) {
       return;
     }
 
-    // Verificar permisos específicos del trámite
     this.bandejaTramitesService.verificarPermisosAcciones(notificacion.referenciaId).subscribe({
       next: (permisos) => {
         if (!permisos.puedeDerivar) {
@@ -466,7 +428,6 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
   }
 
   mostrarDetalleNotificacion(notificacion: Notificacion): void {
-    // Crear modal simple con información completa
     const modalContent = `
       <div style="background: white; padding: 20px; border-radius: 8px; max-width: 500px; margin: 50px auto;">
         <h3 style="margin-top: 0; color: #333;">${notificacion.titulo}</h3>
@@ -485,7 +446,6 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
       </div>
     `;
 
-    // Crear overlay
     const overlay = document.createElement('div');
     overlay.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; display: flex; align-items: center; justify-content: center;';
     overlay.innerHTML = modalContent;
@@ -541,11 +501,9 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
   limpiarNotificacionesAntiguas(): void {
     if (!this.esAdmin()) return;
     
-    // Resetear a 7 días por defecto
     this.diasAntiguedad = 7;
     this.mostrarModalLimpiar = true;
     
-    // No hacer preview automático, lo haremos cuando el usuario cambie los días
     this.previewNotificaciones = null;
   }
 
@@ -558,14 +516,12 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
       this.notificacionService.limpiarNotificacionesAntiguas(this.diasAntiguedad).subscribe({
         next: (eliminadas) => {
 
-          // Mostrar resultado al usuario
           if (eliminadas > 0) {
             alert(`✅ Se eliminaron ${eliminadas} notificaciones antiguas exitosamente.`);
           } else {
             alert(`ℹ️ No se encontraron notificaciones antiguas para eliminar.`);
           }
           
-          // Cerrar modal y recargar
           this.cerrarModalLimpiar();
           this.cargarNotificaciones(); // Recargar lista (las estadísticas se calculan automáticamente)
           this.limpiandoAntiguas = false;
@@ -597,14 +553,12 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
   confirmarEditarNotificacion(): void {
     if (!this.notificacionEditando || !this.esAdmin()) return;
     
-    // Validar que no estén vacíos
     if (!this.notificacionEditando.titulo.trim() || !this.notificacionEditando.mensaje.trim()) {
       return;
     }
     
     this.editandoNotificacion = true;
     
-    // Crear la request de actualización
     const request: NotificacionRequest = {
       titulo: this.notificacionEditando.titulo.trim(),
       mensaje: this.notificacionEditando.mensaje.trim(),
@@ -637,7 +591,6 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
       this.notificacionService.eliminarNotificacion(this.notificacionEliminar.id).subscribe({
         next: () => {
 
-          // Actualizar la lista local inmediatamente
           this.notificaciones = this.notificaciones.filter(n => n.id !== this.notificacionEliminar!.id);
           this.aplicarFiltros();
           this.agruparNotificaciones();
@@ -670,9 +623,7 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
     this.previewNotificaciones = null;
   }
 
-  // Métodos auxiliares
   private agregarNuevaNotificacion(notificacion: Notificacion): void {
-    // Verificar si la notificación ya existe antes de agregarla (evitar duplicados)
     const existe = this.notificaciones.some(n => n.id === notificacion.id);
     if (existe) {
 
@@ -748,7 +699,6 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
       return prioridadA - prioridadB;
     }
     
-    // Si ambas son fechas normales, comparar cronológicamente
     return fechaA.localeCompare(fechaB);
   }
 
@@ -779,7 +729,6 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
               this.filtros.esLeida !== undefined);
   }
 
-  // Métodos para el modal de crear notificación
   
   cargarUsuarios(): void {
     if (!this.esAdmin()) return;
@@ -788,12 +737,10 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
       this.notificacionService.obtenerUsuarios().subscribe({
         next: (usuarios) => {
 
-          // Filtrar usuarios admin para que no aparezcan en el dropdown
           this.usuarios = usuarios.filter(usuario => usuario.role?.name !== 'ADMIN');
 
         },
         error: (error) => {
-          // Fallback temporal (sin admin)
           this.usuarios = [
             { id: 2, nombre: 'Usuario Demo', usuario: 'demo', role: { name: 'USUARIO' } }
           ];
@@ -808,12 +755,10 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
     this.subscriptions.push(
       this.notificacionService.obtenerRoles().subscribe({
         next: (roles) => {
-          // Filtrar roles ADMIN para que no aparezcan en el dropdown
           this.roles = roles.filter(rol => rol.name !== 'ADMIN');
 
         },
         error: (error) => {
-          // Fallback temporal (sin ADMIN)
           this.roles = [
             { id: 2, name: 'USUARIO', description: 'Usuario', userCount: 0 },
             { id: 3, name: 'ALUMNO', description: 'Alumno', userCount: 0 },
@@ -876,13 +821,11 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
       esValido = false;
     }
 
-    // Validar tipo
     if (!this.nuevaNotificacion.tipo || this.nuevaNotificacion.tipo.trim().length === 0) {
       this.validationErrors.tipo = 'Debe seleccionar un tipo de notificación';
       esValido = false;
     }
 
-    // Validar prioridad
     if (!this.nuevaNotificacion.prioridad || this.nuevaNotificacion.prioridad.trim().length === 0) {
       this.validationErrors.prioridad = 'Debe seleccionar una prioridad';
       esValido = false;
@@ -891,7 +834,6 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
     return esValido;
   }
 
-  // Método auxiliar para mostrar errores de validación en el template
   tieneError(campo: keyof NotificacionValidationErrors): boolean {
     return !!this.validationErrors[campo];
   }
@@ -901,12 +843,10 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
   }
 
   onTipoDestinatarioChange(): void {
-    // Limpiar campos cuando cambia el tipo
     this.nuevaNotificacion.usuarioDestinatarioId = 0;
     this.nuevaNotificacion.roleDestinatario = undefined;
     this.nuevaNotificacion.enviarATodos = undefined;
     
-    // Limpiar errores específicos
     this.validationErrors.destinatario = undefined;
     this.validationErrors.usuarioDestinatarioId = undefined;
     this.validationErrors.roleDestinatario = undefined;
@@ -932,7 +872,6 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
     this.mostrarModalCrear = true;
   }
 
-  // Métodos de control de permisos basados en asignación
 
   
   puedeAsignarseAsiMismo(): boolean {
@@ -944,7 +883,6 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
   puedeDerivarTramite(): boolean {
     const userRole = this.authService.currentUserValue?.role?.name;
 
-    // ESTUDIANTES nunca pueden derivar
     if (userRole === 'ESTUDIANTE') {
       this.toastService.warning(
         'Acción no permitida',
@@ -953,7 +891,6 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
       return false;
     }
 
-    // Solo ADMINISTRATIVO y ADMIN pueden derivar
     if (userRole !== 'ADMINISTRATIVO' && userRole !== 'ADMIN') {
       this.toastService.warning(
         'Acción no permitida',
@@ -968,7 +905,6 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
   puedeAprobarTramite(): boolean {
     const userRole = this.authService.currentUserValue?.role?.name;
 
-    // ESTUDIANTES nunca pueden aprobar
     if (userRole === 'ESTUDIANTE') {
       this.toastService.warning(
         'Acción no permitida',
@@ -984,7 +920,6 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
   puedeRechazarTramite(): boolean {
     const userRole = this.authService.currentUserValue?.role?.name;
 
-    // ESTUDIANTES nunca pueden rechazar
     if (userRole === 'ESTUDIANTE') {
       this.toastService.warning(
         'Acción no permitida',

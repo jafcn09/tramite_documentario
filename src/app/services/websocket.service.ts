@@ -5,8 +5,14 @@ import { AuthService } from './auth.service';
 import { NotificacionService } from './notificacion.service';
 import { Notificacion } from '../shared/interfaces/notificacion.interface';
 import { ToastService } from './toast.service';
-import SockJS from 'sockjs-client';
-import Stomp from 'stompjs';
+
+// Access SockJS and Stomp from global window object (loaded from CDN in index.html)
+declare global {
+  interface Window {
+    SockJS: any;
+    Stomp: any;
+  }
+}
 
 @Injectable({
   providedIn: 'root'
@@ -41,9 +47,9 @@ export class WebSocketService implements OnDestroy {
       return;
     }
 
-    const serverUrl = (environment as any).wsUrl || 'ws://localhost:8081/ws';
-    const socket = new (SockJS as any)(serverUrl);
-    this.stompClient = (Stomp as any).over(socket);
+    const serverUrl = (environment as any).wsUrl || 'http://localhost:8081/ws';
+    const socket = new (window.SockJS as any)(serverUrl);
+    this.stompClient = (window.Stomp as any).over(socket);
     
    
     const token = this.authService.getToken();

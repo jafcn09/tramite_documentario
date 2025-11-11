@@ -30,13 +30,11 @@ export class UserManagementComponent implements OnInit {
   errorMessage = '';
   createUserForm: FormGroup;
 
-  // Edit User Modal Properties
   showEditModal = false;
   selectedUserForEdit: User | null = null;
   editUserForm: FormGroup;
   updatingUser = false;
 
-  // Reset Password Modal Properties
   showResetPasswordModal = false;
   selectedUserForPassword: User | null = null;
   resetPasswordForm: FormGroup;
@@ -303,7 +301,6 @@ export class UserManagementComponent implements OnInit {
     this.filterUsers();
   }
 
-  // Reset Password Methods
   openResetPasswordModal(user: User) {
     this.selectedUserForPassword = user;
     this.showResetPasswordModal = true;

@@ -37,11 +37,9 @@ export class DetalleTramiteModalComponent implements OnInit, OnDestroy, OnChange
   historial: HistorialMiTramite[] = [];
   totalModificaciones: number = 0;
 
-  // Estados del componente
   loading = false;
   activeTab: 'info' | 'documentos' | 'historial' = 'info';
 
-  // Previsualización de documentos
   showDocumentPreview = false;
   documentoPreview: DocumentoMiTramite | null = null;
   previewUrl: SafeResourceUrl | null = null;
@@ -84,7 +82,6 @@ export class DetalleTramiteModalComponent implements OnInit, OnDestroy, OnChange
 
     this.loading = true;
 
-    // Cargar datos completos del trámite desde mis-tramites
     this.subscriptions.add(
       this.misTramitesService.getMiTramiteById(this.tramite.id).subscribe({
         next: (tramiteCompleto) => {
@@ -92,13 +89,11 @@ export class DetalleTramiteModalComponent implements OnInit, OnDestroy, OnChange
           this.documentos = tramiteCompleto.documentos || [];
           this.historial = tramiteCompleto.historial || [];
 
-          // Cargar historial con conteo de modificaciones
           this.cargarHistorialConConteo();
 
           this.loading = false;
         },
         error: (error) => {
-          // Si falla, usar los datos que ya tenemos
           this.tramiteCompleto = this.tramite as MiTramite;
           this.documentos = (this.tramite as MiTramite).documentos || [];
           this.historial = (this.tramite as MiTramite).historial || [];
@@ -414,7 +409,6 @@ export class DetalleTramiteModalComponent implements OnInit, OnDestroy, OnChange
     this.showDocumentPreview = false;
     this.documentoPreview = null;
 
-    // Liberar la URL del blob si existe
     if (this.previewUrl) {
       const url = this.previewUrl.toString();
       if (url.startsWith('blob:')) {
@@ -455,7 +449,6 @@ export class DetalleTramiteModalComponent implements OnInit, OnDestroy, OnChange
     return officeTypes.some(t => tipoLower.includes(t));
   }
 
-  // Funciones para manejo de firma digital
   get currentUserRole(): string {
     return this.authService.currentUserValue?.role?.name || '';
   }
@@ -509,10 +502,8 @@ export class DetalleTramiteModalComponent implements OnInit, OnDestroy, OnChange
   mostrarFirmaSegunRol(): boolean {
     if (!this.tieneFirmaDigital()) return false;
 
-    // ADMINISTRADOR y ADMINISTRATIVO ven todas las firmas
     if (this.isAdminOrAdministrative) return true;
 
-    // USUARIO solo ve su propia firma
     if (this.isUserRole) {
       const currentUserId = this.authService.currentUserValue?.id;
       const solicitanteId = this.tramiteCompleto?.usuarioSolicitante?.id;
@@ -523,7 +514,6 @@ export class DetalleTramiteModalComponent implements OnInit, OnDestroy, OnChange
   }
 
   mostrarDatosPersonales(): boolean {
-    // ADMINISTRADOR y ADMINISTRATIVO ven datos personales del firmante
     return this.isAdminOrAdministrative;
   }
 }

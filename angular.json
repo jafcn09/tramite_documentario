@@ -22,7 +22,8 @@
             "tsConfig": "tsconfig.app.json",
             "assets": [
               "src/favicon.ico",
-              "src/assets"
+              "src/assets",
+              "src/polyfill-setup.js"
             ],
             "styles": [
               "src/styles.css"
@@ -44,7 +45,9 @@
               "http",
               "https",
               "zlib",
-              "querystring"
+              "querystring",
+              "sockjs-client",
+              "stompjs"
             ]
           },
           "configurations": {
@@ -83,7 +86,9 @@
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
-          "options": {},
+          "options": {
+            "buildTarget": "tramite_documentario:build"
+          },
           "configurations": {
             "production": {
               "buildTarget": "tramite_documentario:build:production"

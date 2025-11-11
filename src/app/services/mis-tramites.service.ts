@@ -154,7 +154,6 @@ export class MisTramitesService {
   }
 
   getMiTramiteParaEdicion(id: number): Observable<MiTramite> {
-    // Usar el endpoint específico de edición que incluye datos de firma digital
     return this.http.get<any>(`${this.apiUrl}/${id}/edicion`)
       .pipe(
         map(tramiteBackend => {
@@ -264,7 +263,6 @@ export class MisTramitesService {
     );
   }
 
-  // Eliminar documento de mi trámite
   eliminarDocumento(tramiteId: number, documentoId: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${tramiteId}/documentos/${documentoId}`)
       .pipe(
@@ -335,7 +333,6 @@ export class MisTramitesService {
 
   private mapSingleTramiteToFrontendFormat(tramiteBackend: any): MiTramite {
 
-    // Mapear documentos si existen
     const documentosMapeados = this.mapDocumentos(tramiteBackend.documentos);
 
     const tramiteMapeado = {
@@ -505,7 +502,6 @@ export class MisTramitesService {
       'OBSERVADO': 6,
       'APROBADO': 7,
       'FINALIZADO': 8,
-      // Mapeo para estados que lleguen en formato legible del backend
       'Borrador': 1,
       'Enviado': 2,
       'En Revisión': 3,
@@ -528,7 +524,6 @@ export class MisTramitesService {
       'OBSERVADO': 'Observado',
       'APROBADO': 'Aprobado',
       'FINALIZADO': 'Finalizado',
-      // Si ya llega en formato legible, mantenerlo
       'Borrador': 'Borrador',
       'Enviado': 'Enviado',
       'En Revisión': 'En Revisión',
@@ -551,7 +546,6 @@ export class MisTramitesService {
       'OBSERVADO': '#fd7e14',
       'APROBADO': '#28a745',
       'FINALIZADO': '#6f42c1',
-      // Mapeo para estados en formato legible
       'Borrador': '#6c757d',
       'Enviado': '#007bff',
       'En Revisión': '#ffc107',
@@ -574,7 +568,6 @@ export class MisTramitesService {
       'OBSERVADO': 'fas fa-exclamation-triangle',
       'APROBADO': 'fas fa-check-circle',
       'FINALIZADO': 'fas fa-flag-checkered',
-      // Mapeo para estados en formato legible
       'Borrador': 'fas fa-edit',
       'Enviado': 'fas fa-paper-plane',
       'En Revisión': 'fas fa-search',
@@ -664,7 +657,6 @@ export class MisTramitesService {
     return documentosMapeados;
   }
 
-  // Aprobar trámite (solo para administrativos)
   aprobarTramite(request: AprobarTramiteRequest): Observable<AprobarTramiteResponse> {
     return this.http.post<AprobarTramiteResponse>(`${this.apiUrl}/${request.tramiteId}/aprobar`, request)
       .pipe(

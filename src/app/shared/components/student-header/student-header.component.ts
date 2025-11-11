@@ -41,7 +41,6 @@ export class StudentHeaderComponent implements OnInit {
   }
 
   toggleMobileMenu() {
-    // Emit event to parent layout to toggle sidebar
     this.toggleSidebar.emit();
   }
 

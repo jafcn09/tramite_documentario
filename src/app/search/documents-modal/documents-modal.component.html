@@ -1,0 +1,46 @@
+<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+  <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-auto">
+    <div class="flex justify-between items-center p-6 border-b border-gray-200 sticky top-0 bg-white">
+      <h2 class="text-2xl font-bold text-gray-800">Documentos del Trámite</h2>
+      <button
+        (click)="close()"
+        class="text-gray-600 hover:text-gray-800 transition-colors"
+      >
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+    </div>
+    <div class="p-6">
+      <p class="text-sm text-gray-600 mb-4">Expediente: <span class="font-semibold">{{ selectedResult?.expediente }}</span></p>
+
+      <div *ngIf="documentos.length === 0" class="text-center py-8">
+        <p class="text-gray-600">No hay documentos disponibles para este trámite</p>
+      </div>
+
+      <div *ngIf="documentos.length > 0" class="space-y-3">
+        <button
+          *ngFor="let documento of documentos"
+          (click)="viewDocument(documento)"
+          class="w-full flex items-center gap-4 p-4 bg-gray-50 hover:bg-university-50 border border-gray-200 hover:border-university-300 rounded-lg transition-colors text-left group"
+        >
+          <div class="flex-shrink-0">
+            <i [ngClass]="getFileIcon(documento.tipo)" class="text-2xl text-university-600"></i>
+          </div>
+          <div class="flex-grow">
+            <p class="font-medium text-gray-800 group-hover:text-university-700">{{ documento.nombre }}</p>
+            <p class="text-sm text-gray-600">{{ documento.tipo }}</p>
+          </div>
+          <div class="flex-shrink-0 text-right">
+            <p class="text-sm font-medium text-gray-700">
+              {{ documento.tamanio ? formatFileSize(documento.tamanio) : 'N/A' }}
+            </p>
+            <svg class="w-5 h-5 text-gray-400 group-hover:text-university-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+          </div>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,33 @@
+<div class="mt-16 pt-8 border-t border-gray-200">
+  <div class="bg-university-600 text-white rounded-t-2xl p-4 mb-0">
+    <div class="flex items-center gap-3">
+      <svg class="w-6 h-6 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M12 2C6.48 2 2 6.48 2 12c0 7 10 13 10 13s10-6 10-13c0-5.52-4.48-10-10-10zm0 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/>
+      </svg>
+      <div>
+        <h3 class="text-lg font-bold">Ubicación de Mesa de Partes</h3>
+        <p class="text-sm text-university-100 flex items-center gap-2">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 2C6.48 2 2 6.48 2 12v9h20v-9c0-5.52-4.48-10-10-10zm0 18h-8v-8h8v8zm8-8v8h-6v-8h6z"/>
+          </svg>
+          Universidad Nacional de Tumbes • Lunes a Viernes: 7:30 AM - 3:00 PM
+        </p>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="bg-white rounded-b-2xl shadow-lg overflow-hidden">
+    <div class="w-full" style="height: 600px;">
+      <iframe
+        [src]="mapsUrl"
+        width="100%"
+        height="100%"
+        style="border:none;"
+        allowfullscreen=""
+        loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade">
+      </iframe>
+    </div>
+  </div>
+</div>

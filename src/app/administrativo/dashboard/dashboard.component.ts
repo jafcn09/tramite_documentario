@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { BandejaTramitesService } from '../../services/bandeja-tramites.service';
@@ -10,7 +11,7 @@ import { User } from '../../shared/interfaces/auth.interface';
 @Component({
   selector: 'app-administrativo-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css']
 })
@@ -35,7 +36,6 @@ export class DashboardComponent implements OnInit {
     return this.userRole === 'admin';
   }
 
-  // Stats for ADMINISTRATIVO role
   stats = {
     pendingTramites: 0,
     processingTramites: 0,
@@ -454,17 +454,14 @@ export class DashboardComponent implements OnInit {
   }
 
   determinarTipoUsuario(tramite: any): string {
-    // Verificar si es estudiante por el rol del usuario solicitante
     if (tramite.usuarioSolicitante?.rol && tramite.usuarioSolicitante.rol.toLowerCase().includes('estudiante')) {
       return '👨‍🎓 Estudiante';
     }
 
-    // Verificar si es usuario estándar
     if (tramite.usuarioSolicitante?.rol && tramite.usuarioSolicitante.rol.toLowerCase() === 'usuario') {
       return '👤 Usuario';
     }
 
-    // Verificar si es administrativo
     if (tramite.usuarioSolicitante?.rol && tramite.usuarioSolicitante.rol.toLowerCase().includes('administrativo')) {
       return '👔 Administrativo';
     }

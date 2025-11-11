@@ -20,7 +20,6 @@ export interface Tramite {
   documentos: DocumentoTramite[];
   historial: HistorialTramite[];
 
-  // Campos de firma digital - coinciden exactamente con backend
   firmaDigitalActiva?: boolean;
   requiereBiometria?: boolean;
   firmaValida?: boolean;

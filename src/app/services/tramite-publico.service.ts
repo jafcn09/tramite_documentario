@@ -221,7 +221,6 @@ export class TramitePublicoService {
     return vencimiento < ahora;
   }
 
-  // Calcular días hasta vencimiento
   diasHastaVencimiento(fechaVencimiento?: Date | string): number | null {
     if (!fechaVencimiento) return null;
     const ahora = new Date();

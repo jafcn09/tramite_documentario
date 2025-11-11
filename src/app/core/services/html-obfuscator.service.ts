@@ -17,7 +17,6 @@ export class HtmlObfuscatorService {
   }
 
   private init(): void {
-    // Esperar a que el DOM esté completamente cargado
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', () => this.startObfuscation());
     } else {
@@ -26,7 +25,6 @@ export class HtmlObfuscatorService {
   }
 
 
-  // Inicia el proceso de ofuscación
   private startObfuscation(): void {
     this.removeComments();
 
@@ -49,7 +47,6 @@ export class HtmlObfuscatorService {
   }
 
 
-  // Remueve comentarios del HTML
   private removeComments(): void {
     const iterator = document.createNodeIterator(
       document.documentElement,
@@ -67,7 +64,6 @@ export class HtmlObfuscatorService {
   }
 
 
-  // Ofusca nombres de clases CSS
   private obfuscateClassNames(): void {
     const elements = document.querySelectorAll('[class]');
     const classMap = new Map<string, string>();
@@ -93,13 +89,11 @@ export class HtmlObfuscatorService {
         newClassList.push(obfuscatedClass);
       });
 
-      // Reemplazar clases
       element.className = newClassList.join(' ');
     });
   }
 
 
-  // Verifica si una clase debe preservarse
   private shouldPreserveClass(className: string): boolean {
     const preservePatterns = [
       /^ng-/,
@@ -119,7 +113,6 @@ export class HtmlObfuscatorService {
   }
 
 
-  // Genera un hash simple para ofuscar nombres de clases 
   private generateHash(input: string, counter: number): string {
 
     let hash = 0;
@@ -129,12 +122,10 @@ export class HtmlObfuscatorService {
       hash = hash & hash;
     }
 
-    // Convertir a base36 y agregar contador
     return '_' + Math.abs(hash).toString(36) + counter.toString(36);
   }
 
 
-  // Remueve atributos data-*
   private removeDataAttributes(): void {
     const elements = document.querySelectorAll('[data-*]');
 
@@ -167,7 +158,6 @@ export class HtmlObfuscatorService {
     });
   }
 
-  // Verifica si un atributo debe preservarse
   private shouldPreserveAttribute(attrName: string): boolean {
     const preserveAttributes = [
       'data-bs-', // Bootstrap
@@ -178,7 +168,6 @@ export class HtmlObfuscatorService {
     return preserveAttributes.some(prefix => attrName.startsWith(prefix));
   }
 
-  // Ofusca IDs de elementos
   private obfuscateIds(): void {
     const elements = document.querySelectorAll('[id]');
     const idMap = new Map<string, string>();
@@ -187,7 +176,6 @@ export class HtmlObfuscatorService {
     elements.forEach((element: Element) => {
       const currentId = element.id;
 
-      // No ofuscar IDs críticos
       if (this.shouldPreserveId(currentId)) {
         return;
       }
@@ -204,7 +192,6 @@ export class HtmlObfuscatorService {
   }
 
   
-  // Verifica si un ID debe preservarse
   private shouldPreserveId(id: string): boolean {
     const preserveIds = [
       'app-root',
@@ -215,7 +202,6 @@ export class HtmlObfuscatorService {
   }
 
 
-  // Minifica el HTML removiendo espacios en blanco innecesarios
   private minifyHTML(): void {
 
     const walker = document.createTreeWalker(
@@ -235,7 +221,6 @@ export class HtmlObfuscatorService {
       const text = textNode.textContent || '';
       const trimmed = text.trim();
 
-      // Solo mantener text nodes con contenido
       if (trimmed.length === 0 && textNode.parentElement?.tagName !== 'PRE') {
         textNode.parentNode?.removeChild(textNode);
       } else if (text !== trimmed) {
@@ -244,14 +229,11 @@ export class HtmlObfuscatorService {
     });
   }
 
-  // Previene copiar HTML desde el inspector
   private preventHTMLCopy(): void {
-    // Prevenir copiar HTML desde el inspector
     document.addEventListener('copy', (e) => {
       const selection = window.getSelection();
       const text = selection?.toString() || '';
 
-      // Si están copiando HTML tags
       if (text.includes('<') || text.includes('>')) {
         e.preventDefault();
         e.clipboardData?.setData('text/plain', '[CONTENIDO PROTEGIDO]');
@@ -263,7 +245,6 @@ export class HtmlObfuscatorService {
   }
 
   
-  // Detecta intentos de inspección de elementos
   private detectElementInspection(): void {
 
     const observer = new MutationObserver((mutations) => {
@@ -301,7 +282,6 @@ export class HtmlObfuscatorService {
     });
   }
 
-// Cifra un string
   private xorEncrypt(text: string, key: string): string {
     let result = '';
     for (let i = 0; i < text.length; i++) {

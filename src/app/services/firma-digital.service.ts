@@ -271,7 +271,6 @@ export class FirmaDigitalService {
   verificarRequiereFirma(tramiteId: number): Observable<boolean> {
     return this.http.get<boolean>(`${this.apiUrl}/tramite/${tramiteId}/requiere-firma`).pipe(
       catchError(error => {
-        console.error('Error al verificar si requiere firma:', error);
         return throwError(() => error);
       })
     );

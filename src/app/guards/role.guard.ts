@@ -28,12 +28,8 @@ export class RoleGuard implements CanActivate {
     }
 
     const currentUser = this.authService.currentUserValue;
-    console.log('RoleGuard - Current User:', currentUser);
-    console.log('RoleGuard - Expected Roles:', expectedRoles);
-    console.log('RoleGuard - User Role:', currentUser?.role?.name);
 
     if (!currentUser || !currentUser.role || !currentUser.role.name) {
-      console.error('RoleGuard - User missing role information');
       this.router.navigate(['/acceso-denegado']);
       return false;
     }
@@ -44,7 +40,6 @@ export class RoleGuard implements CanActivate {
       return true;
     }
 
-    console.error('RoleGuard - User does not have required role');
     this.router.navigate(['/acceso-denegado']);
     return false;
   }

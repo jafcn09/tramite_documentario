@@ -18,22 +18,16 @@ export class AntiTamperingService {
   }
 
   private init(): void {
-    // 1. Deshabilitar todas las consolas
     this.disableConsole();
 
-    // 2. Anti-debugging más agresivo
     this.aggressiveAntiDebug();
 
-    // 3. Detectar modificaciones en el DOM
     this.detectDOMTampering();
 
-    // 4. Ofuscar código en tiempo real
     this.obfuscateRuntime();
 
-    // 5. Prevenir copy-paste de código
     this.preventCodeCopy();
 
-    // 6. Detectar herramientas de desarrollo
     this.detectDevToolsAdvanced();
   }
 
@@ -105,12 +99,9 @@ export class AntiTamperingService {
   }
 
  
-  // Detecta modificaciones en el DOM
   private detectDOMTampering(): void {
-    // Monitorear cambios en el DOM
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
-        // Detectar si alguien inyectó scripts
         mutation.addedNodes.forEach((node: any) => {
           if (node.nodeName === 'SCRIPT') {
             if (!node.src?.includes(window.location.origin)) {
@@ -130,7 +121,6 @@ export class AntiTamperingService {
   }
 
  
-  // Ofusca variables globales y objetos sensibles
   private obfuscateRuntime(): void {
  
     const originalLocation = window.location.toString;
@@ -148,7 +138,6 @@ export class AntiTamperingService {
       }
     });
 
-    // Proteger variables globales
     Object.freeze(Object.prototype);
     Object.freeze(Array.prototype);
     Object.freeze(Function.prototype);
@@ -167,7 +156,6 @@ export class AntiTamperingService {
       return true;
     });
 
-    // Prevenir copy desde consola
     document.addEventListener('copy', (e) => {
       const selection = window.getSelection()?.toString();
       if (selection && selection.length > 500) {
@@ -180,7 +168,6 @@ export class AntiTamperingService {
   }
 
   
-  // Detecta herramientas de desarrollo avanzadas
   private detectDevToolsAdvanced(): void {
 
     const checkDevTools = () => {

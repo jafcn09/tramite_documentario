@@ -463,7 +463,6 @@ export class NotificacionDetalleComponent implements OnInit {
         this.notificacion = notificacion;
         this.cargando = false;
         
-        // Marcar como leída automáticamente al ver el detalle
         if (!notificacion.esLeida) {
           this.marcarComoLeida();
         }

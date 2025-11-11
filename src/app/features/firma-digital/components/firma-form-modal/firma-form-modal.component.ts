@@ -98,7 +98,6 @@ export class FirmaFormModalComponent implements OnInit, OnDestroy {
   }
 
   private cargarDatos() {
-    // Cargar trámites si no se especificó uno
     if (!this.tramiteId) {
       this.subscriptions.add(
         this.tramiteService.getTramites().subscribe({
@@ -106,20 +105,17 @@ export class FirmaFormModalComponent implements OnInit, OnDestroy {
             this.tramites = tramites;
           },
           error: (error) => {
-            console.error('Error al cargar trámites:', error);
           }
         })
       );
     }
 
-    // Cargar usuarios para firmante
     this.subscriptions.add(
       this.authService.getUsuarios().subscribe({
         next: (usuarios) => {
           this.usuarios = usuarios;
         },
         error: (error) => {
-          console.error('Error al cargar usuarios:', error);
         }
       })
     );
@@ -159,7 +155,6 @@ export class FirmaFormModalComponent implements OnInit, OnDestroy {
       }
     }
 
-    // Limpiar el input
     event.target.value = '';
   }
 
@@ -220,7 +215,6 @@ export class FirmaFormModalComponent implements OnInit, OnDestroy {
       reader.readAsDataURL(file);
       reader.onload = () => {
         const base64 = reader.result as string;
-        // Remover el prefijo "data:type;base64,"
         const base64Data = base64.split(',')[1];
         resolve(base64Data);
       };
@@ -270,14 +264,12 @@ export class FirmaFormModalComponent implements OnInit, OnDestroy {
             this.onClose();
           },
           error: (error) => {
-            console.error('Error al guardar firma:', error);
             this.loading = false;
           }
         })
       );
 
     } catch (error) {
-      console.error('Error al procesar archivos:', error);
       this.loading = false;
     }
   }
@@ -303,7 +295,6 @@ export class FirmaFormModalComponent implements OnInit, OnDestroy {
     this.close.emit();
   }
 
-  // Métodos para el template
   isFieldInvalid(fieldName: string): boolean {
     const field = this.form.get(fieldName);
     return field ? field.invalid && field.touched : false;

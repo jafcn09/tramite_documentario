@@ -120,7 +120,6 @@ export class ResponderTramiteModalComponent implements OnInit, AfterViewInit {
       this.ctx = canvas.getContext('2d');
 
       if (this.ctx) {
-        // Configurar el canvas
         canvas.width = canvas.offsetWidth;
         canvas.height = 200;
 
@@ -129,16 +128,13 @@ export class ResponderTramiteModalComponent implements OnInit, AfterViewInit {
         this.ctx.lineCap = 'round';
         this.ctx.lineJoin = 'round';
 
-        // Limpiar el canvas
         this.clearCanvas();
 
-        // Event listeners para dibujar
         canvas.addEventListener('mousedown', this.startDrawing.bind(this));
         canvas.addEventListener('mousemove', this.draw.bind(this));
         canvas.addEventListener('mouseup', this.stopDrawing.bind(this));
         canvas.addEventListener('mouseout', this.stopDrawing.bind(this));
 
-        // Touch events para móviles
         canvas.addEventListener('touchstart', this.handleTouchStart.bind(this));
         canvas.addEventListener('touchmove', this.handleTouchMove.bind(this));
         canvas.addEventListener('touchend', this.stopDrawing.bind(this));
@@ -207,11 +203,9 @@ export class ResponderTramiteModalComponent implements OnInit, AfterViewInit {
       const canvas = this.signatureCanvas.nativeElement;
       this.ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Fondo blanco
       this.ctx.fillStyle = 'white';
       this.ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Línea de firma
       this.ctx.strokeStyle = '#ddd';
       this.ctx.lineWidth = 1;
       this.ctx.beginPath();
@@ -219,13 +213,11 @@ export class ResponderTramiteModalComponent implements OnInit, AfterViewInit {
       this.ctx.lineTo(canvas.width - 50, canvas.height - 30);
       this.ctx.stroke();
 
-      // Texto de ayuda
       this.ctx.fillStyle = '#888';
       this.ctx.font = '14px Arial';
       this.ctx.textAlign = 'center';
       this.ctx.fillText('Firme aquí', canvas.width / 2, canvas.height - 10);
 
-      // Restaurar configuración para dibujar
       this.ctx.strokeStyle = '#000';
       this.ctx.lineWidth = 2;
 
@@ -246,7 +238,6 @@ export class ResponderTramiteModalComponent implements OnInit, AfterViewInit {
 
   onRequiereFirmaChange() {
     if (this.respuestaForm.requiereFirmaDigital) {
-      // Inicializar valores por defecto cuando se activa la firma
       if (!this.respuestaForm.razonFirma) {
         this.respuestaForm.razonFirma = `Respuesta oficial al trámite ${this.tramite.codigo}`;
       }
@@ -257,7 +248,6 @@ export class ResponderTramiteModalComponent implements OnInit, AfterViewInit {
 
       this.toastService.info('Firma digital activada', 'Complete los datos de la firma digital');
     } else {
-      // Limpiar datos de firma cuando se desactiva
       this.clearCanvas();
       this.respuestaForm.firmaDigitalData = null;
       this.respuestaForm.consentimientoFirma = false;
@@ -305,7 +295,6 @@ export class ResponderTramiteModalComponent implements OnInit, AfterViewInit {
       return;
     }
 
-    // Validar firma digital si está activada
     if (this.respuestaForm.requiereFirmaDigital) {
       if (!this.respuestaForm.razonFirma.trim()) {
         this.toastService.error('Razón de firma requerida', 'Por favor indique la razón de la firma digital');
@@ -330,12 +319,10 @@ export class ResponderTramiteModalComponent implements OnInit, AfterViewInit {
     formData.append('observaciones', this.respuestaForm.observaciones);
     formData.append('asunto', this.respuestaForm.asunto);
 
-    // Agregar archivos
     for (const archivo of this.respuestaForm.archivos) {
       formData.append('archivos', archivo);
     }
 
-    // Agregar datos de firma digital si está activada
     if (this.respuestaForm.requiereFirmaDigital) {
       formData.append('requiereFirmaDigital', 'true');
       formData.append('tipoFirma', this.respuestaForm.tipoFirma);
@@ -344,7 +331,6 @@ export class ResponderTramiteModalComponent implements OnInit, AfterViewInit {
       formData.append('consentimientoFirma', String(this.respuestaForm.consentimientoFirma));
 
       if (this.respuestaForm.firmaDigitalData) {
-        // Convertir la imagen base64 a blob
         const base64Data = this.respuestaForm.firmaDigitalData.split(',')[1];
         const byteCharacters = atob(base64Data);
         const byteArrays = [];
@@ -375,7 +361,6 @@ export class ResponderTramiteModalComponent implements OnInit, AfterViewInit {
         this.closeModal();
       },
       error: (error) => {
-        console.error('Error al responder trámite:', error);
         this.toastService.error('Error al responder', 'No se pudo responder el trámite. Intente nuevamente.');
         this.loading = false;
       }

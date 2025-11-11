@@ -94,7 +94,6 @@ export class SearchComponent implements OnInit, OnDestroy {
       this.performSearch(query);
     });
 
-    // Check for QR parameter and auto-search
     this.route.queryParams.subscribe(params => {
       const qrCode = params['qr'];
       if (qrCode) {
@@ -273,7 +272,6 @@ export class SearchComponent implements OnInit, OnDestroy {
   }
 
   searchByQRCode(qrCode: string): void {
-    // Usar el endpoint de verificación QR del backend
     this.isSearching = true;
     this.showError = false;
     this.showSuccess = false;
@@ -378,17 +376,11 @@ export class SearchComponent implements OnInit, OnDestroy {
         return;
       }
 
-      console.log('Trámite recibido:', tramite);
-      console.log('documentosAdjuntos:', tramite.documentosAdjuntos);
-      console.log('Es array?', Array.isArray(tramite.documentosAdjuntos));
-      console.log('Longitud:', tramite.documentosAdjuntos?.length);
 
       if (tramite.documentosAdjuntos && tramite.documentosAdjuntos.length > 0) {
         this.documentos = tramite.documentosAdjuntos;
-        console.log('Documentos asignados:', this.documentos);
       } else {
         this.documentos = [];
-        console.log('No hay documentos o array vacío');
       }
 
       this.showDocumentsModal = true;
@@ -402,7 +394,6 @@ export class SearchComponent implements OnInit, OnDestroy {
     this.currentDocument = documento;
     this.loadingDocuments = true;
 
-    // Detectar si el documento se puede previsualizar en el navegador
     const previewableTypes = [
       'application/pdf',
       'image/png',
@@ -431,7 +422,6 @@ export class SearchComponent implements OnInit, OnDestroy {
         this.showPdfViewer = true;
         this.loadingDocuments = false;
       } catch (error) {
-        console.error('Error al convertir base64 a blob:', error);
         this.loadingDocuments = false;
         this.errorMessage = '⚠️ Error al procesar el documento.';
       }
@@ -522,7 +512,6 @@ export class SearchComponent implements OnInit, OnDestroy {
         this.showPdfViewer = true;
         this.loadingDocuments = false;
       } catch (error) {
-        console.error('Error al convertir base64 a blob:', error);
         this.loadingDocuments = false;
         this.errorMessage = '⚠️ Error al procesar el archivo de respuesta.';
       }
@@ -723,12 +712,10 @@ export class SearchComponent implements OnInit, OnDestroy {
       this.tramiteForm.captchaCode?.trim()
     );
 
-    // Validar teléfono SI tiene contenido (opcional pero debe ser válido si se llena)
     const telefonoValido = !this.tramiteForm.telefono ||
                            this.tramiteForm.telefono.trim() === '' ||
                            (this.tramiteForm.telefono.length === 9 && this.isValidCelular(this.tramiteForm.telefono));
 
-    // Validar descripción SI tiene contenido (opcional pero debe ser válido si se llena)
     const descripcionValida = !this.tramiteForm.descripcion ||
                               this.tramiteForm.descripcion.trim() === '' ||
                               this.tramiteForm.descripcion.length <= 2000;
@@ -898,7 +885,6 @@ export class SearchComponent implements OnInit, OnDestroy {
       return false;
     }
 
-    // Validar correo (obligatorio, debe tener @ y dominio)
     if (!this.tramiteForm.email || !this.tramiteForm.email.trim()) {
       this.showToastMessage('❌ El correo electrónico es obligatorio', 'error');
       return false;
@@ -944,7 +930,6 @@ export class SearchComponent implements OnInit, OnDestroy {
       return false;
     }
 
-    // Descripción es OPCIONAL, pero si se llena validar límite
     if (this.tramiteForm.descripcion && this.tramiteForm.descripcion.length > 2000) {
       this.showToastMessage('⚠️ La Descripción no puede exceder los 2000 caracteres', 'warning');
       return false;

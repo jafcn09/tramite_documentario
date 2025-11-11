@@ -1,8 +1,8 @@
 import { Routes } from '@angular/router';
-import { ManualComponent } from './manual/manual.component';
 import { HomeComponent } from './home/home.component';
-import { SearchComponent } from './search/search.component';
 import { AdminLoginComponent } from './admin-login/admin-login.component';
+import { ManualComponent } from './manual/manual.component';
+import { SearchComponent } from './search/search.component';
 import { AuthGuard } from './guards/auth.guard';
 import { RoleGuard } from './guards/role.guard';
 

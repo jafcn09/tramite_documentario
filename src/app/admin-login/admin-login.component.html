@@ -70,6 +70,7 @@
               [class.border-green-400]="loginForm.get('usuario')?.valid && loginForm.get('usuario')?.touched"
               [class.border-gray-300]="!loginForm.get('usuario')?.touched"
               placeholder="Ingresa tu nombre de usuario"
+              autocomplete="username"
               [attr.disabled]="isLoading ? true : null">
             <div class="absolute left-4 top-1/2 transform -translate-y-1/2">
               <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -99,6 +100,7 @@
               [class.border-green-400]="loginForm.get('password')?.valid && loginForm.get('password')?.touched"
               [class.border-gray-300]="!loginForm.get('password')?.touched"
               placeholder="Ingresa tu credenciales"
+              autocomplete="current-password"
               [attr.disabled]="isLoading ? true : null">
             <div class="absolute left-4 top-1/2 transform -translate-y-1/2">
               <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

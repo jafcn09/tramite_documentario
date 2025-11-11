@@ -1,9 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
-import { DevToolsProtectionService } from './core/services/devtools-protection.service';
-import { AntiTamperingService } from './core/services/anti-tampering.service';
-import { HtmlObfuscatorService } from './core/services/html-obfuscator.service';
 import { AuthService } from './services/auth.service';
 
 @Component({
@@ -22,67 +19,47 @@ export class AppComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private authService: AuthService,
-    private devToolsProtection: DevToolsProtectionService,
-    private antiTampering: AntiTamperingService,
-    private htmlObfuscator: HtmlObfuscatorService
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
-    this.showPreloader();
-    this.checkRouteVisibility();
-    
+    this.initializeRoute();
+
     this.router.events.subscribe(event => {
       if (event instanceof NavigationEnd) {
-        this.showPreloader();
-        this.checkRouteVisibility();
+        this.initializeRoute();
       }
     });
   }
 
-  private checkRouteVisibility(): void {
+  private initializeRoute(): void {
     const currentUrl = this.router.url;
-    
-    // Ocultar header y footer en rutas administrativas y de login
     const adminRoutes = ['/servicios-administrativos', '/admin', '/administrativo', '/usuario', '/alumno', '/externo', '/estudiante'];
     const loginRoutes = ['/admin-login', '/usuario-login', '/alumno-login', '/externo-login'];
     const userRoutes = ['/perfil', '/cambiar-contrasena'];
-    
+
     const isAdminRoute = adminRoutes.some(route => currentUrl.includes(route));
     const isLoginRoute = loginRoutes.some(route => currentUrl.includes(route));
     const isUserRoute = userRoutes.some(route => currentUrl.includes(route));
-    
+
     if (isAdminRoute || isLoginRoute || isUserRoute) {
       this.showHeader = false;
       this.showFooter = false;
       this.showHomeButton = false;
-     
+      this.isLoading = false;
+      this.showContent = true;
     } else {
       this.showHeader = true;
       this.showFooter = true;
       this.showHomeButton = currentUrl !== '/';
-    
+      this.startPreloader();
     }
   }
-  
-  private showPreloader(): void {
-    const currentUrl = this.router.url;
-    
-    // No mostrar preloader en rutas administrativas y de usuario
-    const adminRoutes = ['/servicios-administrativos', '/admin', '/administrativo', '/usuario', '/alumno', '/externo'];
-    const userRoutes = ['/perfil', '/cambiar-contrasena'];
-    const isAdminRoute = adminRoutes.some(route => currentUrl.includes(route));
-    const isUserRoute = userRoutes.some(route => currentUrl.includes(route));
-    
-    if (isAdminRoute || isUserRoute) {
-      this.isLoading = false;
-      this.showContent = true;
-      return;
-    }
-    
+
+  private startPreloader(): void {
     this.isLoading = true;
     this.showContent = false;
-    
+
     setTimeout(() => {
       this.isLoading = false;
       setTimeout(() => {

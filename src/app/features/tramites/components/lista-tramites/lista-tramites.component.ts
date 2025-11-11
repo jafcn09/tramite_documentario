@@ -633,7 +633,6 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
   }
 
   obtenerEstadosDisponibles(estadoActual: any) {
-    // Manejo de estado que puede ser string o objeto
     const estadoKey = (estadoActual?.nombre || estadoActual || '').toUpperCase();
 
     const transicionesEstado: { [key: string]: string[] } = {

@@ -42,7 +42,6 @@ export class QrCodeService {
         window.URL.revokeObjectURL(url);
       },
       error: (error) => {
-        console.error('Error al descargar imagen QR:', error);
       }
     });
   }
