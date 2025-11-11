@@ -83,7 +83,6 @@ public class NotificacionService {
     @Async
     public void notificarRecepcionTramite(Long tramiteId, Long trabajadorId, Long solicitanteId) {
         tramiteRepository.findById(tramiteId).ifPresent(tramite -> {
-            // Notificación al solicitante
             Notificacion notificacion = new Notificacion();
             notificacion.setUsuarioDestinatarioId(solicitanteId);
             notificacion.setTitulo("Trámite recepcionado");
@@ -241,7 +240,6 @@ public class NotificacionService {
     @Async
     public void notificarFinalizacionConArchivo(Long tramiteId, String urlArchivo) {
         tramiteRepository.findById(tramiteId).ifPresent(tramite -> {
-            // Notificación al solicitante
             Notificacion notificacion = new Notificacion();
             notificacion.setUsuarioDestinatarioId(tramite.getUsuarioSolicitanteId());
             notificacion.setTitulo("Trámite completado");

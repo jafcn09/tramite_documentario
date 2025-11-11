@@ -16,7 +16,6 @@ public class SessionConfig {
     public CookieSerializer cookieSerializer() {
         DefaultCookieSerializer serializer = new DefaultCookieSerializer();
 
-        // Configuración de seguridad para las cookies
         serializer.setCookieName("TRAMITE_SESSION");
         serializer.setCookiePath("/");
         serializer.setDomainNamePattern("^.+?\\.(\\w+\\.[a-z]+)$");

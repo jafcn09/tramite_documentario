@@ -3,6 +3,7 @@ package com.example.demo.repository;
 import com.example.demo.entity.Area;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -17,9 +18,11 @@ public interface AreaRepository extends JpaRepository<Area, Long> {
     
     List<Area> findByActivaTrue();
     
+    @EntityGraph(attributePaths = "usuarios")
     @Query("SELECT a FROM Area a ORDER BY a.nombre ASC")
     List<Area> findAllOrderByNombre();
-    
+
+    @EntityGraph(attributePaths = "usuarios")
     @Query("SELECT a FROM Area a WHERE a.activa = true ORDER BY a.nombre ASC")
     List<Area> findActiveAreasOrderByNombre();
 

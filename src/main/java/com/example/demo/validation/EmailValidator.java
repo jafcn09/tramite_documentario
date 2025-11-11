@@ -22,7 +22,6 @@ public class EmailValidator implements ConstraintValidator<ValidEmail, String> {
     
     @Override
     public void initialize(ValidEmail constraintAnnotation) {
-        // No initialization needed
     }
     
     @Override
@@ -33,17 +32,14 @@ public class EmailValidator implements ConstraintValidator<ValidEmail, String> {
         
         email = email.toLowerCase().trim();
         
-        // Check basic email format
         if (!EMAIL_PATTERN.matcher(email).matches()) {
             return false;
         }
         
-        // Check for suspicious patterns
         if (INVALID_PATTERNS.matcher(email).matches()) {
             return false;
         }
         
-        // Check for disposable email domains
         String domain = email.substring(email.lastIndexOf("@") + 1);
         for (String disposableDomain : DISPOSABLE_DOMAINS) {
             if (domain.equals(disposableDomain)) {
@@ -51,7 +47,6 @@ public class EmailValidator implements ConstraintValidator<ValidEmail, String> {
             }
         }
         
-        // Additional checks
         if (email.contains("..") || email.startsWith(".") || email.endsWith(".")) {
             return false;
         }

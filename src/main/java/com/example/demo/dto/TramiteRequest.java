@@ -32,7 +32,7 @@ public class TramiteRequest {
     private LocalDateTime fechaVencimiento;
     @Builder.Default
     private Boolean requiereFirmaDigital = false;
-    private Long firmanteId; // ID del usuario que debe firmar el documento
+    private Long firmanteId; 
     private String tipoFirma;
     private String razonFirma;
     private DepartamentoPeru ubicacionFirma;

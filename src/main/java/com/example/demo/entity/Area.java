@@ -15,6 +15,10 @@ import java.util.List;
 
 @Entity
 @Table(name = "areas")
+@NamedEntityGraph(
+    name = "Area.withUsuarios",
+    attributeNodes = @NamedAttributeNode("usuarios")
+)
 @Getter
 @Setter
 @NoArgsConstructor

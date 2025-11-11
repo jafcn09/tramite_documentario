@@ -20,7 +20,6 @@ public class CacheController {
 
     private final CacheService cacheService;
 
-    // Información del cache (solo administradores)
     @GetMapping("/info")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, Object>> getCacheInfo() {
@@ -32,7 +31,6 @@ public class CacheController {
         return ResponseEntity.ok(info);
     }
 
-   // Limpiar todo el cache (solo administradores)
     @DeleteMapping("/clear")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, String>> clearCache() {
@@ -56,7 +54,6 @@ public class CacheController {
         }
     }
 
- // Información de sesión actual
     @GetMapping("/session/info")
     public ResponseEntity<Map<String, Object>> getSessionInfo(HttpSession session) {
         Map<String, Object> sessionInfo = new HashMap<>();
@@ -71,9 +68,7 @@ public class CacheController {
         return ResponseEntity.ok(sessionInfo);
     }
 
-    /**
-     * Invalidar sesión actual
-     */
+    
     @DeleteMapping("/session/invalidate")
     public ResponseEntity<Map<String, String>> invalidateSession(HttpSession session) {
         try {
@@ -118,7 +113,6 @@ public class CacheController {
     }
 
    
-    // Obtener un atributo de sesión
     @GetMapping("/session/attribute")
     public ResponseEntity<Map<String, Object>> getSessionAttribute(
             @RequestParam String key,

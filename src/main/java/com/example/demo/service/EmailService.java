@@ -1606,7 +1606,6 @@ public class EmailService {
                 areaOrigen = areaService.getAreaById(tramite.getAreaOrigenId()).orElse(null);
             }
         } catch (Exception e) {
-            // Continuar sin información relacionada
         }
 
         StringBuilder html = new StringBuilder();
@@ -1664,7 +1663,6 @@ public class EmailService {
             .append("</head>")
             .append("<body>");
 
-        // Header oficial
         html.append("<div class='header'>")
             .append("<div class='logo-section'>")
             .append("<div class='institution-name'>Sistema de Trámite Documentario</div>")
@@ -1673,13 +1671,11 @@ public class EmailService {
             .append("<div class='document-title'>Documento Oficial de Trámite</div>")
             .append("</div>");
 
-        // Información del documento
         html.append("<div class='document-info'>")
             .append("<div class='doc-number'>DOCUMENTO N° ").append(tramite.getCodigo()).append("</div>")
             .append("<div class='doc-date'>Generado el: ").append(formatearFecha(LocalDateTime.now())).append("</div>")
             .append("</div>");
 
-        // Información general del trámite
         html.append("<div class='info-section'>")
             .append("<div class='section-title'>Información General</div>")
             .append("<table class='info-table'>")
@@ -1701,7 +1697,6 @@ public class EmailService {
         html.append("</table>")
             .append("</div>");
 
-        // Información de fechas
         html.append("<div class='info-section'>")
             .append("<div class='section-title'>Información Temporal</div>")
             .append("<table class='info-table'>")
@@ -1825,7 +1820,6 @@ public class EmailService {
     }
 
  
-    // Envío de correo de confirmación al remitente
     @Async
     public void enviarCorreoConfirmacionRemitente(Long remitenteId, Long tramiteId) {
 

@@ -58,8 +58,7 @@ public class AreaService {
     public AreaResponse updateArea(Long id, AreaRequest request) {
         Area area = areaRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Área no encontrada con id: " + id));
-        
-       //  identificar si el nombre está siendo cambiado y si ya existe otro con ese nombre
+
         if (!area.getNombre().equals(request.getNombre()) && 
             areaRepository.existsByNombre(request.getNombre())) {
             throw new IllegalArgumentException("Ya existe un área con el nombre: " + request.getNombre());
@@ -76,7 +75,6 @@ public class AreaService {
     public void deleteArea(Long id) {
         Area area = areaRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Área no encontrada con id: " + id));
-        // revisar si esta área previamente fue eliminado
 
         if (area.getUsuarios() != null && !area.getUsuarios().isEmpty()) {
             throw new IllegalArgumentException("No se puede eliminar el área porque tiene usuarios asignados");

@@ -67,7 +67,6 @@ public class FirmaDigitalResponse {
 
     private String observaciones;
 
-    // Información de autorización
     private Integer nivelAutorizacionRequerido;
 
     private String nivelAutorizacionTexto;
@@ -78,14 +77,12 @@ public class FirmaDigitalResponse {
 
     private Boolean autorizacionExpirada;
 
-    // Información de documentos adjuntos
     private List<DocumentoAdjuntoInfo> documentosAdjuntos;
 
     private Integer cantidadDocumentos;
 
     private String hashDocumentosAdjuntos;
 
-    // Métodos de conveniencia (calculados)
     private Boolean esFirmaPendiente;
 
     private Boolean esFirmaValida;

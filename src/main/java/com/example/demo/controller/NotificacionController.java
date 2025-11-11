@@ -37,32 +37,31 @@ public class NotificacionController {
 
 
     private Long getUserId(Principal principal) {
-        System.out.println("🔍 getUserId - Principal: " + (principal != null ? principal.getName() : "NULL"));
+
 
         if (principal == null) {
-            System.out.println("❌ getUserId - Principal es NULL!");
+
             return null;
         }
 
         try {
             Long id = Long.parseLong(principal.getName());
-            System.out.println("✅ getUserId - Parsed ID: " + id);
+
             return id;
         } catch (NumberFormatException e) {
-            System.out.println("🔍 getUserId - No es un ID numérico, buscando por username: " + principal.getName());
+
             var usuario = usuarioService.findByUsuario(principal.getName());
 
             if (usuario != null) {
-                System.out.println("✅ getUserId - Usuario encontrado: ID=" + usuario.getId() + ", Username=" + usuario.getUsuario() + ", Role=" + usuario.getRole().getName());
+
                 return usuario.getId();
             } else {
-                System.out.println("❌ getUserId - Usuario NO encontrado para username: " + principal.getName());
+
                 return null;
             }
         }
     }
 
-    // Public endpoint for demo/testing
     @GetMapping("/public")
     public ResponseEntity<Page<NotificacionResponse>> obtenerNotificacionesPublic(
             @RequestParam(name = "page", defaultValue = "0") int page,
@@ -124,7 +123,6 @@ public class NotificacionController {
         return ResponseEntity.noContent().build();
     }
 
-    // Obtener estadísticas (solo ADMIN)
     @GetMapping("/admin/estadisticas")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Object> obtenerEstadisticas() {
@@ -132,7 +130,6 @@ public class NotificacionController {
         return ResponseEntity.ok(estadisticas);
     }
 
-    // Limpiar notificaciones antiguas (solo ADMIN)
     @DeleteMapping("/limpiar-antiguas")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Integer> limpiarNotificacionesAntiguas(
@@ -153,7 +150,6 @@ public class NotificacionController {
         return ResponseEntity.ok(notificacion);
     }
 
-    // Obtener mis notificaciones
     @GetMapping
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Page<NotificacionResponse>> obtenerMisNotificaciones(
@@ -164,35 +160,34 @@ public class NotificacionController {
             @RequestParam(name = "soloNoLeidas", required = false) Boolean soloNoLeidas,
             Principal principal) {
 
-        System.out.println("🔍 obtenerMisNotificaciones - Iniciando petición");
-        System.out.println("🔍 Parámetros - page: " + page + ", size: " + size + ", soloNoLeidas: " + soloNoLeidas);
+
+
 
         Sort.Direction direction = sortDir.equalsIgnoreCase("desc") ?
             Sort.Direction.DESC : Sort.Direction.ASC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
 
         Long usuarioId = getUserId(principal);
-        System.out.println("🔍 usuarioId obtenido: " + usuarioId);
+
 
         if (usuarioId == null) {
-            System.out.println("❌ ERROR: usuarioId es NULL, devolviendo página vacía");
+
             return ResponseEntity.ok(Page.empty());
         }
 
         Page<NotificacionResponse> notificaciones;
         if (Boolean.TRUE.equals(soloNoLeidas)) {
-            System.out.println("🔍 Obteniendo solo notificaciones no leídas");
+
             notificaciones = notificacionService.obtenerNotificacionesNoLeidas(usuarioId, pageable);
         } else {
-            System.out.println("🔍 Obteniendo todas las notificaciones del usuario");
+
             notificaciones = notificacionService.obtenerNotificacionesUsuario(usuarioId, pageable);
         }
 
-        System.out.println("✅ Notificaciones obtenidas: " + notificaciones.getTotalElements() + " total");
+
         return ResponseEntity.ok(notificaciones);
     }
 
-    // Contar notificaciones no leídas
     @GetMapping("/no-leidas/count")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Long> contarNotificacionesNoLeidas(Principal principal) {
@@ -201,7 +196,6 @@ public class NotificacionController {
         return ResponseEntity.ok(count);
     }
 
-    // Marcar notificación como leída
     @PutMapping("/{id}/marcar-leida")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> marcarComoLeida(
@@ -213,7 +207,6 @@ public class NotificacionController {
         return ResponseEntity.ok().build();
     }
 
-    // Marcar todas las notificaciones como leídas
     @PutMapping("/marcar-todas-leidas")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> marcarTodasComoLeidas(Principal principal) {
@@ -222,7 +215,6 @@ public class NotificacionController {
         return ResponseEntity.ok().build();
     }
 
-    // Eliminar todas las notificaciones del usuario
     @DeleteMapping("/eliminar-todas")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> eliminarTodasMisNotificaciones(Principal principal) {
@@ -231,7 +223,6 @@ public class NotificacionController {
         return ResponseEntity.noContent().build();
     }
 
-    // Eliminar notificación (usuario propietario)
     @DeleteMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> eliminarMiNotificacion(

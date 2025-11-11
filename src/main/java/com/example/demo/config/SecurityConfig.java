@@ -42,11 +42,20 @@ public class SecurityConfig {
                 .maxSessionsPreventsLogin(false)
             )
             .authorizeHttpRequests(authz -> authz
-                
+
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/error").permitAll()
                 .requestMatchers("/").permitAll()
 
+                // Permitir archivos estáticos del frontend sin autenticación
+                .requestMatchers("/index.html").permitAll()
+                .requestMatchers("/styles.css").permitAll()
+                .requestMatchers("/main.js").permitAll()
+                .requestMatchers("/polyfills.js").permitAll()
+                .requestMatchers("/*.js").permitAll()
+                .requestMatchers("/*.css").permitAll()
+                .requestMatchers("/assets/**").permitAll()
+                .requestMatchers("/favicon.ico").permitAll()
 
                 .requestMatchers("/api/notificaciones/public/**").permitAll()
                 .requestMatchers("/api/activities/public/**").permitAll()
@@ -54,25 +63,23 @@ public class SecurityConfig {
                 .requestMatchers("/api/test/**").permitAll()
                 .requestMatchers("/api/tramites/public/**").permitAll()
 
-                
+
                 .requestMatchers("/api/qr/image/**").permitAll()
                 .requestMatchers("/api/qr/verificar/**").permitAll()
 
-               
+
                 .requestMatchers("/api/captcha/**").permitAll()
 
-                // Public organigrama endpoints (structural data)
                 .requestMatchers("/api/organigrama/**").permitAll()
 
-              
+
                 .requestMatchers("/api/departamentos/**").permitAll()
-                
-                // WebSocket 
+
                 .requestMatchers("/ws/**").permitAll()
                 .requestMatchers("/topic/**").permitAll()
                 .requestMatchers("/queue/**").permitAll()
-                
-                
+
+
                 .requestMatchers("/api/roles/**").authenticated()
                 .requestMatchers("/api/usuarios/**").authenticated()
                 .requestMatchers("/api/tramites/**").authenticated()
@@ -80,8 +87,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/bandeja-tramites/**").authenticated()
                 .requestMatchers("/api/activities/**").authenticated()
                 .requestMatchers("/api/cache/**").authenticated()
-                
-              
+
+
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)

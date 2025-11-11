@@ -43,7 +43,6 @@ public class FirmaDigitalService {
 
     private final String UPLOAD_DIR = "/uploads/firmas/";
 
-   
     public FirmaDigitalResponse crearFirmaDigital(FirmaDigitalRequest request, String username) {
         log.info("Creando firma digital para trámite: {} por usuario: {}", request.getTramiteId(), username);
 
@@ -73,30 +72,25 @@ public class FirmaDigitalService {
                     .algoritmoFirma(request.getAlgoritmoFirma())
                     .hashDocumento(request.getHashDocumento())
                     .nivelAutorizacionRequerido(request.getNivelAutorizacionRequerido() != null ?
-                            request.getNivelAutorizacionRequerido() : 2) 
+                            request.getNivelAutorizacionRequerido() : 2)
                     .requierePinAdicional(request.getRequierePinAdicional())
                     .expiraEn(request.getExpiraEn())
                     .fechaVencimiento(request.getExpiraEn() != null ? request.getExpiraEn() :
-                            LocalDateTime.now().plusDays(30)) 
+                            LocalDateTime.now().plusDays(30))
                     .build();
 
-            
             if (request.getDocumentosAdjuntos() != null && !request.getDocumentosAdjuntos().isEmpty()) {
                 procesarDocumentosAdjuntos(firmaDigital, request.getDocumentosAdjuntos());
             }
 
-
             determinarEstadoAutorizacionInicial(firmaDigital);
 
-            // Generar token de autorización si es necesario
             if (firmaDigital.requiereAutorizacion()) {
                 firmaDigital.setTokenAutorizacion(generarTokenAutorizacion());
             }
 
-            // Guardar en base de datos
             FirmaDigital firmaGuardada = firmaDigitalRepository.save(firmaDigital);
 
-            // Enviar notificaciones
             enviarNotificacionNuevaFirma(firmaGuardada);
 
             log.info("Firma digital creada exitosamente con ID: {}", firmaGuardada.getId());
@@ -114,13 +108,11 @@ public class FirmaDigitalService {
         return convertirAResponse(firma);
     }
 
- 
     public Page<FirmaDigitalResponse> listarFirmas(Pageable pageable) {
         return firmaDigitalRepository.findAll(pageable)
                 .map(this::convertirAResponse);
     }
 
-  
     public List<FirmaDigitalResponse> listarFirmasPorTramite(Long tramiteId) {
         List<FirmaDigital> firmas = firmaDigitalRepository.findByTramiteIdOrderByFechaCreacionAsc(tramiteId);
         return firmas.stream()
@@ -132,8 +124,6 @@ public class FirmaDigitalService {
         return firmaDigitalRepository.findByFirmanteId(firmanteId, pageable)
                 .map(this::convertirAResponse);
     }
-
-
 
     public FirmaDigitalResponse actualizarFirma(Long id, FirmaDigitalRequest request, String username) {
         log.info("Actualizando firma digital ID: {} por usuario: {}", id, username);
@@ -167,7 +157,6 @@ public class FirmaDigitalService {
         }
     }
 
- 
     @PreAuthorize("hasRole('ADMINISTRADOR')")
     public void eliminarFirma(Long id, String username) {
         log.info("Eliminando firma digital ID: {} por usuario: {}", id, username);
@@ -175,7 +164,6 @@ public class FirmaDigitalService {
         FirmaDigital firma = firmaDigitalRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Firma digital no encontrada: " + id));
 
-        // Solo permitir eliminación si está pendiente o con error
         if (!EstadoFirma.PENDIENTE.equals(firma.getEstadoFirma()) &&
             !EstadoFirma.ERROR.equals(firma.getEstadoFirma())) {
             throw new RuntimeException("No se puede eliminar una firma procesada");
@@ -192,8 +180,6 @@ public class FirmaDigitalService {
             throw new RuntimeException("Error al eliminar firma digital: " + e.getMessage());
         }
     }
-
-
 
     @PreAuthorize("hasRole('ADMINISTRADOR') or hasRole('ADMINISTRATIVO')")
     public FirmaDigitalResponse procesarAutorizacion(AutorizacionFirmaRequest request, String username) {
@@ -247,7 +233,6 @@ public class FirmaDigitalService {
         }
     }
 
-   
     @PreAuthorize("hasRole('ADMINISTRADOR') or hasRole('ADMINISTRATIVO')")
     public List<FirmaDigitalResponse> listarFirmasPendientesAutorizacion() {
         List<FirmaDigital> firmas = firmaDigitalRepository.findFirmasPendientesAutorizacion();
@@ -264,8 +249,6 @@ public class FirmaDigitalService {
         return firmaDigitalRepository.findByUbicacionFirma(ubicacionFirma);
     }
 
-
- 
     public FirmaDigitalResponse firmarDocumento(FirmarDocumentoRequest request, String username) {
         log.info("Firmando documento ID: {} por usuario: {}", request.getFirmaId(), username);
 
@@ -293,7 +276,6 @@ public class FirmaDigitalService {
             firma.setUbicacionFirma(request.getUbicacionFirma());
             firma.setContactoFirmante(request.getContactoFirmante());
 
-            // Guardar documento firmado
             if (request.getDocumentoFirmadoBase64() != null) {
                 String rutaDocumentoFirmado = guardarDocumentoFirmado(firma, request.getDocumentoFirmadoBase64());
                 firma.setDocumentoFirmadoPath(rutaDocumentoFirmado);
@@ -302,7 +284,6 @@ public class FirmaDigitalService {
                 firma.setObservaciones(firma.getObservaciones() + "\n[Firma] " + request.getObservacionesFirma());
             }
 
-            
             firma.setValidacionCertificado(true);
 
             FirmaDigital firmaActualizada = firmaDigitalRepository.save(firma);
@@ -313,7 +294,6 @@ public class FirmaDigitalService {
             return convertirAResponse(firmaActualizada);
 
         } catch (Exception e) {
-            // Marcar como error
             firma.setEstadoFirma(EstadoFirma.ERROR);
             firma.setMotivoInvalidacion("Error durante el proceso de firma: " + e.getMessage());
             firmaDigitalRepository.save(firma);
@@ -332,7 +312,6 @@ public class FirmaDigitalService {
             for (FirmaDigitalRequest.DocumentoAdjuntoRequest doc : documentos) {
                 String rutaArchivo = guardarArchivoAdjunto(firma, doc);
 
-  
                 DocumentoAdjuntoInfo info = DocumentoAdjuntoInfo.builder()
                         .nombreArchivo(doc.getNombreArchivo())
                         .tipoContenido(doc.getTipoContenido())
@@ -388,15 +367,12 @@ public class FirmaDigitalService {
 
     private String guardarArchivoAdjunto(FirmaDigital firma, FirmaDigitalRequest.DocumentoAdjuntoRequest documento) {
         try {
-    
             Path directorioFirma = Paths.get(UPLOAD_DIR + "firma_" + firma.getId());
             Files.createDirectories(directorioFirma);
 
-            
             String nombreArchivo = UUID.randomUUID().toString() + "_" + documento.getNombreArchivo();
             Path rutaArchivo = directorioFirma.resolve(nombreArchivo);
 
- 
             byte[] contenido = Base64.getDecoder().decode(documento.getContenidoBase64());
             Files.write(rutaArchivo, contenido);
 

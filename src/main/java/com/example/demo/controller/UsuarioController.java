@@ -237,10 +237,8 @@ public class UsuarioController {
         }
     }
     
-    // Public endpoint for demo/testing
     @GetMapping("/public/recent")
     public ResponseEntity<?> getRecentUsersPublic(@RequestParam(name = "limit", defaultValue = "5") int limit) {
-        // Return empty list for public access
         return ResponseEntity.ok(List.of());
     }
 
@@ -357,13 +355,11 @@ public class UsuarioController {
         }
     }
     
-    // Helper methods
     public boolean isOwnerOrAdmin(Long userId, org.springframework.security.core.Authentication authentication) {
         if (authentication == null || authentication.getPrincipal() == null) {
             return false;
         }
         
-        // Check if user has admin role
         boolean isAdmin = authentication.getAuthorities().stream()
                 .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN") || 
                                 auth.getAuthority().equals("ROLE_ADMINISTRATIVO"));
@@ -372,7 +368,6 @@ public class UsuarioController {
             return true;
         }
         
-        // Check if user is the owner
         try {
             String token = getCurrentToken();
             if (token != null) {
@@ -380,7 +375,6 @@ public class UsuarioController {
                 return userId.equals(tokenUserId);
             }
         } catch (Exception e) {
-            // Log error but continue
         }
         
         return false;
@@ -418,7 +412,6 @@ public class UsuarioController {
                 return extractTokenFromRequest(request);
             }
         } catch (Exception e) {
-            // Log error but continue
         }
         return null;
     }

@@ -131,10 +131,9 @@ public class ActivityService {
                     .build());
         }
         
-        // Ordenar todas las actividades por timestamp descendente
+
         activities.sort(Comparator.comparing(ActivityResponse::getTimestamp).reversed());
-        
-        // Aplicar offset y limit
+  
         return activities.stream()
                 .skip(offset)
                 .limit(limit)

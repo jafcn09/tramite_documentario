@@ -29,9 +29,6 @@ public class QRController {
     private final QRCodeService qrCodeService;
     private final TramiteService tramiteService;
 
-    
-    // Genera el código QR para un trámite
-
     @PostMapping("/generar/{tramiteId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'ADMINISTRATIVO', 'USUARIO', 'ESTUDIANTE')")
     public ResponseEntity<?> generarQRTramite(@PathVariable Long tramiteId) {
@@ -44,7 +41,6 @@ public class QRController {
 
             Tramite tramite = tramiteOpt.get();
 
-            // Verificar si el trámite está concluido
             if (tramite.getEstado() == Tramite.EstadoTramite.FINALIZADO ||
                 tramite.getEstado() == Tramite.EstadoTramite.ARCHIVADO ||
                 tramite.getEstado() == Tramite.EstadoTramite.CANCELADO) {
@@ -52,7 +48,6 @@ public class QRController {
                         .body(Map.of("error", "No se puede generar QR para trámites concluidos"));
             }
 
-            // Generar código QR si no existe
             if (tramite.getQrCode() == null || tramite.getQrCode().isEmpty()) {
                 String codigoQR = qrCodeService.generarCodigoQR();
                 String urlVerificacion = qrCodeService.generarUrlVerificacion(codigoQR);
@@ -78,9 +73,6 @@ public class QRController {
         }
     }
 
-
-
-    // Obtiene la imagen del código QR para un trámite (público para emails)
     @GetMapping(value = "/image/{tramiteId}", produces = MediaType.IMAGE_PNG_VALUE)
     public ResponseEntity<byte[]> obtenerImagenQRPublico(@PathVariable Long tramiteId) {
         try {
@@ -92,7 +84,6 @@ public class QRController {
 
             Tramite tramite = tramiteOpt.get();
 
-            // Auto-generar QR code si no existe
             if (tramite.getQrCode() == null || tramite.getQrCode().isEmpty()) {
                 log.info("Generando QR automáticamente para trámite {} en endpoint público", tramiteId);
                 String codigoQR = qrCodeService.generarCodigoQR();
@@ -105,7 +96,6 @@ public class QRController {
                 tramiteService.actualizarTramite(tramite);
             }
 
-            // Generar imagen QR con información del trámite
             byte[] imagenQR = qrCodeService.generarQRTramite(
                 tramite.getQrCode(),
                 tramite.getCodigo(),
@@ -125,8 +115,6 @@ public class QRController {
         }
     }
 
-    // Obtiene la imagen del código QR para un trámite (autenticado)
-
     @GetMapping(value = "/imagen/{tramiteId}", produces = MediaType.IMAGE_PNG_VALUE)
     @PreAuthorize("hasAnyRole('ADMIN', 'ADMINISTRATIVO', 'USUARIO', 'ESTUDIANTE')")
     public ResponseEntity<byte[]> obtenerImagenQR(@PathVariable Long tramiteId) {
@@ -143,7 +131,6 @@ public class QRController {
                 return ResponseEntity.badRequest().build();
             }
 
-            // Generar imagen QR con información del trámite
             byte[] imagenQR = qrCodeService.generarQRTramite(
                 tramite.getQrCode(),
                 tramite.getCodigo(),
@@ -162,22 +149,17 @@ public class QRController {
         }
     }
 
-
-    // Verifica un trámite mediante su código QR
-
     @GetMapping("/verificar/{codigoQR}")
     public ResponseEntity<?> verificarTramitePorQR(
             @PathVariable String codigoQR,
             HttpServletRequest request) {
 
         try {
-            // Validar formato del código QR
             if (!qrCodeService.validarFormatoQR(codigoQR)) {
                 return ResponseEntity.badRequest()
                         .body(Map.of("error", "Código QR inválido"));
             }
 
-            // Buscar trámite por código QR
             Optional<Tramite> tramiteOpt = tramiteService.obtenerTramitePorQR(codigoQR);
 
             if (tramiteOpt.isEmpty()) {
@@ -187,7 +169,6 @@ public class QRController {
 
             Tramite tramite = tramiteOpt.get();
 
-            // Verificar si el trámite está concluido (QR expirado)
             if (tramite.getEstado() == Tramite.EstadoTramite.FINALIZADO ||
                 tramite.getEstado() == Tramite.EstadoTramite.ARCHIVADO ||
                 tramite.getEstado() == Tramite.EstadoTramite.CANCELADO) {
@@ -199,16 +180,13 @@ public class QRController {
                         ));
             }
 
-            // Registrar escaneo
             String ipAddress = obtenerIPAddress(request);
             String userAgent = request.getHeader("User-Agent");
             qrCodeService.registrarEscaneo(codigoQR, ipAddress, userAgent);
 
-            // Incrementar contador de escaneos
             tramite.setQrEscaneos(tramite.getQrEscaneos() + 1);
             tramiteService.actualizarTramite(tramite);
 
-            // Crear DTO con información pública del trámite
             TramitePublicoDTO tramitePublico = TramitePublicoDTO.builder()
                     .codigo(tramite.getCodigo())
                     .asunto(tramite.getAsunto())
@@ -235,7 +213,6 @@ public class QRController {
 
    
 
-    // Obtiene estadísticas del código QR de un trámite
 
     @GetMapping("/estadisticas/{tramiteId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'ADMINISTRATIVO')")
@@ -267,7 +244,6 @@ public class QRController {
 
   
 
-    // Regenera el código QR para un trámite existente
 
     @PostMapping("/regenerar/{tramiteId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'ADMINISTRATIVO')")
@@ -281,7 +257,6 @@ public class QRController {
 
             Tramite tramite = tramiteOpt.get();
 
-            // Generar nuevo código QR
             String nuevoCodigoQR = qrCodeService.generarCodigoQR();
             String nuevaUrlVerificacion = qrCodeService.generarUrlVerificacion(nuevoCodigoQR);
 
@@ -308,7 +283,6 @@ public class QRController {
 
 
 
-    // Método auxiliar para obtener la dirección IP del cliente
     
     private String obtenerIPAddress(HttpServletRequest request) {
         String xForwardedFor = request.getHeader("X-Forwarded-For");

@@ -87,21 +87,18 @@ public class UsuarioService {
         usuario.setCelular(request.getCelular());
         usuario.setFoto(request.getFoto());
         usuario.setRole(role);
-        
-        // Handle area assignment if provided
+
         if (request.getAreaId() != null) {
             com.example.demo.entity.Area area = areaRepository.findById(request.getAreaId())
                     .orElseThrow(() -> new EntityNotFoundException("Area no encontrada con id: " + request.getAreaId()));
             usuario.setArea(area);
         }
-        
-      
+
         boolean mustChangePassword = request.getMustChangePassword() != null ? request.getMustChangePassword() : false;
         usuario.setMustChangePassword(mustChangePassword);
-        
 
         if (mustChangePassword) {
-            usuario.setPasswordExpiry(LocalDateTime.now().plusDays(2)); // 48 horas
+            usuario.setPasswordExpiry(LocalDateTime.now().plusDays(2));
         }
         
         usuario.setAccountEnabled(true);
@@ -186,7 +183,7 @@ public class UsuarioService {
     }
     
     public void changePassword(Long userId, ChangePasswordRequest request) {
-        // Validar que las contraseñas coincidan
+
         if (!request.getNewPassword().equals(request.getConfirmPassword())) {
             throw new IllegalArgumentException("Las credenciales no coinciden");
         }
@@ -291,8 +288,6 @@ public class UsuarioService {
 
             mailSender.send(message);
         } catch (MessagingException e) {
-            // Log the error but don't fail the password change
-            System.err.println("Failed to send password change notification: " + e.getMessage());
         }
     }
     
@@ -311,7 +306,6 @@ public class UsuarioService {
 
             mailSender.send(message);
         } catch (MessagingException e) {
-            System.err.println("Failed to send account status notification: " + e.getMessage());
         }
     }
     
@@ -330,7 +324,6 @@ public class UsuarioService {
 
             mailSender.send(message);
         } catch (MessagingException e) {
-            System.err.println("Failed to send account lock notification: " + e.getMessage());
         }
     }
     
@@ -384,8 +377,6 @@ public class UsuarioService {
 
             mailSender.send(message);
         } catch (MessagingException e) {
-            // Log the error but don't fail the user creation
-            System.err.println("Failed to send welcome email: " + e.getMessage());
         }
     }
     
@@ -461,7 +452,6 @@ public class UsuarioService {
         });
     }
     
-    // New methods for user management
     public UsuarioResponse toggleUserStatus(Long id) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado con id: " + id));
@@ -534,10 +524,8 @@ public class UsuarioService {
                 throw new IllegalArgumentException("Estas credenciales están siendo utilizadas por otro usuario del sistema. Elige unas diferentes.");
             }
         } else {
-            // Generate random password - guaranteed to be unique
+  
             newPassword = generateRandomPassword();
-            
-            // Extra validation to ensure generated password is not used by anyone
             int attempts = 0;
             while (isPasswordUsedByAnyUser(newPassword) && attempts < 10) {
                 newPassword = generateRandomPassword();
@@ -625,8 +613,6 @@ public class UsuarioService {
     public Usuario findByUsuario(String usuario) {
         return usuarioRepository.findByUsuario(usuario).orElse(null);
     }
-    
-    // MC)todos para notificaciones masivas
     public List<Long> obtenerTodosLosUsuariosActivos() {
         return usuarioRepository.findAll().stream()
                 .filter(usuario -> usuario.isAccountEnabled() && !usuario.isAccountLocked())
@@ -658,8 +644,7 @@ public class UsuarioService {
                 .map(user -> {
                     Map<String, Object> userWithWorkload = new HashMap<>();
                     UsuarioResponse userResponse = convertToResponse(user);
-                    
-                    // Add user data
+
                     userWithWorkload.put("id", userResponse.getId());
                     userWithWorkload.put("nombre", userResponse.getNombre());
                     userWithWorkload.put("apellidos", userResponse.getApellidos());
@@ -668,8 +653,6 @@ public class UsuarioService {
                     userWithWorkload.put("role", userResponse.getRole());
                     userWithWorkload.put("area", userResponse.getArea());
                     userWithWorkload.put("foto", userResponse.getFoto());
-
-                    // Add workload count - solo cuenta trámites activos (excluye finalizados, rechazados, archivados, cancelados)
                     Long workloadCount = tramiteRepository.countActiveTramitesByUsuarioAsignadoId(user.getId());
                     userWithWorkload.put("workloadCount", workloadCount != null ? workloadCount : 0);
                     
@@ -677,8 +660,6 @@ public class UsuarioService {
                 })
                 .collect(Collectors.toList());
     }
-
-    // Obtener usuario por ID como UsuarioResponse
     public UsuarioResponse obtenerUsuarioPorId(Long usuarioId) {
         Usuario usuario = usuarioRepository.findById(usuarioId)
             .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));

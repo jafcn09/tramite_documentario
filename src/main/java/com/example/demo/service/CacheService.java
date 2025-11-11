@@ -16,7 +16,6 @@ public class CacheService {
 
     private final RedisTemplate<String, Object> redisTemplate;
 
-    
     public void set(String key, Object value, Duration ttl) {
         try {
             redisTemplate.opsForValue().set(key, value, ttl);
@@ -25,7 +24,6 @@ public class CacheService {
             log.error("Error setting cache for key: {}", key, e);
         }
     }
-
 
     public Object get(String key) {
         try {
@@ -38,7 +36,6 @@ public class CacheService {
         }
     }
 
-
     public boolean exists(String key) {
         try {
             Boolean exists = redisTemplate.hasKey(key);
@@ -49,7 +46,6 @@ public class CacheService {
         }
     }
 
-  
     public void delete(String key) {
         try {
             redisTemplate.delete(key);
@@ -72,9 +68,6 @@ public class CacheService {
         }
     }
 
-    /**
-     * Establecer tiempo de expiración para una clave
-     */
     public void expire(String key, Duration duration) {
         try {
             redisTemplate.expire(key, duration);
@@ -84,9 +77,6 @@ public class CacheService {
         }
     }
 
-    /**
-     * Incrementar valor numérico en cache (útil para contadores)
-     */
     public Long increment(String key) {
         try {
             Long value = redisTemplate.opsForValue().increment(key);
@@ -97,7 +87,6 @@ public class CacheService {
             return null;
         }
     }
-
 
     public Long incrementWithTtl(String key, Duration ttl) {
         try {
@@ -111,11 +100,9 @@ public class CacheService {
         }
     }
 
-    // Eliminar todas las entradas de caché
     @CacheEvict(allEntries = true, cacheNames = {"tramites", "usuarios", "areas", "notificaciones"})
     public void clearAllCache() {
         try {
-            // También limpiar manualmente las claves de Redis
             Set<String> keys = redisTemplate.keys("*");
             if (keys != null && !keys.isEmpty()) {
                 redisTemplate.delete(keys);
@@ -126,8 +113,6 @@ public class CacheService {
         }
     }
 
-    
-    //obtiene info
     public long getCacheSize() {
         try {
             Set<String> keys = redisTemplate.keys("*");

@@ -70,7 +70,6 @@ public class FileValidationService {
             throw new IllegalArgumentException("El nombre del archivo no puede estar vacío");
         }
 
-        // Validar longitud
         if (filename.length() > 255) {
             throw new IllegalArgumentException("El nombre del archivo es demasiado largo (máximo 255 caracteres)");
         }

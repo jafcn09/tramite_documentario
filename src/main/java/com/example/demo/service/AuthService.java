@@ -39,43 +39,37 @@ public class AuthService {
         String ipAddress = getClientIpAddress(httpRequest);
         
         try {
-            // Verificar si está temporalmente bloqueado
             if (isTemporarilyLocked(usernameOrEmail)) {
                 recordFailedAttempt(usernameOrEmail, ipAddress, null, "Cuenta temporalmente bloqueada");
                 return new LoginResponse("Tu cuenta está temporalmente bloqueada. Intenta en 30 minutos.");
             }
-            
-            // Buscar usuario por username o email
+
             Usuario usuario = findUserByUsernameOrEmail(usernameOrEmail);
             if (usuario == null) {
                 recordFailedAttempt(usernameOrEmail, ipAddress, null, "Usuario no encontrado");
                 return new LoginResponse("Credenciales inválidas");
             }
-            
-            // Verificar si la cuenta está deshabilitada o bloqueada
+
             if (!usuario.isAccountEnabled()) {
                 recordFailedAttempt(usernameOrEmail, ipAddress, usuario, "Cuenta deshabilitada");
                 return new LoginResponse("Tu cuenta está deshabilitada. Contacta al administrador.");
             }
-            
+
             if (usuario.isAccountLocked()) {
                 recordFailedAttempt(usernameOrEmail, ipAddress, usuario, "Cuenta bloqueada");
                 return new LoginResponse("Tu cuenta está bloqueada. Contacta al administrador.");
             }
-            
-            // Verificar contraseña
+
             if (!passwordEncoder.matches(request.getPassword(), usuario.getClave())) {
                 handleFailedLogin(usernameOrEmail, ipAddress, usuario);
                 return new LoginResponse("Credenciales inválidas");
             }
-            
-            // Verificar si debe cambiar contraseña
+
             if (usuario.isMustChangePassword() || usuarioService.isPasswordExpired(usuario.getId())) {
                 recordSuccessfulAttempt(usernameOrEmail, ipAddress, usuario);
                 return new LoginResponse("Debes cambiar tu contraseña antes de continuar");
             }
-            
-            // Login exitoso
+
             recordSuccessfulAttempt(usernameOrEmail, ipAddress, usuario);
             
             String token = jwtService.generateToken(
@@ -115,23 +109,19 @@ public class AuthService {
     
     private void handleFailedLogin(String usernameOrEmail, String ipAddress, Usuario usuario) {
         recordFailedAttempt(usernameOrEmail, ipAddress, usuario, "Contraseña incorrecta");
-        
-        // Contar intentos fallidos recientes
+
         LocalDateTime oneDayAgo = LocalDateTime.now().minusDays(1);
         long totalFailedAttempts = loginAttemptRepository
                 .countFailedAttemptsByUsername(usernameOrEmail, oneDayAgo);
-        
-        // Si supera el límite máximo, bloquear permanentemente la cuenta
+
         if (totalFailedAttempts >= MAX_ATTEMPTS_BEFORE_PERMANENT_LOCK && usuario != null) {
             usuario.setAccountLocked(true);
             usuarioRepository.save(usuario);
-            
-            // Enviar notificación de bloqueo
+
             try {
-                usuarioService.lockAccount(usuario.getId(), 
+                usuarioService.lockAccount(usuario.getId(),
                     "Cuenta bloqueada automáticamente por exceso de intentos fallidos de login");
             } catch (Exception e) {
-                // Log error but don't fail the process
             }
         }
     }
@@ -157,44 +147,39 @@ public class AuthService {
     
     public LoginResponse refreshToken(String refreshToken) {
         try {
-        // Extraer usuario del token
             String username = jwtService.extractUsername(refreshToken);
-            
+
             if (username == null || !jwtService.validateToken(refreshToken, username)) {
                 return new LoginResponse("Token de refresco inválido o expirado");
             }
-            
-            // Buscar usuario
+
             Usuario usuario = usuarioRepository.findByUsuario(username)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-            
-            // Verificar estado de la cuenta
+
             if (!usuario.isAccountEnabled()) {
                 return new LoginResponse("Cuenta deshabilitada");
             }
-            
+
             if (usuario.isAccountLocked()) {
                 return new LoginResponse("Cuenta bloqueada");
             }
-            
-            // Generar nuevos tokens
+
             String newAccessToken = jwtService.generateToken(
                 usuario.getUsuario(),
                 usuario.getRole().getName(),
                 usuario.getId()
             );
-            
+
             String newRefreshToken = jwtService.generateRefreshToken(
                 usuario.getUsuario(),
                 usuario.getId()
             );
-            
+
             String redirectUrl = getRoleBasedRedirectUrl(usuario.getRole());
             UsuarioResponse usuarioResponse = convertToResponse(usuario);
-            
-            return new LoginResponse(newAccessToken, newRefreshToken, redirectUrl, 
+
+            return new LoginResponse(newAccessToken, newRefreshToken, redirectUrl,
                 usuario.getRole().getName(), usuarioResponse);
-                
         } catch (Exception e) {
             return new LoginResponse("Error al refrescar token: " + e.getMessage());
         }
@@ -211,7 +196,7 @@ public class AuthService {
     
     private String getClientIpAddress(HttpServletRequest request) {
         if (request == null) {
-            return "127.0.0.1"; // Default IP for local/init requests
+            return "127.0.0.1"; 
         }
         
         String xForwardedFor = request.getHeader("X-Forwarded-For");

@@ -94,7 +94,6 @@ public class BandejaTramitesController {
         if ("ADMINISTRATIVO".equals(rol) || "ADMIN".equals(rol)) {
             estadisticasBandeja.put("totalAsignados", estadisticasOriginales.getOrDefault("total", 0L));
 
-            // Pendientes de revisión: trámites enviados que aún no han sido procesados
             estadisticasBandeja.put("pendientesRevision",
                 (Long) estadisticasOriginales.getOrDefault("estado_ENVIADO", 0L) +
                 (Long) estadisticasOriginales.getOrDefault("estado_EN_REVISION", 0L));
@@ -107,7 +106,6 @@ public class BandejaTramitesController {
 
             estadisticasBandeja.put("enProceso", totalEnProceso);
             
-            // Finalizados: trámites que ya tienen respuesta completa
             estadisticasBandeja.put("finalizadosHoy", 
                 (Long) estadisticasOriginales.getOrDefault("estado_FINALIZADO", 0L));
             estadisticasBandeja.put("vencidos", 
@@ -116,7 +114,6 @@ public class BandejaTramitesController {
             estadisticasBandeja.put("promedioAtencion", 5.2);
             estadisticasBandeja.put("calificacionPromedio", 4.4);
             
-            // Productividad semanal mock
             estadisticasBandeja.put("productividadSemanal", java.util.Arrays.asList(
                 java.util.Map.of("fecha", "2024-01-15", "completados", 8),
                 java.util.Map.of("fecha", "2024-01-16", "completados", 12),
@@ -127,7 +124,6 @@ public class BandejaTramitesController {
         } else {
             estadisticasBandeja.put("totalAsignados", estadisticasOriginales.getOrDefault("total", 0L));
             
-            // Pendientes de revisión: trámites enviados que aún no han sido procesados
             estadisticasBandeja.put("pendientesRevision", 
                 (Long) estadisticasOriginales.getOrDefault("estado_ENVIADO", 0L) + 
                 (Long) estadisticasOriginales.getOrDefault("estado_EN_REVISION", 0L));
@@ -136,7 +132,6 @@ public class BandejaTramitesController {
                 (Long) estadisticasOriginales.getOrDefault("estado_EN_PROCESO", 0L) +
                 (Long) estadisticasOriginales.getOrDefault("estado_DERIVADO", 0L));
             
-            // Finalizados: trámites que ya tienen respuesta completa
             estadisticasBandeja.put("finalizadosHoy", 
                 (Long) estadisticasOriginales.getOrDefault("estado_FINALIZADO", 0L));
 

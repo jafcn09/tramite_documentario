@@ -26,7 +26,6 @@ public class ActivityController {
     public ResponseEntity<List<ActivityResponse>> getRecentActivitiesPublic(
             @RequestParam(name = "limit", defaultValue = "5") int limit,
             @RequestParam(name = "offset", defaultValue = "0") int offset) {
-        // Return empty list for public access
         return ResponseEntity.ok(List.of());
     }
 

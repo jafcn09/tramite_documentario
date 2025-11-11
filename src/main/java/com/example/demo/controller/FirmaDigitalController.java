@@ -33,7 +33,6 @@ public class FirmaDigitalController {
             HttpServletRequest httpRequest) {
 
         try {
-            // Capturar IP del solicitante
             String ipOrigen = obtenerIpCliente(httpRequest);
             log.info("Creando firma digital desde IP: {} por usuario: {}", ipOrigen, authentication.getName());
 

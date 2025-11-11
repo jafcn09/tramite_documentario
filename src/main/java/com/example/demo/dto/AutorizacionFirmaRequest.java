@@ -19,12 +19,12 @@ public class AutorizacionFirmaRequest {
     private Long firmaId;
 
     @NotNull(message = "La decisión de autorización es obligatoria")
-    private Boolean autorizar; // true = autorizar, false = denegar
+    private Boolean autorizar;
 
     @NotBlank(message = "El motivo de la autorización es obligatorio")
     private String motivoAutorizacion;
 
-    private LocalDateTime expiraEn; // Cuando expira la autorización
+    private LocalDateTime expiraEn; 
 
     private Boolean requierePinAdicional;
 

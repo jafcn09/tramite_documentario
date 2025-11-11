@@ -28,7 +28,6 @@ public class ContentSecurityPolicyConfig extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
-        // Content Security Policy - Previene XSS
         response.setHeader("Content-Security-Policy",
             "default-src 'self'; " +
             "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
@@ -50,10 +49,8 @@ public class ContentSecurityPolicyConfig extends OncePerRequestFilter {
     
         response.setHeader("X-XSS-Protection", "1; mode=block");
 
-        // Referrer-Policy - Controla información de referrer
         response.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
 
-        // Permissions-Policy - Controla APIs del navegador
         response.setHeader("Permissions-Policy",
             "camera=(), microphone=(), geolocation=(), payment=()"
         );

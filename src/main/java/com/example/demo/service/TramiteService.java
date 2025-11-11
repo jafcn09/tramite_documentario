@@ -186,15 +186,10 @@ public class TramiteService {
                     UsuarioResponse usuario = usuarioService.obtenerUsuarioPorId(usuarioSolicitanteId);
                     if (usuario != null) {
                         firmaDigitalService.crearFirmaDigital(firmaRequest, usuario.getUsuario());
-                    } else {
-                        System.err.println("Usuario no encontrado con ID: " + usuarioSolicitanteId);
                     }
                 } catch (Exception ex) {
-                    System.err.println("Error al crear firma digital con username: " + ex.getMessage());
                 }
             } catch (Exception e) {
-          
-                System.err.println("Error al crear registro de firma digital para trámite " + saved.getId() + ": " + e.getMessage());
             }
         }
 
@@ -1398,8 +1393,6 @@ public class TramiteService {
                     builder.documentosAdjuntos(java.util.Arrays.asList(doc));
                 }
             } catch (Exception e) {
-           
-                e.printStackTrace();
                 builder.documentosAdjuntos(new java.util.ArrayList<>());
             }
         } else {
@@ -1460,7 +1453,6 @@ public class TramiteService {
                     builder.ubicacionFirma(firma.getUbicacionFirma());
                 }
             } catch (Exception e) {
-                System.err.println("Error al cargar datos de firma digital para trámite " + tramite.getId() + ": " + e.getMessage());
             }
         }
 
@@ -2762,7 +2754,6 @@ public class TramiteService {
                 }
 
             } catch (Exception e) {
-                System.err.println("Error al validar firma digital: " + e.getMessage());
             }
         }
 
@@ -2846,8 +2837,6 @@ public class TramiteService {
                 tramiteActualizado = tramiteRepository.save(tramiteActualizado);
 
             } catch (Exception e) {
-                e.printStackTrace();
-                
             }
         }
 
@@ -2878,7 +2867,7 @@ public class TramiteService {
 
             return null; 
         } catch (Exception e) {
-            System.err.println("Error al obtener área del usuario " + usuarioId + ": " + e.getMessage());
+
             return null;
         }
     }

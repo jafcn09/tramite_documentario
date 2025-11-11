@@ -57,7 +57,6 @@ public class RoleService {
             role.setName(name);
         }
         
-        // Update description if provided
         if (description != null) {
             role.setDescription(description);
         }

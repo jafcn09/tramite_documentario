@@ -22,13 +22,9 @@ public class UsuarioAreaController {
     @PreAuthorize("hasRole('ADMIN') or hasRole('ADMINISTRATIVO')")
     public ResponseEntity<List<UsuarioResponse>> getUsersByArea(@PathVariable Long id) {
         try {
-            System.out.println("UsuarioAreaController: Getting users for area ID: " + id);
             List<UsuarioResponse> users = usuarioService.getUsersByArea(id);
-            System.out.println("UsuarioAreaController: Returning " + users.size() + " users");
             return ResponseEntity.ok(users);
         } catch (Exception e) {
-            System.err.println("UsuarioAreaController: Error getting area users: " + e.getMessage());
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

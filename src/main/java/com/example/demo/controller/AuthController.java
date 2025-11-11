@@ -61,14 +61,12 @@ public class AuthController {
         try {
             LoginResponse response = authService.login(loginRequest, httpRequest);
 
-            // Si hay un token, el login fue exitoso
             if (response.getToken() != null) {
                 return ResponseEntity.ok()
                     .header("Content-Type", "application/json")
                     .body(response);
             }
             
-            // Si no hay token pero hay un mensaje específico de cambio de contraseña
             if (response.getMessage() != null && 
                 response.getMessage().contains("cambiar tu contraseña")) {
                 return ResponseEntity.status(HttpStatus.PRECONDITION_REQUIRED)
@@ -76,7 +74,6 @@ public class AuthController {
                     .body(response);
             }
             
-            // Para cualquier otro error (credenciales inválidas, cuenta bloqueada, etc.)
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .header("Content-Type", "application/json")
                 .body(response);
@@ -94,7 +91,6 @@ public class AuthController {
         try {
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
                 String token = authHeader.substring(7);
-                // Aquí podrías agregar lógica adicional de validación si es necesario
                 return ResponseEntity.ok().body("{\"valid\": true}");
             }
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("{\"valid\": false}");

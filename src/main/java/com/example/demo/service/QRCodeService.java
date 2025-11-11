@@ -26,19 +26,13 @@ public class QRCodeService {
     @Value("${app.qr.size:300}")
     private int qrSize;
 
-
     public String generarCodigoQR() {
         return UUID.randomUUID().toString().replace("-", "").substring(0, 16).toUpperCase();
     }
 
-
-    // Genera la URL de verificación del trámite (redirige a buscar)
     public String generarUrlVerificacion(String codigoQR) {
         return frontendUrl + "/buscar?qr=" + codigoQR;
     }
-
-   
-    // Genera la imagen del código QR en formato PNG
 
     public byte[] generarImagenQR(String contenido) throws WriterException, IOException {
         QRCodeWriter qrCodeWriter = new QRCodeWriter();
@@ -50,8 +44,6 @@ public class QRCodeService {
         return outputStream.toByteArray();
     }
 
-
-    // Genera el código QR para un trámite específico
     public byte[] generarQRTramite(String qrCode, String codigo, String expediente, String tipo, String estado)
             throws WriterException, IOException {
 
@@ -69,20 +61,14 @@ public class QRCodeService {
         return generarImagenQR(contenidoQR);
     }
 
-    
-    // Valida el formato del código QR
     public boolean validarFormatoQR(String codigoQR) {
         if (codigoQR == null || codigoQR.trim().isEmpty()) {
             return false;
         }
 
-        // Validar que tenga 16 caracteres alfanuméricos
         return codigoQR.matches("^[A-Z0-9]{16}$");
     }
 
-   
-    // Registra el escaneo del código QR (puede ser extendido para guardar en BD)
-    
     public void registrarEscaneo(String codigoQR, String ipAddress, String userAgent) {
         log.info("QR escaneado - Código: {}, IP: {}, UserAgent: {}, Fecha: {}",
                 codigoQR, ipAddress, userAgent, LocalDateTime.now());

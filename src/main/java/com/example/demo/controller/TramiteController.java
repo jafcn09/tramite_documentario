@@ -272,7 +272,6 @@ public class TramiteController {
                     request.setFechaVencimiento(java.time.LocalDate.parse(fechaVencimiento).atStartOfDay());
                 }
             } catch (Exception e) {
-                System.err.println("Error parsing date: " + fechaVencimiento + " - " + e.getMessage());
                 request.setFechaVencimiento(null);
             }
         }
@@ -313,8 +312,6 @@ public class TramiteController {
             try {
                 tramiteService.subirArchivosMultiples(tramite.getId(), documentos, usuarioId);
             } catch (Exception e) {
-                System.err.println("Error uploading files: " + e.getMessage());
-                e.printStackTrace();
             }
         }
         return ResponseEntity.ok(tramite);
@@ -353,7 +350,6 @@ public class TramiteController {
                     request.setRequiereFirmaDigital(firmaData.get("firmaDigitalData") != null);
 
                 } catch (JsonProcessingException e) {
-                    System.err.println("❌ Error al procesar JSON de firma digital: " + e.getMessage());
                     return ResponseEntity.badRequest().body("Error al procesar datos de firma digital");
                 }
             }
@@ -418,8 +414,6 @@ public class TramiteController {
             TramiteResponse tramite = tramiteService.derivarTramite(id, trabajadorActualId, trabajadorNuevoId, motivo);
             return ResponseEntity.ok(tramite);
         } catch (Exception e) {
-            System.err.println("❌ Error al derivar trámite: " + e.getMessage());
-            e.printStackTrace();
             throw e;
         }
     }
@@ -447,7 +441,6 @@ public class TramiteController {
             @RequestParam(value = "observaciones", required = false) String observaciones,
             @RequestParam(value = "asunto", required = false) String asunto,
             @RequestParam(value = "archivos", required = false) List<MultipartFile> archivos,
-            // Nuevos parámetros para firma digital
             @RequestParam(value = "requiereFirmaDigital", required = false, defaultValue = "false") Boolean requiereFirmaDigital,
             @RequestParam(value = "tipoFirma", required = false) String tipoFirma,
             @RequestParam(value = "razonFirma", required = false) String razonFirma,
@@ -617,7 +610,6 @@ public class TramiteController {
         return ResponseEntity.ok(tramites);
     }
     
-    // Obtener trámite por ID
     @GetMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<TramiteResponse> obtenerTramite(
