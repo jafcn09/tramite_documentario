@@ -200,10 +200,8 @@ public class TramitePublicoService {
     }
 
     private void validateBusinessRules(TramitePublicoRequest request) {
-        boolean usuarioExiste = usuarioRepository.existsByNumDocumento(request.getNumeroDocumento());
-        if (usuarioExiste) {
-            throw new IllegalArgumentException("El documento pertenece a un usuario registrado. Inicie sesión para crear trámites");
-        }
+        // Se permite que usuarios existentes o nuevos creen trámites públicos
+        // El usuario será creado o reutilizado en crearObtenerUsuarioReal()
 
         boolean tramiteDuplicado = tramiteRepository.existsDeletedTramiteWithSameData(
             request.getAsunto(),
@@ -258,7 +256,8 @@ public class TramitePublicoService {
     }
 
     private Tramite buildTramite(TramitePublicoRequest request) {
-        Long usuarioPublicoId = obtenerOCrearUsuarioPublico();
+        // Crear o obtener el usuario real con los datos proporcionados
+        Long usuarioRealId = crearObtenerUsuarioReal(request);
 
         Tramite tramite = new Tramite();
         tramite.setCodigo(generateCodigo());
@@ -268,11 +267,58 @@ public class TramitePublicoService {
         tramite.setTipo(Tramite.TipoTramite.valueOf(request.getTipoTramite()));
         tramite.setEstado(Tramite.EstadoTramite.ENVIADO);
         tramite.setPrioridad(Tramite.PrioridadTramite.NORMAL);
-        tramite.setUsuarioSolicitanteId(usuarioPublicoId);
+        tramite.setUsuarioSolicitanteId(usuarioRealId);
         tramite.setAreaActualId(1L);
         tramite.setFechaCreacion(LocalDateTime.now());
         tramite.setDocumentosAdjuntos("[]");
         return tramite;
+    }
+
+    private Long crearObtenerUsuarioReal(TramitePublicoRequest request) {
+   
+        return usuarioRepository.findByNumDocumento(request.getNumeroDocumento())
+            .map(usuario -> usuario.getId())
+            .orElseGet(() -> {
+
+                com.example.demo.model.Usuario nuevoUsuario = new com.example.demo.model.Usuario();
+                nuevoUsuario.setNombre(request.getNombres());
+                nuevoUsuario.setApellidos(request.getApellidos());
+                nuevoUsuario.setNumDocumento(request.getNumeroDocumento());
+                nuevoUsuario.setTipoDocumento(request.getTipoDocumento());
+                nuevoUsuario.setCorreo(request.getEmail());
+                nuevoUsuario.setCelular(request.getTelefono());
+                nuevoUsuario.setUsuario(generateUsername(request.getNombres(), request.getApellidos()));
+                nuevoUsuario.setClave("TEMP_PASSWORD_" + System.currentTimeMillis());
+                nuevoUsuario.setFechaCreacion(LocalDateTime.now());
+
+                // Obtener el rol de usuario regular (ID = 3) de la base de datos
+                com.example.demo.model.Role usuarioRole = new com.example.demo.model.Role();
+                usuarioRole.setId(3L);
+                usuarioRole.setName("usuario");
+                nuevoUsuario.setRole(usuarioRole);
+
+                nuevoUsuario.setMustChangePassword(false);
+                nuevoUsuario.setAccountEnabled(true);
+                nuevoUsuario.setAccountLocked(false);
+
+                com.example.demo.model.Usuario usuarioGuardado = usuarioRepository.save(nuevoUsuario);
+                return usuarioGuardado.getId();
+            });
+    }
+
+    private String generateUsername(String nombres, String apellidos) {
+        String baseUsername = (nombres.split("\\s+")[0].toLowerCase() +
+                              (apellidos.split("\\s+").length > 0 ? apellidos.split("\\s+")[0].toLowerCase() : ""))
+                              .replaceAll("[^a-z0-9]", "");
+
+   
+        String username = baseUsername;
+        int counter = 1;
+        while (usuarioRepository.findByUsuario(username).isPresent()) {
+            username = baseUsername + counter;
+            counter++;
+        }
+        return username;
     }
 
     private Long obtenerOCrearUsuarioPublico() {

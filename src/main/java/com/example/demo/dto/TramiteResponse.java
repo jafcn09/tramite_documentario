@@ -45,7 +45,12 @@ public class TramiteResponse {
     private LocalDateTime fechaCompletado;
     private Integer progreso;
 
+    @JsonProperty(value = "documentosAdjuntos", access = JsonProperty.Access.WRITE_ONLY)
     private List<DocumentoAdjunto> documentosAdjuntos;
+
+    @JsonProperty("documentos")
+    private List<DocumentoAdjunto> documentos;
+
     private List<TramiteHistorialResponse> historial;
 
     private Boolean firmaDigitalActiva;

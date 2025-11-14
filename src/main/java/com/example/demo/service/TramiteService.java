@@ -494,6 +494,19 @@ public class TramiteService {
             throw new RuntimeException("No tienes permiso para eliminar este trámite. Solo puedes eliminar trámites que tú creaste.");
         }
 
+        // Prevent deletion of rejected, finalized, or archived tramites
+        if (tramite.getEstado() != null) {
+            if (tramite.getEstado().equals(Tramite.EstadoTramite.RECHAZADO)) {
+                throw new RuntimeException("No puedes eliminar un trámite que ha sido rechazado.");
+            }
+            if (tramite.getEstado().equals(Tramite.EstadoTramite.FINALIZADO)) {
+                throw new RuntimeException("No puedes eliminar un trámite que ha sido finalizado.");
+            }
+            if (tramite.getEstado().equals(Tramite.EstadoTramite.ARCHIVADO)) {
+                throw new RuntimeException("No puedes eliminar un trámite que ha sido archivado.");
+            }
+        }
+
         tramite.setDeletedAt(LocalDateTime.now());
         tramiteRepository.save(tramite);
     }
@@ -1383,21 +1396,25 @@ public class TramiteService {
                         documentosList.add(doc);
                     }
                     builder.documentosAdjuntos(documentosList);
-                  
+                    builder.documentos(documentosList);
+
                 } else {
-            
+
                     TramiteResponse.DocumentoAdjunto doc = new TramiteResponse.DocumentoAdjunto();
                     doc.setNombre(tramite.getDocumentosAdjuntos());
                     doc.setTipo("application/octet-stream");
                     doc.setFechaSubida(java.time.LocalDateTime.now());
                     builder.documentosAdjuntos(java.util.Arrays.asList(doc));
+                    builder.documentos(java.util.Arrays.asList(doc));
                 }
             } catch (Exception e) {
                 builder.documentosAdjuntos(new java.util.ArrayList<>());
+                builder.documentos(new java.util.ArrayList<>());
             }
         } else {
-  
+
             builder.documentosAdjuntos(new java.util.ArrayList<>());
+            builder.documentos(new java.util.ArrayList<>());
         }
 
         if (tramite.getArchivosRespuesta() != null && !tramite.getArchivosRespuesta().isEmpty()) {
@@ -1468,6 +1485,14 @@ public class TramiteService {
         }
 
         if (tramite.getEstado() == Tramite.EstadoTramite.FINALIZADO) {
+            return 100;
+        }
+
+        if (tramite.getEstado() == Tramite.EstadoTramite.RECHAZADO) {
+            return 100;
+        }
+
+        if (tramite.getEstado() == Tramite.EstadoTramite.ARCHIVADO) {
             return 100;
         }
 
@@ -1788,6 +1813,21 @@ public class TramiteService {
         if (tramite.getFechaVencimiento() != null) {
             estaVencido = LocalDateTime.now().isAfter(tramite.getFechaVencimiento());
         }
+
+        // Check if user can delete the tramite (user role only)
+        boolean puedeEliminar = false;
+        if (("USUARIO".equals(rol) || "ESTUDIANTE".equals(rol)) &&
+            tramite.getUsuarioSolicitanteId() != null &&
+            tramite.getUsuarioSolicitanteId().equals(usuarioId)) {
+            // Only allow deletion if tramite is not rejected, finalized, or archived
+            if (tramite.getEstado() != null &&
+                !tramite.getEstado().equals(Tramite.EstadoTramite.RECHAZADO) &&
+                !tramite.getEstado().equals(Tramite.EstadoTramite.FINALIZADO) &&
+                !tramite.getEstado().equals(Tramite.EstadoTramite.ARCHIVADO)) {
+                puedeEliminar = true;
+            }
+        }
+
         boolean esAdministrativo = "ADMINISTRATIVO".equals(rol) || "ADMIN".equals(rol);
         boolean esUsuario = "USUARIO".equals(rol);
         boolean esEstudiante = "ESTUDIANTE".equals(rol);
@@ -1796,6 +1836,7 @@ public class TramiteService {
             permisos.put("puedeRechazar", false);
             permisos.put("puedeDerivar", false);
             permisos.put("puedeResponder", false);
+            permisos.put("puedeEliminar", puedeEliminar);
             permisos.put("estaVencido", estaVencido);
             return permisos;
         }
@@ -1804,6 +1845,7 @@ public class TramiteService {
             permisos.put("puedeRechazar", false);
             permisos.put("puedeDerivar", false);
             permisos.put("puedeResponder", false);
+            permisos.put("puedeEliminar", false);
             permisos.put("estaVencido", true);
             return permisos;
         }
@@ -1820,20 +1862,30 @@ public class TramiteService {
                            tramite.getEstado().equals(Tramite.EstadoTramite.EN_REVISION));
             puedeRechazar = tramite.getEstado() != null &&
                            !tramite.getEstado().equals(Tramite.EstadoTramite.FINALIZADO) &&
-                           !tramite.getEstado().equals(Tramite.EstadoTramite.ARCHIVADO);
+                           !tramite.getEstado().equals(Tramite.EstadoTramite.ARCHIVADO) &&
+                           !tramite.getEstado().equals(Tramite.EstadoTramite.RECHAZADO);
         }
-        boolean puedeDerivar = usuarioAsignado == null || !usuarioAsignado.equals(usuarioId);
+        boolean puedeDerivar = (usuarioAsignado == null || !usuarioAsignado.equals(usuarioId)) &&
+                              tramite.getEstado() != null &&
+                              !tramite.getEstado().equals(Tramite.EstadoTramite.FINALIZADO) &&
+                              !tramite.getEstado().equals(Tramite.EstadoTramite.ARCHIVADO) &&
+                              !tramite.getEstado().equals(Tramite.EstadoTramite.RECHAZADO);
 
         List<String> estadosParaResponder = Arrays.asList("APROBADO", "DERIVADO");
         boolean puedeResponder = false;
 
-        if (usuarioAsignado != null && usuarioAsignado.equals(usuarioId) && estadosParaResponder.contains(estadoNombre)) {
+        if (usuarioAsignado != null && usuarioAsignado.equals(usuarioId) && estadosParaResponder.contains(estadoNombre) &&
+            tramite.getEstado() != null &&
+            !tramite.getEstado().equals(Tramite.EstadoTramite.FINALIZADO) &&
+            !tramite.getEstado().equals(Tramite.EstadoTramite.ARCHIVADO) &&
+            !tramite.getEstado().equals(Tramite.EstadoTramite.RECHAZADO)) {
             puedeResponder = true;
         }
         permisos.put("puedeAprobar", puedeAprobar);
         permisos.put("puedeRechazar", puedeRechazar);
         permisos.put("puedeDerivar", puedeDerivar);
         permisos.put("puedeResponder", puedeResponder);
+        permisos.put("puedeEliminar", false);
         permisos.put("estaVencido", false);
 
         return permisos;
@@ -2098,6 +2150,10 @@ public class TramiteService {
         tramite.setFechaActualizacion(LocalDateTime.now());
 
         tramite.setContadorRechazados((tramite.getContadorRechazados() != null ? tramite.getContadorRechazados() : 0) + 1);
+        int contadorProcesados = (tramite.getContadorProcesados() != null ? tramite.getContadorProcesados() : 0) + 1;
+        int contadorPorProcesar = Math.max(0, (tramite.getContadorPorProcesar() != null ? tramite.getContadorPorProcesar() : 0) - 1);
+        tramite.setContadorProcesados(contadorProcesados);
+        tramite.setContadorPorProcesar(contadorPorProcesar);
 
         tramite = tramiteRepository.save(tramite);
 
@@ -2134,6 +2190,7 @@ public class TramiteService {
                 );
             }
         } catch (Exception e) {
+            // Silenciosamente fallar el envío de correo pero no afectar el rechazo del trámite
         }
         return com.example.demo.dto.RechazarTramiteResponse.builder()
             .tramiteId(tramite.getId())

@@ -1,0 +1,1 @@
+-- This migration is no longer needed as V0 already creates the 'areas' table with the correct name

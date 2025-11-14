@@ -33,7 +33,7 @@ public class OrganigramaController {
     }
 
     @GetMapping("/sub-areas/{areaId}")
-    public ResponseEntity<AreaJerarquicaDTO> obtenerSubAreas(@PathVariable Long areaId) {
+    public ResponseEntity<AreaJerarquicaDTO> obtenerSubAreas(@PathVariable("areaId") Long areaId) {
         return ResponseEntity.ok(organigramaService.obtenerSubAreas(areaId));
     }
 

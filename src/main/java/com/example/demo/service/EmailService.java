@@ -53,7 +53,7 @@ public class EmailService {
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
-    @Async
+    @Async("emailExecutor")
     public void enviarCorreoRespuestaTramite(Long solicitanteId, Long tramiteId, Map<String, Object> datos) {
         usuarioRepository.findById(solicitanteId).ifPresent(solicitante -> {
             tramiteRepository.findById(tramiteId).ifPresent(tramite -> {
@@ -468,7 +468,7 @@ public class EmailService {
         });
     }
 
-    @Async
+    @Async("emailExecutor")
     public void enviarCorreoRecepcion(Long solicitanteId, Long tramiteId, Map<String, Object> datos) {
         usuarioRepository.findById(solicitanteId).ifPresent(solicitante -> {
             tramiteRepository.findById(tramiteId).ifPresent(tramite -> {
@@ -619,7 +619,7 @@ public class EmailService {
             .orElse("Usuario");
     }
 
-    @Async
+    @Async("emailExecutor")
     public void enviarCorreoRechazoTramite(Long solicitanteId, Long tramiteId, String motivoRechazo, String observaciones, String rechazadoPor) {
         usuarioRepository.findById(solicitanteId).ifPresent(solicitante -> {
             tramiteRepository.findById(tramiteId).ifPresent(tramite -> {
@@ -1320,7 +1320,7 @@ public class EmailService {
         });
     }
 
-    @Async
+    @Async("emailExecutor")
     public void enviarCorreoFinalizacionConArchivo(Long solicitanteId, Long tramiteId, String urlArchivo) {
         usuarioRepository.findById(solicitanteId).ifPresent(solicitante -> {
             tramiteRepository.findById(tramiteId).ifPresent(tramite -> {
@@ -1819,8 +1819,7 @@ public class EmailService {
         };
     }
 
- 
-    @Async
+    @Async("emailExecutor")
     public void enviarCorreoConfirmacionRemitente(Long remitenteId, Long tramiteId) {
 
         usuarioRepository.findById(remitenteId).ifPresent(remitente -> {
@@ -1966,13 +1965,30 @@ public class EmailService {
 
             log.debug("Imagen QR generada: {} bytes", imagenQR.length);
 
-            org.springframework.core.io.ByteArrayResource qrResource =
-                new org.springframework.core.io.ByteArrayResource(imagenQR);
+            try {
+                // Crear un recurso con nombre válido para evitar "path name null"
+                final String filename = "qrcode_tramite_" + tramite.getId() + ".png";
+                org.springframework.core.io.ByteArrayResource qrResource =
+                    new org.springframework.core.io.ByteArrayResource(imagenQR) {
+                        @Override
+                        public String getFilename() {
+                            return filename;
+                        }
 
-            helper.addInline("qrCodeImage", qrResource, "image/png");
-            log.info("✅ Imagen QR adjuntada exitosamente con CID para trámite {}", tramite.getId());
+                        @Override
+                        public long contentLength() {
+                            return imagenQR.length;
+                        }
+                    };
+
+                helper.addInline("qrCodeImage", qrResource, "image/png");
+                log.info("✅ Imagen QR adjuntada exitosamente con CID para trámite {}", tramite.getId());
+            } catch (Exception qrException) {
+                log.warn("⚠️ No se pudo adjuntar imagen QR, continuando sin ella: {}", qrException.getMessage());
+                // No lanzar excepción - permitir que el correo se envíe sin QR
+            }
         } catch (Exception e) {
-            log.error("❌ Error adjuntando imagen QR para trámite {}: {}", tramite.getId(), e.getMessage(), e);
+            log.error("❌ Error en adjuntarImagenQR para trámite {}: {}", tramite.getId(), e.getMessage(), e);
         }
     }
 
@@ -2039,7 +2055,7 @@ public class EmailService {
         return "Usuario";
     }
 
-    @Async
+    @Async("emailExecutor")
     public void enviarCorreoTramitePublico(Tramite tramite, String emailDestino, String nombreRemitente, String apellidoRemitente) {
         try {
             MimeMessage message = mailSender.createMimeMessage();

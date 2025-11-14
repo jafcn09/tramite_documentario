@@ -31,7 +31,7 @@ public class QRController {
 
     @PostMapping("/generar/{tramiteId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'ADMINISTRATIVO', 'USUARIO', 'ESTUDIANTE')")
-    public ResponseEntity<?> generarQRTramite(@PathVariable Long tramiteId) {
+    public ResponseEntity<?> generarQRTramite(@PathVariable("tramiteId") Long tramiteId) {
         try {
             Optional<Tramite> tramiteOpt = tramiteService.obtenerTramitePorId(tramiteId);
 
@@ -74,7 +74,7 @@ public class QRController {
     }
 
     @GetMapping(value = "/image/{tramiteId}", produces = MediaType.IMAGE_PNG_VALUE)
-    public ResponseEntity<byte[]> obtenerImagenQRPublico(@PathVariable Long tramiteId) {
+    public ResponseEntity<byte[]> obtenerImagenQRPublico(@PathVariable("tramiteId") Long tramiteId) {
         try {
             Optional<Tramite> tramiteOpt = tramiteService.obtenerTramitePorId(tramiteId);
 
@@ -117,7 +117,7 @@ public class QRController {
 
     @GetMapping(value = "/imagen/{tramiteId}", produces = MediaType.IMAGE_PNG_VALUE)
     @PreAuthorize("hasAnyRole('ADMIN', 'ADMINISTRATIVO', 'USUARIO', 'ESTUDIANTE')")
-    public ResponseEntity<byte[]> obtenerImagenQR(@PathVariable Long tramiteId) {
+    public ResponseEntity<byte[]> obtenerImagenQR(@PathVariable("tramiteId") Long tramiteId) {
         try {
             Optional<Tramite> tramiteOpt = tramiteService.obtenerTramitePorId(tramiteId);
 
@@ -151,7 +151,7 @@ public class QRController {
 
     @GetMapping("/verificar/{codigoQR}")
     public ResponseEntity<?> verificarTramitePorQR(
-            @PathVariable String codigoQR,
+            @PathVariable("codigoQR") String codigoQR,
             HttpServletRequest request) {
 
         try {
@@ -216,7 +216,7 @@ public class QRController {
 
     @GetMapping("/estadisticas/{tramiteId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'ADMINISTRATIVO')")
-    public ResponseEntity<?> obtenerEstadisticasQR(@PathVariable Long tramiteId) {
+    public ResponseEntity<?> obtenerEstadisticasQR(@PathVariable("tramiteId") Long tramiteId) {
         try {
             Optional<Tramite> tramiteOpt = tramiteService.obtenerTramitePorId(tramiteId);
 
@@ -247,7 +247,7 @@ public class QRController {
 
     @PostMapping("/regenerar/{tramiteId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'ADMINISTRATIVO')")
-    public ResponseEntity<?> regenerarQRTramite(@PathVariable Long tramiteId) {
+    public ResponseEntity<?> regenerarQRTramite(@PathVariable("tramiteId") Long tramiteId) {
         try {
             Optional<Tramite> tramiteOpt = tramiteService.obtenerTramitePorId(tramiteId);
 

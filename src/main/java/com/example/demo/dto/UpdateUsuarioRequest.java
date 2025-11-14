@@ -4,7 +4,6 @@ import com.example.demo.validation.ValidDocument;
 import com.example.demo.validation.ValidEmail;
 import com.example.demo.validation.ValidPhone;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
@@ -43,9 +42,4 @@ public class UpdateUsuarioRequest {
     private String clave;
 
     private String foto;
-
-    @NotNull(message = "El role ID es obligatorio")
-    private Long roleId;
-
-    private Long areaId;
 }

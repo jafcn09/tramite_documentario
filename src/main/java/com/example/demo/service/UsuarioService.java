@@ -36,7 +36,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class UsuarioService {
-    
+
     private final UsuarioRepository usuarioRepository;
     private final RoleRepository roleRepository;
     private final PasswordHistoryRepository passwordHistoryRepository;
@@ -45,6 +45,7 @@ public class UsuarioService {
     private final PasswordEncoder passwordEncoder;
     private final JavaMailSender mailSender;
     private final EmailTemplateService emailTemplateService;
+    private final RoleDescriptionService roleDescriptionService;
     
     private static final String PASSWORD_CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@!.";
     private static final int PASSWORD_MIN_LENGTH = 8;
@@ -56,16 +57,19 @@ public class UsuarioService {
                 .collect(Collectors.toList());
     }
     
+    @org.springframework.cache.annotation.Cacheable(value = "usuarios", key = "#id")
     public Optional<UsuarioResponse> getUsuarioById(Long id) {
         return usuarioRepository.findById(id)
                 .map(this::convertToResponse);
     }
-    
+
+    @org.springframework.cache.annotation.Cacheable(value = "usuariosByCorreo", key = "#correo")
     public Optional<UsuarioResponse> getUsuarioByCorreo(String correo) {
         return usuarioRepository.findByCorreo(correo)
                 .map(this::convertToResponse);
     }
     
+    @org.springframework.cache.annotation.CacheEvict(value = {"usuarios", "usuariosByCorreo"}, allEntries = true)
     public UsuarioResponse createUsuario(CreateUsuarioRequest request) {
         validateUniqueFields(request);
         
@@ -144,11 +148,6 @@ public class UsuarioService {
         if (request.getCelular() != null) {
             usuario.setCelular(request.getCelular());
         }
-        if (request.getRoleId() != null) {
-            Role role = roleRepository.findById(request.getRoleId())
-                    .orElseThrow(() -> new EntityNotFoundException("Role no encontrado con id: " + request.getRoleId()));
-            usuario.setRole(role);
-        }
         if (request.getClave() != null) {
             usuario.setClave(passwordEncoder.encode(request.getClave()));
             usuario.setMustChangePassword(false);
@@ -156,11 +155,6 @@ public class UsuarioService {
         }
         if (request.getFoto() != null) {
             usuario.setFoto(request.getFoto());
-        }
-        if (request.getAreaId() != null) {
-            com.example.demo.entity.Area area = areaRepository.findById(request.getAreaId())
-                    .orElseThrow(() -> new EntityNotFoundException("Crea no encontrada con id: " + request.getAreaId()));
-            usuario.setArea(area);
         }
         
         Usuario savedUsuario = usuarioRepository.save(usuario);
@@ -372,7 +366,16 @@ public class UsuarioService {
             helper.setTo(usuario.getCorreo());
             helper.setSubject("🎉 Bienvenido al Sistema - Tu cuenta está lista");
 
-            String htmlContent = emailTemplateService.createWelcomeEmailTemplate(usuario, username, password);
+
+            String roleName = usuario.getRole() != null ? usuario.getRole().getName() : "USUARIO";
+
+           
+            String functionalitiesHtml = roleDescriptionService.getFunctionalitiesHtml(roleName);
+            String roleDescription = roleDescriptionService.getRoleSummary(roleName);
+
+          
+            String htmlContent = emailTemplateService.createWelcomeEmailWithRoleFunctionalitiesTemplate(
+                    usuario, username, password, roleName, functionalitiesHtml, roleDescription);
             helper.setText(htmlContent, true);
 
             mailSender.send(message);

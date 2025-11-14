@@ -29,6 +29,8 @@ import org.springframework.http.MediaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
+import com.example.demo.annotation.DailyRateLimit;
+import com.example.demo.dto.ApiResponse;
 import com.example.demo.dto.AprobarTramiteRequest;
 import com.example.demo.dto.AprobarTramiteResponse;
 import com.example.demo.dto.EditarTramiteRequest;
@@ -176,6 +178,7 @@ public class TramiteController {
 
     @GetMapping
     @PreAuthorize("isAuthenticated()")
+    @DailyRateLimit
     public ResponseEntity<Page<TramiteResponse>> obtenerTramites(
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "size", defaultValue = "10") int size,
@@ -207,6 +210,7 @@ public class TramiteController {
     
     @PostMapping(consumes = {"multipart/form-data"})
     @PreAuthorize("hasRole('USUARIO') || hasRole('ADMIN') || hasRole('ESTUDIANTE')")
+    @DailyRateLimit
     public ResponseEntity<?> crearTramite(
             @RequestParam("tipoTramiteId") Long tipoTramiteId,
             @RequestParam("asunto") String asunto,
@@ -612,6 +616,7 @@ public class TramiteController {
     
     @GetMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
+    @DailyRateLimit
     public ResponseEntity<TramiteResponse> obtenerTramite(
             @PathVariable(name = "id") Long id,
             Principal principal,
@@ -1056,24 +1061,27 @@ public class TramiteController {
     @PutMapping("/{id}/rechazar")
     @PreAuthorize("hasRole('ADMIN') or hasRole('ADMINISTRATIVO')")
     public ResponseEntity<com.example.demo.dto.RechazarTramiteResponse> rechazarTramite(
-            @PathVariable Long id,
+            @PathVariable("id") Long tramiteId,
             @RequestBody com.example.demo.dto.RechazarTramiteRequest request,
-            Authentication authentication) {
+            HttpServletRequest httpRequest) {
 
         try {
-            Long administrativoId = jwtService.extractUserId(
-                authentication.getCredentials().toString());
-            if (!id.equals(request.getTramiteId())) {
+            Long administrativoId = getUserIdFromToken(httpRequest);
+            if (administrativoId == null) {
+                throw new RuntimeException("No se pudo obtener el ID del usuario del token");
+            }
+            if (!tramiteId.equals(request.getTramiteId())) {
                 throw new RuntimeException("El ID del trámite no coincide");
             }
 
             com.example.demo.dto.RechazarTramiteResponse response =
-                tramiteService.rechazarTramite(id, request, administrativoId);
+                tramiteService.rechazarTramite(tramiteId, request, administrativoId);
 
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            throw new RuntimeException("Error al rechazar el trámite: " + e.getMessage());
+            String mensajeError = e.getMessage() != null ? e.getMessage() : "Error desconocido al rechazar el trámite";
+            throw new RuntimeException("Error al rechazar el trámite: " + mensajeError, e);
         }
     }
 

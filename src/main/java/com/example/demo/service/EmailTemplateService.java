@@ -331,7 +331,7 @@ public class EmailTemplateService {
                         </div>
 
                         <div class="action-buttons">
-                            <a href="%s/login" class="btn-primary">
+                            <a href="%s/servicios-administrativos" class="btn-primary">
                                 Acceder al Sistema
                             </a>
                         </div>
@@ -371,7 +371,7 @@ public class EmailTemplateService {
                                 <p>Este es un correo automático, por favor no responda a este mensaje</p>
                                 <p>Si necesita ayuda, contacte al área de soporte técnico</p>
                                 <p style="margin-top: 15px; font-size: 12px; opacity: 0.6;">
-                                    © %d Universidad Nacional de Tumbes - Todos los derechos reservados
+                                    © 2025 Universidad Nacional de Tumbes - Todos los derechos reservados
                                 </p>
                             </div>
                         </div>
@@ -396,9 +396,9 @@ public class EmailTemplateService {
             <head>
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title> Credenciales Actualizadas con Éxito</title>
+                <title>Credenciales Actualizadas</title>
                 <style>
-                    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+                    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
                     * {
                         margin: 0;
@@ -409,218 +409,105 @@ public class EmailTemplateService {
                     body {
                         font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
                         line-height: 1.6;
-                        color: #1a202c;
-                        background: linear-gradient(135deg, #667eea 0%%, #764ba2 100%%);
+                        color: #2c3e50;
+                        background: #f5f7fa;
                         margin: 0;
                         padding: 20px;
-                        min-height: 100vh;
                     }
 
                     .email-container {
-                        max-width: 650px;
+                        max-width: 600px;
                         margin: 0 auto;
                         background: #ffffff;
-                        border-radius: 28px;
+                        border-radius: 8px;
                         overflow: hidden;
-                        box-shadow: 0 25px 50px rgba(102, 126, 234, 0.25), 0 10px 20px rgba(0,0,0,0.1);
-                        position: relative;
+                        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
                     }
 
                     .header {
-                        background: linear-gradient(135deg, #667eea 0%%, #764ba2 100%%);
-                        color: white;
-                        padding: 50px 40px;
+                        background: #ffffff;
+                        border-bottom: 3px solid #10b981;
+                        padding: 40px;
                         text-align: center;
-                        position: relative;
-                        overflow: hidden;
-                    }
-
-                    .header::before {
-                        content: '';
-                        position: absolute;
-                        top: -50%%;
-                        left: -50%%;
-                        width: 200%%;
-                        height: 200%%;
-                        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><defs><pattern id="animals" width="40" height="40" patternUnits="userSpaceOnUse"><text x="5" y="15" font-size="12" fill="white" opacity="0.1">🦋</text><text x="25" y="35" font-size="10" fill="white" opacity="0.08">🐾</text><text x="15" y="30" font-size="8" fill="white" opacity="0.06">🌿</text></pattern></defs><rect width="200" height="200" fill="url(%%23animals)"/></svg>');
-                        animation: float 20s ease-in-out infinite;
-                        z-index: 0;
-                    }
-
-                    @keyframes float {
-                        0%%, 100%% { transform: translateY(0px) rotate(0deg); }
-                        50%% { transform: translateY(-20px) rotate(2deg); }
-                    }
-
-                    .header-content {
-                        position: relative;
-                        z-index: 2;
-                    }
-
-                    .success-icon {
-                        font-size: 80px;
-                        margin-bottom: 20px;
-                        display: block;
-                        animation: bounce 2s infinite;
-                        filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
-                    }
-
-                    @keyframes bounce {
-                        0%%, 20%%, 50%%, 80%%, 100%% { transform: translateY(0); }
-                        40%% { transform: translateY(-10px); }
-                        60%% { transform: translateY(-5px); }
                     }
 
                     .header h1 {
-                        font-size: 36px;
-                        font-weight: 800;
-                        margin-bottom: 12px;
-                        background: linear-gradient(45deg, #ffffff, #f8fafc);
-                        -webkit-background-clip: text;
-                        -webkit-text-fill-color: transparent;
-                        background-clip: text;
-                        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                        font-size: 28px;
+                        font-weight: 600;
+                        color: #2c3e50;
+                        margin-bottom: 5px;
                     }
 
-                    .header p {
-                        font-size: 18px;
-                        opacity: 0.95;
-                        font-weight: 500;
-                        text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+                    .header-subtitle {
+                        font-size: 14px;
+                        color: #718096;
+                        font-weight: 400;
                     }
 
                     .content {
-                        padding: 50px 40px;
-                        background: linear-gradient(180deg, #ffffff 0%%, #f8fafc 100%%);
-                        position: relative;
-                    }
-
-                    .animal-decoration {
-                        position: absolute;
-                        font-size: 24px;
-                        opacity: 0.1;
-                        animation: gentle-float 6s ease-in-out infinite;
-                    }
-
-                    .animal-decoration:nth-child(1) { top: 20px; right: 30px; animation-delay: 0s; }
-                    .animal-decoration:nth-child(2) { bottom: 100px; left: 20px; animation-delay: 2s; }
-                    .animal-decoration:nth-child(3) { top: 50%%; right: 10px; animation-delay: 4s; }
-
-                    @keyframes gentle-float {
-                        0%%, 100%% { transform: translateY(0px) scale(1); }
-                        50%% { transform: translateY(-8px) scale(1.05); }
+                        padding: 40px;
+                        background: #ffffff;
                     }
 
                     .greeting {
-                        font-size: 24px;
-                        font-weight: 700;
-                        color: #2d3748;
-                        margin-bottom: 25px;
-                        text-align: center;
-                        position: relative;
-                        z-index: 2;
+                        font-size: 16px;
+                        font-weight: 500;
+                        color: #2c3e50;
+                        margin-bottom: 20px;
                     }
 
                     .message {
-                        font-size: 18px;
+                        font-size: 15px;
                         color: #4a5568;
-                        margin-bottom: 40px;
-                        text-align: center;
-                        line-height: 1.8;
-                        font-weight: 500;
-                        position: relative;
-                        z-index: 2;
+                        margin-bottom: 30px;
+                        line-height: 1.7;
                     }
 
                     .success-card {
-                        background: linear-gradient(135deg, #d1fae5 0%%, #a7f3d0 30%%, #6ee7b7 100%%);
-                        border: 3px solid #10b981;
-                        border-radius: 24px;
-                        padding: 35px;
-                        margin: 40px 0;
-                        text-align: center;
-                        position: relative;
-                        overflow: hidden;
-                        box-shadow: 0 10px 25px rgba(16, 185, 129, 0.2);
-                        transform: translateY(0);
-                        transition: transform 0.3s ease;
-                    }
-
-                    .success-card:hover {
-                        transform: translateY(-2px);
-                        box-shadow: 0 15px 35px rgba(16, 185, 129, 0.3);
-                    }
-
-                    .success-card::before {
-                        content: '🦋';
-                        position: absolute;
-                        top: 20px;
-                        right: 25px;
-                        font-size: 32px;
-                        animation: flutter 3s ease-in-out infinite;
-                    }
-
-                    @keyframes flutter {
-                        0%%, 100%% { transform: translateY(0px) rotate(0deg); }
-                        25%% { transform: translateY(-3px) rotate(5deg); }
-                        75%% { transform: translateY(-1px) rotate(-5deg); }
-                    }
-
-                    .success-card::after {
-                        content: '🌟';
-                        position: absolute;
-                        bottom: 20px;
-                        left: 25px;
-                        font-size: 24px;
-                        animation: twinkle 2s ease-in-out infinite;
-                    }
-
-                    @keyframes twinkle {
-                        0%%, 100%% { opacity: 0.7; transform: scale(1); }
-                        50%% { opacity: 1; transform: scale(1.2); }
+                        background: #f0fdf4;
+                        border-left: 4px solid #10b981;
+                        padding: 20px;
+                        margin: 25px 0;
+                        border-radius: 4px;
                     }
 
                     .success-card h3 {
-                        color: #047857;
-                        font-size: 22px;
-                        margin-bottom: 15px;
-                        font-weight: 700;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        gap: 10px;
+                        color: #10b981;
+                        font-size: 16px;
+                        font-weight: 600;
+                        margin-bottom: 8px;
                     }
 
                     .success-card p {
-                        color: #065f46;
+                        color: #047857;
                         margin: 0;
-                        font-weight: 600;
-                        font-size: 16px;
+                        font-size: 14px;
+                        font-weight: 500;
                     }
 
-                    .info-card {
-                        background: linear-gradient(135deg, #f7fafc 0%%, #edf2f7 100%%);
-                        border: 2px solid #e2e8f0;
-                        border-radius: 20px;
-                        padding: 30px;
-                        margin: 35px 0;
-                        box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+                    .info-section {
+                        background: #f8fafc;
+                        border: 1px solid #e2e8f0;
+                        border-radius: 4px;
+                        padding: 25px;
+                        margin: 25px 0;
+                    }
+
+                    .info-section h4 {
+                        color: #2c3e50;
+                        font-size: 14px;
+                        font-weight: 600;
+                        margin-bottom: 15px;
+                        text-transform: uppercase;
+                        letter-spacing: 0.5px;
                     }
 
                     .info-row {
                         display: flex;
                         justify-content: space-between;
-                        align-items: center;
-                        padding: 16px 0;
-                        border-bottom: 2px solid #e2e8f0;
-                        transition: all 0.3s ease;
-                    }
-
-                    .info-row:hover {
-                        background: rgba(102, 126, 234, 0.05);
-                        margin: 0 -15px;
-                        padding: 16px 15px;
-                        border-radius: 12px;
+                        padding: 10px 0;
+                        border-bottom: 1px solid #e2e8f0;
+                        font-size: 14px;
                     }
 
                     .info-row:last-child {
@@ -628,283 +515,155 @@ public class EmailTemplateService {
                     }
 
                     .info-label {
-                        font-weight: 700;
-                        color: #4a5568;
-                        font-size: 15px;
-                        display: flex;
-                        align-items: center;
-                        gap: 8px;
+                        color: #718096;
+                        font-weight: 500;
                     }
 
                     .info-value {
-                        color: #2d3748;
-                        font-size: 15px;
+                        color: #2c3e50;
                         font-weight: 600;
                     }
 
                     .security-notice {
-                        background: linear-gradient(135deg, #fef3c7 0%%, #fbbf24 30%%, #f59e0b 100%%);
-                        border: 3px solid #f59e0b;
-                        border-radius: 20px;
-                        padding: 30px;
-                        margin: 35px 0;
-                        position: relative;
-                        overflow: hidden;
-                        box-shadow: 0 10px 25px rgba(245, 158, 11, 0.2);
-                    }
-
-                    .security-notice::before {
-                        content: '🦉';
-                        position: absolute;
-                        top: 20px;
-                        right: 25px;
-                        font-size: 28px;
-                        animation: wise-blink 4s ease-in-out infinite;
-                    }
-
-                    @keyframes wise-blink {
-                        0%%, 90%%, 100%% { transform: scale(1); }
-                        95%% { transform: scale(1.1); }
+                        background: #fffbeb;
+                        border-left: 4px solid #f59e0b;
+                        padding: 20px;
+                        margin: 25px 0;
+                        border-radius: 4px;
                     }
 
                     .security-notice h4 {
                         color: #d97706;
-                        font-size: 18px;
-                        margin-bottom: 12px;
-                        font-weight: 800;
-                        display: flex;
-                        align-items: center;
-                        gap: 10px;
+                        font-size: 14px;
+                        font-weight: 700;
+                        margin-bottom: 8px;
+                        text-transform: uppercase;
+                        letter-spacing: 0.5px;
                     }
 
                     .security-notice p {
                         color: #92400e;
                         margin: 0;
-                        font-weight: 600;
-                        line-height: 1.6;
-                    }
-
-                    .fun-facts {
-                        background: linear-gradient(135deg, #e0e7ff 0%%, #c7d2fe 100%%);
-                        border: 2px solid #8b5cf6;
-                        border-radius: 20px;
-                        padding: 25px;
-                        margin: 30px 0;
-                        position: relative;
-                    }
-
-                    .fun-facts::before {
-                        content: '🐾';
-                        position: absolute;
-                        top: 15px;
-                        right: 20px;
-                        font-size: 24px;
-                        animation: paw-shake 3s ease-in-out infinite;
-                    }
-
-                    @keyframes paw-shake {
-                        0%%, 100%% { transform: rotate(0deg); }
-                        25%% { transform: rotate(10deg); }
-                        75%% { transform: rotate(-10deg); }
-                    }
-
-                    .fun-facts h4 {
-                        color: #7c3aed;
-                        font-size: 16px;
-                        margin-bottom: 10px;
-                        font-weight: 700;
-                    }
-
-                    .fun-facts p {
-                        color: #5b21b6;
-                        margin: 0;
                         font-size: 14px;
-                        font-style: italic;
-                    }
-
-                    .footer {
-                        background: linear-gradient(135deg, #1a202c 0%%, #2d3748 100%%);
-                        color: white;
-                        padding: 40px;
-                        text-align: center;
-                        position: relative;
-                        overflow: hidden;
-                    }
-
-                    .footer::before {
-                        content: '';
-                        position: absolute;
-                        top: 0;
-                        left: 0;
-                        right: 0;
-                        bottom: 0;
-                        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="forest" width="30" height="30" patternUnits="userSpaceOnUse"><text x="5" y="15" font-size="8" fill="white" opacity="0.05">🌲</text><text x="20" y="25" font-size="6" fill="white" opacity="0.03">🦔</text></pattern></defs><rect width="100" height="100" fill="url(%%23forest)"/></svg>');
-                        opacity: 0.3;
-                    }
-
-                    .footer-content {
-                        position: relative;
-                        z-index: 2;
-                    }
-
-                    .footer h4 {
-                        margin-bottom: 15px;
-                        font-size: 22px;
-                        font-weight: 700;
-                        color: #f7fafc;
-                    }
-
-                    .footer p {
-                        margin: 8px 0;
-                        opacity: 0.9;
-                        font-size: 15px;
+                        line-height: 1.6;
                         font-weight: 500;
                     }
 
-                    .footer .university-info {
-                        font-size: 16px;
+                    .cta-section {
+                        background: #f0fdf4;
+                        border-radius: 4px;
+                        padding: 25px;
+                        margin: 30px 0;
+                        text-align: center;
+                    }
+
+                    .cta-text {
+                        color: #2c3e50;
+                        font-size: 14px;
+                        font-weight: 500;
+                        margin-bottom: 15px;
+                    }
+
+                    .footer {
+                        background: #2c3e50;
+                        color: #ecf0f1;
+                        padding: 30px 40px;
+                        text-align: center;
+                        border-top: 1px solid #1a252f;
+                    }
+
+                    .footer h4 {
+                        margin-bottom: 10px;
+                        font-size: 14px;
                         font-weight: 600;
-                        color: #bee3f8;
-                        margin-bottom: 20px;
+                        color: #ecf0f1;
                     }
 
-                    /* Responsivo Ultra-Optimizado */
-                    @media (max-width: 768px) {
-                        body { padding: 15px; }
-                        .email-container {
-                            margin: 10px;
-                            border-radius: 20px;
-                        }
-                        .content, .header { padding: 30px 25px; }
-                        .success-card, .security-notice, .info-card, .fun-facts {
-                            padding: 25px 20px;
-                            margin: 25px 0;
-                        }
-                        .header h1 { font-size: 28px; }
-                        .success-icon { font-size: 60px; }
-                        .greeting { font-size: 20px; }
-                        .message { font-size: 16px; }
+                    .footer p {
+                        margin: 5px 0;
+                        opacity: 0.85;
+                        font-size: 13px;
+                        font-weight: 400;
                     }
 
-                    @media (max-width: 480px) {
-                        .content, .header { padding: 25px 20px; }
+                    .divider {
+                        height: 1px;
+                        background: #e2e8f0;
+                        margin: 25px 0;
+                    }
+
+                    /* Responsive */
+                    @media (max-width: 600px) {
+                        body { padding: 10px; }
+                        .header { padding: 25px; }
+                        .content { padding: 25px; }
+                        .footer { padding: 20px; }
                         .header h1 { font-size: 24px; }
-                        .success-icon { font-size: 50px; }
-                        .greeting { font-size: 18px; }
-                        .message { font-size: 15px; }
-                        .info-row {
-                            flex-direction: column;
-                            align-items: flex-start;
-                            gap: 5px;
-                        }
-                        .success-card::before, .security-notice::before,
-                        .fun-facts::before { font-size: 20px; }
-                    }
-
-                    /* Modo oscuro automático */
-                    @media (prefers-color-scheme: dark) {
-                        .content {
-                            background: linear-gradient(180deg, #f7fafc 0%%, #edf2f7 100%%);
-                        }
-                    }
-
-                    /* Animaciones adicionales para interactividad */
-                    .email-container {
-                        animation: slideUp 0.8s ease-out;
-                    }
-
-                    @keyframes slideUp {
-                        from {
-                            opacity: 0;
-                            transform: translateY(30px);
-                        }
-                        to {
-                            opacity: 1;
-                            transform: translateY(0);
-                        }
+                        .info-row { flex-direction: column; gap: 5px; }
+                        .info-label { margin-bottom: 3px; }
                     }
                 </style>
             </head>
             <body>
                 <div class="email-container">
                     <div class="header">
-                        <div class="header-content">
-                            <span class="success-icon">🔐✨</span>
-                            <h1>¡Credenciales Actualizadas!</h1>
-                            <p>Tu seguridad es nuestra prioridad 🛡️</p>
-                        </div>
+                        <h1>Credenciales Actualizadas</h1>
+                        <p class="header-subtitle">Tu información está segura</p>
                     </div>
 
                     <div class="content">
- 
-                        <div class="greeting">
-                            ¡Hola %s %s! 👋
-                        </div>
+                        <div class="greeting">Hola %s,</div>
 
                         <div class="message">
-                            Te confirmamos que tus <strong>credenciales han sido actualizadas exitosamente</strong>
-                            en el Sistema de Secretaria General. ¡Tu información está más segura que nunca! 
+                            Te confirmamos que tus credenciales han sido actualizadas exitosamente en el Sistema de Secretaria General. Este cambio mantiene tu cuenta segura y protegida.
                         </div>
 
                         <div class="success-card">
-                            <h3> ¡Cambio Exitoso!</h3>
-                            <p>Tus nuevas credenciales ya están activas y listas para usar</p>
+                            <h3>Cambio Exitoso</h3>
+                            <p>Tus nuevas credenciales ya están activas</p>
                         </div>
 
-                        <div class="info-card">
+                        <div class="info-section">
+                            <h4>Detalles de la Actualización</h4>
                             <div class="info-row">
-                                <span class="info-label">🗓️ Fecha del cambio</span>
+                                <span class="info-label">Fecha de cambio</span>
                                 <span class="info-value">%s</span>
                             </div>
                             <div class="info-row">
-                                <span class="info-label">👤 Usuario</span>
+                                <span class="info-label">Usuario</span>
                                 <span class="info-value">%s</span>
                             </div>
                             <div class="info-row">
-                                <span class="info-label">🔐 Estado</span>
-                                <span class="info-value" style="color: #10b981; font-weight: 700;">🟢 Activa</span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-label">🛡️ Nivel de seguridad</span>
-                                <span class="info-value" style="color: #8b5cf6; font-weight: 700;">🔒 Alto</span>
+                                <span class="info-label">Estado</span>
+                                <span class="info-value" style="color: #10b981;">Activa</span>
                             </div>
                         </div>
+
+                        <div class="divider"></div>
 
                         <div class="security-notice">
-                            <h4>🦉 Aviso de Seguridad Importante</h4>
-                            <p>
-                                Si <strong>no fuiste tú</strong> quien realizó este cambio, contacta
-                                inmediatamente al administrador del sistema. Tu cuenta podría estar
-                                comprometida. ¡Protege tu información como un búho protege su territorio! 🦉
-                            </p>
+                            <h4>Aviso de Seguridad</h4>
+                            <p>Si no fuiste tú quien realizó este cambio, contacta inmediatamente al administrador del sistema. Tu cuenta podría estar en riesgo.</p>
                         </div>
 
-                        <div class="fun-facts">
-                            <h4>🐾 Dato Curioso</h4>
-                            <p>
-                                ¿Sabías que los colibríes pueden volar hacia atrás? Al igual que ellos,
-                                nuestro sistema puede recuperar y proteger tu información desde cualquier dirección. 🐦✨
-                            </p>
+                        <div class="cta-section">
+                            <p class="cta-text">Mantén tu contraseña segura y no la compartas con nadie. Nunca te pediremos que la reveles por correo.</p>
                         </div>
                     </div>
 
                     <div class="footer">
-                        <div class="footer-content">
-                            <h4> Sistema de Secretaria General</h4>
-                            <p class="university-info">🏛️ Universidad Nacional de Tumbes</p>
-                            <p>🤖 Este es un correo automático generado con cariño</p>
-                            <p> Protegiendo tu información como la naturaleza protege sus especies</p>
-                            <p style="margin-top: 20px; font-size: 13px; opacity: 0.7;">
-                                © %d 2025 Todos los derechos reservados 
-                            </p>
-                        </div>
+                        <h4>Sistema de Secretaria General</h4>
+                        <p>Universidad Nacional de Tumbes</p>
+                        <p>Este es un correo automático. Por favor no respondas a este mensaje.</p>
+                        <p style="margin-top: 15px; font-size: 12px; opacity: 0.7;">
+                            © 2025 Todos los derechos reservados
+                        </p>
                     </div>
                 </div>
             </body>
             </html>
             """,
             usuario.getNombre(),
-            usuario.getApellidos(),
             LocalDateTime.now().format(DATE_FORMATTER),
             usuario.getUsuario()
         );
@@ -2014,7 +1773,7 @@ public class EmailTemplateService {
                         <h4>Sistema De Secretaria General</h4>
                         <p>Universidad Nacional de Tumbes</p>
                         <p style="margin-top: 15px;">Este es un correo automático, por favor no respondas a este mensaje</p>
-                        <p style="margin-top: 10px; font-size: 12px;">© %d Todos los derechos reservados</p>
+                        <p style="margin-top: 10px; font-size: 12px;">© 2025 Todos los derechos reservados</p>
                     </div>
                 </div>
             </body>
@@ -2408,5 +2167,413 @@ public class EmailTemplateService {
             usuario.getUsuario(),
             LocalDateTime.now().getYear()
         );
+    }
+
+    /**
+     * Create enhanced welcome email template with role-specific functionalities
+     * @param usuario The usuario object
+     * @param username The generated username
+     * @param password The generated password
+     * @param roleName The role name (ADMIN, ADMINISTRATIVO, USUARIO, ESTUDIANTE)
+     * @param functionalities HTML formatted list of role functionalities
+     * @param roleDescription Description of what the role can do
+     * @return HTML email template
+     */
+    public String createWelcomeEmailWithRoleFunctionalitiesTemplate(Usuario usuario, String username,
+            String password, String roleName, String functionalities, String roleDescription) {
+
+        String roleIcon = getRoleIcon(roleName);
+        String roleDisplayName = getRoleDisplayName(roleName);
+
+        return String.format("""
+            <!DOCTYPE html>
+            <html lang="es">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Bienvenido al Sistema - Universidad Nacional de Tumbes</title>
+                <style>
+                    * {
+                        margin: 0;
+                        padding: 0;
+                        box-sizing: border-box;
+                    }
+
+                    body {
+                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                        line-height: 1.6;
+                        color: #2c3e50;
+                        background: #f8f9fa;
+                        margin: 0;
+                        padding: 20px;
+                    }
+
+                    .email-container {
+                        max-width: 700px;
+                        margin: 0 auto;
+                        background: #ffffff;
+                        border-radius: 8px;
+                        overflow: hidden;
+                        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                        border: 1px solid #e9ecef;
+                    }
+
+                    .header {
+                        background: linear-gradient(135deg, #1e3a8a 0%%, #3b82f6 100%%);
+                        color: white;
+                        padding: 30px;
+                        text-align: center;
+                    }
+
+                    .university-logo {
+                        font-size: 48px;
+                        margin-bottom: 15px;
+                        display: block;
+                    }
+
+                    .header h1 {
+                        font-size: 28px;
+                        font-weight: 600;
+                        margin-bottom: 8px;
+                    }
+
+                    .header p {
+                        font-size: 16px;
+                        opacity: 0.9;
+                    }
+
+                    .content {
+                        padding: 40px 30px;
+                        background: #ffffff;
+                    }
+
+                    .greeting {
+                        font-size: 22px;
+                        font-weight: 600;
+                        color: #1e3a8a;
+                        margin-bottom: 20px;
+                        text-align: center;
+                    }
+
+                    .message {
+                        font-size: 16px;
+                        color: #4a5568;
+                        margin-bottom: 30px;
+                        text-align: center;
+                        line-height: 1.7;
+                    }
+
+                    .role-badge {
+                        background: linear-gradient(135deg, #e0f2fe 0%%, #bae6fd 100%%);
+                        border: 2px solid #0284c7;
+                        border-radius: 8px;
+                        padding: 20px;
+                        margin: 25px 0;
+                        text-align: center;
+                    }
+
+                    .role-badge h3 {
+                        color: #0c4a6e;
+                        font-size: 20px;
+                        margin-bottom: 8px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        gap: 10px;
+                    }
+
+                    .role-icon {
+                        font-size: 28px;
+                    }
+
+                    .role-description {
+                        color: #0c4a6e;
+                        font-size: 15px;
+                        font-weight: 500;
+                        margin-top: 10px;
+                    }
+
+                    .credentials-card {
+                        background: #f8fafc;
+                        border: 2px solid #e2e8f0;
+                        border-left: 4px solid #3b82f6;
+                        border-radius: 8px;
+                        padding: 25px;
+                        margin: 30px 0;
+                    }
+
+                    .credentials-card h3 {
+                        color: #1e3a8a;
+                        font-size: 18px;
+                        margin-bottom: 20px;
+                        font-weight: 600;
+                    }
+
+                    .credential-item {
+                        background: white;
+                        border-radius: 6px;
+                        padding: 15px 20px;
+                        margin-bottom: 12px;
+                        border: 1px solid #e2e8f0;
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                    }
+
+                    .credential-item:last-child {
+                        margin-bottom: 0;
+                    }
+
+                    .credential-label {
+                        font-weight: 600;
+                        color: #4a5568;
+                        font-size: 14px;
+                    }
+
+                    .credential-value {
+                        font-family: 'Courier New', monospace;
+                        background: #e2e8f0;
+                        padding: 6px 12px;
+                        border-radius: 4px;
+                        font-weight: 600;
+                        color: #1e293b;
+                        font-size: 14px;
+                    }
+
+                    .important-notice {
+                        background: #fef3c7;
+                        border: 1px solid #f59e0b;
+                        border-left: 4px solid #f59e0b;
+                        border-radius: 6px;
+                        padding: 20px;
+                        margin: 25px 0;
+                    }
+
+                    .important-notice h4 {
+                        color: #d97706;
+                        font-size: 16px;
+                        margin-bottom: 10px;
+                        font-weight: 600;
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                    }
+
+                    .important-notice p {
+                        color: #92400e;
+                        margin: 0;
+                        font-size: 14px;
+                        line-height: 1.5;
+                    }
+
+                    .features {
+                        background: #f1f5f9;
+                        border-radius: 8px;
+                        padding: 25px;
+                        margin: 25px 0;
+                        border: 1px solid #e2e8f0;
+                    }
+
+                    .features h3 {
+                        color: #1e3a8a;
+                        text-align: center;
+                        margin-bottom: 20px;
+                        font-size: 18px;
+                        font-weight: 600;
+                    }
+
+                    .feature-list {
+                        list-style: none;
+                        padding: 0;
+                        margin: 0;
+                    }
+
+                    .feature-item {
+                        padding: 10px 0;
+                        color: #4a5568;
+                        font-size: 15px;
+                        border-bottom: 1px solid #e2e8f0;
+                    }
+
+                    .feature-item:last-child {
+                        border-bottom: none;
+                    }
+
+                    .action-buttons {
+                        text-align: center;
+                        margin: 30px 0;
+                    }
+
+                    .btn-primary {
+                        display: inline-block;
+                        background: #3b82f6;
+                        color: white;
+                        padding: 12px 30px;
+                        text-decoration: none;
+                        border-radius: 6px;
+                        font-weight: 600;
+                        font-size: 16px;
+                        transition: background-color 0.3s ease;
+                    }
+
+                    .btn-primary:hover {
+                        background: #2563eb;
+                    }
+
+                    .footer {
+                        background: #1f2937;
+                        color: white;
+                        padding: 25px 30px;
+                        text-align: center;
+                    }
+
+                    .footer h4 {
+                        margin-bottom: 10px;
+                        font-size: 18px;
+                        font-weight: 600;
+                    }
+
+                    .footer p {
+                        margin: 5px 0;
+                        opacity: 0.8;
+                        font-size: 14px;
+                    }
+
+                    .footer .university-info {
+                        font-size: 15px;
+                        font-weight: 500;
+                        color: #93c5fd;
+                        margin-bottom: 15px;
+                    }
+
+                    .footer .contact-info {
+                        margin-top: 20px;
+                        padding-top: 20px;
+                        border-top: 1px solid #374151;
+                    }
+
+                    @media (max-width: 600px) {
+                        body { padding: 10px; }
+                        .email-container { margin: 0; }
+                        .content, .header { padding: 20px; }
+                        .credentials-card, .important-notice, .features { padding: 20px; }
+                        .header h1 { font-size: 24px; }
+                        .university-logo { font-size: 36px; }
+                        .credential-item {
+                            flex-direction: column;
+                            align-items: flex-start;
+                            gap: 8px;
+                        }
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="email-container">
+                    <div class="header">
+                        <span class="university-logo">🏛️</span>
+                        <h1>Bienvenido al Sistema</h1>
+                        <p>Universidad Nacional de Tumbes</p>
+                    </div>
+
+                    <div class="content">
+                        <div class="greeting">
+                            Estimado/a %s %s
+                        </div>
+
+                        <div class="message">
+                            Le damos la cordial bienvenida al <strong>Sistema de Secretaria General</strong>
+                            de la Universidad Nacional de Tumbes. Su cuenta ha sido creada exitosamente.
+                        </div>
+
+                        <div class="role-badge">
+                            <h3>
+                                <span class="role-icon">%s</span>
+                                %s
+                            </h3>
+                            <div class="role-description">%s</div>
+                        </div>
+
+                        <div class="credentials-card">
+                            <h3>🔐 Sus Credenciales de Acceso</h3>
+                            <div class="credential-item">
+                                <span class="credential-label">Usuario:</span>
+                                <span class="credential-value">%s</span>
+                            </div>
+                            <div class="credential-item">
+                                <span class="credential-label">Contraseña temporal:</span>
+                                <span class="credential-value">%s</span>
+                            </div>
+                        </div>
+
+                        <div class="important-notice">
+                            <h4>⚠️ Importante - Seguridad</h4>
+                            <p>
+                                Por su seguridad, le recomendamos cambiar esta contraseña temporal
+                                después de su primer inicio de sesión. Mantenga sus credenciales
+                                seguras y no las comparta con terceros.
+                            </p>
+                        </div>
+
+                        <div class="features">
+                            <h3>Tu rol: %s - Funcionalidades Disponibles</h3>
+                            %s
+                        </div>
+
+                        <div class="action-buttons">
+                            <a href="%s/servicios-administrativos" class="btn-primary">
+                                Acceder al Sistema
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="footer">
+                        <div class="footer-content">
+                            <h4>Sistema de Secretaria General</h4>
+                            <p class="university-info">Universidad Nacional de Tumbes</p>
+                            <div class="contact-info">
+                                <p>Este es un correo automático, por favor no responda a este mensaje</p>
+                                <p>Si necesita ayuda, contacte al área de soporte técnico</p>
+                                <p style="margin-top: 15px; font-size: 12px; opacity: 0.6;">
+                                    © 2025 Universidad Nacional de Tumbes - Todos los derechos reservados
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """,
+            usuario.getNombre(),
+            usuario.getApellidos(),
+            roleIcon,
+            roleDisplayName,
+            roleDescription,
+            username,
+            password,
+            roleDisplayName,
+            functionalities,
+            appUrl,
+            LocalDateTime.now().getYear()
+        );
+    }
+
+    private String getRoleIcon(String roleName) {
+        return switch (roleName.toUpperCase()) {
+            case "ADMIN" -> "👨‍💼";
+            case "ADMINISTRATIVO" -> "👨‍💻";
+            case "USUARIO" -> "👤";
+            case "ESTUDIANTE" -> "🎓";
+            default -> "👤";
+        };
+    }
+
+    private String getRoleDisplayName(String roleName) {
+        return switch (roleName.toUpperCase()) {
+            case "ADMIN" -> "Administrador";
+            case "ADMINISTRATIVO" -> "Administrativo";
+            case "USUARIO" -> "Usuario";
+            case "ESTUDIANTE" -> "Estudiante";
+            default -> "Usuario";
+        };
     }
 }

@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo.annotation.RateLimit;
 import com.example.demo.dto.LoginRequest;
 import com.example.demo.dto.LoginResponse;
 import com.example.demo.service.AuthService;

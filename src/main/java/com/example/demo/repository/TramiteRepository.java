@@ -158,21 +158,21 @@ public interface TramiteRepository extends JpaRepository<Tramite, Long> {
         @Param("usuarioId") Long usuarioId
     );
 
-    @Query("SELECT t FROM Tramite t " +
-           "JOIN Usuario u ON t.usuarioSolicitanteId = u.id " +
-           "WHERE t.deletedAt IS NULL AND u.numDocumento = :numDocumento " +
-           "ORDER BY t.id DESC")
+    @Query(value = "SELECT t.* FROM tramites t " +
+           "JOIN usuarios u ON t.usuario_solicitante_id = u.id " +
+           "WHERE t.deleted_at IS NULL AND u.num_documento = :numDocumento " +
+           "ORDER BY t.id DESC", nativeQuery = true)
     Page<Tramite> findByUsuarioSolicitanteNumDocumento(
         @Param("numDocumento") String numDocumento,
         Pageable pageable
     );
 
-    @Query("SELECT DISTINCT t FROM Tramite t " +
-           "LEFT JOIN Usuario solicitante ON t.usuarioSolicitanteId = solicitante.id " +
-           "LEFT JOIN Usuario respondio ON t.usuarioRespondioId = respondio.id " +
-           "WHERE t.deletedAt IS NULL " +
-           "AND (solicitante.numDocumento = :numDocumento OR respondio.numDocumento = :numDocumento) " +
-           "ORDER BY t.id DESC")
+    @Query(value = "SELECT DISTINCT t.* FROM tramites t " +
+           "LEFT JOIN usuarios solicitante ON t.usuario_solicitante_id = solicitante.id " +
+           "LEFT JOIN usuarios respondio ON t.usuario_respondio_id = respondio.id " +
+           "WHERE t.deleted_at IS NULL " +
+           "AND (solicitante.num_documento = :numDocumento OR respondio.num_documento = :numDocumento) " +
+           "ORDER BY t.id DESC", nativeQuery = true)
     Page<Tramite> findByUsuarioNumDocumento(
         @Param("numDocumento") String numDocumento,
         Pageable pageable
@@ -190,10 +190,10 @@ public interface TramiteRepository extends JpaRepository<Tramite, Long> {
     Page<Tramite> findByCodigoContainingWithResponse(@Param("codigo") String codigo, Pageable pageable);
 
    
-    @Query("SELECT DISTINCT t FROM Tramite t " +
-           "JOIN Usuario solicitante ON t.usuarioSolicitanteId = solicitante.id " +
-           "WHERE t.deletedAt IS NULL AND t.usuarioRespondioId IS NOT NULL AND solicitante.numDocumento = :numDocumento " +
-           "ORDER BY t.id DESC")
+    @Query(value = "SELECT DISTINCT t.* FROM tramites t " +
+           "JOIN usuarios solicitante ON t.usuario_solicitante_id = solicitante.id " +
+           "WHERE t.deleted_at IS NULL AND t.usuario_respondio_id IS NOT NULL AND solicitante.num_documento = :numDocumento " +
+           "ORDER BY t.id DESC", nativeQuery = true)
     Page<Tramite> findByUsuarioRespondioNumDocumento(
         @Param("numDocumento") String numDocumento,
         Pageable pageable

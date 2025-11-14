@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo.annotation.RateLimit;
 import com.example.demo.dto.AdminResetPasswordRequest;
 import com.example.demo.dto.ChangePasswordRequest;
 import com.example.demo.dto.CreateUsuarioRequest;
@@ -76,6 +77,7 @@ public class UsuarioController {
     
     @PostMapping
     @PreAuthorize("hasRole('ADMIN') or hasRole('ADMINISTRATIVO')")
+    @RateLimit(maxRequests = 5, timeWindowMs = 60000)
     public ResponseEntity<?> createUsuario(@Valid @RequestBody CreateUsuarioRequest request) {
         try {
             UsuarioResponse usuario = usuarioService.createUsuario(request);
@@ -106,7 +108,7 @@ public class UsuarioController {
         }
     }
     
-    @PutMapping("/{id}/cambiar-contrasena")
+    @PutMapping("/{id}/change-password")
     @PreAuthorize("@usuarioController.isOwnerOrAdmin(#id, authentication)")
     public ResponseEntity<?> changePassword(
             @PathVariable Long id,

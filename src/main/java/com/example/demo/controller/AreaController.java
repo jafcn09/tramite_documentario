@@ -45,9 +45,9 @@ public class AreaController {
     
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN') or hasRole('ADMINISTRATIVO')")
-    public ResponseEntity<AreaResponse> getAreaById(@PathVariable Long id) {
+    public ResponseEntity<AreaResponse> getAreaById(@PathVariable("id") Long areaId) {
         try {
-            return areaService.getAreaById(id)
+            return areaService.getAreaById(areaId)
                     .map(area -> ResponseEntity.ok(area))
                     .orElse(ResponseEntity.notFound().build());
         } catch (Exception e) {
@@ -72,9 +72,9 @@ public class AreaController {
     
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN') or hasRole('ADMINISTRATIVO')")
-    public ResponseEntity<?> updateArea(@PathVariable Long id, @Valid @RequestBody AreaRequest request) {
+    public ResponseEntity<?> updateArea(@PathVariable("id") Long areaId, @Valid @RequestBody AreaRequest request) {
         try {
-            AreaResponse area = areaService.updateArea(id, request);
+            AreaResponse area = areaService.updateArea(areaId, request);
             return ResponseEntity.ok(area);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
@@ -87,9 +87,9 @@ public class AreaController {
     
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> deleteArea(@PathVariable Long id) {
+    public ResponseEntity<?> deleteArea(@PathVariable("id") Long areaId) {
         try {
-            areaService.deleteArea(id);
+            areaService.deleteArea(areaId);
             return ResponseEntity.ok(Map.of("message", "Área eliminada correctamente"));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
@@ -102,9 +102,9 @@ public class AreaController {
     
     @PutMapping("/{id}/toggle-status")
     @PreAuthorize("hasRole('ADMIN') or hasRole('ADMINISTRATIVO')")
-    public ResponseEntity<?> toggleAreaStatus(@PathVariable Long id) {
+    public ResponseEntity<?> toggleAreaStatus(@PathVariable("id") Long areaId) {
         try {
-            AreaResponse area = areaService.toggleAreaStatus(id);
+            AreaResponse area = areaService.toggleAreaStatus(areaId);
             return ResponseEntity.ok(area);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

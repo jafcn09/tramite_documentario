@@ -118,8 +118,8 @@ public class NotificacionController {
 
     @DeleteMapping("/admin/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> eliminarNotificacion(@PathVariable Long id) {
-        notificacionService.eliminarNotificacion(id);
+    public ResponseEntity<Void> eliminarNotificacion(@PathVariable("id") Long notificacionId) {
+        notificacionService.eliminarNotificacion(notificacionId);
         return ResponseEntity.noContent().build();
     }
 

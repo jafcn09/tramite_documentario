@@ -37,15 +37,15 @@ public class RoleController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Role> getRoleById(@PathVariable Long id) {
-        return roleService.getRoleById(id)
+    public ResponseEntity<Role> getRoleById(@PathVariable("id") Long roleId) {
+        return roleService.getRoleById(roleId)
             .map(role -> ResponseEntity.ok(role))
             .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/name/{name}")
-    public ResponseEntity<Role> getRoleByName(@PathVariable String name) {
-        return roleService.getRoleByName(name)
+    public ResponseEntity<Role> getRoleByName(@PathVariable("name") String roleName) {
+        return roleService.getRoleByName(roleName)
             .map(role -> ResponseEntity.ok(role))
             .orElse(ResponseEntity.notFound().build());
     }
