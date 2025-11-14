@@ -275,6 +275,9 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
   }
 
   getTramitesVencidos(): number {
+    if (!Array.isArray(this.tramites)) {
+      return 0;
+    }
     return this.tramites.filter(tramite => {
       const permisos = this.tramitePermisos.get(tramite.id);
       return permisos?.estaVencido || false;
@@ -397,10 +400,10 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
   getTramitesParaMostrar(): any[] {
 
     if (this.searchTerm && this.searchTerm.trim().length > 0) {
-      return this.filteredTramites;
+      return Array.isArray(this.filteredTramites) ? this.filteredTramites : [];
     }
 
-    return this.tramites;
+    return Array.isArray(this.tramites) ? this.tramites : [];
   }
 
   exportarSeleccionados() {

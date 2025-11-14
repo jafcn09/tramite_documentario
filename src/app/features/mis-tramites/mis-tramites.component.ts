@@ -20,12 +20,13 @@ import { TipoFirma, FirmaDigitalResponse } from '../../shared/interfaces/firma-d
 import { FirmaDigitalService } from '../../services/firma-digital.service';
 import { ResponderTramiteModalComponent } from '../tramites/components/responder-tramite-modal/responder-tramite-modal.component';
 import { NuevoTramiteModalComponent } from '../tramites/components/nuevo-tramite-modal/nuevo-tramite-modal.component';
+import { RechazarTramiteModalComponent } from '../bandeja-tramites/components/rechazar-tramite-modal/rechazar-tramite-modal.component';
 import { AdministrativeUser } from '../../shared/interfaces/auth.interface';
 
 @Component({
   selector: 'app-mis-tramites',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, ResponderTramiteModalComponent, NuevoTramiteModalComponent],
+  imports: [CommonModule, FormsModule, RouterModule, ResponderTramiteModalComponent, NuevoTramiteModalComponent, RechazarTramiteModalComponent],
 
   templateUrl: './mis-tramites.component.html',
   styleUrl: './mis-tramites.component.css'
@@ -68,6 +69,7 @@ export class MisTramitesComponent implements OnInit, OnDestroy, AfterViewInit {
   showEditarTramiteModal = false;
   showAprobarModal = false;
   showResponderTramiteModal = false;
+  showRechazarModal = false;
   tramiteSeleccionado: MiTramite | null = null;
 
   modoEdicion = false;
@@ -910,6 +912,11 @@ export class MisTramitesComponent implements OnInit, OnDestroy, AfterViewInit {
     this.tramiteSeleccionado = null;
   }
 
+  cerrarModalRechazar() {
+    this.showRechazarModal = false;
+    this.tramiteSeleccionado = null;
+  }
+
 
   confirmarAprobacion() {
     if (!this.tramiteSeleccionado) return;
@@ -1181,11 +1188,21 @@ export class MisTramitesComponent implements OnInit, OnDestroy, AfterViewInit {
     this.cerrarModalResponder();
   }
 
+  onTramiteRechazado(response: any) {
+    this.toastService.success(
+      'Trámite rechazado',
+      `El trámite ${response.codigo} ha sido rechazado correctamente`
+    );
+    this.cargarMisTramites();
+    this.cargarEstadisticas();
+    this.cerrarModalRechazar();
+  }
+
   rechazarTramite(tramite: MiTramite) {
     if (!this.canProcessTramites) return;
 
     this.tramiteSeleccionado = tramite;
-    this.mostrarModalRechazo = true;
+    this.showRechazarModal = true;
   }
 
   derivarTramite(tramite: MiTramite) {
@@ -1200,10 +1217,6 @@ export class MisTramitesComponent implements OnInit, OnDestroy, AfterViewInit {
   trabajadorSeleccionado: AdministrativeUser | null = null;
   observacionesDerivacion = '';
   cargandoTrabajadores = false;
-  mostrarModalRechazo = false;
-  motivoRechazo = '';
-  observacionesRechazo = '';
-  cargandoRechazo = false;
   guardandoEdicion = false;
   formEditar: {
     descripcion?: string;
@@ -1446,38 +1459,6 @@ export class MisTramitesComponent implements OnInit, OnDestroy, AfterViewInit {
     this.observacionesDerivacion = '';
     this.trabajadoresDisponibles = [];
     this.tramiteSeleccionado = null;
-  }
-  cerrarModalRechazo() {
-    this.mostrarModalRechazo = false;
-    this.motivoRechazo = '';
-    this.observacionesRechazo = '';
-    this.tramiteSeleccionado = null;
-  }
-
-  confirmarRechazo() {
-    if (!this.tramiteSeleccionado || !this.motivoRechazo.trim()) {
-      this.toastService.warning('Motivo requerido', 'Debe proporcionar un motivo para el rechazo');
-      return;
-    }
-
-    this.cargandoRechazo = true;
-
-    this.misTramitesService.rechazarTramite(
-      this.tramiteSeleccionado.id,
-      this.motivoRechazo.trim(),
-      this.observacionesRechazo.trim() || undefined
-    ).subscribe({
-      next: (response) => {
-        this.cargandoRechazo = false;
-   
-        this.cargarMisTramites();
-        this.cargarEstadisticas();
-        this.cerrarModalRechazo();
-      },
-      error: (error) => {
-        this.cargandoRechazo = false;
-      }
-    });
   }
 
   getDiasVencimiento(fechaVencimiento?: Date): number | null {
@@ -1985,7 +1966,7 @@ export class MisTramitesComponent implements OnInit, OnDestroy, AfterViewInit {
       return false;
     }
 
-    const estadosNoEliminables = ['Finalizado', 'FINALIZADO', 'Archivado', 'ARCHIVADO'];
+    const estadosNoEliminables = ['Finalizado', 'FINALIZADO', 'Archivado', 'ARCHIVADO', 'Rechazado', 'RECHAZADO'];
     if (estadosNoEliminables.includes(tramite.estado?.nombre)) {
       return false;
     }

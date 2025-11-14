@@ -178,7 +178,9 @@ export class ChangePasswordComponent implements OnInit {
         this.showSuccessModal();
         this.changeAttempts = 0;
         setTimeout(() => {
-          this.goBack();
+          this.authService.logout();
+    
+          this.router.navigate(['/servicios-administrativos']);
         }, 2000);
       }
     } catch (error: any) {

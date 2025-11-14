@@ -869,90 +869,14 @@
 </div>
 
 
-<div *ngIf="mostrarModalRechazo" class="modal-overlay" (click)="cerrarModalRechazo()">
-  <div class="modal-content-large" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h2>
-        <i class="fas fa-times-circle"></i>
-        Rechazar Trámite
-      </h2>
-      <button class="close-btn" (click)="cerrarModalRechazo()">
-        <i class="fas fa-times"></i>
-      </button>
-    </div>
 
-    <div class="modal-body">
-      <div class="tramite-info-card" *ngIf="tramiteSeleccionado">
-        <h3>{{ tramiteSeleccionado.asunto }}</h3>
-        <p><strong>Código:</strong> {{ tramiteSeleccionado.codigo }}</p>
-        <p><strong>Estado:</strong> {{ tramiteSeleccionado.estado.nombre }}</p>
-        <p><strong>Tipo:</strong> {{ tramiteSeleccionado.tipoTramite.nombre }}</p>
-      </div>
+<app-rechazar-tramite-modal
+  [tramite]="tramiteSeleccionado"
+  [show]="showRechazarModal"
+  (close)="cerrarModalRechazar()"
+  (rechazado)="onTramiteRechazado($event)">
+</app-rechazar-tramite-modal>
 
-      <div class="rechazo-form">
-        <div class="form-group">
-          <label for="motivoRechazo">
-            <i class="fas fa-exclamation-triangle"></i>
-            Motivo del Rechazo *
-          </label>
-          <textarea
-            id="motivoRechazo"
-            [(ngModel)]="motivoRechazo"
-            placeholder="Explique detalladamente el motivo del rechazo del trámite..."
-            rows="4"
-            required
-            maxlength="1000">
-          </textarea>
-          <small class="char-counter">{{ motivoRechazo.length }}/1000 caracteres</small>
-        </div>
-
-        <div class="form-group">
-          <label for="observacionesRechazo">
-            <i class="fas fa-comment"></i>
-            Observaciones Adicionales
-          </label>
-          <textarea
-            id="observacionesRechazo"
-            [(ngModel)]="observacionesRechazo"
-            placeholder="Agregue observaciones adicionales o recomendaciones para el solicitante..."
-            rows="3"
-            maxlength="500">
-          </textarea>
-          <small class="char-counter">{{ observacionesRechazo.length }}/500 caracteres</small>
-        </div>
-
-        <div class="warning-message">
-          <i class="fas fa-exclamation-triangle"></i>
-          <strong>¡Atención!</strong> Al rechazar este trámite:
-          <ul>
-            <li>Se enviará una notificación automática por correo al usuario remitente</li>
-            <li>El trámite cambiará su estado a "RECHAZADO"</li>
-            <li>Se registrará esta acción en el historial del trámite</li>
-            <li>El usuario podrá presentar un nuevo trámite corregido</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-
-    <div class="modal-footer">
-      <button
-        class="btn-cancel"
-        (click)="cerrarModalRechazo()"
-        [disabled]="cargandoRechazo">
-        <i class="fas fa-times"></i>
-        Cancelar
-      </button>
-      <button
-        class="btn-danger"
-        [disabled]="!motivoRechazo.trim() || cargandoRechazo"
-        (click)="confirmarRechazo()">
-        <i class="fas fa-spinner fa-spin" *ngIf="cargandoRechazo"></i>
-        <i class="fas fa-times-circle" *ngIf="!cargandoRechazo"></i>
-        {{ cargandoRechazo ? 'Rechazando...' : 'Rechazar Trámite' }}
-      </button>
-    </div>
-  </div>
-</div>
 
 <app-responder-tramite-modal
   [show]="showResponderTramiteModal"

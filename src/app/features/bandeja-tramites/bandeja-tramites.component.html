@@ -747,68 +747,9 @@
   (tramiteRespondido)="onTramiteRespondido($event)">
 </app-responder-tramite-modal>
 
-
-<div *ngIf="showRechazarModal" class="modal-overlay" (click)="cerrarModalRechazar()">
-  <div class="modal-content" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h3>Rechazar Trámite</h3>
-      <button class="modal-close" (click)="cerrarModalRechazar()">
-        <i class="fas fa-times"></i>
-      </button>
-    </div>
-
-    <div class="modal-body">
-      <p>Trámite: <strong>{{ tramiteSeleccionado?.codigo }}</strong></p>
-
-      <div class="form-group">
-        <label>Motivo del Rechazo *</label>
-        <textarea
-          [(ngModel)]="motivoRechazo"
-          placeholder="Explique detalladamente el motivo del rechazo del trámite..."
-          rows="4"
-          maxlength="1000"
-          required
-        ></textarea>
-        <small class="char-counter">{{ motivoRechazo.length }}/1000 caracteres</small>
-      </div>
-
-      <div class="form-group">
-        <label>Observaciones Adicionales</label>
-        <textarea
-          [(ngModel)]="observacionesRechazo"
-          placeholder="Observaciones adicionales (opcional)..."
-          rows="3"
-          maxlength="500"
-        ></textarea>
-        <small class="char-counter">{{ observacionesRechazo.length }}/500 caracteres</small>
-      </div>
-
-      <div class="alert alert-warning">
-        <strong>¡Atención!</strong> Al rechazar este trámite:
-        <ul>
-          <li>El trámite cambiará su estado a "RECHAZADO"</li>
-          <li>Se notificará al solicitante sobre el rechazo</li>
-          <li>Esta acción no se puede deshacer</li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="modal-footer">
-      <button
-        class="btn-cancel"
-        (click)="cerrarModalRechazar()"
-        [disabled]="cargandoRechazo">
-        Cancelar
-      </button>
-      <button
-        class="btn-danger"
-        [disabled]="!motivoRechazo.trim() || cargandoRechazo"
-        (click)="confirmarRechazo()">
-        <i class="fas fa-spinner fa-spin" *ngIf="cargandoRechazo"></i>
-        <i class="fas fa-times-circle" *ngIf="!cargandoRechazo"></i>
-        {{ cargandoRechazo ? 'Rechazando...' : 'Rechazar Trámite' }}
-      </button>
-    </div>
-  </div>
-</div>
-
+<app-rechazar-tramite-modal
+  [tramite]="tramiteSeleccionado"
+  [show]="showRechazarModal"
+  (close)="cerrarModalRechazar()"
+  (rechazado)="onTramiteRechazado($event)">
+</app-rechazar-tramite-modal>

@@ -101,6 +101,9 @@ export class DashboardComponent implements OnInit {
   }
 
   private loadPermissionsForTramites() {
+    if (!Array.isArray(this.allTramites)) {
+      return;
+    }
     const tramitePromises = this.allTramites.map(tramite =>
       firstValueFrom(this.bandejaTramitesService.verificarPermisosAcciones(tramite.id))
         .then(permisos => {
@@ -150,6 +153,9 @@ export class DashboardComponent implements OnInit {
   }
 
   getTramitesVencidos(): number {
+    if (!Array.isArray(this.allTramites)) {
+      return 0;
+    }
     return this.allTramites.filter(tramite => {
       const permisos = this.tramitePermisos.get(tramite.id);
       return permisos?.estaVencido || false;
@@ -246,10 +252,10 @@ export class DashboardComponent implements OnInit {
       `${environment.apiUrl}/api/activities/recent?limit=${this.activitiesLimit}&offset=${offset}` :
       `/api/activities/recent?limit=${this.activitiesLimit}&offset=${offset}`;
 
-    this.http.get<any[]>(url).subscribe({
-      next: (activities) => {
-     
-        const mappedActivities = activities.map(activity => {
+    this.http.get<any>(url).subscribe({
+      next: (response) => {
+        const activitiesArray = Array.isArray(response) ? response : (Array.isArray(response?.data) ? response.data : []);
+        const mappedActivities = activitiesArray.map((activity: any) => {
           let roleColor = activity.userRole || 'SISTEMA';
           let statusLabel = '';
 
@@ -296,8 +302,8 @@ export class DashboardComponent implements OnInit {
           this.currentOffset = 0;
         }
 
-        this.currentOffset += activities.length;
-        this.canLoadMore = activities.length === this.activitiesLimit;
+        this.currentOffset += activitiesArray.length;
+        this.canLoadMore = activitiesArray.length === this.activitiesLimit;
         this.loadingActivities = false;
       },
       error: (error) => {
@@ -330,7 +336,7 @@ export class DashboardComponent implements OnInit {
   }
 
   manageUsers() {
-    this.router.navigate(['/admin/user-management']);
+    this.router.navigate(['/admin/gestion-usuarios']);
   }
 
   viewReports() {

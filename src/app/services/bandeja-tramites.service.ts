@@ -60,7 +60,7 @@ export class BandejaTramitesService {
       .pipe(
         tap((response) => {
           this.loadingSubject.next(false);
-     
+
           if (response && response.data) {
             this.tramitesSubject.next(response.data);
           }
@@ -125,10 +125,10 @@ export class BandejaTramitesService {
     return this.http.get<EstadisticasBandeja>(`${this.apiUrl}/estadisticas`)
       .pipe(
         tap(estadisticas => {
-     
+
         }),
         catchError(error => {
-       
+
           throw error;
         })
       );

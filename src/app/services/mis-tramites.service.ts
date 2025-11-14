@@ -333,7 +333,7 @@ export class MisTramitesService {
 
   private mapSingleTramiteToFrontendFormat(tramiteBackend: any): MiTramite {
 
-    const documentosMapeados = this.mapDocumentos(tramiteBackend.documentos);
+    const documentosMapeados = this.mapDocumentos(tramiteBackend.documentos || tramiteBackend.documentosAdjuntos);
 
     const tramiteMapeado = {
       id: tramiteBackend.id,
@@ -683,12 +683,12 @@ export class MisTramitesService {
     const requestBody = {
       tramiteId: tramiteId,
       motivoRechazo: motivoRechazo,
-      observaciones: observaciones
+      observaciones: observaciones || null
     };
 
     return this.http.put<any>(`${this.apiUrl}/${tramiteId}/rechazar`, requestBody)
       .pipe(
-        tap(response => {
+        tap(() => {
           this.loadingSubject.next(false);
           this.toastService.success(
             'Trámite rechazado',

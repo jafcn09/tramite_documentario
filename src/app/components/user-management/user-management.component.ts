@@ -70,9 +70,7 @@ export class UserManagementComponent implements OnInit {
       numDocumento: ['', [Validators.required, Validators.minLength(8), Validators.maxLength(8), Validators.pattern('^[0-9]*$')]],
       correo: ['', [Validators.required, Validators.email]],
       celular: ['', [Validators.minLength(9), Validators.maxLength(9), Validators.pattern('^[0-9]*$')]],
-      direccion: [''],
-      roleId: ['', Validators.required],
-      areaId: ['']
+      direccion: ['']
     });
   }
 
@@ -141,9 +139,7 @@ export class UserManagementComponent implements OnInit {
       numDocumento: user.numDocumento,
       correo: user.correo,
       celular: user.celular || '',
-      direccion: user.direccion || '',
-      roleId: user.role.id,
-      areaId: user.area?.id || ''
+      direccion: user.direccion || ''
     });
     this.showEditModal = true;
   }
@@ -177,9 +173,7 @@ export class UserManagementComponent implements OnInit {
       numDocumento: formValue.numDocumento,
       correo: formValue.correo,
       celular: formValue.celular || null,
-      direccion: formValue.direccion || null,
-      roleId: parseInt(formValue.roleId),
-      areaId: formValue.areaId ? parseInt(formValue.areaId) : null
+      direccion: formValue.direccion || null
     };
 
     this.http.put<User>(`${environment.apiUrl}/api/usuarios/${this.selectedUserForEdit.id}`, request, {

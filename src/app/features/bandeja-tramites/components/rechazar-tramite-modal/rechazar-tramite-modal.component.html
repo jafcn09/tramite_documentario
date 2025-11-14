@@ -1,0 +1,68 @@
+<div *ngIf="show" class="modal-overlay" (click)="cerrar()">
+  <div class="modal-dialog" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Rechazar Trámite</h2>
+      <button class="close-btn" (click)="cerrar()" [disabled]="cargando">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="tramite-info">
+        <span class="codigo-label">{{ tramite?.codigo }}</span>
+      </div>
+
+      <div class="form-group">
+        <label for="motivo">Motivo del Rechazo</label>
+        <textarea
+          id="motivo"
+          [(ngModel)]="motivo"
+          placeholder="Describa brevemente el motivo..."
+          rows="4"
+          maxlength="1000"
+          [disabled]="cargando"
+        ></textarea>
+        <span class="char-count">{{ motivo.length }}/1000</span>
+      </div>
+
+      <div class="form-group">
+        <label for="observaciones">Observaciones (Opcional)</label>
+        <textarea
+          id="observaciones"
+          [(ngModel)]="observaciones"
+          placeholder="Observaciones adicionales..."
+          rows="3"
+          maxlength="500"
+          [disabled]="cargando"
+        ></textarea>
+        <span class="char-count">{{ observaciones.length }}/500</span>
+      </div>
+
+      <div class="info-box">
+        <i class="fas fa-info-circle"></i>
+        <div class="info-text">
+          <strong>Al rechazar:</strong>
+          <ul>
+            <li>El estado cambiará a "RECHAZADO"</li>
+            <li>Se notificará al solicitante</li>
+            <li>Esta acción no se puede deshacer</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-cancel" (click)="cerrar()" [disabled]="cargando">
+        Cancelar
+      </button>
+      <button
+        class="btn btn-reject"
+        (click)="confirmar()"
+        [disabled]="!motivo.trim() || cargando"
+      >
+        <i class="fas" [class.fa-spinner]="cargando" [class.fa-spin]="cargando" [class.fa-times-circle]="!cargando"></i>
+        {{ cargando ? 'Rechazando...' : 'Rechazar' }}
+      </button>
+    </div>
+  </div>
+</div>

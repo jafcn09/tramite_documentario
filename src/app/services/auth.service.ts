@@ -58,22 +58,32 @@ export class AuthService {
     return this.http.post<LoginResponse>(`${environment.apiUrl}/api/auth/login`, credentials)
       .pipe(
         tap(response => {
-          if (response.token) {
+          // Handle ApiResponse wrapper - data can be in response.data or response directly
+          const loginData = response?.data || response;
+          const token = loginData?.token;
+          const refreshToken = loginData?.refreshToken;
+          const usuario = loginData?.usuario;
+
+          if (response && token) {
             this.modalService.clearAllModals();
 
-            this.storeTokens(response.token, response.refreshToken);
+            this.storeTokens(token, refreshToken || '');
 
-            if (response.usuario) {
-              this.storeUser(response.usuario);
+            if (usuario) {
+              this.storeUser(usuario);
 
-              this.currentUserSubject.next(response.usuario);
+              this.currentUserSubject.next(usuario);
 
               this.startInactivityTimer();
               this.setupUserActivityListeners();
             }
+
+            // Log redirectUrl for debugging
+            console.log('Login successful. RedirectUrl from backend:', loginData?.redirectUrl);
           }
         }),
         catchError(error => {
+          console.error('Login error:', error);
           return throwError(() => error);
         })
       );
@@ -154,8 +164,13 @@ export class AuthService {
       }
     }).pipe(
       tap(response => {
-        if (response.token) {
-          this.storeTokens(response.token, response.refreshToken);
+        // Handle ApiResponse wrapper - data can be in response.data or response directly
+        const loginData = response?.data || response;
+        const token = loginData?.token;
+        const newRefreshToken = loginData?.refreshToken;
+
+        if (token) {
+          this.storeTokens(token, newRefreshToken || '');
         }
       }),
       catchError(error => {

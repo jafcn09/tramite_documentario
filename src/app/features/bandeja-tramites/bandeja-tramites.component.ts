@@ -11,6 +11,7 @@ import { MisTramitesService } from '../../services/mis-tramites.service';
 import { ToastService } from '../../services/toast.service';
 import { AuthService } from '../../services/auth.service';
 import { ResponderTramiteModalComponent } from '../tramites/components/responder-tramite-modal/responder-tramite-modal.component';
+import { RechazarTramiteModalComponent } from './components/rechazar-tramite-modal/rechazar-tramite-modal.component';
 
 import { Tramite } from '../../shared/interfaces/tramite.interface';
 import { 
@@ -26,7 +27,7 @@ import {
 @Component({
   selector: 'app-bandeja-tramites',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, ResponderTramiteModalComponent], 
+  imports: [CommonModule, FormsModule, RouterModule, ResponderTramiteModalComponent, RechazarTramiteModalComponent], 
   templateUrl: './bandeja-tramites.component.html',
   styleUrl: './bandeja-tramites.component.css'
 })
@@ -75,10 +76,6 @@ export class BandejaTramitesComponent implements OnInit, OnDestroy {
   showRechazarModal = false;
   tramiteSeleccionado: TramiteBandeja | null = null;
   tramiteParaEditar: Tramite | null = null;
-
-  motivoRechazo = '';
-  observacionesRechazo = '';
-  cargandoRechazo = false;
   
 
   cambiarEstadoForm: CambiarEstadoRequest = {
@@ -154,6 +151,9 @@ export class BandejaTramitesComponent implements OnInit, OnDestroy {
             this.tramites = response.data;
             this.totalItems = response.total;
             this.totalPages = response.totalPages;
+
+            // Limpiar caché de permisos para forzar recarga
+            this.tramitePermisos.clear();
 
             this.cargarPermisosParaTramites();
 
@@ -536,47 +536,13 @@ export class BandejaTramitesComponent implements OnInit, OnDestroy {
   cerrarModalRechazar() {
     this.showRechazarModal = false;
     this.tramiteSeleccionado = null;
-    this.motivoRechazo = '';
-    this.observacionesRechazo = '';
-    this.cargandoRechazo = false;
   }
 
-  confirmarRechazo() {
-    if (!this.tramiteSeleccionado || !this.motivoRechazo.trim()) {
-      this.toastService.warning('Motivo requerido', 'Debe proporcionar un motivo para el rechazo');
-      return;
-    }
-
-    if (!this.puedeRechazar(this.tramiteSeleccionado)) {
-      this.toastService.error('Acción no permitida', 'No tienes permisos para rechazar este trámite');
-      this.cerrarModalRechazar();
-      return;
-    }
-
-    this.cargandoRechazo = true;
-
-    this.subscriptions.add(
-      this.misTramitesService.rechazarTramite(
-        this.tramiteSeleccionado.id,
-        this.motivoRechazo.trim(),
-        this.observacionesRechazo.trim() || undefined
-      ).subscribe({
-        next: () => {
-          this.cargandoRechazo = false;
-          this.toastService.success(
-            'Trámite rechazado',
-            `El trámite ${this.tramiteSeleccionado?.codigo} ha sido rechazado correctamente`
-          );
-          this.cargarTramites();
-          this.cargarEstadisticas();
-          this.cerrarModalRechazar();
-        },
-        error: () => {
-          this.cargandoRechazo = false;
-          this.toastService.error('Error al rechazar', 'No se pudo rechazar el trámite. Intente nuevamente.');
-        }
-      })
-    );
+  onTramiteRechazado(response: any) {
+    this.cargarTramites();
+    this.cargarEstadisticas();
+    this.cerrarModalRechazar();
+    this.cerrarModalDetalle();
   }
 
   private convertirTramiteBandejaATramite(tramiteBandeja: TramiteBandeja): Tramite {
@@ -713,6 +679,7 @@ export class BandejaTramitesComponent implements OnInit, OnDestroy {
   onTramiteRespondido(response: any) {
     this.cargarTramites();
     this.cargarEstadisticas();
+    this.cerrarModalDetalle();
     this.toastService.success('Trámite respondido exitosamente', 'El trámite ha sido procesado y se notificó al solicitante');
   }
 
@@ -744,6 +711,11 @@ export class BandejaTramitesComponent implements OnInit, OnDestroy {
   }
 
   puedeMostrarDerivar(tramite: TramiteBandeja): boolean {
+    // No puede derivarse si está rechazado o finalizado
+    if (tramite.estado.nombre === 'RECHAZADO' || tramite.estado.nombre === 'FINALIZADO' || tramite.estado.nombre === 'ARCHIVADO') {
+      return false;
+    }
+
     const permisos = this.tramitePermisos.get(tramite.id);
 
     if (permisos) {

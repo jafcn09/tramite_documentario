@@ -581,18 +581,6 @@
 
       <div class="form-row">
         <div class="form-group">
-          <label for="editCorreo">Correo Electrónico <span class="required">*</span></label>
-          <input type="email" id="editCorreo" formControlName="correo"
-                 class="form-control" placeholder="ejemplo@correo.com">
-          <div class="error-message" *ngIf="editUserForm.get('correo')?.invalid && editUserForm.get('correo')?.touched">
-            <span *ngIf="editUserForm.get('correo')?.errors?.['required']">El correo es requerido</span>
-            <span *ngIf="editUserForm.get('correo')?.errors?.['email']">Ingrese un correo válido</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="form-row">
-        <div class="form-group">
           <label for="editCelular">Celular</label>
           <input type="text" id="editCelular" formControlName="celular"
                  class="form-control" placeholder="999999999" maxlength="9">
@@ -611,28 +599,16 @@
 
       <div class="form-row">
         <div class="form-group">
-          <label for="editRoleId">Rol <span class="required">*</span></label>
-          <select id="editRoleId" formControlName="roleId" class="form-control">
-            <option value="">Seleccione un rol...</option>
-            <option *ngFor="let role of roles" [value]="role.id">
-              {{ role.name }} - {{ role.description }}
-            </option>
-          </select>
-          <div class="error-message" *ngIf="editUserForm.get('roleId')?.invalid && editUserForm.get('roleId')?.touched">
-            El rol es requerido
+          <label for="editCorreo">Correo Electrónico <span class="required">*</span></label>
+          <input type="email" id="editCorreo" formControlName="correo"
+                 class="form-control" placeholder="ejemplo@correo.com">
+          <div class="error-message" *ngIf="editUserForm.get('correo')?.invalid && editUserForm.get('correo')?.touched">
+            <span *ngIf="editUserForm.get('correo')?.errors?.['required']">El correo es requerido</span>
+            <span *ngIf="editUserForm.get('correo')?.errors?.['email']">Ingrese un correo válido</span>
           </div>
         </div>
-
-        <div class="form-group">
-          <label for="editAreaId">Área</label>
-          <select id="editAreaId" formControlName="areaId" class="form-control">
-            <option value="">Sin área asignada</option>
-            <option *ngFor="let area of activeAreas" [value]="area.id">
-              {{ area.nombre }}
-            </option>
-          </select>
-        </div>
       </div>
+
 
       <div class="form-actions">
         <button type="button" class="btn-secondary" (click)="closeEditModal()">

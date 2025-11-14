@@ -3,9 +3,22 @@ export interface LoginRequest {
   password: string;
 }
 
-export interface LoginResponse {
+export interface LoginResponseData {
   token: string;
   refreshToken: string;
+  redirectUrl: string;
+  role: string;
+  usuario: any;
+  message: string;
+}
+
+export interface LoginResponse {
+  success: boolean;
+  mensaje: string;
+  data?: LoginResponseData;
+  // Legacy properties for backward compatibility
+  token?: string;
+  refreshToken?: string;
   redirectUrl?: string;
   role?: string;
   usuario?: any;

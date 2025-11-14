@@ -71,23 +71,28 @@ export class AdminLoginComponent implements OnInit {
             this.clearSavedCredentials();
           }
 
-          let redirectRoute = '/';
+          this.isLoading = false;
 
-          // Usar el usuario de la respuesta en lugar de currentUserValue para evitar race condition
-          if (response.redirectUrl) {
-            redirectRoute = response.redirectUrl;
-          } else if (response.usuario && response.usuario.role) {
+          // Extract redirectUrl from ApiResponse wrapper
+          const redirectUrl = response?.data?.redirectUrl || response?.redirectUrl;
+
+          // Use redirectUrl from backend - it's always provided
+          if (redirectUrl) {
+            console.log('Redirecting to:', redirectUrl);
+            this.router.navigate([redirectUrl]);
+          } else {
+            // Fallback: shouldn't happen but just in case
+            console.warn('No redirectUrl in response, using role-based fallback');
             const roleRoutes: { [key: string]: string } = {
               'admin': '/admin/tablero',
               'administrativo': '/administrativo/tablero',
               'usuario': '/usuario/tablero',
               'estudiante': '/estudiante/tablero'
             };
-            redirectRoute = roleRoutes[response.usuario.role.name.toLowerCase()] || '/';
+            const userRole = response?.data?.usuario?.role?.name?.toLowerCase() || response?.usuario?.role?.name?.toLowerCase() || '';
+            const route = roleRoutes[userRole] || '/';
+            this.router.navigate([route]);
           }
-
-          this.isLoading = false;
-          this.router.navigate([redirectRoute]);
         },
         error: (error) => {
           this.isLoading = false;
