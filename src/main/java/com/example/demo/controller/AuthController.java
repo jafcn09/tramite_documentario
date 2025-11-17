@@ -1,5 +1,9 @@
 package com.example.demo.controller;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,7 +33,10 @@ public class AuthController {
     
     @GetMapping("/status")
     public ResponseEntity<?> status() {
-        return ResponseEntity.ok().body("{\"status\": \"Auth service is running\", \"endpoints\": [\"/login\", \"/refresh\", \"/validate-token\"]}");
+        Map<String, Object> statusData = new HashMap<>();
+        statusData.put("status", "Auth service is running");
+        statusData.put("endpoints", Arrays.asList("/login", "/refresh", "/validate-token"));
+        return ResponseEntity.ok().body(statusData);
     }
     
     @GetMapping("/init")
@@ -62,19 +69,14 @@ public class AuthController {
         try {
             LoginResponse response = authService.login(loginRequest, httpRequest);
 
+            // Si hay token, retornar 200 OK (aunque deba cambiar contraseña)
             if (response.getToken() != null) {
                 return ResponseEntity.ok()
                     .header("Content-Type", "application/json")
                     .body(response);
             }
-            
-            if (response.getMessage() != null && 
-                response.getMessage().contains("cambiar tu contraseña")) {
-                return ResponseEntity.status(HttpStatus.PRECONDITION_REQUIRED)
-                    .header("Content-Type", "application/json")
-                    .body(response);
-            }
-            
+
+            // Si no hay token, retornar FORBIDDEN
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .header("Content-Type", "application/json")
                 .body(response);

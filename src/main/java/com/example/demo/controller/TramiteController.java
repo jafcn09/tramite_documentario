@@ -33,6 +33,7 @@ import com.example.demo.annotation.DailyRateLimit;
 import com.example.demo.dto.ApiResponse;
 import com.example.demo.dto.AprobarTramiteRequest;
 import com.example.demo.dto.AprobarTramiteResponse;
+import com.example.demo.dto.DocumentoBase64Request;
 import com.example.demo.dto.EditarTramiteRequest;
 import com.example.demo.dto.TramiteConArchivosRequest;
 import com.example.demo.dto.TramitePublicoRequest;
@@ -104,7 +105,7 @@ public class TramiteController {
             @RequestParam(value = "telefono", required = false) String telefono,
             @RequestParam("tipoTramite") String tipoTramite,
             @RequestParam("asunto") String asunto,
-            @RequestParam("descripcion") String descripcion,
+            @RequestParam(value = "descripcion", required = false) String descripcion,
             @RequestParam("captchaToken") String captchaToken,
             @RequestParam("captchaCode") String captchaCode,
             @RequestParam(value = "archivos", required = false) List<MultipartFile> archivos) {
@@ -126,31 +127,28 @@ public class TramiteController {
 
             TramiteResponse response = tramitePublicoService.crearTramitePublico(request);
 
-            return ResponseEntity.ok(Map.of(
-                "success", true,
-                "message", "Trámite creado exitosamente",
-                "codigo", response.getCodigo(),
-                "tramite", response
+            return ResponseEntity.ok(ApiResponse.success(
+                "Trámite creado exitosamente",
+                Map.of(
+                    "codigo", response.getCodigo(),
+                    "tramite", response
+                )
             ));
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of(
-                "success", false,
-                "error", e.getMessage()
+            return ResponseEntity.badRequest().body(ApiResponse.error(
+                e.getMessage()
             ));
         } catch (SecurityException e) {
-            return ResponseEntity.status(403).body(Map.of(
-                "success", false,
-                "error", "Contenido no permitido: " + e.getMessage()
+            return ResponseEntity.status(403).body(ApiResponse.error(
+                "Contenido no permitido: " + e.getMessage()
             ));
         } catch (RuntimeException e) {
-            return ResponseEntity.status(500).body(Map.of(
-                "success", false,
-                "error", e.getMessage()
+            return ResponseEntity.status(500).body(ApiResponse.error(
+                e.getMessage()
             ));
         } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of(
-                "success", false,
-                "error", "Error inesperado: " + e.getMessage()
+            return ResponseEntity.status(500).body(ApiResponse.error(
+                "Error inesperado: " + e.getMessage()
             ));
         }
     }
@@ -727,6 +725,24 @@ public class TramiteController {
         if (usuarioId == null) {
             throw new RuntimeException("No se pudo obtener el ID del usuario del token");
         }
+
+        // Validar máximo 3 archivos
+        if (request.getDocumentos() != null) {
+            if (request.getDocumentos().size() > 3) {
+                throw new IllegalArgumentException("Se permite un máximo de 3 archivos por trámite");
+            }
+
+            // Validar tamaño máximo de 50MB por archivo
+            long maxTamanioArch = 50 * 1024 * 1024;
+            for (DocumentoBase64Request doc : request.getDocumentos()) {
+                if (doc.getTamano() != null && doc.getTamano() > maxTamanioArch) {
+                    throw new IllegalArgumentException(
+                        "El archivo '" + doc.getNombre() + "' excede el tamaño máximo de 50MB"
+                    );
+                }
+            }
+        }
+
         String rol = getRole(principal);
         TramiteResponse tramiteCreado;
         try {

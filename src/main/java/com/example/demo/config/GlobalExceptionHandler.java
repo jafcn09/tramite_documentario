@@ -12,6 +12,7 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import com.example.demo.exception.RateLimitExceededException;
+import com.example.demo.exception.UnauthorizedException;
 import com.example.demo.dto.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
 import java.time.LocalDateTime;
@@ -71,10 +72,25 @@ public class GlobalExceptionHandler {
         ApiErrorResponse response = ApiErrorResponse.builder()
                 .timestamp(LocalDateTime.now())
                 .status(HttpStatus.FORBIDDEN.value())
-                .message("Access denied - insufficient permissions")
+                .message("Acceso denegado - no tiene permisos suficientes")
                 .build();
 
         log.warn("Access denied: {}", ex.getMessage());
+        return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<ApiErrorResponse> handleUnauthorized(
+            UnauthorizedException ex,
+            WebRequest request) {
+
+        ApiErrorResponse response = ApiErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.FORBIDDEN.value())
+                .message("Access denied - insufficient permissions")
+                .build();
+
+        log.warn("Authorization check failed: {}", ex.getMessage());
         return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
     }
 

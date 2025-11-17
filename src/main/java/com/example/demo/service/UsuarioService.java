@@ -57,13 +57,13 @@ public class UsuarioService {
                 .collect(Collectors.toList());
     }
     
-    @org.springframework.cache.annotation.Cacheable(value = "usuarios", key = "#id")
+    @org.springframework.cache.annotation.Cacheable(value = "usuarios", key = "'usuario_' + #id")
     public Optional<UsuarioResponse> getUsuarioById(Long id) {
         return usuarioRepository.findById(id)
                 .map(this::convertToResponse);
     }
 
-    @org.springframework.cache.annotation.Cacheable(value = "usuariosByCorreo", key = "#correo")
+    @org.springframework.cache.annotation.Cacheable(value = "usuariosByCorreo", key = "'correo_' + #correo")
     public Optional<UsuarioResponse> getUsuarioByCorreo(String correo) {
         return usuarioRepository.findByCorreo(correo)
                 .map(this::convertToResponse);
@@ -98,12 +98,10 @@ public class UsuarioService {
             usuario.setArea(area);
         }
 
-        boolean mustChangePassword = request.getMustChangePassword() != null ? request.getMustChangePassword() : false;
-        usuario.setMustChangePassword(mustChangePassword);
-
-        if (mustChangePassword) {
-            usuario.setPasswordExpiry(LocalDateTime.now().plusDays(2));
-        }
+        // Siempre forzar cambio de password en primer login (mejor práctica de seguridad)
+        // El usuario debe cambiar la contraseña generada aleatoria por una propia
+        usuario.setMustChangePassword(true);
+        usuario.setPasswordExpiry(LocalDateTime.now().plusDays(2)); // Expira en 2 días si no cambia
         
         usuario.setAccountEnabled(true);
         usuario.setAccountLocked(false);
@@ -203,6 +201,19 @@ public class UsuarioService {
         usuarioRepository.save(usuario);
 
         sendPasswordChangeNotification(usuario);
+    }
+
+    // ✅ NUEVO: Método que cambia password y devuelve el usuario actualizado
+    // Usado cuando el usuario accede desde el componente /cambiar-contrasena
+    public UsuarioResponse changePasswordAndReturnUser(Long userId, ChangePasswordRequest request) {
+        // Ejecutar la lógica de cambio de password
+        changePassword(userId, request);
+
+        // Obtener el usuario actualizado y devolverlo
+        Usuario usuarioActualizado = usuarioRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado con ese id: " + userId));
+
+        return convertToResponse(usuarioActualizado);
     }
     
     public void enableAccount(Long userId, String reason) {
@@ -489,9 +500,14 @@ public class UsuarioService {
     }
     
     public List<UsuarioResponse> getUsersByArea(Long areaId) {
-        List<Usuario> users = usuarioRepository.findAll().stream()
-                .filter(user -> user.getArea() != null && user.getArea().getId().equals(areaId))
-                .collect(Collectors.toList());
+        List<Usuario> users = usuarioRepository.findByAreaId(areaId);
+
+        // Si no hay usuarios en esa área específica, devolver todos los usuarios
+        // para asegurar que siempre haya opciones para derivar
+        if (users.isEmpty()) {
+            users = usuarioRepository.findAllUsuarios();
+        }
+
         return users.stream()
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());
@@ -500,6 +516,12 @@ public class UsuarioService {
     public List<UsuarioResponse> getUsersWithoutArea() {
         return usuarioRepository.findAll().stream()
                 .filter(user -> user.getArea() == null)
+                .map(this::convertToResponse)
+                .collect(Collectors.toList());
+    }
+
+    public List<UsuarioResponse> findAllUsuarios() {
+        return usuarioRepository.findAll().stream()
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());
     }
@@ -568,6 +590,12 @@ public class UsuarioService {
     
     private void sendPasswordResetNotification(Usuario usuario, String newPassword, String reason) {
         try {
+            // Validar que el email del usuario no sea nulo o vacío
+            if (usuario.getCorreo() == null || usuario.getCorreo().trim().isEmpty()) {
+                System.err.println("Advertencia: Usuario " + usuario.getId() + " no tiene email registrado. No se puede enviar notificación de restablecimiento de contraseña.");
+                return;
+            }
+
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
@@ -578,8 +606,15 @@ public class UsuarioService {
             helper.setText(htmlContent, true);
 
             mailSender.send(message);
+            System.out.println("Notificación de restablecimiento de contraseña enviada a: " + usuario.getCorreo());
         } catch (MessagingException e) {
-            throw new RuntimeException("Error al enviar notificación de restablecimiento de credencial", e);
+            // Log del error pero no lanzar excepción para que el flujo continúe
+            System.err.println("Error al enviar notificación de restablecimiento de credencial a " + usuario.getCorreo() + ": " + e.getMessage());
+            e.printStackTrace();
+        } catch (Exception e) {
+            // Capturar cualquier otra excepción (como NullPointerException)
+            System.err.println("Error inesperado al enviar notificación: " + e.getMessage());
+            e.printStackTrace();
         }
     }
     
@@ -641,9 +676,24 @@ public class UsuarioService {
     }
     
     public List<Map<String, Object>> getAdministrativosConWorkload() {
+        return getAdministrativosConWorkload(null);
+    }
+
+    public List<Map<String, Object>> getAdministrativosConWorkload(Long excludeUserId) {
         return usuarioRepository.findAll().stream()
+                .filter(user -> {
+                    // Excluir el usuario especificado si se proporciona
+                    if (excludeUserId != null && user.getId().equals(excludeUserId)) {
+                        return false;
+                    }
+                    return true;
+                })
                 .filter(user -> user.isAccountEnabled() && !user.isAccountLocked())
-                .filter(user -> user.getRole() != null && "ADMINISTRATIVO".equals(user.getRole().getName().toString()))
+                .filter(user -> {
+                    if (user.getRole() == null) return false;
+                    String roleName = user.getRole().getName();
+                    return roleName != null && roleName.equalsIgnoreCase("ADMINISTRATIVO");
+                })
                 .map(user -> {
                     Map<String, Object> userWithWorkload = new HashMap<>();
                     UsuarioResponse userResponse = convertToResponse(user);
@@ -658,7 +708,7 @@ public class UsuarioService {
                     userWithWorkload.put("foto", userResponse.getFoto());
                     Long workloadCount = tramiteRepository.countActiveTramitesByUsuarioAsignadoId(user.getId());
                     userWithWorkload.put("workloadCount", workloadCount != null ? workloadCount : 0);
-                    
+
                     return userWithWorkload;
                 })
                 .collect(Collectors.toList());
@@ -668,5 +718,13 @@ public class UsuarioService {
             .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         return convertToResponse(usuario);
+    }
+
+    public boolean existsByEmail(String email) {
+        return usuarioRepository.existsByCorreo(email);
+    }
+
+    public boolean existsByNumDocumento(String numDocumento) {
+        return usuarioRepository.existsByNumDocumento(numDocumento);
     }
 }

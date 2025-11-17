@@ -6,10 +6,10 @@ import {
   sequence,
   style,
   ɵPRE_STYLE
-} from "./chunk-SL73FFWH.js";
+} from "./chunk-KYM3LYO5.js";
 import {
   ToastService
-} from "./chunk-OF2WYGMW.js";
+} from "./chunk-NXAITARR.js";
 import {
   ActivatedRoute,
   AuthService,
@@ -20,9 +20,8 @@ import {
   Router,
   RouterOutlet,
   bootstrapApplication,
-  provideClientHydration,
   provideRouter
-} from "./chunk-T5HD73DN.js";
+} from "./chunk-HNI5KL6U.js";
 import {
   CheckboxControlValueAccessor,
   DefaultValueAccessor,
@@ -43,7 +42,7 @@ import {
   Validators,
   ɵNgNoValidate,
   ɵNgSelectMultipleOption
-} from "./chunk-6M6PSWXB.js";
+} from "./chunk-T3F2XNQR.js";
 import {
   ANIMATION_MODULE_TYPE,
   BehaviorSubject,
@@ -54,6 +53,7 @@ import {
   HTTP_INTERCEPTORS,
   HttpClient,
   HttpErrorResponse,
+  HttpResponse,
   Inject,
   Injectable,
   NgClass,
@@ -61,7 +61,6 @@ import {
   NgIf,
   NgModule,
   NgZone,
-  PLATFORM_ID,
   RendererFactory2,
   RuntimeError,
   Subject,
@@ -74,7 +73,7 @@ import {
   environment,
   filter,
   inject,
-  isPlatformBrowser,
+  map,
   of,
   performanceMarkFeature,
   provideHttpClient,
@@ -124,7 +123,7 @@ import {
   ɵɵtwoWayBindingSet,
   ɵɵtwoWayListener,
   ɵɵtwoWayProperty
-} from "./chunk-HL73AAZ4.js";
+} from "./chunk-VDZBNFIH.js";
 
 // node_modules/@angular/animations/fesm2022/browser.mjs
 var LINE_START = "\n - ";
@@ -311,10 +310,10 @@ function makeAnimationEvent(element, triggerName, fromState, toState, phaseName 
     disabled: !!disabled
   };
 }
-function getOrSetDefaultValue(map, key, defaultValue) {
-  let value = map.get(key);
+function getOrSetDefaultValue(map2, key, defaultValue) {
+  let value = map2.get(key);
   if (!value) {
-    map.set(key, value = defaultValue);
+    map2.set(key, value = defaultValue);
   }
   return value;
 }
@@ -3360,15 +3359,15 @@ var TransitionAnimationPlayer = class {
     }
   }
 };
-function deleteOrUnsetInMap(map, key, value) {
-  let currentValues = map.get(key);
+function deleteOrUnsetInMap(map2, key, value) {
+  let currentValues = map2.get(key);
   if (currentValues) {
     if (currentValues.length) {
       const index = currentValues.indexOf(value);
       currentValues.splice(index, 1);
     }
     if (currentValues.length == 0) {
-      map.delete(key);
+      map2.delete(key);
     }
   }
   return currentValues;
@@ -4239,342 +4238,6 @@ var NoopAnimationsModule = class _NoopAnimationsModule {
   }], null, null);
 })();
 
-// src/app/manual/manual.component.ts
-function ManualComponent__svg_svg_10_Template(rf, ctx) {
-  if (rf & 1) {
-    \u0275\u0275namespaceSVG();
-    \u0275\u0275elementStart(0, "svg", 18);
-    \u0275\u0275element(1, "path", 26);
-    \u0275\u0275elementEnd();
-  }
-}
-function ManualComponent__svg_svg_11_Template(rf, ctx) {
-  if (rf & 1) {
-    \u0275\u0275namespaceSVG();
-    \u0275\u0275elementStart(0, "svg", 18);
-    \u0275\u0275element(1, "path", 19);
-    \u0275\u0275elementEnd();
-  }
-}
-function ManualComponent_div_14_Template(rf, ctx) {
-  if (rf & 1) {
-    const _r1 = \u0275\u0275getCurrentView();
-    \u0275\u0275elementStart(0, "div", 27);
-    \u0275\u0275listener("click", function ManualComponent_div_14_Template_div_click_0_listener() {
-      \u0275\u0275restoreView(_r1);
-      const ctx_r1 = \u0275\u0275nextContext();
-      return \u0275\u0275resetView(ctx_r1.toggleIndex());
-    });
-    \u0275\u0275elementEnd();
-  }
-}
-function ManualComponent_button_30_Template(rf, ctx) {
-  if (rf & 1) {
-    const _r3 = \u0275\u0275getCurrentView();
-    \u0275\u0275elementStart(0, "button", 28);
-    \u0275\u0275listener("click", function ManualComponent_button_30_Template_button_click_0_listener() {
-      const section_r4 = \u0275\u0275restoreView(_r3).$implicit;
-      const ctx_r1 = \u0275\u0275nextContext();
-      ctx_r1.scrollToSection(section_r4.id);
-      return \u0275\u0275resetView(ctx_r1.toggleIndex());
-    });
-    \u0275\u0275elementStart(1, "span", 29);
-    \u0275\u0275text(2);
-    \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(3, "span", 30);
-    \u0275\u0275text(4);
-    \u0275\u0275elementEnd()();
-  }
-  if (rf & 2) {
-    const section_r4 = ctx.$implicit;
-    const i_r5 = ctx.index;
-    \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate1(" ", i_r5 + 1, " ");
-    \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate(section_r4.title);
-  }
-}
-function ManualComponent_div_32_div_8_li_6_Template(rf, ctx) {
-  if (rf & 1) {
-    \u0275\u0275elementStart(0, "li", 42)(1, "span", 43);
-    \u0275\u0275text(2);
-    \u0275\u0275elementEnd();
-    \u0275\u0275element(3, "span", 44);
-    \u0275\u0275elementEnd();
-  }
-  if (rf & 2) {
-    const step_r6 = ctx.$implicit;
-    const stepIndex_r7 = ctx.index;
-    \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate1(" ", stepIndex_r7 + 1, " ");
-    \u0275\u0275advance();
-    \u0275\u0275property("innerHTML", step_r6, \u0275\u0275sanitizeHtml);
-  }
-}
-function ManualComponent_div_32_div_8_Template(rf, ctx) {
-  if (rf & 1) {
-    \u0275\u0275elementStart(0, "div", 37)(1, "h4", 38);
-    \u0275\u0275namespaceSVG();
-    \u0275\u0275elementStart(2, "svg", 15);
-    \u0275\u0275element(3, "path", 39);
-    \u0275\u0275elementEnd();
-    \u0275\u0275text(4, " Pasos a seguir: ");
-    \u0275\u0275elementEnd();
-    \u0275\u0275namespaceHTML();
-    \u0275\u0275elementStart(5, "ol", 40);
-    \u0275\u0275template(6, ManualComponent_div_32_div_8_li_6_Template, 4, 2, "li", 41);
-    \u0275\u0275elementEnd()();
-  }
-  if (rf & 2) {
-    const section_r8 = \u0275\u0275nextContext().$implicit;
-    \u0275\u0275advance(6);
-    \u0275\u0275property("ngForOf", section_r8.steps);
-  }
-}
-function ManualComponent_div_32_Template(rf, ctx) {
-  if (rf & 1) {
-    \u0275\u0275elementStart(0, "div", 31)(1, "div", 32)(2, "span", 33);
-    \u0275\u0275text(3);
-    \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(4, "h2", 34);
-    \u0275\u0275text(5);
-    \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(6, "p", 35);
-    \u0275\u0275text(7);
-    \u0275\u0275elementEnd();
-    \u0275\u0275template(8, ManualComponent_div_32_div_8_Template, 7, 1, "div", 36);
-    \u0275\u0275elementEnd();
-  }
-  if (rf & 2) {
-    const section_r8 = ctx.$implicit;
-    const i_r9 = ctx.index;
-    \u0275\u0275property("id", section_r8.id);
-    \u0275\u0275advance(3);
-    \u0275\u0275textInterpolate1(" ", i_r9 + 1, " ");
-    \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate(section_r8.title);
-    \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate(section_r8.content);
-    \u0275\u0275advance();
-    \u0275\u0275property("ngIf", section_r8.steps);
-  }
-}
-var ManualComponent = class _ManualComponent {
-  constructor(router, authService) {
-    this.router = router;
-    this.authService = authService;
-    this.showIndex = false;
-    this.manualSections = [
-      {
-        id: "introduccion",
-        title: "\u{1F4DA} \xBFQu\xE9 es este sistema?",
-        content: "Es una plataforma digital que te permite realizar tus tr\xE1mites universitarios de forma r\xE1pida y sencilla, sin necesidad de hacer largas colas. Puedes crear solicitudes, hacer seguimiento y recibir respuestas desde tu computadora o celular."
-      },
-      {
-        id: "registro",
-        title: "\u{1F510} \xBFC\xF3mo ingreso al sistema?",
-        content: "Para usar el sistema necesitas una cuenta. solicita tus credenciales en Mesa de Partes.",
-        steps: [
-          'Haz clic en <strong>"Iniciar Sesi\xF3n"</strong> en la parte superior de la p\xE1gina',
-          "Ingresa tu usuario",
-          "Ingresa tu contrase\xF1a",
-          'Haz clic en <strong>"Ingresar"</strong>',
-          "Si es tu primera vez, te pedir\xE1n cambiar tu contrase\xF1a"
-        ]
-      },
-      {
-        id: "nuevo-tramite",
-        title: "\u{1F4DD} \xBFC\xF3mo creo un nuevo tr\xE1mite?",
-        content: "Crear un tr\xE1mite es muy simple. Solo necesitas completar un formulario y adjuntar los documentos necesarios.",
-        steps: [
-          'Una vez dentro del sistema, busca el bot\xF3n <strong>"Nuevo Tr\xE1mite"</strong> o <strong>"+"</strong>',
-          "Selecciona el <strong>tipo de tr\xE1mite</strong> que necesitas (Certificado, Constancia, Permiso, etc.)",
-          'Escribe un <strong>asunto</strong> claro (ejemplo: "Solicitud de Certificado de Estudios")',
-          "En <strong>descripci\xF3n</strong>, explica brevemente qu\xE9 necesitas",
-          'Si tienes documentos, haz clic en <strong>"Adjuntar archivos"</strong> y selecci\xF3nalos de tu dispositivo',
-          'Revisa que todo est\xE9 correcto y haz clic en <strong>"Enviar"</strong>',
-          "Anota el <strong>c\xF3digo</strong> que te dan (ejemplo: TRM-2025-0000) para hacer seguimiento"
-        ]
-      },
-      {
-        id: "seguimiento",
-        title: "\u{1F50D} \xBFC\xF3mo consulto el estado de mi tr\xE1mite?",
-        content: "Puedes ver en qu\xE9 etapa est\xE1 tu tr\xE1mite en cualquier momento, incluso sin iniciar sesi\xF3n.",
-        steps: [
-          '<strong>Dentro del sistema:</strong> Ve a "Mis Tr\xE1mites" y ver\xE1s todos tus tr\xE1mites con su estado actual',
-          '<strong>Sin iniciar sesi\xF3n:</strong> Ve a la p\xE1gina de "B\xFAsqueda", ingresa tu c\xF3digo de tr\xE1mite y haz clic en "Consultar"',
-          "Los estados que ver\xE1s son:<br>- <strong>Enviado:</strong> Tu tr\xE1mite fue recibido<br>- <strong>En Revisi\xF3n:</strong> Alguien lo est\xE1 revisando<br>- <strong>En Proceso:</strong> Se est\xE1 trabajando en tu solicitud<br>- <strong>Finalizado:</strong> Tu tr\xE1mite est\xE1 listo<br>- <strong>Observado:</strong> Necesita correcciones",
-          "Tambi\xE9n ver\xE1s una <strong>barra de progreso</strong> que muestra qu\xE9 tan avanzado est\xE1"
-        ]
-      },
-      {
-        id: "documentos",
-        title: "\u{1F4C4} \xBFC\xF3mo veo o descargo documentos?",
-        content: "Cuando tu tr\xE1mite est\xE9 finalizado o necesites ver los documentos que adjuntaste, es muy f\xE1cil acceder a ellos.",
-        steps: [
-          'Entra a <strong>"Mis Tr\xE1mites"</strong> y haz clic en el tr\xE1mite que quieres ver',
-          'Despl\xE1zate hasta la secci\xF3n <strong>"Documentos Adjuntos"</strong>',
-          "Ver\xE1s una lista de todos los archivos relacionados con tu tr\xE1mite",
-          "Haz clic en cualquier documento para <strong>visualizarlo</strong> en pantalla",
-          'Si quieres guardarlo, busca el bot\xF3n <strong>"Descargar"</strong> en la parte inferior',
-          "Los documentos se guardar\xE1n en la carpeta de Descargas de tu computadora"
-        ]
-      },
-      {
-        id: "notificaciones",
-        title: "\u{1F514} \xBFC\xF3mo me entero de los cambios en mi tr\xE1mite?",
-        content: "El sistema te avisa autom\xE1ticamente cuando hay novedades en tus tr\xE1mites.",
-        steps: [
-          "Ver\xE1s un \xEDcono de <strong>campanita</strong> en la parte superior derecha",
-          "Si hay notificaciones nuevas, aparecer\xE1 un <strong>n\xFAmero rojo</strong> con la cantidad",
-          "Haz clic en la campanita para ver todas tus notificaciones",
-          'Las notificaciones te dir\xE1n cosas como:<br>- "Tu tr\xE1mite fue recibido"<br>- "Tu tr\xE1mite est\xE1 en proceso"<br>- "Tu tr\xE1mite est\xE1 listo"<br>- "Tu tr\xE1mite necesita correcciones"',
-          "Haz clic en cualquier notificaci\xF3n para ir directamente a ese tr\xE1mite"
-        ]
-      },
-      {
-        id: "tips",
-        title: "\u{1F4A1} Consejos para usar mejor el sistema",
-        content: "Sigue estas recomendaciones para que tus tr\xE1mites se procesen m\xE1s r\xE1pido.",
-        steps: [
-          "<strong>S\xE9 claro:</strong> Explica bien qu\xE9 necesitas en la descripci\xF3n",
-          "<strong>Adjunta lo necesario:</strong> Si te piden documentos, adj\xFAntalos desde el inicio",
-          "<strong>Usa buena calidad:</strong> Escanea o fotograf\xEDa los documentos con buena luz y enfoque",
-          "<strong>Guarda el c\xF3digo:</strong> Anota el c\xF3digo de tu tr\xE1mite en un lugar seguro",
-          "<strong>Revisa notificaciones:</strong> Entra al sistema cada 2-3 d\xEDas para ver actualizaciones",
-          "<strong>No crees duplicados:</strong> Si ya enviaste un tr\xE1mite, no lo vuelvas a enviar",
-          "<strong>Paciencia:</strong> Los tr\xE1mites pueden tomar algunos d\xEDas en procesarse"
-        ]
-      },
-      {
-        id: "problemas",
-        title: "\u2753 Preguntas Frecuentes",
-        content: "Aqu\xED encontrar\xE1s respuestas a las dudas m\xE1s comunes.",
-        steps: [
-          "<strong>\xBFOlvid\xE9 mi contrase\xF1a?</strong><br>Ve a Secretaria General con tu DNI para recuperarla",
-          "<strong>\xBFCu\xE1nto tiempo demora un tr\xE1mite?</strong><br>Normalmente entre 1 a 3 d\xEDas h\xE1biles, dependiendo del tipo",
-          '<strong>\xBFPuedo editar mi tr\xE1mite despu\xE9s de enviarlo?</strong><br>S\xED, pero solo si est\xE1 en estado "Enviado" u "Observado"',
-          '<strong>\xBFPor qu\xE9 mi tr\xE1mite est\xE1 "Observado"?</strong><br>Significa que falta informaci\xF3n o documentos. Revisa las observaciones y corr\xEDgelo',
-          "<strong>\xBFD\xF3nde recojo mi documento final?</strong><br>Algunos documentos los descargas del sistema, otros en Mesa de Partes. Te lo indicar\xE1n en la respuesta",
-          "<strong>\xBFPuedo hacer tr\xE1mites sin cuenta?</strong><br>No, necesitas una cuenta para crear tr\xE1mites. Pero puedes consultar el estado sin cuenta",
-          "<strong>Horario de Secretaria General:</strong><br>Lunes a Viernes de 7:30 AM a 3:00 PM<br>Av. Universitaria s/n, Pampa Grande, Tumbes"
-        ]
-      }
-    ];
-  }
-  toggleIndex() {
-    this.showIndex = !this.showIndex;
-  }
-  scrollToSection(sectionId) {
-    const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-      });
-    }
-  }
-  goBack() {
-    const user = this.authService.currentUserValue;
-    if (!user || !user.role) {
-      this.router.navigate(["/"]);
-      return;
-    }
-    const roleName = user.role.name.toUpperCase();
-    switch (roleName) {
-      case "USUARIO":
-        this.router.navigate(["/usuario/mis-tramites"]);
-        break;
-      case "ADMINISTRATIVO":
-        this.router.navigate(["/administrativo/dashboard"]);
-        break;
-      case "ADMIN":
-        this.router.navigate(["/admin/dashboard"]);
-        break;
-      case "ESTUDIANTE":
-        this.router.navigate(["/estudiante/tablero"]);
-        break;
-      default:
-        this.router.navigate(["/"]);
-    }
-  }
-  static {
-    this.\u0275fac = function ManualComponent_Factory(t) {
-      return new (t || _ManualComponent)(\u0275\u0275directiveInject(Router), \u0275\u0275directiveInject(AuthService));
-    };
-  }
-  static {
-    this.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ type: _ManualComponent, selectors: [["app-manual"]], standalone: true, features: [\u0275\u0275StandaloneFeature], decls: 33, vars: 11, consts: [[1, "min-h-screen", "bg-gray-50"], [1, "max-w-6xl", "mx-auto", "px-4", "py-8"], [1, "bg-white", "rounded-xl", "shadow-lg", "overflow-hidden"], [1, "bg-university-gradient", "text-white", "p-8", "text-center"], [1, "text-2xl", "font-bold", "mb-2"], [1, "text-sm"], [1, "p-8"], [1, "md:hidden", "fixed", "bottom-6", "right-6", "z-50", "w-14", "h-14", "bg-university-600", "hover:bg-university-700", "text-white", "rounded-full", "shadow-2xl", "flex", "items-center", "justify-center", "transition-all", "duration-300", "hover:scale-110", 3, "click"], ["class", "w-6 h-6", "fill", "none", "stroke", "currentColor", "viewBox", "0 0 24 24", 4, "ngIf"], [1, "grid", "md:grid-cols-4", "gap-8"], [1, "md:col-span-1"], ["class", "md:hidden fixed inset-0 bg-black bg-opacity-50 z-40 animate-fade-in", 3, "click", 4, "ngIf"], [1, "fixed", "md:relative", "md:translate-x-0", "top-0", "left-0", "h-full", "md:h-auto", "w-72", "md:w-auto", "bg-white", "md:bg-transparent", "z-50", "md:z-auto", "transition-transform", "duration-300", "shadow-2xl", "md:shadow-none", "overflow-y-auto", "md:overflow-visible", "p-6", "md:p-0"], [1, "md:hidden", "flex", "justify-between", "items-center", "mb-6", "pb-4", "border-b", "border-gray-200"], [1, "font-bold", "text-university-700", "text-lg", "flex", "items-center"], ["fill", "none", "stroke", "currentColor", "viewBox", "0 0 24 24", 1, "w-5", "h-5", "mr-2"], ["stroke-linecap", "round", "stroke-linejoin", "round", "stroke-width", "2", "d", "M4 6h16M4 10h16M4 14h16M4 18h16"], [1, "text-gray-500", "hover:text-gray-700", 3, "click"], ["fill", "none", "stroke", "currentColor", "viewBox", "0 0 24 24", 1, "w-6", "h-6"], ["stroke-linecap", "round", "stroke-linejoin", "round", "stroke-width", "2", "d", "M6 18L18 6M6 6l12 12"], [1, "sticky", "top-24"], [1, "hidden", "md:flex", "font-bold", "text-university-700", "mb-4", "items-center"], [1, "space-y-2"], ["class", "w-full text-left px-3 py-2 text-sm text-gray-600 hover:text-university-600 hover:bg-university-50 rounded-lg transition-colors flex items-center", 3, "click", 4, "ngFor", "ngForOf"], [1, "md:col-span-3", "space-y-8"], ["class", "bg-gray-50 rounded-xl p-6 border-l-4 border-university-500 scroll-mt-24", 3, "id", 4, "ngFor", "ngForOf"], ["stroke-linecap", "round", "stroke-linejoin", "round", "stroke-width", "2", "d", "M4 6h16M4 12h16M4 18h16"], [1, "md:hidden", "fixed", "inset-0", "bg-black", "bg-opacity-50", "z-40", "animate-fade-in", 3, "click"], [1, "w-full", "text-left", "px-3", "py-2", "text-sm", "text-gray-600", "hover:text-university-600", "hover:bg-university-50", "rounded-lg", "transition-colors", "flex", "items-center", 3, "click"], [1, "w-6", "h-6", "bg-university-100", "text-university-700", "rounded-full", "flex", "items-center", "justify-center", "text-xs", "font-bold", "mr-3", "flex-shrink-0"], [1, "line-clamp-2"], [1, "bg-gray-50", "rounded-xl", "p-6", "border-l-4", "border-university-500", "scroll-mt-24", 3, "id"], [1, "flex", "items-center", "mb-4"], [1, "w-8", "h-8", "bg-university-gradient", "text-white", "rounded-full", "flex", "items-center", "justify-center", "text-sm", "font-bold", "mr-3"], [1, "text-xl", "font-bold", "text-university-800"], [1, "text-gray-700", "mb-6", "leading-relaxed"], ["class", "bg-white rounded-lg p-4", 4, "ngIf"], [1, "bg-white", "rounded-lg", "p-4"], [1, "font-semibold", "text-university-700", "mb-4", "flex", "items-center"], ["stroke-linecap", "round", "stroke-linejoin", "round", "stroke-width", "2", "d", "M9 5l7 7-7 7"], [1, "space-y-3"], ["class", "flex items-start", 4, "ngFor", "ngForOf"], [1, "flex", "items-start"], [1, "w-6", "h-6", "bg-university-500", "text-white", "rounded-full", "flex", "items-center", "justify-center", "text-xs", "font-bold", "mr-3", "mt-0.5", "flex-shrink-0"], [1, "text-gray-700", 3, "innerHTML"]], template: function ManualComponent_Template(rf, ctx) {
-      if (rf & 1) {
-        \u0275\u0275elementStart(0, "div", 0)(1, "div", 1)(2, "div", 2)(3, "div", 3)(4, "h2", 4);
-        \u0275\u0275text(5, "Bienvenido al Manual de Usuario");
-        \u0275\u0275elementEnd();
-        \u0275\u0275elementStart(6, "p", 5);
-        \u0275\u0275text(7, "Aqu\xED encontrar\xE1s toda la informaci\xF3n necesaria para utilizar el Sistema De Secretaria General de la Universidad Nacional de Tumbes.");
-        \u0275\u0275elementEnd()();
-        \u0275\u0275elementStart(8, "div", 6)(9, "button", 7);
-        \u0275\u0275listener("click", function ManualComponent_Template_button_click_9_listener() {
-          return ctx.toggleIndex();
-        });
-        \u0275\u0275template(10, ManualComponent__svg_svg_10_Template, 2, 0, "svg", 8)(11, ManualComponent__svg_svg_11_Template, 2, 0, "svg", 8);
-        \u0275\u0275elementEnd();
-        \u0275\u0275elementStart(12, "div", 9)(13, "div", 10);
-        \u0275\u0275template(14, ManualComponent_div_14_Template, 1, 0, "div", 11);
-        \u0275\u0275elementStart(15, "div", 12)(16, "div", 13)(17, "h3", 14);
-        \u0275\u0275namespaceSVG();
-        \u0275\u0275elementStart(18, "svg", 15);
-        \u0275\u0275element(19, "path", 16);
-        \u0275\u0275elementEnd();
-        \u0275\u0275text(20, " \xCDndice ");
-        \u0275\u0275elementEnd();
-        \u0275\u0275namespaceHTML();
-        \u0275\u0275elementStart(21, "button", 17);
-        \u0275\u0275listener("click", function ManualComponent_Template_button_click_21_listener() {
-          return ctx.toggleIndex();
-        });
-        \u0275\u0275namespaceSVG();
-        \u0275\u0275elementStart(22, "svg", 18);
-        \u0275\u0275element(23, "path", 19);
-        \u0275\u0275elementEnd()()();
-        \u0275\u0275namespaceHTML();
-        \u0275\u0275elementStart(24, "div", 20)(25, "h3", 21);
-        \u0275\u0275namespaceSVG();
-        \u0275\u0275elementStart(26, "svg", 15);
-        \u0275\u0275element(27, "path", 16);
-        \u0275\u0275elementEnd();
-        \u0275\u0275text(28, " \xCDndice ");
-        \u0275\u0275elementEnd();
-        \u0275\u0275namespaceHTML();
-        \u0275\u0275elementStart(29, "nav", 22);
-        \u0275\u0275template(30, ManualComponent_button_30_Template, 5, 2, "button", 23);
-        \u0275\u0275elementEnd()()()();
-        \u0275\u0275elementStart(31, "div", 24);
-        \u0275\u0275template(32, ManualComponent_div_32_Template, 9, 5, "div", 25);
-        \u0275\u0275elementEnd()()()()()();
-      }
-      if (rf & 2) {
-        \u0275\u0275advance(9);
-        \u0275\u0275classProp("bg-university-700", ctx.showIndex);
-        \u0275\u0275advance();
-        \u0275\u0275property("ngIf", !ctx.showIndex);
-        \u0275\u0275advance();
-        \u0275\u0275property("ngIf", ctx.showIndex);
-        \u0275\u0275advance(3);
-        \u0275\u0275property("ngIf", ctx.showIndex);
-        \u0275\u0275advance();
-        \u0275\u0275classProp("translate-x-0", ctx.showIndex)("-translate-x-full", !ctx.showIndex);
-        \u0275\u0275advance(15);
-        \u0275\u0275property("ngForOf", ctx.manualSections);
-        \u0275\u0275advance(2);
-        \u0275\u0275property("ngForOf", ctx.manualSections);
-      }
-    }, dependencies: [CommonModule, NgForOf, NgIf], encapsulation: 2 });
-  }
-};
-(() => {
-  (typeof ngDevMode === "undefined" || ngDevMode) && \u0275setClassDebugInfo(ManualComponent, { className: "ManualComponent" });
-})();
-
 // src/app/home/home.component.ts
 function HomeComponent_div_18_Template(rf, ctx) {
   if (rf & 1) {
@@ -4790,6 +4453,715 @@ var HomeComponent = class _HomeComponent {
 };
 (() => {
   (typeof ngDevMode === "undefined" || ngDevMode) && \u0275setClassDebugInfo(HomeComponent, { className: "HomeComponent" });
+})();
+
+// src/app/admin-login/admin-login.component.ts
+function AdminLoginComponent_div_11_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "div", 31)(1, "div", 32);
+    \u0275\u0275namespaceSVG();
+    \u0275\u0275elementStart(2, "svg", 33);
+    \u0275\u0275element(3, "path", 34);
+    \u0275\u0275elementEnd();
+    \u0275\u0275namespaceHTML();
+    \u0275\u0275elementStart(4, "div")(5, "h3", 35);
+    \u0275\u0275text(6, "\xA1Acceso autorizado!");
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(7, "p", 36);
+    \u0275\u0275text(8, "Redirigiendo al panel administrativo...");
+    \u0275\u0275elementEnd()()()();
+  }
+}
+function AdminLoginComponent_div_12_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "div", 37)(1, "div", 32);
+    \u0275\u0275namespaceSVG();
+    \u0275\u0275elementStart(2, "svg", 38);
+    \u0275\u0275element(3, "path", 39);
+    \u0275\u0275elementEnd();
+    \u0275\u0275namespaceHTML();
+    \u0275\u0275elementStart(4, "div")(5, "h3", 40);
+    \u0275\u0275text(6, "Cambio de contrase\xF1a requerido");
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(7, "p", 41);
+    \u0275\u0275text(8, "Debes cambiar tu contrase\xF1a temporal antes de continuar.");
+    \u0275\u0275elementEnd()()()();
+  }
+}
+function AdminLoginComponent_div_13_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "div", 42)(1, "div", 32);
+    \u0275\u0275namespaceSVG();
+    \u0275\u0275elementStart(2, "svg", 43);
+    \u0275\u0275element(3, "path", 44);
+    \u0275\u0275elementEnd();
+    \u0275\u0275namespaceHTML();
+    \u0275\u0275elementStart(4, "div")(5, "h3", 45);
+    \u0275\u0275text(6, "Error de acceso");
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(7, "p", 46);
+    \u0275\u0275text(8);
+    \u0275\u0275elementEnd()()()();
+  }
+  if (rf & 2) {
+    const ctx_r0 = \u0275\u0275nextContext();
+    \u0275\u0275advance(8);
+    \u0275\u0275textInterpolate(ctx_r0.loginError);
+  }
+}
+function AdminLoginComponent_div_25_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "div", 47);
+    \u0275\u0275text(1);
+    \u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const ctx_r0 = \u0275\u0275nextContext();
+    \u0275\u0275advance();
+    \u0275\u0275textInterpolate1(" ", ctx_r0.getFieldError("usuario"), " ");
+  }
+}
+function AdminLoginComponent__svg_svg_37_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275namespaceSVG();
+    \u0275\u0275elementStart(0, "svg", 48);
+    \u0275\u0275element(1, "path", 49)(2, "path", 50);
+    \u0275\u0275elementEnd();
+  }
+}
+function AdminLoginComponent__svg_svg_38_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275namespaceSVG();
+    \u0275\u0275elementStart(0, "svg", 48);
+    \u0275\u0275element(1, "path", 51);
+    \u0275\u0275elementEnd();
+  }
+}
+function AdminLoginComponent_div_39_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "div", 47);
+    \u0275\u0275text(1);
+    \u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const ctx_r0 = \u0275\u0275nextContext();
+    \u0275\u0275advance();
+    \u0275\u0275textInterpolate1(" ", ctx_r0.getFieldError("password"), " ");
+  }
+}
+function AdminLoginComponent_span_46_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "span", 52);
+    \u0275\u0275namespaceSVG();
+    \u0275\u0275elementStart(1, "svg", 53);
+    \u0275\u0275element(2, "path", 54);
+    \u0275\u0275elementEnd();
+    \u0275\u0275text(3, " Iniciar Sesi\xF3n ");
+    \u0275\u0275elementEnd();
+  }
+}
+function AdminLoginComponent_span_47_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "span", 52);
+    \u0275\u0275element(1, "div", 55);
+    \u0275\u0275text(2, " Verificando credenciales... ");
+    \u0275\u0275elementEnd();
+  }
+}
+var AdminLoginComponent = class _AdminLoginComponent {
+  constructor(fb, router, route, authService) {
+    this.fb = fb;
+    this.router = router;
+    this.route = route;
+    this.authService = authService;
+    this.isLoading = false;
+    this.showPassword = false;
+    this.loginError = "";
+    this.loginSuccess = false;
+    this.mustChangePassword = false;
+    this.currentYear = (/* @__PURE__ */ new Date()).getFullYear();
+    this.returnUrl = "/";
+    this.loginForm = this.fb.group({
+      usuario: ["", [Validators.required, Validators.minLength(3)]],
+      password: ["", [Validators.required, Validators.minLength(6)]],
+      rememberMe: [false]
+    });
+  }
+  ngOnInit() {
+    this.returnUrl = this.route.snapshot.queryParams["returnUrl"] || "/";
+    if (this.authService.isAuthenticated()) {
+      this.router.navigate([this.returnUrl]);
+      return;
+    }
+    const savedCredentials = this.getSavedCredentials();
+    if (savedCredentials) {
+      this.loginForm.patchValue({
+        usuario: savedCredentials.usuario,
+        rememberMe: true
+      });
+    }
+  }
+  togglePasswordVisibility() {
+    this.showPassword = !this.showPassword;
+  }
+  onSubmit() {
+    if (this.loginForm.valid) {
+      this.isLoading = true;
+      this.loginError = "";
+      this.mustChangePassword = false;
+      const { usuario, password, rememberMe } = this.loginForm.value;
+      this.authService.login({ usuario, password }).subscribe({
+        next: (response) => {
+          if (rememberMe) {
+            this.saveCredentials(usuario);
+          } else {
+            this.clearSavedCredentials();
+          }
+          this.isLoading = false;
+          const redirectUrl = response?.data?.redirectUrl || response?.redirectUrl;
+          if (redirectUrl) {
+            console.log("Redirecting to:", redirectUrl);
+            this.router.navigate([redirectUrl]);
+          } else {
+            console.warn("No redirectUrl in response, using role-based fallback");
+            const roleRoutes = {
+              "admin": "/admin/tablero",
+              "administrativo": "/administrativo/tablero",
+              "usuario": "/usuario/tablero",
+              "estudiante": "/estudiante/tablero"
+            };
+            const userRole = response?.data?.usuario?.role?.name?.toLowerCase() || response?.usuario?.role?.name?.toLowerCase() || "";
+            const route = roleRoutes[userRole] || "/";
+            this.router.navigate([route]);
+          }
+        },
+        error: (error) => {
+          this.isLoading = false;
+          if (error.status === 428) {
+            this.mustChangePassword = true;
+            this.loginError = "Debes cambiar tu contrase\xF1a temporal";
+          } else if (error.status === 403) {
+            this.loginError = error.error?.message || "Credenciales inv\xE1lidas o cuenta bloqueada";
+          } else {
+            this.loginError = "Error al iniciar sesi\xF3n. Intente nuevamente.";
+          }
+        }
+      });
+    } else {
+      this.markFormGroupTouched();
+    }
+  }
+  markFormGroupTouched() {
+    Object.keys(this.loginForm.controls).forEach((key) => {
+      const control = this.loginForm.get(key);
+      control?.markAsTouched();
+    });
+  }
+  saveCredentials(usuario) {
+    try {
+      localStorage.setItem("adminCredentials", JSON.stringify({ usuario }));
+    } catch (e) {
+    }
+  }
+  getSavedCredentials() {
+    try {
+      const saved = localStorage.getItem("adminCredentials");
+      return saved ? JSON.parse(saved) : null;
+    } catch (e) {
+      return null;
+    }
+  }
+  clearSavedCredentials() {
+    try {
+      localStorage.removeItem("adminCredentials");
+    } catch (e) {
+    }
+  }
+  getFieldError(fieldName) {
+    const field = this.loginForm.get(fieldName);
+    if (field?.invalid && field?.touched) {
+      if (field.errors?.["required"]) {
+        return `${this.getFieldLabel(fieldName)} es obligatorio`;
+      }
+      if (field.errors?.["minlength"]) {
+        const requiredLength = field.errors?.["minlength"].requiredLength;
+        return `${this.getFieldLabel(fieldName)} debe tener al menos ${requiredLength} caracteres`;
+      }
+    }
+    return "";
+  }
+  getFieldLabel(fieldName) {
+    const labels = {
+      "usuario": "El nombre de usuario",
+      "password": "La contrase\xF1a"
+    };
+    return labels[fieldName] || fieldName;
+  }
+  isFieldInvalid(fieldName) {
+    const field = this.loginForm.get(fieldName);
+    return !!(field?.invalid && field?.touched);
+  }
+  static {
+    this.\u0275fac = function AdminLoginComponent_Factory(t) {
+      return new (t || _AdminLoginComponent)(\u0275\u0275directiveInject(FormBuilder), \u0275\u0275directiveInject(Router), \u0275\u0275directiveInject(ActivatedRoute), \u0275\u0275directiveInject(AuthService));
+    };
+  }
+  static {
+    this.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ type: _AdminLoginComponent, selectors: [["app-admin-login"]], standalone: true, features: [\u0275\u0275StandaloneFeature], decls: 48, vars: 28, consts: [[1, "min-h-screen", "bg-gradient-to-br", "from-slate-900", "via-blue-900", "to-slate-900", "flex", "items-center", "justify-center", "px-4", "py-8"], [1, "max-w-md", "w-full"], [1, "text-center", "mb-8"], [1, "inline-flex", "items-center", "justify-center", "w-16", "h-16", "bg-white", "rounded-full", "shadow-lg", "mb-6"], ["fill", "none", "stroke", "currentColor", "viewBox", "0 0 24 24", 1, "w-8", "h-8", "text-blue-600"], ["stroke-linecap", "round", "stroke-linejoin", "round", "stroke-width", "2", "d", "M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"], [1, "text-2xl", "md:text-3xl", "font-bold", "text-white", "mb-2"], [1, "text-slate-300"], [1, "bg-white", "rounded-2xl", "shadow-2xl", "p-8", "backdrop-blur-sm", "bg-opacity-95"], ["class", "mb-6 p-4 bg-green-50 border border-green-200 rounded-lg animate-fade-in", 4, "ngIf"], ["class", "mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg", 4, "ngIf"], ["class", "mb-6 p-4 bg-red-50 border border-red-200 rounded-lg animate-shake", 4, "ngIf"], [1, "space-y-6", 3, "ngSubmit", "formGroup"], [1, "block", "text-sm", "font-medium", "text-gray-700", "mb-2"], ["fill", "none", "stroke", "currentColor", "viewBox", "0 0 24 24", 1, "inline-block", "w-4", "h-4", "mr-2"], ["stroke-linecap", "round", "stroke-linejoin", "round", "stroke-width", "2", "d", "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"], [1, "relative"], ["type", "text", "formControlName", "usuario", "placeholder", "Ingresa tu nombre de usuario", "autocomplete", "username", 1, "w-full", "px-4", "py-3", "border-2", "rounded-lg", "focus:ring-2", "focus:ring-blue-500", "focus:border-blue-500", "transition-all", "duration-300", "pl-12"], [1, "absolute", "left-4", "top-1/2", "transform", "-translate-y-1/2"], ["fill", "none", "stroke", "currentColor", "viewBox", "0 0 24 24", 1, "w-5", "h-5", "text-gray-400"], ["class", "mt-2 text-sm text-red-600 animate-slide-down", 4, "ngIf"], ["stroke-linecap", "round", "stroke-linejoin", "round", "stroke-width", "2", "d", "M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"], ["formControlName", "password", "placeholder", "Ingresa tu credenciales", "autocomplete", "current-password", 1, "w-full", "px-4", "py-3", "border-2", "rounded-lg", "focus:ring-2", "focus:ring-blue-500", "focus:border-blue-500", "transition-all", "duration-300", "pl-12", "pr-12", 3, "type"], ["type", "button", 1, "absolute", "right-4", "top-1/2", "transform", "-translate-y-1/2", "text-gray-400", "hover:text-gray-600", "transition-colors", 3, "click", "disabled"], ["class", "w-5 h-5", "fill", "none", "stroke", "currentColor", "viewBox", "0 0 24 24", 4, "ngIf"], [1, "flex", "items-center", "justify-between"], [1, "flex", "items-center"], ["type", "checkbox", "formControlName", "rememberMe", 1, "w-4", "h-4", "text-blue-600", "bg-gray-100", "border-gray-300", "rounded", "focus:ring-blue-500", "focus:ring-2", "transition-all", "duration-300"], [1, "ml-2", "text-sm", "text-gray-700"], ["type", "submit", 1, "w-full", "bg-gradient-to-r", "from-blue-600", "to-blue-700", "text-white", "py-3", "px-4", "rounded-lg", "font-medium", "text-lg", "shadow-lg", "hover:from-blue-700", "hover:to-blue-800", "focus:ring-4", "focus:ring-blue-300", "transition-all", "duration-300", "disabled:opacity-50", "disabled:cursor-not-allowed", "transform", "hover:scale-[1.02]", "active:scale-[0.98]", 3, "disabled"], ["class", "flex items-center justify-center", 4, "ngIf"], [1, "mb-6", "p-4", "bg-green-50", "border", "border-green-200", "rounded-lg", "animate-fade-in"], [1, "flex", "items-center", "space-x-3"], ["fill", "none", "stroke", "currentColor", "viewBox", "0 0 24 24", 1, "w-6", "h-6", "text-green-500", "flex-shrink-0"], ["stroke-linecap", "round", "stroke-linejoin", "round", "stroke-width", "2", "d", "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"], [1, "text-sm", "font-medium", "text-green-800"], [1, "text-sm", "text-green-700"], [1, "mb-6", "p-4", "bg-yellow-50", "border", "border-yellow-200", "rounded-lg"], ["fill", "none", "stroke", "currentColor", "viewBox", "0 0 24 24", 1, "w-6", "h-6", "text-yellow-500", "flex-shrink-0"], ["stroke-linecap", "round", "stroke-linejoin", "round", "stroke-width", "2", "d", "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"], [1, "text-sm", "font-medium", "text-yellow-800"], [1, "text-sm", "text-yellow-700"], [1, "mb-6", "p-4", "bg-red-50", "border", "border-red-200", "rounded-lg", "animate-shake"], ["fill", "none", "stroke", "currentColor", "viewBox", "0 0 24 24", 1, "w-6", "h-6", "text-red-500", "flex-shrink-0"], ["stroke-linecap", "round", "stroke-linejoin", "round", "stroke-width", "2", "d", "M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"], [1, "text-sm", "font-medium", "text-red-800"], [1, "text-sm", "text-red-700"], [1, "mt-2", "text-sm", "text-red-600", "animate-slide-down"], ["fill", "none", "stroke", "currentColor", "viewBox", "0 0 24 24", 1, "w-5", "h-5"], ["stroke-linecap", "round", "stroke-linejoin", "round", "stroke-width", "2", "d", "M15 12a3 3 0 11-6 0 3 3 0 016 0z"], ["stroke-linecap", "round", "stroke-linejoin", "round", "stroke-width", "2", "d", "M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"], ["stroke-linecap", "round", "stroke-linejoin", "round", "stroke-width", "2", "d", "M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"], [1, "flex", "items-center", "justify-center"], ["fill", "none", "stroke", "currentColor", "viewBox", "0 0 24 24", 1, "w-5", "h-5", "mr-2"], ["stroke-linecap", "round", "stroke-linejoin", "round", "stroke-width", "2", "d", "M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"], [1, "w-5", "h-5", "border-2", "border-white", "border-t-transparent", "rounded-full", "animate-spin", "mr-2"]], template: function AdminLoginComponent_Template(rf, ctx) {
+      if (rf & 1) {
+        \u0275\u0275elementStart(0, "section", 0)(1, "div", 1)(2, "div", 2)(3, "div", 3);
+        \u0275\u0275namespaceSVG();
+        \u0275\u0275elementStart(4, "svg", 4);
+        \u0275\u0275element(5, "path", 5);
+        \u0275\u0275elementEnd()();
+        \u0275\u0275namespaceHTML();
+        \u0275\u0275elementStart(6, "h1", 6);
+        \u0275\u0275text(7, " Panel Administrativo ");
+        \u0275\u0275elementEnd();
+        \u0275\u0275elementStart(8, "p", 7);
+        \u0275\u0275text(9, " Acceso para personal autorizado de UNTUMBES ");
+        \u0275\u0275elementEnd()();
+        \u0275\u0275elementStart(10, "div", 8);
+        \u0275\u0275template(11, AdminLoginComponent_div_11_Template, 9, 0, "div", 9)(12, AdminLoginComponent_div_12_Template, 9, 0, "div", 10)(13, AdminLoginComponent_div_13_Template, 9, 1, "div", 11);
+        \u0275\u0275elementStart(14, "form", 12);
+        \u0275\u0275listener("ngSubmit", function AdminLoginComponent_Template_form_ngSubmit_14_listener() {
+          return ctx.onSubmit();
+        });
+        \u0275\u0275elementStart(15, "div")(16, "label", 13);
+        \u0275\u0275namespaceSVG();
+        \u0275\u0275elementStart(17, "svg", 14);
+        \u0275\u0275element(18, "path", 15);
+        \u0275\u0275elementEnd();
+        \u0275\u0275text(19, " Usuario ");
+        \u0275\u0275elementEnd();
+        \u0275\u0275namespaceHTML();
+        \u0275\u0275elementStart(20, "div", 16);
+        \u0275\u0275element(21, "input", 17);
+        \u0275\u0275elementStart(22, "div", 18);
+        \u0275\u0275namespaceSVG();
+        \u0275\u0275elementStart(23, "svg", 19);
+        \u0275\u0275element(24, "path", 15);
+        \u0275\u0275elementEnd()()();
+        \u0275\u0275template(25, AdminLoginComponent_div_25_Template, 2, 1, "div", 20);
+        \u0275\u0275elementEnd();
+        \u0275\u0275namespaceHTML();
+        \u0275\u0275elementStart(26, "div")(27, "label", 13);
+        \u0275\u0275namespaceSVG();
+        \u0275\u0275elementStart(28, "svg", 14);
+        \u0275\u0275element(29, "path", 21);
+        \u0275\u0275elementEnd();
+        \u0275\u0275text(30, " Credenciales ");
+        \u0275\u0275elementEnd();
+        \u0275\u0275namespaceHTML();
+        \u0275\u0275elementStart(31, "div", 16);
+        \u0275\u0275element(32, "input", 22);
+        \u0275\u0275elementStart(33, "div", 18);
+        \u0275\u0275namespaceSVG();
+        \u0275\u0275elementStart(34, "svg", 19);
+        \u0275\u0275element(35, "path", 21);
+        \u0275\u0275elementEnd()();
+        \u0275\u0275namespaceHTML();
+        \u0275\u0275elementStart(36, "button", 23);
+        \u0275\u0275listener("click", function AdminLoginComponent_Template_button_click_36_listener() {
+          return ctx.togglePasswordVisibility();
+        });
+        \u0275\u0275template(37, AdminLoginComponent__svg_svg_37_Template, 3, 0, "svg", 24)(38, AdminLoginComponent__svg_svg_38_Template, 2, 0, "svg", 24);
+        \u0275\u0275elementEnd()();
+        \u0275\u0275template(39, AdminLoginComponent_div_39_Template, 2, 1, "div", 20);
+        \u0275\u0275elementEnd();
+        \u0275\u0275elementStart(40, "div", 25)(41, "label", 26);
+        \u0275\u0275element(42, "input", 27);
+        \u0275\u0275elementStart(43, "span", 28);
+        \u0275\u0275text(44, "Recu\xE9rdame");
+        \u0275\u0275elementEnd()()();
+        \u0275\u0275elementStart(45, "button", 29);
+        \u0275\u0275template(46, AdminLoginComponent_span_46_Template, 4, 0, "span", 30)(47, AdminLoginComponent_span_47_Template, 3, 0, "span", 30);
+        \u0275\u0275elementEnd()()()()();
+      }
+      if (rf & 2) {
+        let tmp_5_0;
+        let tmp_6_0;
+        let tmp_10_0;
+        let tmp_11_0;
+        \u0275\u0275advance(11);
+        \u0275\u0275property("ngIf", ctx.loginSuccess);
+        \u0275\u0275advance();
+        \u0275\u0275property("ngIf", ctx.mustChangePassword);
+        \u0275\u0275advance();
+        \u0275\u0275property("ngIf", ctx.loginError);
+        \u0275\u0275advance();
+        \u0275\u0275property("formGroup", ctx.loginForm);
+        \u0275\u0275advance(7);
+        \u0275\u0275classProp("border-red-400", ctx.isFieldInvalid("usuario"))("border-green-400", ((tmp_5_0 = ctx.loginForm.get("usuario")) == null ? null : tmp_5_0.valid) && ((tmp_5_0 = ctx.loginForm.get("usuario")) == null ? null : tmp_5_0.touched))("border-gray-300", !((tmp_6_0 = ctx.loginForm.get("usuario")) == null ? null : tmp_6_0.touched));
+        \u0275\u0275attribute("disabled", ctx.isLoading ? true : null);
+        \u0275\u0275advance(4);
+        \u0275\u0275property("ngIf", ctx.getFieldError("usuario"));
+        \u0275\u0275advance(7);
+        \u0275\u0275classProp("border-red-400", ctx.isFieldInvalid("password"))("border-green-400", ((tmp_10_0 = ctx.loginForm.get("password")) == null ? null : tmp_10_0.valid) && ((tmp_10_0 = ctx.loginForm.get("password")) == null ? null : tmp_10_0.touched))("border-gray-300", !((tmp_11_0 = ctx.loginForm.get("password")) == null ? null : tmp_11_0.touched));
+        \u0275\u0275property("type", ctx.showPassword ? "text" : "password");
+        \u0275\u0275attribute("disabled", ctx.isLoading ? true : null);
+        \u0275\u0275advance(4);
+        \u0275\u0275property("disabled", ctx.isLoading);
+        \u0275\u0275advance();
+        \u0275\u0275property("ngIf", !ctx.showPassword);
+        \u0275\u0275advance();
+        \u0275\u0275property("ngIf", ctx.showPassword);
+        \u0275\u0275advance();
+        \u0275\u0275property("ngIf", ctx.getFieldError("password"));
+        \u0275\u0275advance(3);
+        \u0275\u0275attribute("disabled", ctx.isLoading ? true : null);
+        \u0275\u0275advance(3);
+        \u0275\u0275property("disabled", !ctx.loginForm.valid || ctx.isLoading);
+        \u0275\u0275advance();
+        \u0275\u0275property("ngIf", !ctx.isLoading);
+        \u0275\u0275advance();
+        \u0275\u0275property("ngIf", ctx.isLoading);
+      }
+    }, dependencies: [CommonModule, NgIf, ReactiveFormsModule, \u0275NgNoValidate, DefaultValueAccessor, CheckboxControlValueAccessor, NgControlStatus, NgControlStatusGroup, FormGroupDirective, FormControlName], encapsulation: 2, changeDetection: 0 });
+  }
+};
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && \u0275setClassDebugInfo(AdminLoginComponent, { className: "AdminLoginComponent" });
+})();
+
+// src/app/manual/manual.component.ts
+function ManualComponent__svg_svg_10_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275namespaceSVG();
+    \u0275\u0275elementStart(0, "svg", 18);
+    \u0275\u0275element(1, "path", 26);
+    \u0275\u0275elementEnd();
+  }
+}
+function ManualComponent__svg_svg_11_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275namespaceSVG();
+    \u0275\u0275elementStart(0, "svg", 18);
+    \u0275\u0275element(1, "path", 19);
+    \u0275\u0275elementEnd();
+  }
+}
+function ManualComponent_div_14_Template(rf, ctx) {
+  if (rf & 1) {
+    const _r1 = \u0275\u0275getCurrentView();
+    \u0275\u0275elementStart(0, "div", 27);
+    \u0275\u0275listener("click", function ManualComponent_div_14_Template_div_click_0_listener() {
+      \u0275\u0275restoreView(_r1);
+      const ctx_r1 = \u0275\u0275nextContext();
+      return \u0275\u0275resetView(ctx_r1.toggleIndex());
+    });
+    \u0275\u0275elementEnd();
+  }
+}
+function ManualComponent_button_30_Template(rf, ctx) {
+  if (rf & 1) {
+    const _r3 = \u0275\u0275getCurrentView();
+    \u0275\u0275elementStart(0, "button", 28);
+    \u0275\u0275listener("click", function ManualComponent_button_30_Template_button_click_0_listener() {
+      const section_r4 = \u0275\u0275restoreView(_r3).$implicit;
+      const ctx_r1 = \u0275\u0275nextContext();
+      ctx_r1.scrollToSection(section_r4.id);
+      return \u0275\u0275resetView(ctx_r1.toggleIndex());
+    });
+    \u0275\u0275elementStart(1, "span", 29);
+    \u0275\u0275text(2);
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(3, "span", 30);
+    \u0275\u0275text(4);
+    \u0275\u0275elementEnd()();
+  }
+  if (rf & 2) {
+    const section_r4 = ctx.$implicit;
+    const i_r5 = ctx.index;
+    \u0275\u0275advance(2);
+    \u0275\u0275textInterpolate1(" ", i_r5 + 1, " ");
+    \u0275\u0275advance(2);
+    \u0275\u0275textInterpolate(section_r4.title);
+  }
+}
+function ManualComponent_div_32_div_8_li_6_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "li", 43)(1, "span", 44);
+    \u0275\u0275text(2);
+    \u0275\u0275elementEnd();
+    \u0275\u0275element(3, "span", 45);
+    \u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const step_r6 = ctx.$implicit;
+    const stepIndex_r7 = ctx.index;
+    \u0275\u0275advance(2);
+    \u0275\u0275textInterpolate1(" ", stepIndex_r7 + 1, " ");
+    \u0275\u0275advance();
+    \u0275\u0275property("innerHTML", step_r6, \u0275\u0275sanitizeHtml);
+  }
+}
+function ManualComponent_div_32_div_8_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "div", 37)(1, "h4", 38);
+    \u0275\u0275namespaceSVG();
+    \u0275\u0275elementStart(2, "svg", 39);
+    \u0275\u0275element(3, "path", 40);
+    \u0275\u0275elementEnd();
+    \u0275\u0275text(4, " Procedimiento Detallado ");
+    \u0275\u0275elementEnd();
+    \u0275\u0275namespaceHTML();
+    \u0275\u0275elementStart(5, "ol", 41);
+    \u0275\u0275template(6, ManualComponent_div_32_div_8_li_6_Template, 4, 2, "li", 42);
+    \u0275\u0275elementEnd()();
+  }
+  if (rf & 2) {
+    const section_r8 = \u0275\u0275nextContext().$implicit;
+    \u0275\u0275advance(6);
+    \u0275\u0275property("ngForOf", section_r8.steps);
+  }
+}
+function ManualComponent_div_32_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "div", 31)(1, "div", 32)(2, "span", 33);
+    \u0275\u0275text(3);
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(4, "h2", 34);
+    \u0275\u0275text(5);
+    \u0275\u0275elementEnd()();
+    \u0275\u0275elementStart(6, "p", 35);
+    \u0275\u0275text(7);
+    \u0275\u0275elementEnd();
+    \u0275\u0275template(8, ManualComponent_div_32_div_8_Template, 7, 1, "div", 36);
+    \u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const section_r8 = ctx.$implicit;
+    const i_r9 = ctx.index;
+    \u0275\u0275property("id", section_r8.id);
+    \u0275\u0275advance(3);
+    \u0275\u0275textInterpolate1(" ", i_r9 + 1, " ");
+    \u0275\u0275advance(2);
+    \u0275\u0275textInterpolate(section_r8.title);
+    \u0275\u0275advance(2);
+    \u0275\u0275textInterpolate(section_r8.content);
+    \u0275\u0275advance();
+    \u0275\u0275property("ngIf", section_r8.steps);
+  }
+}
+var ManualComponent = class _ManualComponent {
+  constructor(router, authService) {
+    this.router = router;
+    this.authService = authService;
+    this.showIndex = false;
+    this.manualSections = [
+      {
+        id: "introduccion",
+        title: "Informaci\xF3n General del Sistema",
+        content: "Este sistema es una plataforma digital de gesti\xF3n de tr\xE1mites que permite a estudiantes y usuarios realizar solicitudes acad\xE9mico-administrativas de manera eficiente. Ofrece funcionalidades de seguimiento en tiempo real, gesti\xF3n de documentos digitales y notificaciones autom\xE1ticas. Proporciona una alternativa moderna a los procesos presenciales, reduciendo tiempos de espera y mejorando la trazabilidad de los tr\xE1mites."
+      },
+      {
+        id: "registro",
+        title: "Acceso al Sistema",
+        content: "El acceso al sistema requiere credenciales de usuario proporcionadas por la instituci\xF3n. Para obtener sus credenciales, debe dirigirse a la Mesa de Partes con su identificaci\xF3n oficial.",
+        steps: [
+          "Ingrese a la p\xE1gina principal del sistema",
+          'Haga clic en el enlace "Iniciar Sesi\xF3n" ubicado en la barra superior',
+          "Ingrese su nombre de usuario en el campo de usuario",
+          "Ingrese su contrase\xF1a en el campo de contrase\xF1a",
+          'Haga clic en el bot\xF3n "Ingresar"',
+          "En el primer acceso, se le solicitar\xE1 cambiar su contrase\xF1a por seguridad"
+        ]
+      },
+      {
+        id: "nuevo-tramite",
+        title: "Crear un Nuevo Tr\xE1mite",
+        content: "La creaci\xF3n de un tr\xE1mite requiere completar un formulario con informaci\xF3n espec\xEDfica y, en algunos casos, adjuntar documentos de soporte. El sistema valida la informaci\xF3n ingresada antes de permitir el env\xEDo.",
+        steps: [
+          "Acceda al men\xFA principal del sistema",
+          'Seleccione la opci\xF3n "Nuevo Tr\xE1mite" o el bot\xF3n "+',
+          "Seleccione el tipo de tr\xE1mite que desea realizar de la lista desplegable disponible",
+          'Complete el campo de asunto con una descripci\xF3n concisa (ej: "Solicitud de Certificado de Estudios")',
+          "En el campo de descripci\xF3n, proporcione detalles espec\xEDficos de su solicitud",
+          'Adjunte los documentos requeridos haciendo clic en "Adjuntar Archivos" y seleccionando los archivos de su dispositivo',
+          "Revise que toda la informaci\xF3n sea correcta",
+          'Haga clic en el bot\xF3n "Enviar"',
+          "Anote el c\xF3digo de referencia del tr\xE1mite (formato: TRM-XXXX-XXXX) para consultas posteriores"
+        ]
+      },
+      {
+        id: "seguimiento",
+        title: "Consultar Estado de Tr\xE1mites",
+        content: "El sistema proporciona dos opciones para consultar el estado de tr\xE1mites: una para usuarios registrados dentro del sistema y otra para consultas p\xFAblicas. Los usuarios p\xFAblicos pueden acceder mediante c\xF3digo QR generado por el sistema o directamente a trav\xE9s de b\xFAsqueda por n\xFAmero de documento.",
+        steps: [
+          '<strong>Para usuarios autenticados:</strong> Acceda a la secci\xF3n "Mis Tr\xE1mites" para visualizar todos sus tr\xE1mites con su estado actual actualizado',
+          "<strong>Para consultas p\xFAblicas mediante c\xF3digo QR:</strong> Escanee el c\xF3digo QR proporcionado (generado por el sistema). Este lo redireccionar\xE1 autom\xE1ticamente a la p\xE1gina de verificaci\xF3n donde podr\xE1 consultar sus documentos asignados",
+          '<strong>Para b\xFAsqueda p\xFAblica directa:</strong> Acceda a la opci\xF3n "Verificar/Buscar" en la plataforma, ingrese su n\xFAmero de documento de identidad y visualice todos los tr\xE1mites y documentos asignados a dicha identidad',
+          "Los posibles estados del tr\xE1mite son:<br>- <strong>Enviado:</strong> El tr\xE1mite ha sido recibido y registrado en el sistema<br>- <strong>En Revisi\xF3n:</strong> El tr\xE1mite se encuentra en revisi\xF3n por el personal competente<br>- <strong>En Proceso:</strong> Se est\xE1 realizando el procesamiento de la solicitud<br>- <strong>Finalizado:</strong> El tr\xE1mite ha sido completado y los resultados est\xE1n disponibles<br>- <strong>Observado:</strong> El tr\xE1mite requiere informaci\xF3n o documentaci\xF3n adicional",
+          "El sistema muestra una barra de progreso indicando el porcentaje de avance del tr\xE1mite"
+        ]
+      },
+      {
+        id: "documentos",
+        title: "Gesti\xF3n de Documentos",
+        content: "Los documentos adjuntos en los tr\xE1mites pueden ser visualizados y descargados en cualquier momento. El sistema proporciona acceso a documentos tanto adjuntados por el usuario como generados durante el procesamiento del tr\xE1mite.",
+        steps: [
+          'Acceda a la secci\xF3n "Mis Tr\xE1mites"',
+          "Seleccione el tr\xE1mite espec\xEDfico del cual desea ver documentos",
+          'Localize la secci\xF3n "Documentos Adjuntos"',
+          "Se mostrar\xE1 una lista completa de todos los archivos asociados al tr\xE1mite",
+          "Haga clic en el nombre del documento para visualizarlo en l\xEDnea",
+          'Para descargar el documento, haga clic en el bot\xF3n "Descargar"',
+          'El archivo se guardar\xE1 autom\xE1ticamente en la carpeta "Descargas" de su dispositivo'
+        ]
+      },
+      {
+        id: "notificaciones",
+        title: "Sistema de Notificaciones",
+        content: "El sistema genera notificaciones autom\xE1ticas cuando ocurren cambios en el estado de los tr\xE1mites. Las notificaciones proporcionan informaci\xF3n sobre el progreso y acciones requeridas.",
+        steps: [
+          "Localice el \xEDcono de campana de notificaciones en la esquina superior derecha de la interfaz",
+          "Si hay nuevas notificaciones, se mostrar\xE1 un indicador num\xE9rico rojo",
+          "Haga clic en la campana para desplegar la lista completa de notificaciones",
+          "Las notificaciones incluyen informaci\xF3n sobre:<br>- Cambios de estado del tr\xE1mite<br>- Recepci\xF3n de documentaci\xF3n<br>- Disponibilidad de resultados<br>- Requerimientos de informaci\xF3n adicional",
+          "Haga clic en cualquier notificaci\xF3n para navegar directamente al tr\xE1mite relacionado"
+        ]
+      },
+      {
+        id: "tips",
+        title: "Recomendaciones para Uso \xD3ptimo",
+        content: "Seguir estas recomendaciones mejora la eficiencia en el procesamiento de tr\xE1mites y reduce la necesidad de correcciones o consultas adicionales.",
+        steps: [
+          "<strong>Claridad de Informaci\xF3n:</strong> Proporcione descripciones claras y precisas en todos los campos de texto",
+          "<strong>Documentaci\xF3n Completa:</strong> Adjunte todos los documentos requeridos en el primer env\xEDo para evitar retrasos",
+          "<strong>Calidad de Documentos:</strong> Escanee o fotograf\xEDe documentos con buena iluminaci\xF3n y definici\xF3n",
+          "<strong>Conserve C\xF3digo de Referencia:</strong> Guarde el c\xF3digo de tr\xE1mite en un lugar seguro para futuras consultas",
+          "<strong>Monitoreo Regular:</strong> Consulte el sistema cada 2-3 d\xEDas para revisar actualizaciones",
+          "<strong>Evite Duplicaciones:</strong> No env\xEDe m\xFAltiples copias del mismo tr\xE1mite",
+          "<strong>Tiempos de Procesamiento:</strong> Los tr\xE1mites requieren entre 1 a 3 d\xEDas h\xE1biles para procesamiento, dependiendo del tipo"
+        ]
+      },
+      {
+        id: "problemas",
+        title: "Preguntas Frecuentes",
+        content: "Esta secci\xF3n aborda las consultas m\xE1s comunes sobre el uso del sistema y los procedimientos institucionales.",
+        steps: [
+          "<strong>\xBFCu\xE1l es el tiempo promedio de procesamiento?</strong><br>El tiempo var\xEDa entre 1 a 3 d\xEDas h\xE1biles dependiendo del tipo de tr\xE1mite y volumen de solicitudes",
+          '<strong>\xBFPuedo editar un tr\xE1mite despu\xE9s de enviarlo?</strong><br>S\xED, es posible editar tr\xE1mites que se encuentren en estado "Enviado" u "Observado". Una vez en otros estados, no se permite edici\xF3n',
+          '<strong>\xBFQu\xE9 significa el estado "Observado"?</strong><br>Indica que el tr\xE1mite requiere correcciones o documentaci\xF3n adicional. Revise las observaciones detalladas y realice los cambios necesarios',
+          "<strong>\xBFD\xF3nde recojo los documentos finales?</strong><br>Algunos documentos est\xE1n disponibles para descarga directa en el sistema. Otros deben ser retirados personalmente en Mesa de Partes. Se especificar\xE1 en la respuesta del tr\xE1mite",
+          "<strong>\xBFEs posible crear tr\xE1mites sin cuenta de usuario?</strong><br>S\xED, existe una opci\xF3n de creaci\xF3n p\xFAblica de tr\xE1mites para usuarios sin cuenta de usuario. La creaci\xF3n autenticada para usuarios registrados tambi\xE9n est\xE1 disponible. Ambas opciones cuentan con validaciones de seguridad. Es posible consultar el estado de tr\xE1mites sin cuenta utilizando el c\xF3digo de referencia",
+          "<strong>Horario de Atenci\xF3n - Secretar\xEDa General:</strong><br>Lunes a Viernes, 07:30 a 15:00 horas<br>Ubicaci\xF3n: Av. Universitaria s/n, Pampa Grande, Tumbes"
+        ]
+      }
+    ];
+  }
+  toggleIndex() {
+    this.showIndex = !this.showIndex;
+  }
+  scrollToSection(sectionId) {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+    }
+  }
+  goBack() {
+    const user = this.authService.currentUserValue;
+    if (!user || !user.role) {
+      this.router.navigate(["/"]);
+      return;
+    }
+    const roleName = user.role.name.toUpperCase();
+    switch (roleName) {
+      case "USUARIO":
+        this.router.navigate(["/usuario/mis-tramites"]);
+        break;
+      case "ADMINISTRATIVO":
+        this.router.navigate(["/administrativo/dashboard"]);
+        break;
+      case "ADMIN":
+        this.router.navigate(["/admin/dashboard"]);
+        break;
+      case "ESTUDIANTE":
+        this.router.navigate(["/estudiante/tablero"]);
+        break;
+      default:
+        this.router.navigate(["/"]);
+    }
+  }
+  static {
+    this.\u0275fac = function ManualComponent_Factory(t) {
+      return new (t || _ManualComponent)(\u0275\u0275directiveInject(Router), \u0275\u0275directiveInject(AuthService));
+    };
+  }
+  static {
+    this.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ type: _ManualComponent, selectors: [["app-manual"]], standalone: true, features: [\u0275\u0275StandaloneFeature], decls: 33, vars: 11, consts: [[1, "min-h-screen", "bg-gray-50"], [1, "max-w-6xl", "mx-auto", "px-4", "py-8"], [1, "bg-white", "rounded-xl", "shadow-lg", "overflow-hidden"], [1, "bg-university-gradient", "text-white", "p-8", "text-center"], [1, "text-3xl", "font-bold", "mb-3"], [1, "text-base", "leading-relaxed"], [1, "p-8"], [1, "md:hidden", "fixed", "bottom-6", "right-6", "z-50", "w-14", "h-14", "bg-university-600", "hover:bg-university-700", "text-white", "rounded-full", "shadow-2xl", "flex", "items-center", "justify-center", "transition-all", "duration-300", "hover:scale-110", 3, "click"], ["class", "w-6 h-6", "fill", "none", "stroke", "currentColor", "viewBox", "0 0 24 24", 4, "ngIf"], [1, "grid", "md:grid-cols-4", "gap-4"], [1, "md:col-span-1"], ["class", "md:hidden fixed inset-0 bg-black bg-opacity-50 z-40 animate-fade-in", 3, "click", 4, "ngIf"], [1, "fixed", "md:relative", "md:translate-x-0", "top-0", "left-0", "h-full", "md:h-auto", "w-72", "md:w-auto", "bg-white", "md:bg-transparent", "z-50", "md:z-auto", "transition-transform", "duration-300", "shadow-2xl", "md:shadow-none", "overflow-y-auto", "md:overflow-visible", "p-6", "md:p-0"], [1, "md:hidden", "flex", "justify-between", "items-center", "mb-6", "pb-4", "border-b", "border-gray-200"], [1, "font-bold", "text-university-700", "text-lg", "flex", "items-center"], ["fill", "none", "stroke", "currentColor", "viewBox", "0 0 24 24", 1, "w-5", "h-5", "mr-2"], ["stroke-linecap", "round", "stroke-linejoin", "round", "stroke-width", "2", "d", "M4 6h16M4 10h16M4 14h16M4 18h16"], [1, "text-gray-500", "hover:text-gray-700", 3, "click"], ["fill", "none", "stroke", "currentColor", "viewBox", "0 0 24 24", 1, "w-6", "h-6"], ["stroke-linecap", "round", "stroke-linejoin", "round", "stroke-width", "2", "d", "M6 18L18 6M6 6l12 12"], [1, "sticky", "top-20"], [1, "hidden", "md:flex", "font-bold", "text-university-700", "mb-4", "items-center", "text-lg"], [1, "space-y-2"], ["class", "w-full text-left px-3 py-2 text-sm text-gray-600 hover:text-university-600 hover:bg-university-50 rounded-lg transition-colors flex items-center", 3, "click", 4, "ngFor", "ngForOf"], [1, "md:col-span-3", "space-y-6"], ["class", "bg-white rounded-lg p-6 border-l-4 border-university-600 scroll-mt-20 shadow-sm hover:shadow-md transition-shadow", 3, "id", 4, "ngFor", "ngForOf"], ["stroke-linecap", "round", "stroke-linejoin", "round", "stroke-width", "2", "d", "M4 6h16M4 12h16M4 18h16"], [1, "md:hidden", "fixed", "inset-0", "bg-black", "bg-opacity-50", "z-40", "animate-fade-in", 3, "click"], [1, "w-full", "text-left", "px-3", "py-2", "text-sm", "text-gray-600", "hover:text-university-600", "hover:bg-university-50", "rounded-lg", "transition-colors", "flex", "items-center", 3, "click"], [1, "w-6", "h-6", "bg-university-100", "text-university-700", "rounded-full", "flex", "items-center", "justify-center", "text-xs", "font-bold", "mr-3", "flex-shrink-0"], [1, "line-clamp-2"], [1, "bg-white", "rounded-lg", "p-6", "border-l-4", "border-university-600", "scroll-mt-20", "shadow-sm", "hover:shadow-md", "transition-shadow", 3, "id"], [1, "flex", "items-start", "mb-5"], [1, "w-8", "h-8", "bg-university-gradient", "text-white", "rounded-full", "flex", "items-center", "justify-center", "text-xs", "font-bold", "mr-4", "flex-shrink-0", "mt-0.5"], [1, "text-xl", "font-bold", "text-university-800", "leading-tight"], [1, "text-gray-700", "mb-6", "leading-relaxed", "text-justify"], ["class", "bg-gray-50 rounded-lg p-5 border border-gray-200", 4, "ngIf"], [1, "bg-gray-50", "rounded-lg", "p-5", "border", "border-gray-200"], [1, "font-semibold", "text-university-700", "mb-5", "flex", "items-center", "text-base"], ["fill", "none", "stroke", "currentColor", "viewBox", "0 0 24 24", 1, "w-5", "h-5", "mr-3"], ["stroke-linecap", "round", "stroke-linejoin", "round", "stroke-width", "2", "d", "M9 5l7 7-7 7"], [1, "space-y-4"], ["class", "flex gap-4 items-start", 4, "ngFor", "ngForOf"], [1, "flex", "gap-4", "items-start"], [1, "w-7", "h-7", "bg-university-600", "text-white", "rounded-full", "flex", "items-center", "justify-center", "text-xs", "font-bold", "flex-shrink-0", "mt-0.5"], [1, "text-gray-700", "leading-relaxed", "text-sm", 3, "innerHTML"]], template: function ManualComponent_Template(rf, ctx) {
+      if (rf & 1) {
+        \u0275\u0275elementStart(0, "div", 0)(1, "div", 1)(2, "div", 2)(3, "div", 3)(4, "h2", 4);
+        \u0275\u0275text(5, "Manual de Usuario del Sistema");
+        \u0275\u0275elementEnd();
+        \u0275\u0275elementStart(6, "p", 5);
+        \u0275\u0275text(7, "Documento de referencia que contiene instrucciones detalladas sobre el funcionamiento, operaci\xF3n y caracter\xEDsticas principales del Sistema de Gesti\xF3n de Tr\xE1mites de la Universidad Nacional de Tumbes. Consulte las secciones que correspondan a su necesidad espec\xEDfica.");
+        \u0275\u0275elementEnd()();
+        \u0275\u0275elementStart(8, "div", 6)(9, "button", 7);
+        \u0275\u0275listener("click", function ManualComponent_Template_button_click_9_listener() {
+          return ctx.toggleIndex();
+        });
+        \u0275\u0275template(10, ManualComponent__svg_svg_10_Template, 2, 0, "svg", 8)(11, ManualComponent__svg_svg_11_Template, 2, 0, "svg", 8);
+        \u0275\u0275elementEnd();
+        \u0275\u0275elementStart(12, "div", 9)(13, "div", 10);
+        \u0275\u0275template(14, ManualComponent_div_14_Template, 1, 0, "div", 11);
+        \u0275\u0275elementStart(15, "div", 12)(16, "div", 13)(17, "h3", 14);
+        \u0275\u0275namespaceSVG();
+        \u0275\u0275elementStart(18, "svg", 15);
+        \u0275\u0275element(19, "path", 16);
+        \u0275\u0275elementEnd();
+        \u0275\u0275text(20, " \xCDndice ");
+        \u0275\u0275elementEnd();
+        \u0275\u0275namespaceHTML();
+        \u0275\u0275elementStart(21, "button", 17);
+        \u0275\u0275listener("click", function ManualComponent_Template_button_click_21_listener() {
+          return ctx.toggleIndex();
+        });
+        \u0275\u0275namespaceSVG();
+        \u0275\u0275elementStart(22, "svg", 18);
+        \u0275\u0275element(23, "path", 19);
+        \u0275\u0275elementEnd()()();
+        \u0275\u0275namespaceHTML();
+        \u0275\u0275elementStart(24, "div", 20)(25, "h3", 21);
+        \u0275\u0275namespaceSVG();
+        \u0275\u0275elementStart(26, "svg", 15);
+        \u0275\u0275element(27, "path", 16);
+        \u0275\u0275elementEnd();
+        \u0275\u0275text(28, " Secciones del Manual ");
+        \u0275\u0275elementEnd();
+        \u0275\u0275namespaceHTML();
+        \u0275\u0275elementStart(29, "nav", 22);
+        \u0275\u0275template(30, ManualComponent_button_30_Template, 5, 2, "button", 23);
+        \u0275\u0275elementEnd()()()();
+        \u0275\u0275elementStart(31, "div", 24);
+        \u0275\u0275template(32, ManualComponent_div_32_Template, 9, 5, "div", 25);
+        \u0275\u0275elementEnd()()()()()();
+      }
+      if (rf & 2) {
+        \u0275\u0275advance(9);
+        \u0275\u0275classProp("bg-university-700", ctx.showIndex);
+        \u0275\u0275advance();
+        \u0275\u0275property("ngIf", !ctx.showIndex);
+        \u0275\u0275advance();
+        \u0275\u0275property("ngIf", ctx.showIndex);
+        \u0275\u0275advance(3);
+        \u0275\u0275property("ngIf", ctx.showIndex);
+        \u0275\u0275advance();
+        \u0275\u0275classProp("translate-x-0", ctx.showIndex)("-translate-x-full", !ctx.showIndex);
+        \u0275\u0275advance(15);
+        \u0275\u0275property("ngForOf", ctx.manualSections);
+        \u0275\u0275advance(2);
+        \u0275\u0275property("ngForOf", ctx.manualSections);
+      }
+    }, dependencies: [CommonModule, NgForOf, NgIf], encapsulation: 2 });
+  }
+};
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && \u0275setClassDebugInfo(ManualComponent, { className: "ManualComponent" });
 })();
 
 // src/app/search/search.component.ts
@@ -6733,15 +7105,20 @@ var SearchComponent = class _SearchComponent {
   }
   onFilesSelected(event) {
     const files = event.target.files;
-    if (files.length > 3) {
-      this.showToastMessage("\u26A0\uFE0F M\xE1ximo 3 archivos permitidos", "warning");
+    const totalFiles = (this.tramiteForm.archivos?.length || 0) + files.length;
+    if (totalFiles > 3) {
+      this.showToastMessage("\u26A0\uFE0F M\xE1ximo 3 archivos permitidos en total", "warning");
       event.target.value = "";
       return;
     }
-    const validExtensions = ["pdf", "jpg", "jpeg", "png", "doc", "docx"];
+    const validExtensions = ["pdf", "docx"];
     const maxSize = 50 * 1024 * 1024;
-    this.tramiteForm.archivos = [];
-    this.archivosPreview = [];
+    if (!this.tramiteForm.archivos) {
+      this.tramiteForm.archivos = [];
+    }
+    if (!this.archivosPreview) {
+      this.archivosPreview = [];
+    }
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       const extension = file.name.split(".").pop()?.toLowerCase();
@@ -6776,6 +7153,7 @@ var SearchComponent = class _SearchComponent {
     }
     this.showError = false;
     this.errorMessage = "";
+    event.target.value = "";
   }
   removeFile(index) {
     this.tramiteForm.archivos.splice(index, 1);
@@ -6880,24 +7258,27 @@ var SearchComponent = class _SearchComponent {
     this.http.post(`${this.apiUrl}/api/tramites/public/crear`, formData).pipe(catchError((error) => {
       this.isSubmittingTramite = false;
       this.showError = true;
-      if (error.error && error.error.error) {
+      if (error.error && error.error.mensaje) {
+        this.errorMessage = error.error.mensaje;
+      } else if (error.error && error.error.error) {
         this.errorMessage = error.error.error;
       } else if (error.status === 400) {
         this.errorMessage = "Datos inv\xE1lidos. Verifica el formulario.";
       } else if (error.status === 403) {
         this.errorMessage = "Contenido malicioso detectado. Por favor, revisa tu informaci\xF3n.";
       } else {
-        this.errorMessage = "Error al crear el tr\xE1mite. Intenta nuevamente.";
+        this.errorMessage = error.error?.mensaje || "Error al crear el tr\xE1mite. Intenta nuevamente.";
       }
       this.generateCaptcha();
       return of(null);
     })).subscribe((response) => {
       this.isSubmittingTramite = false;
-      if (response && response.success) {
-        this.showToastMessage(`\u2705 Tr\xE1mite creado exitosamente con c\xF3digo: ${response.codigo}`, "success");
+      if (response && response.codigo) {
+        const codigo = response.codigo;
+        this.showToastMessage(`\u2705 Tr\xE1mite creado exitosamente con c\xF3digo: ${codigo}`, "success");
         this.showSuccess = true;
         this.showError = false;
-        this.successMessage = `Tr\xE1mite creado exitosamente con c\xF3digo: ${response.codigo}`;
+        this.successMessage = `Tr\xE1mite creado exitosamente con c\xF3digo: ${codigo}`;
         this.resetCreateForm();
         setTimeout(() => {
           this.backToLanding();
@@ -7040,374 +7421,6 @@ var SearchComponent = class _SearchComponent {
   (typeof ngDevMode === "undefined" || ngDevMode) && \u0275setClassDebugInfo(SearchComponent, { className: "SearchComponent" });
 })();
 
-// src/app/admin-login/admin-login.component.ts
-function AdminLoginComponent_div_11_Template(rf, ctx) {
-  if (rf & 1) {
-    \u0275\u0275elementStart(0, "div", 31)(1, "div", 32);
-    \u0275\u0275namespaceSVG();
-    \u0275\u0275elementStart(2, "svg", 33);
-    \u0275\u0275element(3, "path", 34);
-    \u0275\u0275elementEnd();
-    \u0275\u0275namespaceHTML();
-    \u0275\u0275elementStart(4, "div")(5, "h3", 35);
-    \u0275\u0275text(6, "\xA1Acceso autorizado!");
-    \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(7, "p", 36);
-    \u0275\u0275text(8, "Redirigiendo al panel administrativo...");
-    \u0275\u0275elementEnd()()()();
-  }
-}
-function AdminLoginComponent_div_12_Template(rf, ctx) {
-  if (rf & 1) {
-    \u0275\u0275elementStart(0, "div", 37)(1, "div", 32);
-    \u0275\u0275namespaceSVG();
-    \u0275\u0275elementStart(2, "svg", 38);
-    \u0275\u0275element(3, "path", 39);
-    \u0275\u0275elementEnd();
-    \u0275\u0275namespaceHTML();
-    \u0275\u0275elementStart(4, "div")(5, "h3", 40);
-    \u0275\u0275text(6, "Cambio de contrase\xF1a requerido");
-    \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(7, "p", 41);
-    \u0275\u0275text(8, "Debes cambiar tu contrase\xF1a temporal antes de continuar.");
-    \u0275\u0275elementEnd()()()();
-  }
-}
-function AdminLoginComponent_div_13_Template(rf, ctx) {
-  if (rf & 1) {
-    \u0275\u0275elementStart(0, "div", 42)(1, "div", 32);
-    \u0275\u0275namespaceSVG();
-    \u0275\u0275elementStart(2, "svg", 43);
-    \u0275\u0275element(3, "path", 44);
-    \u0275\u0275elementEnd();
-    \u0275\u0275namespaceHTML();
-    \u0275\u0275elementStart(4, "div")(5, "h3", 45);
-    \u0275\u0275text(6, "Error de acceso");
-    \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(7, "p", 46);
-    \u0275\u0275text(8);
-    \u0275\u0275elementEnd()()()();
-  }
-  if (rf & 2) {
-    const ctx_r0 = \u0275\u0275nextContext();
-    \u0275\u0275advance(8);
-    \u0275\u0275textInterpolate(ctx_r0.loginError);
-  }
-}
-function AdminLoginComponent_div_25_Template(rf, ctx) {
-  if (rf & 1) {
-    \u0275\u0275elementStart(0, "div", 47);
-    \u0275\u0275text(1);
-    \u0275\u0275elementEnd();
-  }
-  if (rf & 2) {
-    const ctx_r0 = \u0275\u0275nextContext();
-    \u0275\u0275advance();
-    \u0275\u0275textInterpolate1(" ", ctx_r0.getFieldError("usuario"), " ");
-  }
-}
-function AdminLoginComponent__svg_svg_37_Template(rf, ctx) {
-  if (rf & 1) {
-    \u0275\u0275namespaceSVG();
-    \u0275\u0275elementStart(0, "svg", 48);
-    \u0275\u0275element(1, "path", 49)(2, "path", 50);
-    \u0275\u0275elementEnd();
-  }
-}
-function AdminLoginComponent__svg_svg_38_Template(rf, ctx) {
-  if (rf & 1) {
-    \u0275\u0275namespaceSVG();
-    \u0275\u0275elementStart(0, "svg", 48);
-    \u0275\u0275element(1, "path", 51);
-    \u0275\u0275elementEnd();
-  }
-}
-function AdminLoginComponent_div_39_Template(rf, ctx) {
-  if (rf & 1) {
-    \u0275\u0275elementStart(0, "div", 47);
-    \u0275\u0275text(1);
-    \u0275\u0275elementEnd();
-  }
-  if (rf & 2) {
-    const ctx_r0 = \u0275\u0275nextContext();
-    \u0275\u0275advance();
-    \u0275\u0275textInterpolate1(" ", ctx_r0.getFieldError("password"), " ");
-  }
-}
-function AdminLoginComponent_span_46_Template(rf, ctx) {
-  if (rf & 1) {
-    \u0275\u0275elementStart(0, "span", 52);
-    \u0275\u0275namespaceSVG();
-    \u0275\u0275elementStart(1, "svg", 53);
-    \u0275\u0275element(2, "path", 54);
-    \u0275\u0275elementEnd();
-    \u0275\u0275text(3, " Iniciar Sesi\xF3n ");
-    \u0275\u0275elementEnd();
-  }
-}
-function AdminLoginComponent_span_47_Template(rf, ctx) {
-  if (rf & 1) {
-    \u0275\u0275elementStart(0, "span", 52);
-    \u0275\u0275element(1, "div", 55);
-    \u0275\u0275text(2, " Verificando credenciales... ");
-    \u0275\u0275elementEnd();
-  }
-}
-var AdminLoginComponent = class _AdminLoginComponent {
-  constructor(fb, router, route, authService, platformId) {
-    this.fb = fb;
-    this.router = router;
-    this.route = route;
-    this.authService = authService;
-    this.isLoading = false;
-    this.showPassword = false;
-    this.loginError = "";
-    this.loginSuccess = false;
-    this.mustChangePassword = false;
-    this.currentYear = (/* @__PURE__ */ new Date()).getFullYear();
-    this.returnUrl = "/";
-    this.isBrowser = isPlatformBrowser(platformId);
-    this.loginForm = this.fb.group({
-      usuario: ["", [Validators.required, Validators.minLength(3)]],
-      password: ["", [Validators.required, Validators.minLength(6)]],
-      rememberMe: [false]
-    });
-  }
-  ngOnInit() {
-    this.returnUrl = this.route.snapshot.queryParams["returnUrl"] || "/";
-    if (this.authService.isAuthenticated()) {
-      this.router.navigate([this.returnUrl]);
-      return;
-    }
-    if (this.isBrowser) {
-      const savedCredentials = this.getSavedCredentials();
-      if (savedCredentials) {
-        this.loginForm.patchValue({
-          usuario: savedCredentials.usuario,
-          rememberMe: true
-        });
-      }
-    }
-  }
-  togglePasswordVisibility() {
-    this.showPassword = !this.showPassword;
-  }
-  onSubmit() {
-    if (this.loginForm.valid) {
-      this.isLoading = true;
-      this.loginError = "";
-      this.mustChangePassword = false;
-      const { usuario, password, rememberMe } = this.loginForm.value;
-      this.authService.login({ usuario, password }).subscribe({
-        next: (response) => {
-          if (rememberMe) {
-            this.saveCredentials(usuario);
-          } else {
-            this.clearSavedCredentials();
-          }
-          let redirectRoute = "/";
-          if (response.redirectUrl) {
-            redirectRoute = response.redirectUrl;
-          } else {
-            const currentUser = this.authService.currentUserValue;
-            if (currentUser && currentUser.role) {
-              const roleRoutes = {
-                "admin": "/admin/tablero",
-                "administrativo": "/administrativo/tablero",
-                "usuario": "/usuario/tablero",
-                "estudiante": "/estudiante/tablero"
-              };
-              redirectRoute = roleRoutes[currentUser.role.name.toLowerCase()] || "/";
-            }
-          }
-          this.router.navigateByUrl(redirectRoute);
-        },
-        error: (error) => {
-          this.isLoading = false;
-          if (error.status === 428) {
-            this.mustChangePassword = true;
-            this.loginError = "Debes cambiar tu contrase\xF1a temporal";
-          } else if (error.status === 403) {
-            this.loginError = error.error?.message || "Credenciales inv\xE1lidas o cuenta bloqueada";
-          } else {
-            this.loginError = "Error al iniciar sesi\xF3n. Intente nuevamente.";
-          }
-        }
-      });
-    } else {
-      this.markFormGroupTouched();
-    }
-  }
-  markFormGroupTouched() {
-    Object.keys(this.loginForm.controls).forEach((key) => {
-      const control = this.loginForm.get(key);
-      control?.markAsTouched();
-    });
-  }
-  saveCredentials(usuario) {
-    if (this.isBrowser) {
-      localStorage.setItem("adminCredentials", JSON.stringify({ usuario }));
-    }
-  }
-  getSavedCredentials() {
-    if (this.isBrowser) {
-      const saved = localStorage.getItem("adminCredentials");
-      return saved ? JSON.parse(saved) : null;
-    }
-    return null;
-  }
-  clearSavedCredentials() {
-    if (this.isBrowser) {
-      localStorage.removeItem("adminCredentials");
-    }
-  }
-  getFieldError(fieldName) {
-    const field = this.loginForm.get(fieldName);
-    if (field?.invalid && field?.touched) {
-      if (field.errors?.["required"]) {
-        return `${this.getFieldLabel(fieldName)} es obligatorio`;
-      }
-      if (field.errors?.["minlength"]) {
-        const requiredLength = field.errors?.["minlength"].requiredLength;
-        return `${this.getFieldLabel(fieldName)} debe tener al menos ${requiredLength} caracteres`;
-      }
-    }
-    return "";
-  }
-  getFieldLabel(fieldName) {
-    const labels = {
-      "usuario": "El nombre de usuario",
-      "password": "La contrase\xF1a"
-    };
-    return labels[fieldName] || fieldName;
-  }
-  isFieldInvalid(fieldName) {
-    const field = this.loginForm.get(fieldName);
-    return !!(field?.invalid && field?.touched);
-  }
-  static {
-    this.\u0275fac = function AdminLoginComponent_Factory(t) {
-      return new (t || _AdminLoginComponent)(\u0275\u0275directiveInject(FormBuilder), \u0275\u0275directiveInject(Router), \u0275\u0275directiveInject(ActivatedRoute), \u0275\u0275directiveInject(AuthService), \u0275\u0275directiveInject(PLATFORM_ID));
-    };
-  }
-  static {
-    this.\u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ type: _AdminLoginComponent, selectors: [["app-admin-login"]], standalone: true, features: [\u0275\u0275StandaloneFeature], decls: 48, vars: 28, consts: [[1, "min-h-screen", "bg-gradient-to-br", "from-slate-900", "via-blue-900", "to-slate-900", "flex", "items-center", "justify-center", "px-4", "py-8"], [1, "max-w-md", "w-full"], [1, "text-center", "mb-8"], [1, "inline-flex", "items-center", "justify-center", "w-16", "h-16", "bg-white", "rounded-full", "shadow-lg", "mb-6"], ["fill", "none", "stroke", "currentColor", "viewBox", "0 0 24 24", 1, "w-8", "h-8", "text-blue-600"], ["stroke-linecap", "round", "stroke-linejoin", "round", "stroke-width", "2", "d", "M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"], [1, "text-2xl", "md:text-3xl", "font-bold", "text-white", "mb-2"], [1, "text-slate-300"], [1, "bg-white", "rounded-2xl", "shadow-2xl", "p-8", "backdrop-blur-sm", "bg-opacity-95"], ["class", "mb-6 p-4 bg-green-50 border border-green-200 rounded-lg animate-fade-in", 4, "ngIf"], ["class", "mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg", 4, "ngIf"], ["class", "mb-6 p-4 bg-red-50 border border-red-200 rounded-lg animate-shake", 4, "ngIf"], [1, "space-y-6", 3, "ngSubmit", "formGroup"], [1, "block", "text-sm", "font-medium", "text-gray-700", "mb-2"], ["fill", "none", "stroke", "currentColor", "viewBox", "0 0 24 24", 1, "inline-block", "w-4", "h-4", "mr-2"], ["stroke-linecap", "round", "stroke-linejoin", "round", "stroke-width", "2", "d", "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"], [1, "relative"], ["type", "text", "formControlName", "usuario", "placeholder", "Ingresa tu nombre de usuario", "autocomplete", "username", 1, "w-full", "px-4", "py-3", "border-2", "rounded-lg", "focus:ring-2", "focus:ring-blue-500", "focus:border-blue-500", "transition-all", "duration-300", "pl-12"], [1, "absolute", "left-4", "top-1/2", "transform", "-translate-y-1/2"], ["fill", "none", "stroke", "currentColor", "viewBox", "0 0 24 24", 1, "w-5", "h-5", "text-gray-400"], ["class", "mt-2 text-sm text-red-600 animate-slide-down", 4, "ngIf"], ["stroke-linecap", "round", "stroke-linejoin", "round", "stroke-width", "2", "d", "M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"], ["formControlName", "password", "placeholder", "Ingresa tu credenciales", "autocomplete", "current-password", 1, "w-full", "px-4", "py-3", "border-2", "rounded-lg", "focus:ring-2", "focus:ring-blue-500", "focus:border-blue-500", "transition-all", "duration-300", "pl-12", "pr-12", 3, "type"], ["type", "button", 1, "absolute", "right-4", "top-1/2", "transform", "-translate-y-1/2", "text-gray-400", "hover:text-gray-600", "transition-colors", 3, "click", "disabled"], ["class", "w-5 h-5", "fill", "none", "stroke", "currentColor", "viewBox", "0 0 24 24", 4, "ngIf"], [1, "flex", "items-center", "justify-between"], [1, "flex", "items-center"], ["type", "checkbox", "formControlName", "rememberMe", 1, "w-4", "h-4", "text-blue-600", "bg-gray-100", "border-gray-300", "rounded", "focus:ring-blue-500", "focus:ring-2", "transition-all", "duration-300"], [1, "ml-2", "text-sm", "text-gray-700"], ["type", "submit", 1, "w-full", "bg-gradient-to-r", "from-blue-600", "to-blue-700", "text-white", "py-3", "px-4", "rounded-lg", "font-medium", "text-lg", "shadow-lg", "hover:from-blue-700", "hover:to-blue-800", "focus:ring-4", "focus:ring-blue-300", "transition-all", "duration-300", "disabled:opacity-50", "disabled:cursor-not-allowed", "transform", "hover:scale-[1.02]", "active:scale-[0.98]", 3, "disabled"], ["class", "flex items-center justify-center", 4, "ngIf"], [1, "mb-6", "p-4", "bg-green-50", "border", "border-green-200", "rounded-lg", "animate-fade-in"], [1, "flex", "items-center", "space-x-3"], ["fill", "none", "stroke", "currentColor", "viewBox", "0 0 24 24", 1, "w-6", "h-6", "text-green-500", "flex-shrink-0"], ["stroke-linecap", "round", "stroke-linejoin", "round", "stroke-width", "2", "d", "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"], [1, "text-sm", "font-medium", "text-green-800"], [1, "text-sm", "text-green-700"], [1, "mb-6", "p-4", "bg-yellow-50", "border", "border-yellow-200", "rounded-lg"], ["fill", "none", "stroke", "currentColor", "viewBox", "0 0 24 24", 1, "w-6", "h-6", "text-yellow-500", "flex-shrink-0"], ["stroke-linecap", "round", "stroke-linejoin", "round", "stroke-width", "2", "d", "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"], [1, "text-sm", "font-medium", "text-yellow-800"], [1, "text-sm", "text-yellow-700"], [1, "mb-6", "p-4", "bg-red-50", "border", "border-red-200", "rounded-lg", "animate-shake"], ["fill", "none", "stroke", "currentColor", "viewBox", "0 0 24 24", 1, "w-6", "h-6", "text-red-500", "flex-shrink-0"], ["stroke-linecap", "round", "stroke-linejoin", "round", "stroke-width", "2", "d", "M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"], [1, "text-sm", "font-medium", "text-red-800"], [1, "text-sm", "text-red-700"], [1, "mt-2", "text-sm", "text-red-600", "animate-slide-down"], ["fill", "none", "stroke", "currentColor", "viewBox", "0 0 24 24", 1, "w-5", "h-5"], ["stroke-linecap", "round", "stroke-linejoin", "round", "stroke-width", "2", "d", "M15 12a3 3 0 11-6 0 3 3 0 016 0z"], ["stroke-linecap", "round", "stroke-linejoin", "round", "stroke-width", "2", "d", "M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"], ["stroke-linecap", "round", "stroke-linejoin", "round", "stroke-width", "2", "d", "M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"], [1, "flex", "items-center", "justify-center"], ["fill", "none", "stroke", "currentColor", "viewBox", "0 0 24 24", 1, "w-5", "h-5", "mr-2"], ["stroke-linecap", "round", "stroke-linejoin", "round", "stroke-width", "2", "d", "M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"], [1, "w-5", "h-5", "border-2", "border-white", "border-t-transparent", "rounded-full", "animate-spin", "mr-2"]], template: function AdminLoginComponent_Template(rf, ctx) {
-      if (rf & 1) {
-        \u0275\u0275elementStart(0, "section", 0)(1, "div", 1)(2, "div", 2)(3, "div", 3);
-        \u0275\u0275namespaceSVG();
-        \u0275\u0275elementStart(4, "svg", 4);
-        \u0275\u0275element(5, "path", 5);
-        \u0275\u0275elementEnd()();
-        \u0275\u0275namespaceHTML();
-        \u0275\u0275elementStart(6, "h1", 6);
-        \u0275\u0275text(7, " Panel Administrativo ");
-        \u0275\u0275elementEnd();
-        \u0275\u0275elementStart(8, "p", 7);
-        \u0275\u0275text(9, " Acceso para personal autorizado de UNTUMBES ");
-        \u0275\u0275elementEnd()();
-        \u0275\u0275elementStart(10, "div", 8);
-        \u0275\u0275template(11, AdminLoginComponent_div_11_Template, 9, 0, "div", 9)(12, AdminLoginComponent_div_12_Template, 9, 0, "div", 10)(13, AdminLoginComponent_div_13_Template, 9, 1, "div", 11);
-        \u0275\u0275elementStart(14, "form", 12);
-        \u0275\u0275listener("ngSubmit", function AdminLoginComponent_Template_form_ngSubmit_14_listener() {
-          return ctx.onSubmit();
-        });
-        \u0275\u0275elementStart(15, "div")(16, "label", 13);
-        \u0275\u0275namespaceSVG();
-        \u0275\u0275elementStart(17, "svg", 14);
-        \u0275\u0275element(18, "path", 15);
-        \u0275\u0275elementEnd();
-        \u0275\u0275text(19, " Usuario ");
-        \u0275\u0275elementEnd();
-        \u0275\u0275namespaceHTML();
-        \u0275\u0275elementStart(20, "div", 16);
-        \u0275\u0275element(21, "input", 17);
-        \u0275\u0275elementStart(22, "div", 18);
-        \u0275\u0275namespaceSVG();
-        \u0275\u0275elementStart(23, "svg", 19);
-        \u0275\u0275element(24, "path", 15);
-        \u0275\u0275elementEnd()()();
-        \u0275\u0275template(25, AdminLoginComponent_div_25_Template, 2, 1, "div", 20);
-        \u0275\u0275elementEnd();
-        \u0275\u0275namespaceHTML();
-        \u0275\u0275elementStart(26, "div")(27, "label", 13);
-        \u0275\u0275namespaceSVG();
-        \u0275\u0275elementStart(28, "svg", 14);
-        \u0275\u0275element(29, "path", 21);
-        \u0275\u0275elementEnd();
-        \u0275\u0275text(30, " Credenciales ");
-        \u0275\u0275elementEnd();
-        \u0275\u0275namespaceHTML();
-        \u0275\u0275elementStart(31, "div", 16);
-        \u0275\u0275element(32, "input", 22);
-        \u0275\u0275elementStart(33, "div", 18);
-        \u0275\u0275namespaceSVG();
-        \u0275\u0275elementStart(34, "svg", 19);
-        \u0275\u0275element(35, "path", 21);
-        \u0275\u0275elementEnd()();
-        \u0275\u0275namespaceHTML();
-        \u0275\u0275elementStart(36, "button", 23);
-        \u0275\u0275listener("click", function AdminLoginComponent_Template_button_click_36_listener() {
-          return ctx.togglePasswordVisibility();
-        });
-        \u0275\u0275template(37, AdminLoginComponent__svg_svg_37_Template, 3, 0, "svg", 24)(38, AdminLoginComponent__svg_svg_38_Template, 2, 0, "svg", 24);
-        \u0275\u0275elementEnd()();
-        \u0275\u0275template(39, AdminLoginComponent_div_39_Template, 2, 1, "div", 20);
-        \u0275\u0275elementEnd();
-        \u0275\u0275elementStart(40, "div", 25)(41, "label", 26);
-        \u0275\u0275element(42, "input", 27);
-        \u0275\u0275elementStart(43, "span", 28);
-        \u0275\u0275text(44, "Recu\xE9rdame");
-        \u0275\u0275elementEnd()()();
-        \u0275\u0275elementStart(45, "button", 29);
-        \u0275\u0275template(46, AdminLoginComponent_span_46_Template, 4, 0, "span", 30)(47, AdminLoginComponent_span_47_Template, 3, 0, "span", 30);
-        \u0275\u0275elementEnd()()()()();
-      }
-      if (rf & 2) {
-        let tmp_5_0;
-        let tmp_6_0;
-        let tmp_10_0;
-        let tmp_11_0;
-        \u0275\u0275advance(11);
-        \u0275\u0275property("ngIf", ctx.loginSuccess);
-        \u0275\u0275advance();
-        \u0275\u0275property("ngIf", ctx.mustChangePassword);
-        \u0275\u0275advance();
-        \u0275\u0275property("ngIf", ctx.loginError);
-        \u0275\u0275advance();
-        \u0275\u0275property("formGroup", ctx.loginForm);
-        \u0275\u0275advance(7);
-        \u0275\u0275classProp("border-red-400", ctx.isFieldInvalid("usuario"))("border-green-400", ((tmp_5_0 = ctx.loginForm.get("usuario")) == null ? null : tmp_5_0.valid) && ((tmp_5_0 = ctx.loginForm.get("usuario")) == null ? null : tmp_5_0.touched))("border-gray-300", !((tmp_6_0 = ctx.loginForm.get("usuario")) == null ? null : tmp_6_0.touched));
-        \u0275\u0275attribute("disabled", ctx.isLoading ? true : null);
-        \u0275\u0275advance(4);
-        \u0275\u0275property("ngIf", ctx.getFieldError("usuario"));
-        \u0275\u0275advance(7);
-        \u0275\u0275classProp("border-red-400", ctx.isFieldInvalid("password"))("border-green-400", ((tmp_10_0 = ctx.loginForm.get("password")) == null ? null : tmp_10_0.valid) && ((tmp_10_0 = ctx.loginForm.get("password")) == null ? null : tmp_10_0.touched))("border-gray-300", !((tmp_11_0 = ctx.loginForm.get("password")) == null ? null : tmp_11_0.touched));
-        \u0275\u0275property("type", ctx.showPassword ? "text" : "password");
-        \u0275\u0275attribute("disabled", ctx.isLoading ? true : null);
-        \u0275\u0275advance(4);
-        \u0275\u0275property("disabled", ctx.isLoading);
-        \u0275\u0275advance();
-        \u0275\u0275property("ngIf", !ctx.showPassword);
-        \u0275\u0275advance();
-        \u0275\u0275property("ngIf", ctx.showPassword);
-        \u0275\u0275advance();
-        \u0275\u0275property("ngIf", ctx.getFieldError("password"));
-        \u0275\u0275advance(3);
-        \u0275\u0275attribute("disabled", ctx.isLoading ? true : null);
-        \u0275\u0275advance(3);
-        \u0275\u0275property("disabled", !ctx.loginForm.valid || ctx.isLoading);
-        \u0275\u0275advance();
-        \u0275\u0275property("ngIf", !ctx.isLoading);
-        \u0275\u0275advance();
-        \u0275\u0275property("ngIf", ctx.isLoading);
-      }
-    }, dependencies: [CommonModule, NgIf, ReactiveFormsModule, \u0275NgNoValidate, DefaultValueAccessor, CheckboxControlValueAccessor, NgControlStatus, NgControlStatusGroup, FormGroupDirective, FormControlName], encapsulation: 2 });
-  }
-};
-(() => {
-  (typeof ngDevMode === "undefined" || ngDevMode) && \u0275setClassDebugInfo(AdminLoginComponent, { className: "AdminLoginComponent" });
-})();
-
 // src/app/guards/auth.guard.ts
 var AuthGuard = class _AuthGuard {
   constructor(router, authService) {
@@ -7483,55 +7496,55 @@ var routes = [
     path: "admin",
     canActivate: [AuthGuard, RoleGuard],
     data: { roles: ["admin"] },
-    loadComponent: () => import("./chunk-FX2ATXMW.js").then((m) => m.LayoutComponent),
+    loadComponent: () => import("./chunk-OFIB3LBO.js").then((m) => m.LayoutComponent),
     children: [
       {
         path: "tablero",
-        loadComponent: () => import("./chunk-WA7RHCLS.js").then((m) => m.DashboardComponent)
+        loadComponent: () => import("./chunk-Y5P5BUPZ.js").then((m) => m.DashboardComponent)
       },
       {
         path: "perfil",
-        loadComponent: () => import("./chunk-EFS4RA56.js").then((m) => m.UserProfileComponent)
+        loadComponent: () => import("./chunk-357JP5VV.js").then((m) => m.UserProfileComponent)
       },
       {
         path: "areas",
-        loadComponent: () => import("./chunk-CMMSSYYW.js").then((m) => m.AreasComponent)
+        loadComponent: () => import("./chunk-4RAB74G5.js").then((m) => m.AreasComponent)
       },
       {
         path: "gestion-usuarios",
-        loadComponent: () => import("./chunk-QSLQFP3T.js").then((m) => m.UserManagementComponent)
+        loadComponent: () => import("./chunk-67Q7EDQR.js").then((m) => m.UserManagementComponent)
       },
       {
         path: "gestion-roles",
-        loadComponent: () => import("./chunk-NRSWZSCP.js").then((m) => m.RoleManagementComponent)
+        loadComponent: () => import("./chunk-FM65FGOT.js").then((m) => m.RoleManagementComponent)
       },
       {
         path: "notificaciones",
-        loadComponent: () => import("./chunk-RRHPZYBB.js").then((m) => m.NotificacionesComponent)
+        loadComponent: () => import("./chunk-BUT7HTAZ.js").then((m) => m.NotificacionesComponent)
       },
       {
         path: "notificaciones/:id",
-        loadComponent: () => import("./chunk-INLN3GCA.js").then((m) => m.NotificacionDetalleComponent)
+        loadComponent: () => import("./chunk-N4JFH6O4.js").then((m) => m.NotificacionDetalleComponent)
       },
       {
         path: "tramites",
-        loadComponent: () => import("./chunk-2SYSYAFT.js").then((m) => m.ListaTramitesComponent)
+        loadComponent: () => import("./chunk-7L64M4UM.js").then((m) => m.ListaTramitesComponent)
       },
       {
         path: "reportes",
-        loadComponent: () => import("./chunk-NBM2FPH5.js").then((m) => m.ReportesComponent)
+        loadComponent: () => import("./chunk-3UQ4NY7E.js").then((m) => m.ReportesComponent)
       },
       {
         path: "organigrama",
-        loadComponent: () => import("./chunk-SXRO4PSU.js").then((m) => m.OrganigramaComponent)
+        loadComponent: () => import("./chunk-PDBNPT2B.js").then((m) => m.OrganigramaComponent)
       },
       {
         path: "mis-tramites",
-        loadComponent: () => import("./chunk-KJJCUKYY.js").then((m) => m.MisTramitesComponent)
+        loadComponent: () => import("./chunk-GYZUYE6H.js").then((m) => m.MisTramitesComponent)
       },
       {
         path: "nuevo-tramite",
-        loadComponent: () => import("./chunk-6SBKS6W3.js").then((m) => m.NuevoTramitePageComponent)
+        loadComponent: () => import("./chunk-X2TQNJQN.js").then((m) => m.NuevoTramitePageComponent)
       },
       {
         path: "",
@@ -7544,35 +7557,35 @@ var routes = [
     path: "administrativo",
     canActivate: [AuthGuard, RoleGuard],
     data: { roles: ["administrativo"] },
-    loadComponent: () => import("./chunk-FX2ATXMW.js").then((m) => m.LayoutComponent),
+    loadComponent: () => import("./chunk-OFIB3LBO.js").then((m) => m.LayoutComponent),
     children: [
       {
         path: "tablero",
-        loadComponent: () => import("./chunk-4SV3LJ77.js").then((m) => m.DashboardComponent)
+        loadComponent: () => import("./chunk-ASAQ6FP5.js").then((m) => m.DashboardComponent)
       },
       {
         path: "perfil",
-        loadComponent: () => import("./chunk-EFS4RA56.js").then((m) => m.UserProfileComponent)
+        loadComponent: () => import("./chunk-357JP5VV.js").then((m) => m.UserProfileComponent)
       },
       {
         path: "mis-tramites",
-        loadComponent: () => import("./chunk-KJJCUKYY.js").then((m) => m.MisTramitesComponent)
+        loadComponent: () => import("./chunk-GYZUYE6H.js").then((m) => m.MisTramitesComponent)
       },
       {
         path: "nuevo-tramite",
-        loadComponent: () => import("./chunk-6SBKS6W3.js").then((m) => m.NuevoTramitePageComponent)
+        loadComponent: () => import("./chunk-X2TQNJQN.js").then((m) => m.NuevoTramitePageComponent)
       },
       {
         path: "notificaciones",
-        loadComponent: () => import("./chunk-RRHPZYBB.js").then((m) => m.NotificacionesComponent)
+        loadComponent: () => import("./chunk-BUT7HTAZ.js").then((m) => m.NotificacionesComponent)
       },
       {
         path: "notificaciones/:id",
-        loadComponent: () => import("./chunk-INLN3GCA.js").then((m) => m.NotificacionDetalleComponent)
+        loadComponent: () => import("./chunk-N4JFH6O4.js").then((m) => m.NotificacionDetalleComponent)
       },
       {
         path: "reportes",
-        loadComponent: () => import("./chunk-NBM2FPH5.js").then((m) => m.ReportesComponent)
+        loadComponent: () => import("./chunk-3UQ4NY7E.js").then((m) => m.ReportesComponent)
       },
       {
         path: "",
@@ -7585,35 +7598,35 @@ var routes = [
     path: "usuario",
     canActivate: [AuthGuard, RoleGuard],
     data: { roles: ["usuario"] },
-    loadComponent: () => import("./chunk-FX2ATXMW.js").then((m) => m.LayoutComponent),
+    loadComponent: () => import("./chunk-OFIB3LBO.js").then((m) => m.LayoutComponent),
     children: [
       {
         path: "tablero",
-        loadComponent: () => import("./chunk-X7RB7SXD.js").then((m) => m.UsuarioDashboardComponent)
+        loadComponent: () => import("./chunk-YPGZJFWP.js").then((m) => m.UsuarioDashboardComponent)
       },
       {
         path: "perfil",
-        loadComponent: () => import("./chunk-EFS4RA56.js").then((m) => m.UserProfileComponent)
+        loadComponent: () => import("./chunk-357JP5VV.js").then((m) => m.UserProfileComponent)
       },
       {
         path: "bandeja-tramites",
-        loadComponent: () => import("./chunk-OBRXRB4M.js").then((m) => m.BandejaTramitesComponent)
+        loadComponent: () => import("./chunk-4QV5NXU6.js").then((m) => m.BandejaTramitesComponent)
       },
       {
         path: "mis-tramites",
-        loadComponent: () => import("./chunk-KJJCUKYY.js").then((m) => m.MisTramitesComponent)
+        loadComponent: () => import("./chunk-GYZUYE6H.js").then((m) => m.MisTramitesComponent)
       },
       {
         path: "nuevo-tramite",
-        loadComponent: () => import("./chunk-6SBKS6W3.js").then((m) => m.NuevoTramitePageComponent)
+        loadComponent: () => import("./chunk-X2TQNJQN.js").then((m) => m.NuevoTramitePageComponent)
       },
       {
         path: "notificaciones",
-        loadComponent: () => import("./chunk-RRHPZYBB.js").then((m) => m.NotificacionesComponent)
+        loadComponent: () => import("./chunk-BUT7HTAZ.js").then((m) => m.NotificacionesComponent)
       },
       {
         path: "notificaciones/:id",
-        loadComponent: () => import("./chunk-INLN3GCA.js").then((m) => m.NotificacionDetalleComponent)
+        loadComponent: () => import("./chunk-N4JFH6O4.js").then((m) => m.NotificacionDetalleComponent)
       },
       {
         path: "",
@@ -7626,31 +7639,31 @@ var routes = [
     path: "estudiante",
     canActivate: [AuthGuard, RoleGuard],
     data: { roles: ["estudiante"] },
-    loadComponent: () => import("./chunk-FX2ATXMW.js").then((m) => m.LayoutComponent),
+    loadComponent: () => import("./chunk-OFIB3LBO.js").then((m) => m.LayoutComponent),
     children: [
       {
         path: "tablero",
-        loadComponent: () => import("./chunk-YO7O7G5X.js").then((m) => m.EstudianteDashboardComponent)
+        loadComponent: () => import("./chunk-BW6PMZ3M.js").then((m) => m.EstudianteDashboardComponent)
       },
       {
         path: "perfil",
-        loadComponent: () => import("./chunk-EFS4RA56.js").then((m) => m.UserProfileComponent)
+        loadComponent: () => import("./chunk-357JP5VV.js").then((m) => m.UserProfileComponent)
       },
       {
         path: "mis-tramites",
-        loadComponent: () => import("./chunk-KJJCUKYY.js").then((m) => m.MisTramitesComponent)
+        loadComponent: () => import("./chunk-GYZUYE6H.js").then((m) => m.MisTramitesComponent)
       },
       {
         path: "nuevo-tramite",
-        loadComponent: () => import("./chunk-6SBKS6W3.js").then((m) => m.NuevoTramitePageComponent)
+        loadComponent: () => import("./chunk-X2TQNJQN.js").then((m) => m.NuevoTramitePageComponent)
       },
       {
         path: "notificaciones",
-        loadComponent: () => import("./chunk-RRHPZYBB.js").then((m) => m.NotificacionesComponent)
+        loadComponent: () => import("./chunk-BUT7HTAZ.js").then((m) => m.NotificacionesComponent)
       },
       {
         path: "notificaciones/:id",
-        loadComponent: () => import("./chunk-INLN3GCA.js").then((m) => m.NotificacionDetalleComponent)
+        loadComponent: () => import("./chunk-N4JFH6O4.js").then((m) => m.NotificacionDetalleComponent)
       },
       {
         path: "",
@@ -7662,16 +7675,16 @@ var routes = [
   {
     path: "perfil",
     canActivate: [AuthGuard],
-    loadComponent: () => import("./chunk-EFS4RA56.js").then((m) => m.UserProfileComponent)
+    loadComponent: () => import("./chunk-357JP5VV.js").then((m) => m.UserProfileComponent)
   },
   {
     path: "cambiar-contrasena",
     canActivate: [AuthGuard],
-    loadComponent: () => import("./chunk-WKIBATSX.js").then((m) => m.ChangePasswordComponent)
+    loadComponent: () => import("./chunk-MWP3TWML.js").then((m) => m.ChangePasswordComponent)
   },
   {
     path: "acceso-denegado",
-    loadComponent: () => import("./chunk-6EEUFD4I.js").then((m) => m.AccessDeniedComponent)
+    loadComponent: () => import("./chunk-VTUELK4T.js").then((m) => m.AccessDeniedComponent)
   },
   { path: "**", redirectTo: "" }
 ];
@@ -7776,13 +7789,41 @@ var HttpErrorInterceptor = class _HttpErrorInterceptor {
   }
 };
 
+// src/app/shared/interceptors/api-response.interceptor.ts
+var ApiResponseInterceptor = class _ApiResponseInterceptor {
+  intercept(request, next) {
+    return next.handle(request).pipe(map((event) => {
+      if (event instanceof HttpResponse) {
+        const response = event.body;
+        if (response && typeof response === "object" && "success" in response && "data" in response) {
+          const unwrappedData = response.data;
+          return event.clone({ body: unwrappedData });
+        }
+      }
+      return event;
+    }));
+  }
+  static {
+    this.\u0275fac = function ApiResponseInterceptor_Factory(t) {
+      return new (t || _ApiResponseInterceptor)();
+    };
+  }
+  static {
+    this.\u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({ token: _ApiResponseInterceptor, factory: _ApiResponseInterceptor.\u0275fac });
+  }
+};
+
 // src/app/app.config.ts
 var appConfig = {
   providers: [
     provideRouter(routes),
-    provideClientHydration(),
     provideAnimations(),
     provideHttpClient(withInterceptorsFromDi()),
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: ApiResponseInterceptor,
+      multi: true
+    },
     {
       provide: HTTP_INTERCEPTORS,
       useClass: AuthInterceptor,

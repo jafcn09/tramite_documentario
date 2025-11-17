@@ -175,7 +175,7 @@ public class NotificacionService {
             notifNuevo.setUsuarioDestinatarioId(trabajadorNuevo);
             notifNuevo.setTitulo("Trámite derivado");
             notifNuevo.setMensaje(String.format(
-                "Se le ha derivado el trámite %s. Motivo: %s", 
+                "Se le ha derivado el trámite %s. Motivo: %s",
                 tramite.getCodigo(), motivo
             ));
             notifNuevo.setTipo(Notificacion.TipoNotificacion.TRAMITE_DERIVADO);
@@ -183,7 +183,21 @@ public class NotificacionService {
             notifNuevo.setTramiteRelacionadoId(tramiteId);
             notifNuevo.setUsuarioEmisorId(trabajadorAnterior);
             notifNuevo.setRutaDestino("/tramites/" + tramiteId);
-            
+
+            // ✅ NUEVO: Incluir nombre y apellido del nuevo trabajador en metadatos
+            try {
+                com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                Map<String, Object> metadatos = new HashMap<>();
+                metadatos.put("tramiteCodigo", tramite.getCodigo());
+                metadatos.put("motivo", motivo);
+                metadatos.put("nuevoTrabajadorId", trabajadorNuevo);
+                metadatos.put("nuevoTrabajadorNombre", usuarioService.obtenerNombreCompleto(trabajadorNuevo));
+                String metadatosJson = mapper.writeValueAsString(metadatos);
+                notifNuevo.setMetadatos(metadatosJson);
+            } catch (Exception e) {
+                System.err.println("Error serializando metadatos: " + e.getMessage());
+            }
+
             Notificacion savedNuevo = notificacionRepository.save(notifNuevo);
             enviarNotificacionWebSocket(savedNuevo, trabajadorNuevo);
             emailService.notificarDerivacionATrabajador(trabajadorNuevo, tramiteId, motivo);

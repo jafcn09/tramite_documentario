@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -114,8 +115,12 @@ public class UsuarioController {
             @PathVariable Long id,
             @Valid @RequestBody ChangePasswordRequest request) {
         try {
-            usuarioService.changePassword(id, request);
-            return ResponseEntity.ok(Map.of("message", "Contraseña cambiada exitosamente"));
+            // Cambiar contraseña y obtener usuario actualizado
+            UsuarioResponse usuarioActualizado = usuarioService.changePasswordAndReturnUser(id, request);
+            return ResponseEntity.ok(Map.of(
+                "message", "Contraseña cambiada exitosamente",
+                "usuario", usuarioActualizado
+            ));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
                     .body(Map.of("error", e.getMessage()));
@@ -348,15 +353,44 @@ public class UsuarioController {
     
     @GetMapping("/administrativos-disponibles")
     @PreAuthorize("hasRole('ADMIN') or hasRole('ADMINISTRATIVO')")
-    public ResponseEntity<List<Map<String, Object>>> getAdministrativosDisponibles() {
+    public ResponseEntity<List<Map<String, Object>>> getAdministrativosDisponibles(
+            @RequestParam(value = "excludeUserId", required = false) Long excludeUserId) {
         try {
-            List<Map<String, Object>> usuarios = usuarioService.getAdministrativosConWorkload();
+            List<Map<String, Object>> usuarios = usuarioService.getAdministrativosConWorkload(excludeUserId);
             return ResponseEntity.ok(usuarios);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-    
+
+    @GetMapping("/public/check-exists")
+    public ResponseEntity<Map<String, Object>> checkUserExists(
+            @RequestParam(value = "email", required = false) String email,
+            @RequestParam(value = "numDocumento", required = false) String numDocumento) {
+        try {
+            Map<String, Object> result = new HashMap<>();
+            boolean existsByEmail = false;
+            boolean existsByDocument = false;
+
+            if (email != null && !email.isEmpty()) {
+                existsByEmail = usuarioService.existsByEmail(email);
+            }
+
+            if (numDocumento != null && !numDocumento.isEmpty()) {
+                existsByDocument = usuarioService.existsByNumDocumento(numDocumento);
+            }
+
+            result.put("exists", existsByEmail || existsByDocument);
+            result.put("existsByEmail", existsByEmail);
+            result.put("existsByDocument", existsByDocument);
+
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Error al verificar usuario"));
+        }
+    }
+
     public boolean isOwnerOrAdmin(Long userId, org.springframework.security.core.Authentication authentication) {
         if (authentication == null || authentication.getPrincipal() == null) {
             return false;

@@ -27,6 +27,7 @@ import com.example.demo.repository.TramiteHistorialRepository;
 import com.example.demo.repository.TramiteRepository;
 import com.example.demo.repository.FirmaDigitalRepository;
 import com.example.demo.service.FirmaDigitalService;
+import com.example.demo.exception.UnauthorizedException;
 
 import lombok.RequiredArgsConstructor;
 
@@ -713,14 +714,24 @@ public class TramiteService {
     public TramiteResponse obtenerTramite(Long id, Long usuarioId, String rol) {
         Tramite tramite = tramiteRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Trámite no encontrado"));
-        
-        if ("USUARIO".equals(rol) && !tramite.getUsuarioSolicitanteId().equals(usuarioId)) {
-            throw new RuntimeException("No autorizado");
+
+        if ("USUARIO".equals(rol)) {
+            Long solicitanteId = tramite.getUsuarioSolicitanteId();
+            if (solicitanteId == null || !solicitanteId.equals(usuarioId)) {
+                throw new UnauthorizedException("No autorizado");
+            }
         }
-        if ("ADMINISTRATIVO".equals(rol) && !tramite.getUsuarioAsignadoId().equals(usuarioId)) {
-            throw new RuntimeException("No autorizado");
+
+        // Los administrativos pueden ver trámites asignados a ellos O derivados a su área
+        if ("ADMINISTRATIVO".equals(rol)) {
+            boolean esAsignado = tramite.getUsuarioAsignadoId() != null && tramite.getUsuarioAsignadoId().equals(usuarioId);
+            boolean puedeVer = esAsignado;
+
+            if (!puedeVer) {
+                throw new UnauthorizedException("No autorizado");
+            }
         }
-        
+
         return convertirAResponse(tramite);
     }
     
@@ -1916,31 +1927,42 @@ public class TramiteService {
             if (requiereFirma != null && requiereFirma) {
                 tramiteRequest.setRequiereFirmaDigital(true);
                 tramiteRequest.setFirmanteId(request.getFirmanteId() != null ? request.getFirmanteId() : usuarioId);
-                if (request.getTipoFirma() == null || request.getTipoFirma().trim().isEmpty() || "null".equals(request.getTipoFirma())) {
-                    throw new RuntimeException("El tipo de firma es obligatorio.  '" + request.getTipoFirma() + "'. Debe enviar: SIMPLE, AVANZADO, CUALIFICADO, CONFORMIDAD, u OTRO.");
-                }
-                tramiteRequest.setTipoFirma(request.getTipoFirma().trim());
 
-                if (request.getRazonFirma() == null || request.getRazonFirma().trim().isEmpty() || "null".equals(request.getRazonFirma())) {
-                    throw new RuntimeException("La razón de firma es obligatoria.'" + request.getRazonFirma() + "'. Debe especificar el motivo de la firma.");
+                // Validar tipo de firma solo si es requerida
+                String tipoFirma = request.getTipoFirma();
+                if (tipoFirma == null || tipoFirma.trim().isEmpty() || "null".equals(tipoFirma)) {
+                    tipoFirma = "SIMPLE"; // Valor por defecto
                 }
-                tramiteRequest.setRazonFirma(request.getRazonFirma().trim());
+                tramiteRequest.setTipoFirma(tipoFirma.trim());
 
-                if (request.getUbicacionFirma() == null || request.getUbicacionFirma().trim().isEmpty() || "null".equals(request.getUbicacionFirma())) {
-                    throw new RuntimeException("La ubicación de firma es obligatoria.'" + request.getUbicacionFirma() + "'. Debe enviar un departamento válido del Perú: " + java.util.Arrays.toString(com.example.demo.enums.DepartamentoPeru.values()));
+                // Validar razón de firma solo si es requerida
+                String razonFirma = request.getRazonFirma();
+                if (razonFirma == null || razonFirma.trim().isEmpty() || "null".equals(razonFirma)) {
+                    razonFirma = "Firma digital del trámite"; // Valor por defecto
+                }
+                tramiteRequest.setRazonFirma(razonFirma.trim());
+
+                // Validar ubicación de firma solo si es requerida
+                String ubicacionFirma = request.getUbicacionFirma();
+                if (ubicacionFirma == null || ubicacionFirma.trim().isEmpty() || "null".equals(ubicacionFirma)) {
+                    ubicacionFirma = "LIMA"; // Departamento por defecto
                 }
                 try {
                     com.example.demo.enums.DepartamentoPeru ubicacion =
-                        com.example.demo.enums.DepartamentoPeru.valueOf(request.getUbicacionFirma().toUpperCase());
+                        com.example.demo.enums.DepartamentoPeru.valueOf(ubicacionFirma.toUpperCase());
                     tramiteRequest.setUbicacionFirma(ubicacion);
                 } catch (IllegalArgumentException e) {
-                    throw new RuntimeException("Departamento inválido: '" + request.getUbicacionFirma() + "'. Debe ser uno de: " +
-                        java.util.Arrays.toString(com.example.demo.enums.DepartamentoPeru.values()));
+                    // Si el departamento no es válido, usar LIMA como defecto
+                    tramiteRequest.setUbicacionFirma(com.example.demo.enums.DepartamentoPeru.LIMA);
                 }
 
                 tramiteRequest.setConsentimientoFirma(request.getConsentimientoFirma() != null ?
                     request.getConsentimientoFirma() : true);
                 tramiteRequest.setFirmaDigitalData(request.getFirmaDigitalData());
+            } else {
+                // Si no requiere firma digital, asegurarse de que esté deshabilitada
+                tramiteRequest.setRequiereFirmaDigital(false);
+                tramiteRequest.setConsentimientoFirma(false);
             }
 
             TramiteResponse tramiteCreado = crearTramite(tramiteRequest, usuarioId, rol);
@@ -2048,53 +2070,53 @@ public class TramiteService {
     }
     private void procesarDocumentosBase64(Long tramiteId, List<DocumentoBase64Request> documentos, Long usuarioId) {
         if (documentos == null || documentos.isEmpty()) {
-            return; 
+            return;
         }
 
         Tramite tramite = tramiteRepository.findById(tramiteId)
             .orElseThrow(() -> new RuntimeException("Trámite no encontrado"));
 
-        List<String> archivosJsonList = new ArrayList<>();
+        try {
+            com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            List<java.util.Map<String, Object>> archivosJsonList = new ArrayList<>();
 
-        for (DocumentoBase64Request documento : documentos) {
-            try {
-
+            for (DocumentoBase64Request documento : documentos) {
                 if (documento.getContenido() == null || documento.getContenido().isEmpty()) {
-                    continue; 
+                    continue;
                 }
 
-                String archivoJson = String.format(
-                    "{\"nombre\":\"%s\",\"tipo\":\"%s\",\"tamano\":%d,\"contenido\":\"%s\",\"descripcion\":\"%s\",\"fechaSubida\":\"%s\"}",
-                    documento.getNombre() != null ? documento.getNombre() : "documento.pdf",
-                    documento.getTipo() != null ? documento.getTipo() : "application/pdf",
-                    documento.getTamano() != null ? documento.getTamano() : 0,
-                    documento.getContenido(),
-                    documento.getDescripcion() != null ? documento.getDescripcion() : "",
-                    java.time.LocalDateTime.now().toString()
-                );
+                java.util.Map<String, Object> archivoMap = new java.util.HashMap<>();
+                archivoMap.put("nombre", documento.getNombre() != null ? documento.getNombre() : "documento.pdf");
+                archivoMap.put("tipo", documento.getTipo() != null ? documento.getTipo() : "application/pdf");
+                archivoMap.put("tamano", documento.getTamano() != null ? documento.getTamano() : 0);
+                archivoMap.put("contenido", documento.getContenido());
+                archivoMap.put("descripcion", documento.getDescripcion() != null ? documento.getDescripcion() : "");
+                archivoMap.put("fechaSubida", java.time.LocalDateTime.now().toString());
 
-                archivosJsonList.add(archivoJson);
-
-            } catch (Exception e) {
+                archivosJsonList.add(archivoMap);
             }
-        }
-        if (!archivosJsonList.isEmpty()) {
-            String documentosActuales = tramite.getDocumentosAdjuntos();
-            String nuevosDocumentos;
 
-            if (documentosActuales != null && !documentosActuales.trim().isEmpty()) {
-                if (documentosActuales.startsWith("[") && documentosActuales.endsWith("]")) {
-                    nuevosDocumentos = documentosActuales.substring(0, documentosActuales.length() - 1)
-                        + "," + String.join(",", archivosJsonList) + "]";
-                } else {
-                    nuevosDocumentos = "[" + documentosActuales + "," + String.join(",", archivosJsonList) + "]";
+            if (!archivosJsonList.isEmpty()) {
+                String documentosActuales = tramite.getDocumentosAdjuntos();
+                List<java.util.Map<String, Object>> listaCompleta = new ArrayList<>();
+
+                if (documentosActuales != null && !documentosActuales.trim().isEmpty()) {
+                    try {
+                        List<java.util.Map<String, Object>> documentosExistentes =
+                            objectMapper.readValue(documentosActuales, new com.fasterxml.jackson.core.type.TypeReference<List<java.util.Map<String, Object>>>() {});
+                        listaCompleta.addAll(documentosExistentes);
+                    } catch (Exception e) {
+                        // Si no puede parsear como JSON, se ignora
+                    }
                 }
-            } else {
-                nuevosDocumentos = "[" + String.join(",", archivosJsonList) + "]";
-            }
 
-            tramite.setDocumentosAdjuntos(nuevosDocumentos);
-            tramiteRepository.save(tramite);
+                listaCompleta.addAll(archivosJsonList);
+                String nuevosDocumentos = objectMapper.writeValueAsString(listaCompleta);
+                tramite.setDocumentosAdjuntos(nuevosDocumentos);
+                tramiteRepository.save(tramite);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Error al procesar documentos: " + e.getMessage(), e);
         }
     }
     private void eliminarDocumentos(Long tramiteId, List<Long> documentoIds, Long usuarioId) {

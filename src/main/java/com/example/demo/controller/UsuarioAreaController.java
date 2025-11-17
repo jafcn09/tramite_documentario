@@ -28,4 +28,15 @@ public class UsuarioAreaController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
+    @GetMapping("/all")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('ADMINISTRATIVO')")
+    public ResponseEntity<List<UsuarioResponse>> getAllUsuarios() {
+        try {
+            List<UsuarioResponse> users = usuarioService.findAllUsuarios();
+            return ResponseEntity.ok(users);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 }

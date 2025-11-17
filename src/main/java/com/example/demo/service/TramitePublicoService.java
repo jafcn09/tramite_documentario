@@ -13,7 +13,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.regex.Pattern;
-import java.util.Base64;
 
 @Service
 @RequiredArgsConstructor
@@ -55,6 +54,7 @@ public class TramitePublicoService {
     public TramiteResponse crearTramitePublico(TramitePublicoRequest request) {
         validateCaptcha(request.getCaptchaToken(), request.getCaptchaCode());
         validateInputFormat(request);
+        validateUserNotExists(request);
         sanitizeInputs(request);
         validateBusinessRules(request);
         validateFiles(request.getArchivos());
@@ -150,12 +150,23 @@ public class TramitePublicoService {
             throw new IllegalArgumentException("Asunto demasiado largo (máximo " + MAX_ASUNTO_LENGTH + " caracteres)");
         }
 
-        if (request.getDescripcion() == null || request.getDescripcion().trim().isEmpty()) {
-            throw new IllegalArgumentException("Descripción requerida");
+        // Descripción es opcional
+        if (request.getDescripcion() != null && request.getDescripcion().length() > MAX_DESCRIPCION_LENGTH) {
+            throw new IllegalArgumentException("Descripción demasiado larga (máximo " + MAX_DESCRIPCION_LENGTH + " caracteres)");
+        }
+    }
+
+    private void validateUserNotExists(TramitePublicoRequest request) {
+        // Verificar si ya existe un usuario con este número de documento en el sistema
+        if (usuarioRepository.existsByNumDocumento(request.getNumeroDocumento())) {
+            throw new IllegalArgumentException("La identidad proporcionada ya tiene una cuenta en el sistema. " +
+                    "Por favor, inicie sesión con su cuenta o use datos de contacto diferentes.");
         }
 
-        if (request.getDescripcion().length() > MAX_DESCRIPCION_LENGTH) {
-            throw new IllegalArgumentException("Descripción demasiado larga (máximo " + MAX_DESCRIPCION_LENGTH + " caracteres)");
+        // Verificar si ya existe un usuario con este email en el sistema
+        if (usuarioRepository.existsByCorreo(request.getEmail())) {
+            throw new IllegalArgumentException("El correo electrónico proporcionado ya está registrado en el sistema. " +
+                    "Por favor, use un correo diferente o inicie sesión con su cuenta.");
         }
     }
 
@@ -232,7 +243,7 @@ public class TramitePublicoService {
             throw new IllegalArgumentException("Máximo " + MAX_ARCHIVOS + " archivos permitidos");
         }
 
-        Set<String> allowedExtensions = Set.of("pdf", "jpg", "jpeg", "png", "doc", "docx");
+        Set<String> allowedExtensions = Set.of("pdf", "docx", "doc");
 
         for (MultipartFile archivo : archivos) {
             if (archivo.isEmpty()) {
@@ -250,7 +261,7 @@ public class TramitePublicoService {
 
             String extension = filename.substring(filename.lastIndexOf(".") + 1).toLowerCase();
             if (!allowedExtensions.contains(extension)) {
-                throw new IllegalArgumentException("Tipo de archivo no permitido: " + extension);
+                throw new IllegalArgumentException("Archivo no permitido. Solo se aceptan: PDF, DOC, DOCX");
             }
         }
     }
@@ -352,14 +363,24 @@ public class TramitePublicoService {
 
             try {
                 byte[] fileBytes = archivo.getBytes();
-                String base64Content = Base64.getEncoder().encodeToString(fileBytes);
+
+                // Crear directorio para guardar archivos
+                java.nio.file.Path uploadDir = java.nio.file.Paths.get("uploads/tramites");
+                java.nio.file.Files.createDirectories(uploadDir);
+
+                // Generar nombre único para el archivo
+                String filename = tramite.getId() + "_" + System.nanoTime() + "_" + archivo.getOriginalFilename();
+                java.nio.file.Path filePath = uploadDir.resolve(filename);
+
+                // Guardar archivo en disco
+                java.nio.file.Files.write(filePath, fileBytes);
 
                 Map<String, Object> doc = new HashMap<>();
                 doc.put("nombre", archivo.getOriginalFilename());
                 doc.put("tipo", archivo.getContentType());
                 doc.put("tamanio", archivo.getSize());
                 doc.put("fechaSubida", LocalDateTime.now().toString());
-                doc.put("contenido", base64Content);
+                doc.put("ruta", filePath.toString());
                 documentos.add(doc);
             } catch (Exception e) {
                 throw new RuntimeException("Error al procesar archivo: " + archivo.getOriginalFilename());

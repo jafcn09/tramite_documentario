@@ -67,7 +67,32 @@ public class AuthService {
 
             if (usuario.isMustChangePassword() || usuarioService.isPasswordExpired(usuario.getId())) {
                 recordSuccessfulAttempt(usernameOrEmail, ipAddress, usuario);
-                return new LoginResponse("Debes cambiar tu contraseña antes de continuar");
+
+                // Generar un token especial para cambiar contraseña
+                String tempToken = jwtService.generateToken(
+                    usuario.getUsuario(),
+                    usuario.getRole().getName(),
+                    usuario.getId()
+                );
+
+                String refreshToken = jwtService.generateRefreshToken(
+                    usuario.getUsuario(),
+                    usuario.getId()
+                );
+
+                UsuarioResponse usuarioResponse = convertToResponse(usuario);
+
+                // Retornar respuesta con token y datos del usuario, indicando que debe cambiar contraseña
+                LoginResponse response = new LoginResponse(
+                    tempToken,
+                    refreshToken,
+                    "/cambiar-contrasena",  // redirectUrl
+                    usuario.getRole().getName(),
+                    usuarioResponse
+                );
+                response.setMessage("Debes cambiar tu contraseña antes de continuar");
+                response.setChangePasswordRequired(true);
+                return response;
             }
 
             recordSuccessfulAttempt(usernameOrEmail, ipAddress, usuario);

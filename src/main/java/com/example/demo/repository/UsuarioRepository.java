@@ -28,4 +28,10 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     
     @Query("SELECT COUNT(u) FROM Usuario u")
     long countTotalUsers();
+
+    @Query("SELECT u FROM Usuario u WHERE u.area.id = :areaId")
+    List<Usuario> findByAreaId(Long areaId);
+
+    @Query("SELECT u FROM Usuario u")
+    List<Usuario> findAllUsuarios();
 }
