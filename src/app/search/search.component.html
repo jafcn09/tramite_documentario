@@ -367,6 +367,7 @@
                 pattern="[0-9]*"
                 inputmode="numeric"
                 (input)="onNumericInput($event, 'numeroDocumento')"
+                (blur)="validarUsuarioExistente()"
                 required
                 class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-university-500"
                 [ngClass]="{'input-light': !isDarkMode, 'input-dark': isDarkMode}"
@@ -415,6 +416,7 @@
                 [(ngModel)]="tramiteForm.email"
                 name="email"
                 placeholder="correo@ejemplo.com"
+                (blur)="validarUsuarioExistente()"
                 required
                 class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-university-500"
                 [ngClass]="{'input-light': !isDarkMode, 'input-dark': isDarkMode}"
@@ -505,12 +507,12 @@
               #fileInput
               (change)="onFilesSelected($event)"
               multiple
-              accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+              accept=".pdf,.doc,.docx"
               class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-university-500"
               [ngClass]="{'input-light': !isDarkMode, 'input-dark': isDarkMode}"
             />
             <p class="text-xs mt-1" [ngClass]="{'text-gray-500': !isDarkMode, 'text-dark-400': isDarkMode}">
-              Máximo 3 archivos, 50MB cada uno. Formatos: PDF, JPG, PNG, DOC, DOCX
+              Máximo 3 archivos, 50MB cada uno. Formatos permitidos: PDF, DOC, DOCX
             </p>
             <div *ngIf="archivosPreview.length > 0" class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
               <div *ngFor="let archivo of archivosPreview; let i = index"

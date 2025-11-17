@@ -862,4 +862,36 @@ export class TramiteService {
   clearTramites(): void {
     this.tramitesSubject.next([]);
   }
+
+  obtenerUsuariosPorArea(areaId: number): Observable<any> {
+    return this.http.get<any>(`${environment.apiUrl}/api/usuario-area/area/${areaId}/users`)
+      .pipe(
+        catchError(error => {
+          console.error('Error al obtener usuarios por área:', error);
+          throw error;
+        })
+      );
+  }
+
+  verificarUsuarioExiste(email?: string, numDocumento?: string): Observable<any> {
+    let params = '';
+    if (email) {
+      params += `email=${encodeURIComponent(email)}`;
+    }
+    if (numDocumento) {
+      if (params) params += '&';
+      params += `numDocumento=${encodeURIComponent(numDocumento)}`;
+    }
+
+    const url = params ? `${environment.apiUrl}/api/usuarios/public/check-exists?${params}`
+                       : `${environment.apiUrl}/api/usuarios/public/check-exists`;
+
+    return this.http.get<any>(url)
+      .pipe(
+        catchError(error => {
+          console.error('Error al verificar usuario:', error);
+          return of({ exists: false });
+        })
+      );
+  }
 }

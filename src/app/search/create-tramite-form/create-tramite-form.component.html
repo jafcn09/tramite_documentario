@@ -29,7 +29,7 @@
           name="numeroDocumento"
           [placeholder]="getTipoDocumentoConfig().placeholder"
           [maxlength]="getTipoDocumentoConfig().maxLength"
-          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-university-500"
+          class="uppercase-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-university-500"
         />
       </div>
     </div>
@@ -116,7 +116,7 @@
       <input
         type="file"
         multiple
-        accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+        accept=".pdf,.docx"
         (change)="onFileSelect($event)"
         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-university-500"
       />
@@ -165,10 +165,12 @@
         <div>
           <input
             type="text"
-            [(ngModel)]="tramiteForm.captchaCode"
+            [value]="tramiteForm.captchaCode"
+            (input)="onCaptchaInput($event)"
             name="captchaCode"
             placeholder="Ingresa el código"
             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-university-500"
+            style="text-transform: uppercase;"
           />
         </div>
       </div>

@@ -1,0 +1,22 @@
+/* Aplicar mayúsculas a todos los inputs excepto email */
+.uppercase-input,
+input:not([type="email"]),
+textarea,
+select {
+  text-transform: uppercase !important;
+  font-variant: small-caps;
+}
+
+/* Placeholders en mayúsculas */
+.uppercase-input::placeholder,
+input:not([type="email"])::placeholder,
+textarea::placeholder,
+select::placeholder {
+  text-transform: uppercase !important;
+}
+
+/* Especialmente para el CAPTCHA */
+input[name="captchaCode"] {
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em;
+}

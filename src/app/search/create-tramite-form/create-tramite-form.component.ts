@@ -53,6 +53,12 @@ export class CreateTramiteFormComponent implements OnInit, OnChanges {
     this.onNumericInput.emit({ event, field });
   }
 
+  onCaptchaInput(event: any): void {
+    const input = event.target as HTMLInputElement;
+    const upperValue = input.value.toUpperCase();
+    this.tramiteForm.captchaCode = upperValue;
+  }
+
   resetForm(): void {
     this.onResetForm.emit();
   }

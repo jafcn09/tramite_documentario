@@ -74,8 +74,16 @@ export class AuthService {
 
               this.currentUserSubject.next(usuario);
 
-              this.startInactivityTimer();
-              this.setupUserActivityListeners();
+              // ✅ NUEVO: Detectar si usuario requiere cambiar password en primer login
+              // El flag 'mustChangePassword' indica que el usuario debe cambiar su contraseña temporal
+              if (usuario.mustChangePassword === true) {
+                console.log('Usuario requiere cambiar password en primer login');
+                // La redirección será manejada por el componente de login (admin-login.component.ts)
+                // No iniciar timer de inactividad hasta que cambie password
+              } else {
+                this.startInactivityTimer();
+                this.setupUserActivityListeners();
+              }
             }
 
             // Log redirectUrl for debugging
@@ -340,8 +348,12 @@ export class AuthService {
       );
   }
 
-  getAdministrativosDisponibles(): Observable<AdministrativeUser[]> {
-    return this.http.get<AdministrativeUser[]>(`${environment.apiUrl}/api/usuarios/administrativos-disponibles`)
+  getAdministrativosDisponibles(excludeUserId?: number): Observable<AdministrativeUser[]> {
+    let url = `${environment.apiUrl}/api/usuarios/administrativos-disponibles`;
+    if (excludeUserId) {
+      url += `?excludeUserId=${excludeUserId}`;
+    }
+    return this.http.get<AdministrativeUser[]>(url)
       .pipe(
         catchError(error => {
           return throwError(() => error);

@@ -177,10 +177,42 @@ export class ChangePasswordComponent implements OnInit {
       if (response) {
         this.showSuccessModal();
         this.changeAttempts = 0;
+
+        // ✅ NUEVO: Después de cambiar password, actualizar usuario en AuthService
+        // para que mustChangePassword sea false, y navegar al dashboard correspondiente
+        const user = this.authService.currentUserValue;
+        if (user) {
+          user.mustChangePassword = false;
+          this.authService['storeUser'](user);
+        }
+
         setTimeout(() => {
-          this.authService.logout();
-    
-          this.router.navigate(['/servicios-administrativos']);
+          // No hacer logout - el usuario ya cambió su password
+          // Redirigir al dashboard según rol
+          const roleName = user?.role?.name?.toUpperCase();
+          let route = '/';
+          switch (roleName) {
+            case 'USUARIO':
+              route = '/usuario/tablero';
+              break;
+            case 'ADMINISTRATIVO':
+              route = '/administrativo/tablero';
+              break;
+            case 'ADMIN':
+              route = '/admin/tablero';
+              break;
+            case 'ESTUDIANTE':
+              route = '/estudiante/tablero';
+              break;
+            default:
+              route = '/';
+          }
+
+          // Iniciar timers de inactividad ahora que el usuario cambió su password
+          this.authService['startInactivityTimer']();
+          this.authService['setupUserActivityListeners']();
+
+          this.router.navigate([route]);
         }, 2000);
       }
     } catch (error: any) {

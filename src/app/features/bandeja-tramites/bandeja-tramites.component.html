@@ -687,7 +687,7 @@
       
       <div class="form-group">
         <label>Área Destino</label>
-        <select [(ngModel)]="derivarForm.areaDestinoId">
+        <select [(ngModel)]="derivarForm.areaDestinoId" (change)="onAreaSeleccionada($event)">
           <option value="">Seleccionar área</option>
           <option *ngFor="let area of areasDisponibles" [value]="area.id">
             {{ area.nombre }}

@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NotificacionService } from '../../../services/notificacion.service';
+import { AuthService } from '../../../services/auth.service';
 import { Notificacion } from '../../../shared/interfaces/notificacion.interface';
 
 @Component({
@@ -62,8 +63,19 @@ import { Notificacion } from '../../../shared/interfaces/notificacion.interface'
           </div>
         </div>
 
-        <!-- Información adicional -->
-        <div class="informacion-adicional" *ngIf="notificacion.metadatos">
+        <!-- Información adicional - Derivación -->
+        <div class="informacion-derivacion" *ngIf="notificacion.tipo === 'TRAMITE_DERIVADO' && getMetadatos()?.nuevoTrabajadorNombre">
+          <div class="trabajador-card">
+            <div class="trabajador-icon">👤</div>
+            <div class="trabajador-info">
+              <h4>Derivado a:</h4>
+              <p class="trabajador-nombre">{{ getMetadatos()?.nuevoTrabajadorNombre }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Información adicional genérica -->
+        <div class="informacion-adicional" *ngIf="notificacion.metadatos && notificacion.tipo !== 'TRAMITE_DERIVADO'">
           <h3>Información Adicional</h3>
           <div class="metadatos">
             <div *ngFor="let item of getMetadatosArray()" class="metadato-item">
@@ -315,6 +327,45 @@ import { Notificacion } from '../../../shared/interfaces/notificacion.interface'
       color: #6c757d;
     }
 
+
+    .informacion-derivacion {
+      padding: 25px;
+      background: #fff;
+      border-top: 1px solid #e9ecef;
+    }
+
+    .trabajador-card {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      background: #e8f5e9;
+      border-left: 4px solid #4caf50;
+      padding: 20px;
+      border-radius: 8px;
+    }
+
+    .trabajador-icon {
+      font-size: 40px;
+      min-width: 50px;
+      text-align: center;
+    }
+
+    .trabajador-info h4 {
+      margin: 0 0 8px 0;
+      color: #2e7d32;
+      font-size: 14px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .trabajador-nombre {
+      margin: 0;
+      color: #1976d2;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
     .acciones {
       padding: 25px;
       background: #f8f9fa;
@@ -442,7 +493,8 @@ export class NotificacionDetalleComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private notificacionService: NotificacionService
+    private notificacionService: NotificacionService,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -467,7 +519,7 @@ export class NotificacionDetalleComponent implements OnInit {
           this.marcarComoLeida();
         }
       },
-      error: (error) => {
+      error: (_error) => {
         this.error = 'Error al cargar la notificación. Por favor, intente nuevamente.';
         this.cargando = false;
       }
@@ -484,7 +536,8 @@ export class NotificacionDetalleComponent implements OnInit {
           this.notificacion.fechaLectura = new Date();
         }
       },
-      error: (error) => {
+      error: (_error) => {
+        // Error silencioso, ya que es una operación no crítica
       }
     });
   }
@@ -497,7 +550,7 @@ export class NotificacionDetalleComponent implements OnInit {
         alert('Notificación eliminada exitosamente');
         this.volver();
       },
-      error: (error) => {
+      error: (_error) => {
         alert('Error al eliminar la notificación');
       }
     });
@@ -520,7 +573,35 @@ export class NotificacionDetalleComponent implements OnInit {
   }
 
   volver(): void {
-    this.router.navigate(['/notificaciones']);
+    // Obtener el rol del usuario actual para navegar a la ruta correcta
+    const user = this.authService.currentUserValue;
+    if (user && user.role && user.role.name) {
+      const roleName = user.role.name.toLowerCase();
+      let route = '/notificaciones'; // fallback
+
+      // Navegar según el rol del usuario
+      switch (roleName) {
+        case 'admin':
+          route = '/admin/notificaciones';
+          break;
+        case 'administrativo':
+          route = '/administrativo/notificaciones';
+          break;
+        case 'usuario':
+          route = '/usuario/notificaciones';
+          break;
+        case 'estudiante':
+          route = '/estudiante/notificaciones';
+          break;
+        default:
+          route = '/notificaciones';
+      }
+
+      this.router.navigate([route]);
+    } else {
+      // Fallback: si no hay usuario, navegar a la raíz
+      this.router.navigate(['/']);
+    }
   }
 
   formatearFecha(fecha: Date | string): string {
@@ -561,10 +642,27 @@ export class NotificacionDetalleComponent implements OnInit {
 
   getMetadatosArray(): Array<{key: string, value: any}> {
     if (!this.notificacion?.metadatos) return [];
-    
+
     return Object.keys(this.notificacion.metadatos).map(key => ({
       key: key.replace(/_/g, ' '),
       value: this.notificacion?.metadatos[key]
     }));
+  }
+
+
+  getMetadatos(): any {
+    if (!this.notificacion?.metadatos) return null;
+
+    try {
+
+      if (typeof this.notificacion.metadatos === 'string') {
+        return JSON.parse(this.notificacion.metadatos);
+      }
+
+      return this.notificacion.metadatos;
+    } catch (e) {
+      console.error('Error parsing metadatos:', e);
+      return null;
+    }
   }
 }

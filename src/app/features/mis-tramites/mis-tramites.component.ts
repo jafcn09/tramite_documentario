@@ -97,6 +97,11 @@ export class MisTramitesComponent implements OnInit, OnDestroy, AfterViewInit {
     return this.authService.currentUserValue?.role?.name || '';
   }
 
+  get currentUserName(): string {
+    const user = this.authService.currentUserValue;
+    return user ? `${user.nombre} ${user.apellidos}` : '';
+  }
+
   get isAdministrativo(): boolean {
     return this.userRole === 'administrativo';
   }
@@ -978,11 +983,10 @@ export class MisTramitesComponent implements OnInit, OnDestroy, AfterViewInit {
     this.showAprobarModal = true;
   }
   puedeAprobar(tramite: MiTramite): boolean {
-  
+
     if (this.userRole === 'ESTUDIANTE') {
       return false;
     }
-
 
     if (!this.isAdministrativo) {
       return false;
@@ -1019,6 +1023,11 @@ export class MisTramitesComponent implements OnInit, OnDestroy, AfterViewInit {
       return false;
     }
 
+    // Si el trámite está derivado, no se puede rechazar
+    if (['Derivado', 'DERIVADO'].includes(tramite.estado.nombre)) {
+      return false;
+    }
+
     const permisos = this.tramitePermisos.get(tramite.id);
     if (permisos) {
       return permisos.puedeRechazar;
@@ -1039,6 +1048,11 @@ export class MisTramitesComponent implements OnInit, OnDestroy, AfterViewInit {
     }
 
     if (tramite.respuesta && tramite.respuesta.trim().length > 0) {
+      return false;
+    }
+
+    // Si el trámite está derivado, no se puede derivar nuevamente
+    if (['Derivado', 'DERIVADO'].includes(tramite.estado.nombre)) {
       return false;
     }
 
@@ -1207,7 +1221,7 @@ export class MisTramitesComponent implements OnInit, OnDestroy, AfterViewInit {
 
   derivarTramite(tramite: MiTramite) {
     if (!this.canProcessTramites) return;
-    
+
     this.tramiteSeleccionado = tramite;
     this.mostrarModalDerivacion = true;
     this.cargarTrabajadoresDisponibles();
@@ -1358,12 +1372,13 @@ export class MisTramitesComponent implements OnInit, OnDestroy, AfterViewInit {
   cargarTrabajadoresDisponibles() {
     this.cargandoTrabajadores = true;
     this.trabajadoresDisponibles = [];
-    
-    this.authService.getAdministrativosDisponibles().subscribe({
+
+    const currentUserId = this.authService.currentUserValue?.id;
+    this.authService.getAdministrativosDisponibles(currentUserId).subscribe({
       next: (usuarios) => {
         this.trabajadoresDisponibles = usuarios;
         this.cargandoTrabajadores = false;
-      
+
       },
       error: (error) => {
         this.cargandoTrabajadores = false;

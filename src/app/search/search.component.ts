@@ -8,6 +8,7 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { environment } from '../../environments/environment';
 import { ApiSearchResponse, SearchResult, TramiteResponse } from '../shared/interfaces/search.interface';
 import { AuthService } from '../services/auth.service';
+import { TramiteService } from '../services/tramite.service';
 
 
 
@@ -83,7 +84,8 @@ export class SearchComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private sanitizer: DomSanitizer,
     private http: HttpClient,
-    private authService: AuthService
+    private authService: AuthService,
+    private tramiteService: TramiteService
   ) {}
 
   ngOnInit(): void {
@@ -625,17 +627,25 @@ export class SearchComponent implements OnInit, OnDestroy {
 
   onFilesSelected(event: any): void {
     const files = event.target.files;
-    if (files.length > 3) {
-      this.showToastMessage('⚠️ Máximo 3 archivos permitidos', 'warning');
+
+    // Verificar que el total de archivos no exceda 3
+    const totalFiles = (this.tramiteForm.archivos?.length || 0) + files.length;
+    if (totalFiles > 3) {
+      this.showToastMessage('⚠️ Máximo 3 archivos permitidos en total', 'warning');
       event.target.value = '';
       return;
     }
 
-    const validExtensions = ['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx'];
+    const validExtensions = ['pdf', 'docx', 'doc'];
     const maxSize = 50 * 1024 * 1024;
 
-    this.tramiteForm.archivos = [];
-    this.archivosPreview = [];
+    // Inicializar arrays si no existen
+    if (!this.tramiteForm.archivos) {
+      this.tramiteForm.archivos = [];
+    }
+    if (!this.archivosPreview) {
+      this.archivosPreview = [];
+    }
 
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
@@ -653,6 +663,7 @@ export class SearchComponent implements OnInit, OnDestroy {
         return;
       }
 
+      // Agregar archivo al array
       this.tramiteForm.archivos.push(file);
 
       const fileType = file.type.startsWith('image/') ? 'image' :
@@ -678,6 +689,7 @@ export class SearchComponent implements OnInit, OnDestroy {
 
     this.showError = false;
     this.errorMessage = '';
+    event.target.value = '';
   }
 
   removeFile(index: number): void {
@@ -740,6 +752,35 @@ export class SearchComponent implements OnInit, OnDestroy {
       event.target.value = numericValue;
       this.tramiteForm[field] = numericValue;
     }
+  }
+
+  validarUsuarioExistente(): void {
+    if (!this.tramiteForm.numeroDocumento && !this.tramiteForm.email) {
+      return;
+    }
+
+    this.tramiteService.verificarUsuarioExiste(
+      this.tramiteForm.email,
+      this.tramiteForm.numeroDocumento
+    ).subscribe({
+      next: (response: any) => {
+        if (response.exists) {
+          const mensaje = response.existsByEmail && response.existsByDocument
+            ? 'El correo y documento ya están registrados en el sistema'
+            : response.existsByEmail
+            ? 'El correo ya está registrado en el sistema'
+            : 'El número de documento ya está registrado en el sistema';
+
+          this.showToastMessage(
+            '⚠️ ' + mensaje + '. Por favor, inicie sesión con su cuenta.',
+            'warning'
+          );
+        }
+      },
+      error: (error: any) => {
+        console.error('Error validando usuario:', error);
+      }
+    });
   }
 
   isValidNumero(numero: string): boolean {
@@ -826,14 +867,16 @@ export class SearchComponent implements OnInit, OnDestroy {
           this.isSubmittingTramite = false;
           this.showError = true;
 
-          if (error.error && error.error.error) {
+          if (error.error && error.error.mensaje) {
+            this.errorMessage = error.error.mensaje;
+          } else if (error.error && error.error.error) {
             this.errorMessage = error.error.error;
           } else if (error.status === 400) {
             this.errorMessage = 'Datos inválidos. Verifica el formulario.';
           } else if (error.status === 403) {
             this.errorMessage = 'Contenido malicioso detectado. Por favor, revisa tu información.';
           } else {
-            this.errorMessage = 'Error al crear el trámite. Intenta nuevamente.';
+            this.errorMessage = error.error?.mensaje || 'Error al crear el trámite. Intenta nuevamente.';
           }
 
           this.generateCaptcha();
@@ -843,11 +886,13 @@ export class SearchComponent implements OnInit, OnDestroy {
       .subscribe(response => {
         this.isSubmittingTramite = false;
 
-        if (response && response.success) {
-          this.showToastMessage(`✅ Trámite creado exitosamente con código: ${response.codigo}`, 'success');
+        // El interceptor extrae el .data, así que recibimos directamente: {tramite: {...}, codigo: '...'}
+        if (response && response.codigo) {
+          const codigo = response.codigo;
+          this.showToastMessage(`✅ Trámite creado exitosamente con código: ${codigo}`, 'success');
           this.showSuccess = true;
           this.showError = false;
-          this.successMessage = `Trámite creado exitosamente con código: ${response.codigo}`;
+          this.successMessage = `Trámite creado exitosamente con código: ${codigo}`;
           this.resetCreateForm();
 
           setTimeout(() => {

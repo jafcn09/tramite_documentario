@@ -628,6 +628,14 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
   }
 
   cambiarEstado(tramite: any) {
+    const estadoActual = (tramite.estado?.nombre || tramite.estado || '').toUpperCase();
+
+    // Prevenir cambio de estado si ya está FINALIZADO
+    if (estadoActual === 'FINALIZADO') {
+      this.toastService.warning('Estado Finalizado', 'No se puede cambiar el estado de un trámite que ya ha sido finalizado.');
+      return;
+    }
+
     this.tramiteSeleccionado = tramite;
     this.obtenerEstadosDisponibles(tramite.estado);
     this.nuevoEstadoSeleccionado = '';
@@ -715,6 +723,12 @@ export class ListaTramitesComponent implements OnInit, OnDestroy {
       'CANCELADO': 'Cancelado',
     };
     return estadosMap[estadoEnum] || estadoEnum;
+  }
+
+  puedesCambiarEstado(tramite: any): boolean {
+    const estadoActual = (tramite.estado?.nombre || tramite.estado || '').toUpperCase();
+    const estadosNoModificables = ['FINALIZADO', 'ARCHIVADO'];
+    return !estadosNoModificables.includes(estadoActual);
   }
 
   getEstadoIcon(estado: string): string {

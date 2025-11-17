@@ -842,14 +842,17 @@
 }
 
 .btn-icon:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
   transform: none;
+  background: #e9ecef;
+  color: #adb5bd;
 }
 
 .btn-icon:disabled:hover {
-  background: #f8f9fa;
-  color: #6c757d;
+  background: #e9ecef;
+  color: #adb5bd;
+  cursor: not-allowed;
 }
 
 .btn-icon.btn-delete {

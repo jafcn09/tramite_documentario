@@ -73,11 +73,34 @@ export class AdminLoginComponent implements OnInit {
 
           this.isLoading = false;
 
-          // Extract redirectUrl from ApiResponse wrapper
-          const redirectUrl = response?.data?.redirectUrl || response?.redirectUrl;
+          // Extract data from ApiResponse wrapper
+          const loginData = response?.data || response;
+
+          // ✅ NUEVO: Verificar si usuario debe cambiar password
+          // Puede estar indicado en changePasswordRequired o en usuario.mustChangePassword
+          const changePasswordRequired = loginData?.changePasswordRequired === true;
+          const usuario_response = loginData?.usuario;
+          const mustChangePassword = usuario_response?.mustChangePassword === true;
+
+          if (changePasswordRequired || mustChangePassword) {
+            console.log('Usuario requiere cambiar contraseña. Redirigiendo a /cambiar-contrasena');
+            this.mustChangePassword = true;
+            // No hacer logout - ya tenemos un token válido para cambiar contraseña
+            // Redirigir a componente de cambio de contraseña
+            this.router.navigate(['/cambiar-contrasena'], {
+              queryParams: {
+                reason: 'first-login',
+                userId: usuario_response?.id
+              }
+            });
+            return;
+          }
+
+          // Extract redirectUrl from response
+          const redirectUrl = loginData?.redirectUrl;
 
           // Use redirectUrl from backend - it's always provided
-          if (redirectUrl) {
+          if (redirectUrl && redirectUrl !== '/cambiar-contrasena') {
             console.log('Redirecting to:', redirectUrl);
             this.router.navigate([redirectUrl]);
           } else {
@@ -89,7 +112,7 @@ export class AdminLoginComponent implements OnInit {
               'usuario': '/usuario/tablero',
               'estudiante': '/estudiante/tablero'
             };
-            const userRole = response?.data?.usuario?.role?.name?.toLowerCase() || response?.usuario?.role?.name?.toLowerCase() || '';
+            const userRole = usuario_response?.role?.name?.toLowerCase() || '';
             const route = roleRoutes[userRole] || '/';
             this.router.navigate([route]);
           }

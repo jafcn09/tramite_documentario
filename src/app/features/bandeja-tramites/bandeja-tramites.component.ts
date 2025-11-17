@@ -8,6 +8,7 @@ import { Subject } from 'rxjs';
 
 import { BandejaTramitesService } from '../../services/bandeja-tramites.service';
 import { MisTramitesService } from '../../services/mis-tramites.service';
+import { TramiteService } from '../../services/tramite.service';
 import { ToastService } from '../../services/toast.service';
 import { AuthService } from '../../services/auth.service';
 import { ResponderTramiteModalComponent } from '../tramites/components/responder-tramite-modal/responder-tramite-modal.component';
@@ -107,6 +108,7 @@ export class BandejaTramitesComponent implements OnInit, OnDestroy {
   constructor(
     private bandejaTramitesService: BandejaTramitesService,
     private misTramitesService: MisTramitesService,
+    private tramiteService: TramiteService,
     private toastService: ToastService,
     private authService: AuthService
   ) {}
@@ -309,6 +311,7 @@ export class BandejaTramitesComponent implements OnInit, OnDestroy {
       observaciones: '',
       mantenerEstado: false
     };
+    this.trabajadoresDisponibles = [];
     this.showDerivarModal = true;
   }
 
@@ -485,6 +488,25 @@ export class BandejaTramitesComponent implements OnInit, OnDestroy {
   cerrarModalDerivar() {
     this.showDerivarModal = false;
     this.tramiteSeleccionado = null;
+  }
+
+  onAreaSeleccionada(event: any) {
+    const areaId = this.derivarForm.areaDestinoId;
+    if (!areaId) {
+      this.trabajadoresDisponibles = [];
+      return;
+    }
+
+    // Cargar trabajadores del área seleccionada
+    this.tramiteService.obtenerUsuariosPorArea(areaId).subscribe({
+      next: (usuarios) => {
+        this.trabajadoresDisponibles = usuarios;
+      },
+      error: (error) => {
+        this.toastService.error('Error', 'No se pudieron cargar los trabajadores del área');
+        this.trabajadoresDisponibles = [];
+      }
+    });
   }
 
   cerrarModalReasignar() {

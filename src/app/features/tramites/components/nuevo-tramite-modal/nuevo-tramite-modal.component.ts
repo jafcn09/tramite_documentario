@@ -283,6 +283,12 @@ export class NuevoTramiteModalComponent implements OnInit, OnDestroy, AfterViewI
     if (input.files) {
       const nuevosArchivos = Array.from(input.files);
 
+      // Verificar límite de 3 archivos
+      if (this.archivosSeleccionados.length + nuevosArchivos.length > 3) {
+        this.toastService.error('Límite de archivos excedido', 'Solo se permiten máximo 3 archivos por trámite');
+        input.value = '';
+        return;
+      }
 
       for (const archivo of nuevosArchivos) {
         if (this.validarArchivo(archivo)) {
@@ -301,7 +307,7 @@ export class NuevoTramiteModalComponent implements OnInit, OnDestroy, AfterViewI
 
   private validarArchivo(archivo: File): boolean {
     const tiposPermitidos = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-    const tamanioMaximo = 10 * 1024 * 1024; 
+    const tamanioMaximo = 50 * 1024 * 1024; // 50MB
 
     if (!tiposPermitidos.includes(archivo.type)) {
       this.toastService.error('Tipo de archivo no válido', 'Solo se permiten archivos PDF y DOCX');
@@ -309,7 +315,7 @@ export class NuevoTramiteModalComponent implements OnInit, OnDestroy, AfterViewI
     }
 
     if (archivo.size > tamanioMaximo) {
-      this.toastService.error('Archivo muy grande', 'El archivo no debe superar los 10MB');
+      this.toastService.error('Archivo muy grande', `El archivo no debe superar los 50MB. Tamaño actual: ${(archivo.size / 1024 / 1024).toFixed(2)}MB`);
       return false;
     }
 

@@ -323,22 +323,12 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
   abrirNotificacion(notificacion: Notificacion): void {
     this.marcarLeida(notificacion);
 
-    if (this.esTramiteNotificacion(notificacion.tipo) && notificacion.referenciaId) {
-      const userRole = this.authService.currentUserValue?.role?.name;
-      if (userRole === 'ADMINISTRATIVO' || userRole === 'ADMIN') {
-        this.router.navigate(['/administrativo/mis-tramites'], {
-          queryParams: { tramiteId: notificacion.referenciaId, openDetail: true }
-        });
-      } else {
-        this.router.navigate(['/usuario/mis-tramites'], {
-          queryParams: { tramiteId: notificacion.referenciaId, openDetail: true }
-        });
-      }
-    } else if (notificacion.rutaDestino) {
-      this.router.navigate([notificacion.rutaDestino]);
-    } else {
-      this.mostrarDetalleNotificacion(notificacion);
-    }
+    // ✅ CAMBIO: Siempre mostrar modal con detalles completos de la notificación
+    // En lugar de navegar a una ruta que podría ser rechazada por el guard de rol
+    this.mostrarDetalleNotificacion(notificacion);
+
+    // Si es notificación de trámite y el usuario quiere ver el trámite completo,
+    // puede usar el botón "Ver Trámite" dentro del modal
   }
 
   esTramiteNotificacion(tipo: string): boolean {
@@ -428,18 +418,67 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
   }
 
   mostrarDetalleNotificacion(notificacion: Notificacion): void {
+
+
+    let botonesAdicionales = '';
+    let infoAdicional = '';
+
+
+    if (notificacion.tipo === 'TRAMITE_DERIVADO' && notificacion.metadatos) {
+      try {
+        const metadatos = typeof notificacion.metadatos === 'string'
+          ? JSON.parse(notificacion.metadatos)
+          : notificacion.metadatos;
+
+        if (metadatos.nuevoTrabajadorNombre) {
+          infoAdicional = `
+            <div style="background: #e8f5e9; border-left: 4px solid #4caf50; padding: 12px 15px; margin: 15px 0; border-radius: 4px;">
+              <strong style="color: #2e7d32;">👤 Derivado a:</strong><br>
+              <span style="color: #1976d2; font-size: 14px;">${metadatos.nuevoTrabajadorNombre}</span>
+            </div>
+          `;
+        }
+      } catch (e) {
+        console.error('Error parsing metadatos:', e);
+      }
+    }
+
+    // Si es notificación de trámite, mostrar botón para ver el trámite
+    if (this.esTramiteNotificacion(notificacion.tipo) && notificacion.referenciaId) {
+      const userRole = this.authService.currentUserValue?.role?.name;
+      const ruta = (userRole === 'ADMINISTRATIVO' || userRole === 'ADMIN')
+        ? '/administrativo/mis-tramites'
+        : '/usuario/mis-tramites';
+
+      botonesAdicionales = `
+        <a href="${ruta}?tramiteId=${notificacion.referenciaId}&openDetail=true"
+           style="background: #28a745; color: white; text-decoration: none; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; display: inline-block; margin-right: 8px;">
+          Ver Trámite
+        </a>
+      `;
+    }
+
     const modalContent = `
-      <div style="background: white; padding: 20px; border-radius: 8px; max-width: 500px; margin: 50px auto;">
-        <h3 style="margin-top: 0; color: #333;">${notificacion.titulo}</h3>
-        <p style="color: #666; line-height: 1.5;">${notificacion.mensaje}</p>
-        <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee; font-size: 12px; color: #999;">
+      <div style="background: white; padding: 25px; border-radius: 8px; max-width: 600px; margin: 50px auto; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
+        <div style="margin-bottom: 20px;">
+          <span style="background: #e7f3ff; color: #0056b3; padding: 5px 10px; border-radius: 4px; font-size: 12px; font-weight: bold;">
+            ${this.getTipoDisplay(notificacion.tipo)}
+          </span>
+          <span style="background: #fff3cd; color: #856404; padding: 5px 10px; border-radius: 4px; font-size: 12px; margin-left: 8px;">
+            ${notificacion.prioridad}
+          </span>
+        </div>
+        <h3 style="margin: 15px 0; color: #333;">${notificacion.titulo}</h3>
+        <p style="color: #666; line-height: 1.6; white-space: pre-wrap; word-break: break-word;">${notificacion.mensaje}</p>
+        ${infoAdicional}
+        <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee; font-size: 12px; color: #999;">
           <strong>Fecha:</strong> ${this.formatearTiempo(notificacion.fechaCreacion)}<br>
-          <strong>Tipo:</strong> ${this.getTipoDisplay(notificacion.tipo)}<br>
-          <strong>Prioridad:</strong> ${notificacion.prioridad}
+          <strong>Estado:</strong> ${notificacion.esLeida ? 'Leída' : 'No leída'}
         </div>
         <div style="text-align: right; margin-top: 20px;">
-          <button onclick="this.parentElement.parentElement.parentElement.remove()" 
-                  style="background: #007bff; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">
+          ${botonesAdicionales}
+          <button onclick="this.parentElement.parentElement.parentElement.remove()"
+                  style="background: #6c757d; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">
             Cerrar
           </button>
         </div>
@@ -452,7 +491,7 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
     overlay.onclick = (e) => {
       if (e.target === overlay) overlay.remove();
     };
-    
+
     document.body.appendChild(overlay);
   }
 
@@ -652,20 +691,21 @@ export class NotificacionesComponent implements OnInit, OnDestroy {
   }
 
   formatearTiempo(fecha: Date | string): string {
-    const ahora = new Date();
+    // ✅ MEJORADO: Mostrar fecha y hora completa en lugar de "Hace X tiempo"
+    // Esto proporciona información más específica y clara al usuario
     const fechaNot = new Date(fecha);
-    const diff = ahora.getTime() - fechaNot.getTime();
-    
-    const minutos = Math.floor(diff / 60000);
-    const horas = Math.floor(diff / 3600000);
-    const dias = Math.floor(diff / 86400000);
 
-    if (minutos < 1) return 'Ahora mismo';
-    if (minutos < 60) return `Hace ${minutos} minuto${minutos > 1 ? 's' : ''}`;
-    if (horas < 24) return `Hace ${horas} hora${horas > 1 ? 's' : ''}`;
-    if (dias < 7) return `Hace ${dias} día${dias > 1 ? 's' : ''}`;
-    
-    return fechaNot.toLocaleDateString('es-PE');
+    const opciones: Intl.DateTimeFormatOptions = {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    };
+
+    return fechaNot.toLocaleString('es-PE', opciones);
   }
 
   formatearFechaGrupo(fecha: Date | string): string {
