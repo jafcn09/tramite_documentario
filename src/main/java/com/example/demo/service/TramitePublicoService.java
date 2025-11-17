@@ -364,23 +364,15 @@ public class TramitePublicoService {
             try {
                 byte[] fileBytes = archivo.getBytes();
 
-                // Crear directorio para guardar archivos
-                java.nio.file.Path uploadDir = java.nio.file.Paths.get("uploads/tramites");
-                java.nio.file.Files.createDirectories(uploadDir);
-
-                // Generar nombre único para el archivo
-                String filename = tramite.getId() + "_" + System.nanoTime() + "_" + archivo.getOriginalFilename();
-                java.nio.file.Path filePath = uploadDir.resolve(filename);
-
-                // Guardar archivo en disco
-                java.nio.file.Files.write(filePath, fileBytes);
+                // Convertir archivo a Base64
+                String contenidoBase64 = java.util.Base64.getEncoder().encodeToString(fileBytes);
 
                 Map<String, Object> doc = new HashMap<>();
                 doc.put("nombre", archivo.getOriginalFilename());
                 doc.put("tipo", archivo.getContentType());
                 doc.put("tamanio", archivo.getSize());
+                doc.put("contenido", contenidoBase64);
                 doc.put("fechaSubida", LocalDateTime.now().toString());
-                doc.put("ruta", filePath.toString());
                 documentos.add(doc);
             } catch (Exception e) {
                 throw new RuntimeException("Error al procesar archivo: " + archivo.getOriginalFilename());
