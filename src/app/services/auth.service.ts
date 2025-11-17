@@ -200,23 +200,62 @@ export class AuthService {
 
   isAuthenticated(): boolean {
     const token = this.getToken();
-    
-    
+
+
     if (!token) {
 
       return false;
     }
-    
+
     try {
       const payload = this.parseJwt(token);
       const expirationDate = new Date(payload.exp * 1000);
       const isValid = expirationDate > new Date();
-     
+
       return isValid;
     } catch (error) {
 
       return false;
     }
+  }
+
+  /**
+   * Valida el token contra el servidor backend
+   * Si el token es inválido, limpia el localStorage y retorna false
+   */
+  validateTokenWithBackend(): Observable<boolean> {
+    const token = this.getToken();
+
+    if (!token) {
+      return new Observable(observer => {
+        observer.next(false);
+        observer.complete();
+      });
+    }
+
+    // Hacer una solicitud al backend para validar el token
+    // Usamos un endpoint que existe y requiere autenticación
+    return this.http.get<any>(`${environment.apiUrl}/api/usuarios/perfil`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    }).pipe(
+      tap(response => {
+        // Token es válido, usuario está autenticado
+        console.log('✓ Token validado contra el servidor');
+      }),
+      map(() => true),
+      catchError(error => {
+        // Token es inválido o expiró
+        console.warn('✗ Token inválido contra el servidor. Limpiando sesión...');
+        this.clearSessionData();
+        this.currentUserSubject.next(null);
+        return new Observable<boolean>(observer => {
+          observer.next(false);
+          observer.complete();
+        });
+      })
+    );
   }
 
   hasRole(role: string): boolean {
