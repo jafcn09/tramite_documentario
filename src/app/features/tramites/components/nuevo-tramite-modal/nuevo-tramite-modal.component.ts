@@ -398,6 +398,10 @@ export class NuevoTramiteModalComponent implements OnInit, OnDestroy, AfterViewI
 
       const archivosBase64 = await this.procesarArchivosABase64();
 
+      // Obtener el correo del usuario autenticado
+      const currentUser = this.authService.currentUserValue;
+      const correoUsuarioAutenticado = currentUser?.correo || '';
+
       const tramiteData: any = {
         tipoTramiteId: Number(this.nuevoTramite.tipoId!),
         asunto: this.nuevoTramite.asunto!,
@@ -405,7 +409,8 @@ export class NuevoTramiteModalComponent implements OnInit, OnDestroy, AfterViewI
         prioridadId: Number(this.nuevoTramite.prioridadId!),
         observaciones: this.nuevoTramite.observaciones,
         documentos: archivosBase64,
-        requiereFirmaDigital: this.requiereFirmaDigital
+        requiereFirmaDigital: this.requiereFirmaDigital,
+        correoReceptor: correoUsuarioAutenticado
       };
 
       if (this.requiereFirmaDigital) {

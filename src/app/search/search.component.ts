@@ -379,10 +379,17 @@ export class SearchComponent implements OnInit, OnDestroy {
       }
 
 
+      // Combine both documentosAdjuntos (original) and archivosRespuesta (response) documents
+      this.documentos = [];
+
       if (tramite.documentosAdjuntos && tramite.documentosAdjuntos.length > 0) {
-        this.documentos = tramite.documentosAdjuntos;
-      } else {
-        this.documentos = [];
+        // Add original documents
+        this.documentos = [...this.documentos, ...tramite.documentosAdjuntos];
+      }
+
+      if (tramite.archivosRespuesta && tramite.archivosRespuesta.length > 0) {
+        // Add response documents (these contain base64 content)
+        this.documentos = [...this.documentos, ...tramite.archivosRespuesta];
       }
 
       this.showDocumentsModal = true;

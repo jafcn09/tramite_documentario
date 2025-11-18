@@ -208,35 +208,60 @@ export class TramiteService {
   }
 
   crearTramiteConArchivos(tramiteData: any): Observable<Tramite> {
-    const request = {
-      tipoTramiteId: tramiteData.tipoTramiteId,
-      asunto: tramiteData.asunto,
-      descripcion: tramiteData.descripcion,
-      prioridadId: tramiteData.prioridadId,
-      fechaVencimiento: tramiteData.fechaVencimiento ? new Date(tramiteData.fechaVencimiento).toISOString() : null,
-      areaDestinoId: tramiteData.areaDestinoId,
-      observaciones: tramiteData.observaciones,
-      documentos: tramiteData.documentos || [],
+    const formData = new FormData();
 
-      // Campos de firma digital (NUEVOS - requeridos por backend)
-      requiereFirmaDigital: tramiteData.requiereFirmaDigital || false,
-      firmanteId: tramiteData.firmanteId || null,
-      tipoFirma: (tramiteData.tipoFirma && tramiteData.tipoFirma !== 'null') ? tramiteData.tipoFirma : null,
-      razonFirma: (tramiteData.razonFirma && tramiteData.razonFirma !== 'null') ? tramiteData.razonFirma : null,
-      ubicacionFirma: (tramiteData.ubicacionFirma && tramiteData.ubicacionFirma !== 'null') ? tramiteData.ubicacionFirma : null,
-      consentimientoFirma: tramiteData.consentimientoFirma || false,
-      firmaDigitalData: tramiteData.firmaDigitalData || null,
+    // Parámetros básicos
+    formData.append('tipoTramiteId', tramiteData.tipoTramiteId?.toString());
+    formData.append('asunto', tramiteData.asunto);
+    formData.append('descripcion', tramiteData.descripcion);
+    formData.append('prioridadId', tramiteData.prioridadId?.toString());
 
-      // Campos de firma digital (OBSOLETOS - mantener por compatibilidad)
-      firmaDigitalActiva: tramiteData.requiereFirmaDigital || false,
-      firmaDigitalRequiereBiometria: false,
-      firmaDigitalValida: false,
-      firmaDigitalHash: tramiteData.firmaDigitalData || null,
-      firmaDigitalFecha: tramiteData.requiereFirmaDigital ? new Date().toISOString() : null,
-      firmaDigitalMetodoVerificacion: (tramiteData.tipoFirma && tramiteData.tipoFirma !== 'null') ? tramiteData.tipoFirma : null
-    };
+    // Parámetros opcionales
+    if (tramiteData.areaDestinoId) {
+      formData.append('areaDestinoId', tramiteData.areaDestinoId.toString());
+    }
 
-    return this.http.post<Tramite>(`${this.apiUrl}/con-archivos`, request)
+    if (tramiteData.correoReceptor) {
+      formData.append('correoReceptor', tramiteData.correoReceptor);
+    }
+
+    if (tramiteData.fechaVencimiento) {
+      formData.append('fechaVencimiento', new Date(tramiteData.fechaVencimiento).toISOString());
+    }
+
+    // Parámetros de firma digital
+    if (tramiteData.requiereFirmaDigital !== undefined) {
+      formData.append('requiereFirmaDigital', tramiteData.requiereFirmaDigital.toString());
+    }
+
+    if (tramiteData.tipoFirma && tramiteData.tipoFirma !== 'null') {
+      formData.append('tipoFirma', tramiteData.tipoFirma);
+    }
+
+    if (tramiteData.razonFirma && tramiteData.razonFirma !== 'null') {
+      formData.append('razonFirma', tramiteData.razonFirma);
+    }
+
+    if (tramiteData.ubicacionFirma && tramiteData.ubicacionFirma !== 'null') {
+      formData.append('ubicacionFirma', tramiteData.ubicacionFirma);
+    }
+
+    if (tramiteData.consentimientoFirma !== undefined) {
+      formData.append('consentimientoFirma', tramiteData.consentimientoFirma.toString());
+    }
+
+    if (tramiteData.firmaDigitalData) {
+      formData.append('firmaDigitalData', tramiteData.firmaDigitalData);
+    }
+
+    // Agregar documentos
+    if (tramiteData.documentos && tramiteData.documentos.length > 0) {
+      tramiteData.documentos.forEach((doc: any) => {
+        formData.append('documentos', doc);
+      });
+    }
+
+    return this.http.post<Tramite>(`${this.apiUrl}`, formData)
       .pipe(
         tap(nuevoTramite => {
           const tramitesActuales = this.tramitesSubject.value;
