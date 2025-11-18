@@ -30,10 +30,12 @@ import com.example.demo.service.FirmaDigitalService;
 import com.example.demo.exception.UnauthorizedException;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class TramiteService {
 
     private final TramiteRepository tramiteRepository;
@@ -53,7 +55,7 @@ public class TramiteService {
     
     @Transactional
     public TramiteResponse crearTramite(TramiteRequest request, Long usuarioSolicitanteId, String rol) {
-        if (!"USUARIO".equals(rol) && !"ADMIN".equals(rol) && !"ESTUDIANTE".equals(rol)) {
+        if (!"usuario".equals(rol) && !"ADMIN".equals(rol) && !"ESTUDIANTE".equals(rol) && !"usuario".equals(rol)) {
             throw new RuntimeException("Solo los usuarios, administradores y estudiantes pueden crear trámites");
         }
 
@@ -130,8 +132,10 @@ public class TramiteService {
         tramite.setUsuarioSolicitanteId(usuarioSolicitanteId);
         tramite.setAreaActualId(AREA_SECRETARIA_GENERAL_ID);
 
-        if ("ESTUDIANTE".equals(rol)) {
-        } else if ("USUARIO".equals(rol)) {
+        if ("estudiante".equals(rol)) {
+
+            tramite.setAreaOrigenId(AREA_SECRETARIA_GENERAL_ID);
+        } else if ("usuario".equals(rol)) {
             Long areaUsuario = obtenerAreaDelUsuario(usuarioSolicitanteId);
             tramite.setAreaOrigenId(areaUsuario != null ? areaUsuario : AREA_SECRETARIA_GENERAL_ID);
         } else {
@@ -159,39 +163,13 @@ public class TramiteService {
         }
 
         Tramite saved = tramiteRepository.save(tramite);
-        if (request.getRequiereFirmaDigital() != null && request.getRequiereFirmaDigital()) {
-            try {
-                com.example.demo.dto.FirmaDigitalRequest firmaRequest = new com.example.demo.dto.FirmaDigitalRequest();
-                firmaRequest.setTramiteId(saved.getId());
-                firmaRequest.setFirmanteId(request.getFirmanteId() != null ? request.getFirmanteId() : usuarioSolicitanteId);
-                if (request.getTipoFirma() == null || request.getTipoFirma().trim().isEmpty()) {
-                    throw new RuntimeException("El tipo de firma es obligatorio. Debe especificar un tipo de firma válido.");
-                }
-                com.example.demo.model.FirmaDigital.TipoFirma tipoFirmaEnum = com.example.demo.model.FirmaDigital.TipoFirma.valueOf(request.getTipoFirma().toUpperCase());
-                firmaRequest.setTipoFirma(tipoFirmaEnum);
 
-                if (request.getRazonFirma() == null || request.getRazonFirma().trim().isEmpty()) {
-                    throw new RuntimeException("La razón de firma es obligatoria. Debe especificar el motivo de la firma.");
-                }
-                firmaRequest.setRazonFirma(request.getRazonFirma().trim());
-
-            
-              
-
-                if (request.getUbicacionFirma() == null) {
-                    throw new RuntimeException("La ubicación de firma es obligatoria. Debe especificar un departamento del Perú.");
-                }
-
-                firmaRequest.setUbicacionFirma(request.getUbicacionFirma().toString());
-                try {
-                    UsuarioResponse usuario = usuarioService.obtenerUsuarioPorId(usuarioSolicitanteId);
-                    if (usuario != null) {
-                        firmaDigitalService.crearFirmaDigital(firmaRequest, usuario.getUsuario());
-                    }
-                } catch (Exception ex) {
-                }
-            } catch (Exception e) {
-            }
+        // Crear registro de firma digital SIEMPRE, independientemente del flag requiereFirmaDigital
+        try {
+            persistirFirmaDigital(saved, request, usuarioSolicitanteId);
+        } catch (Exception e) {
+            log.error("Error al procesar la firma digital durante la creación del trámite: {}", e.getMessage(), e);
+            throw new RuntimeException("Error al procesar la firma digital: " + e.getMessage(), e);
         }
 
 
@@ -210,6 +188,19 @@ public class TramiteService {
 
         notificacionService.notificarNuevoTramite(saved.getId(), AREA_SECRETARIA_GENERAL_ID);
         emailService.notificarCreacionTramiteASolicitante(usuarioSolicitanteId, saved.getId());
+
+        
+        if (request.getCorreoReceptor() != null && !request.getCorreoReceptor().trim().isEmpty()) {
+            try {
+                UsuarioResponse solicitante = usuarioService.obtenerUsuarioPorId(usuarioSolicitanteId);
+                String nombreSolicitante = solicitante != null ? solicitante.getNombre() : "Usuario";
+                String apellidoSolicitante = solicitante != null ? solicitante.getApellidos() : "";
+
+                emailService.enviarCorreoTramiteAutenticado(saved, request.getCorreoReceptor(), nombreSolicitante, apellidoSolicitante);
+            } catch (Exception e) {
+                log.error("Error al enviar correo al receptor del trámite: {}", e.getMessage());
+            }
+        }
 
         return convertirAResponse(saved);
     }
@@ -715,6 +706,12 @@ public class TramiteService {
         Tramite tramite = tramiteRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Trámite no encontrado"));
 
+     
+        if ("ADMIN".equals(rol)) {
+            return convertirAResponse(tramite);
+        }
+
+      
         if ("USUARIO".equals(rol)) {
             Long solicitanteId = tramite.getUsuarioSolicitanteId();
             if (solicitanteId == null || !solicitanteId.equals(usuarioId)) {
@@ -722,12 +719,21 @@ public class TramiteService {
             }
         }
 
-        // Los administrativos pueden ver trámites asignados a ellos O derivados a su área
-        if ("ADMINISTRATIVO".equals(rol)) {
+
+        if ("administrativo".equals(rol)) {
             boolean esAsignado = tramite.getUsuarioAsignadoId() != null && tramite.getUsuarioAsignadoId().equals(usuarioId);
-            boolean puedeVer = esAsignado;
+            boolean enAreaUsuario = tramite.getAreaActualId() != null; 
+            boolean puedeVer = esAsignado || enAreaUsuario;
 
             if (!puedeVer) {
+                throw new UnauthorizedException("No autorizado");
+            }
+        }
+
+      
+        if ("ESTUDIANTE".equals(rol)) {
+            Long solicitanteId = tramite.getUsuarioSolicitanteId();
+            if (solicitanteId == null || !solicitanteId.equals(usuarioId)) {
                 throw new UnauthorizedException("No autorizado");
             }
         }
@@ -838,7 +844,7 @@ public class TramiteService {
         Tramite tramite = tramiteRepository.findById(tramiteId)
             .orElseThrow(() -> new RuntimeException("Trámite no encontrado"));
         
-        if ("USUARIO".equals(rol) && !tramite.getUsuarioSolicitanteId().equals(usuarioId)) {
+        if ("usuario".equals(rol) && !tramite.getUsuarioSolicitanteId().equals(usuarioId)) {
             throw new RuntimeException("No tiene permisos para acceder a este trámite");
         }
         
@@ -1043,7 +1049,7 @@ public class TramiteService {
     public Object obtenerEstadisticasUsuario(Long usuarioId, String rol) {
         java.util.Map<String, Object> estadisticas = new java.util.HashMap<>();
 
-        if ("USUARIO".equals(rol)) {
+        if ("usuario".equals(rol)) {
             estadisticas.put("total", tramiteRepository.countByUsuarioSolicitanteId(usuarioId));
 
             for (Tramite.EstadoTramite estado : Tramite.EstadoTramite.values()) {
@@ -1074,7 +1080,7 @@ public class TramiteService {
 
         if (!("ADMIN".equals(rol) ||
               "ADMINISTRATIVO".equals(rol) ||
-              tramite.getUsuarioSolicitanteId().equals(usuarioId))) {
+              (tramite.getUsuarioSolicitanteId() != null && tramite.getUsuarioSolicitanteId().equals(usuarioId)))) {
             throw new RuntimeException("No tiene permisos para ver este trámite");
         }
 
@@ -1133,7 +1139,7 @@ public class TramiteService {
         return resultado;
     }
     
-    @Scheduled(cron = "0 0 */1 * * *") // Cada hora
+    @Scheduled(cron = "0 0 */1 * * *") 
     public void actualizarEstadosAutomaticos() {
         LocalDateTime ahora = LocalDateTime.now();
         
@@ -1292,7 +1298,7 @@ public class TramiteService {
                     .nombre("Usuario no encontrado")
                     .apellidos("")
                     .correo("usuario@noejemplo.com")
-                    .rol("USUARIO")
+                    .rol("usuario")
                     .build());
             }
         } else {
@@ -1301,7 +1307,7 @@ public class TramiteService {
                 .nombre("Usuario no disponible") 
                 .apellidos("")
                 .correo("usuario@noejemplo.com")
-                .rol("USUARIO")
+                .rol("usuario")
                 .build());
         }
         
@@ -1684,7 +1690,7 @@ public class TramiteService {
             new com.example.demo.dto.AprobarTramiteResponse.ResponsableAsignado();
         
         responsableAsignado.setId(administrativoId);
-        responsableAsignado.setNombre("Administrativo");
+        responsableAsignado.setNombre("ADMINISTRATIVO");
         responsableAsignado.setApellidos("Asignado");
         responsableAsignado.setArea("Secretaría General");
 
@@ -1730,7 +1736,7 @@ public class TramiteService {
         
         Tramite tramite = tramiteOpt.get();
         
-        if ("USUARIO".equals(rol)) {
+        if ("usuario".equals(rol)) {
             if (!tramite.getUsuarioSolicitanteId().equals(usuarioId)) {
                 throw new RuntimeException("No tiene permisos para modificar este trámite");
             }
@@ -1762,7 +1768,7 @@ public class TramiteService {
                 if (tramiteOpt.isPresent()) {
                     Tramite tramite = tramiteOpt.get();
                     
-                    if ("USUARIO".equals(rol) && !tramite.getUsuarioSolicitanteId().equals(usuarioId)) {
+                    if ("usuario".equals(rol) && !tramite.getUsuarioSolicitanteId().equals(usuarioId)) {
                         continue; 
                     }
                     
@@ -1825,12 +1831,12 @@ public class TramiteService {
             estaVencido = LocalDateTime.now().isAfter(tramite.getFechaVencimiento());
         }
 
-        // Check if user can delete the tramite (user role only)
+   
         boolean puedeEliminar = false;
-        if (("USUARIO".equals(rol) || "ESTUDIANTE".equals(rol)) &&
+        if (("usuario".equals(rol) || "estudiante".equals(rol)) &&
             tramite.getUsuarioSolicitanteId() != null &&
             tramite.getUsuarioSolicitanteId().equals(usuarioId)) {
-            // Only allow deletion if tramite is not rejected, finalized, or archived
+            
             if (tramite.getEstado() != null &&
                 !tramite.getEstado().equals(Tramite.EstadoTramite.RECHAZADO) &&
                 !tramite.getEstado().equals(Tramite.EstadoTramite.FINALIZADO) &&
@@ -1840,8 +1846,8 @@ public class TramiteService {
         }
 
         boolean esAdministrativo = "ADMINISTRATIVO".equals(rol) || "ADMIN".equals(rol);
-        boolean esUsuario = "USUARIO".equals(rol);
-        boolean esEstudiante = "ESTUDIANTE".equals(rol);
+        boolean esUsuario = "usuario".equals(rol);
+        boolean esEstudiante = "estudiante".equals(rol);
         if (!esAdministrativo) {
             permisos.put("puedeAprobar", false);
             permisos.put("puedeRechazar", false);
@@ -1912,7 +1918,7 @@ public class TramiteService {
             LocalDateTime fechaVencimientoCalculada = calcularFechaVencimientoEstandar(LocalDateTime.now());
             tramiteRequest.setFechaVencimiento(fechaVencimientoCalculada);
 
-            if (!"ESTUDIANTE".equals(rol) && request.getAreaOrigenId() != null) {
+            if (!"estudiante".equals(rol) && request.getAreaOrigenId() != null) {
                 tramiteRequest.setAreaOrigenId(request.getAreaOrigenId());
             }
             tramiteRequest.setAreaDestinoId(request.getAreaDestinoId());
@@ -2045,6 +2051,31 @@ public class TramiteService {
             }
             Tramite tramiteGuardado = tramiteRepository.save(tramite);
 
+            // Persistir firma digital si existen campos de firma digital en la solicitud
+            if (request.getTipoFirma() != null || request.getRazonFirma() != null ||
+                request.getUbicacionFirma() != null || request.getFirmaDigitalData() != null) {
+                TramiteRequest tramiteRequestForFirma = new TramiteRequest();
+                tramiteRequestForFirma.setFirmanteId(usuarioId);
+                tramiteRequestForFirma.setTipoFirma(request.getTipoFirma());
+                tramiteRequestForFirma.setRazonFirma(request.getRazonFirma());
+
+                // Convertir ubicacionFirma de String a DepartamentoPeru enum
+                if (request.getUbicacionFirma() != null && !request.getUbicacionFirma().isEmpty()) {
+                    try {
+                        com.example.demo.enums.DepartamentoPeru ubicacion =
+                            com.example.demo.enums.DepartamentoPeru.valueOf(request.getUbicacionFirma().toUpperCase());
+                        tramiteRequestForFirma.setUbicacionFirma(ubicacion);
+                    } catch (IllegalArgumentException e) {
+                        tramiteRequestForFirma.setUbicacionFirma(com.example.demo.enums.DepartamentoPeru.LIMA);
+                    }
+                } else {
+                    tramiteRequestForFirma.setUbicacionFirma(com.example.demo.enums.DepartamentoPeru.LIMA);
+                }
+
+                tramiteRequestForFirma.setFirmaDigitalData(request.getFirmaDigitalData());
+                persistirFirmaDigital(tramiteGuardado, tramiteRequestForFirma, usuarioId);
+            }
+
             TramiteResponse tramiteActualizado = new TramiteResponse();
             tramiteActualizado.setId(tramiteGuardado.getId());
             tramiteActualizado.setCodigo(tramiteGuardado.getCodigo() != null ? tramiteGuardado.getCodigo() : "TRM-" + tramiteGuardado.getId());
@@ -2121,17 +2152,60 @@ public class TramiteService {
     }
     private void eliminarDocumentos(Long tramiteId, List<Long> documentoIds, Long usuarioId) {
         if (documentoIds == null || documentoIds.isEmpty()) {
-            return; 
+            return;
         }
 
         for (Long documentoId : documentoIds) {
             try {
-        
+
 
             } catch (Exception e) {
             }
         }
     }
+
+    private void persistirFirmaDigital(Tramite tramite, TramiteRequest request, Long usuarioSolicitanteId) {
+        try {
+            com.example.demo.dto.FirmaDigitalRequest firmaRequest = new com.example.demo.dto.FirmaDigitalRequest();
+            firmaRequest.setTramiteId(tramite.getId());
+            firmaRequest.setFirmanteId(request.getFirmanteId() != null ? request.getFirmanteId() : usuarioSolicitanteId);
+
+           
+            String tipoFirmaStr = request.getTipoFirma();
+            if (tipoFirmaStr == null || tipoFirmaStr.trim().isEmpty() || "null".equals(tipoFirmaStr)) {
+                tipoFirmaStr = "SIMPLE";
+            }
+            try {
+                com.example.demo.model.FirmaDigital.TipoFirma tipoFirmaEnum =
+                    com.example.demo.model.FirmaDigital.TipoFirma.valueOf(tipoFirmaStr.toUpperCase());
+                firmaRequest.setTipoFirma(tipoFirmaEnum);
+            } catch (IllegalArgumentException e) {
+                firmaRequest.setTipoFirma(com.example.demo.model.FirmaDigital.TipoFirma.SIMPLE);
+            }
+
+      
+            String razonFirma = request.getRazonFirma();
+            if (razonFirma == null || razonFirma.trim().isEmpty() || "null".equals(razonFirma)) {
+                razonFirma = "Firma digital del trámite";
+            }
+            firmaRequest.setRazonFirma(razonFirma.trim());
+
+            if (request.getUbicacionFirma() != null) {
+                firmaRequest.setUbicacionFirma(request.getUbicacionFirma().toString());
+            } else {
+                firmaRequest.setUbicacionFirma("LIMA");
+            }
+
+            UsuarioResponse usuario = usuarioService.obtenerUsuarioPorId(usuarioSolicitanteId);
+            if (usuario != null) {
+                firmaDigitalService.crearFirmaDigital(firmaRequest, usuario.getUsuario());
+            }
+        } catch (Exception e) {
+            log.error("Error al crear firma digital para el trámite: {}", e.getMessage(), e);
+            // No lanzar excepción; permitir que el trámite se cree aunque falle la firma digital
+        }
+    }
+
     private String mapTipoTramiteIdToString(Long tipoTramiteId) {
         return switch (tipoTramiteId.intValue()) {
             case 1 -> "SOLICITUD_CERTIFICADO";
@@ -2212,7 +2286,7 @@ public class TramiteService {
                 );
             }
         } catch (Exception e) {
-            // Silenciosamente fallar el envío de correo pero no afectar el rechazo del trámite
+           
         }
         return com.example.demo.dto.RechazarTramiteResponse.builder()
             .tramiteId(tramite.getId())
@@ -2662,7 +2736,7 @@ public class TramiteService {
         Tramite tramite = tramiteRepository.findById(tramiteId)
             .orElseThrow(() -> new RuntimeException("Trámite no encontrado"));
 
-        if ("USUARIO".equals(rol) && !tramite.getUsuarioSolicitanteId().equals(usuarioId)) {
+        if ("usuario".equals(rol) && !tramite.getUsuarioSolicitanteId().equals(usuarioId)) {
             throw new RuntimeException("No tiene permisos para acceder a este trámite");
         }
 
@@ -2903,6 +2977,7 @@ public class TramiteService {
                 } else {
                     firmaResult = firmaDigitalService.crearFirmaDigital(firmaRequest, username);
                 }
+                
                 tramiteActualizado.setFirmaDigitalActiva(true);
                 tramiteActualizado.setMetodoVerificacion("FIRMA_DIGITAL_" + firmaRequest.getTipoFirma().name());
 

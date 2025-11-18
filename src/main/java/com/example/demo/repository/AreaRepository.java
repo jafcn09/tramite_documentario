@@ -30,12 +30,14 @@ public interface AreaRepository extends JpaRepository<Area, Long> {
 
     List<Area> findByAreaPadreOrderByNivelJerarquicoAscNombreAsc(Area areaPadre);
 
+    @EntityGraph(attributePaths = {"usuarios", "areaPadre"})
     @Query("SELECT a FROM Area a WHERE a.areaPadre IS NULL AND a.activa = true ORDER BY a.nivelJerarquico ASC, a.nombre ASC")
     List<Area> findAreasRaizActivas();
 
+    @EntityGraph(attributePaths = {"usuarios", "areaPadre"})
     @Query("SELECT a FROM Area a WHERE a.areaPadre = :areaPadre AND a.activa = true ORDER BY a.nivelJerarquico ASC, a.nombre ASC")
-    List<Area> findSubAreasActivas(Area areaPadre);
+    List<Area> findSubAreasActivas(@org.springframework.data.repository.query.Param("areaPadre") Area areaPadre);
 
     @Query("SELECT a FROM Area a WHERE a.codigoOrganigrama = :codigo")
-    Optional<Area> findByCodigoOrganigrama(String codigo);
+    Optional<Area> findByCodigoOrganigrama(@org.springframework.data.repository.query.Param("codigo") String codigo);
 }

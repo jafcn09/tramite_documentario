@@ -23,7 +23,8 @@ public class OrganigramaController {
             List<AreaJerarquicaDTO> organigrama = organigramaService.obtenerOrganigramaCompleto();
             return ResponseEntity.ok(organigrama);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            e.printStackTrace();
+            throw new RuntimeException("Error al obtener organigrama: " + e.getMessage(), e);
         }
     }
 
@@ -38,8 +39,11 @@ public class OrganigramaController {
     }
 
     @PostMapping("/inicializar")
-    public ResponseEntity<String> inicializarEstructura() {
+    public ResponseEntity<?> inicializarEstructura() {
         organigramaService.inicializarEstructuraUniversidad();
-        return ResponseEntity.ok("Estructura organizacional inicializada correctamente");
+        return ResponseEntity.ok(java.util.Map.of(
+            "mensaje", "Estructura organizacional inicializada correctamente",
+            "success", true
+        ));
     }
 }

@@ -155,20 +155,20 @@ public class TramiteController {
 
     @GetMapping("/public/{codigo}/archivo/{nombreArchivo}")
     public ResponseEntity<byte[]> descargarArchivoPublico(
-            @PathVariable String codigo,
-            @PathVariable String nombreArchivo) {
+            @PathVariable("codigo") String codigo,
+            @PathVariable("nombreArchivo") String nombreArchivo) {
         
         return tramiteService.descargarArchivoPublico(codigo, nombreArchivo);
     }
 
     @GetMapping("/public/{codigo}/documentos/descargar-todos")
-    public ResponseEntity<byte[]> descargarTodosDocumentosPublico(@PathVariable String codigo) {
+    public ResponseEntity<byte[]> descargarTodosDocumentosPublico(@PathVariable("codigo") String codigo) {
         return tramiteService.descargarTodosDocumentosPublico(codigo);
     }
     
 
     @GetMapping("/public/preview/{codigo}")
-    public ResponseEntity<TramiteResponse> previsualizarTramite(@PathVariable String codigo) {
+    public ResponseEntity<TramiteResponse> previsualizarTramite(@PathVariable("codigo") String codigo) {
         TramiteResponse tramite = tramiteService.obtenerTramitePublico(codigo);
         return ResponseEntity.ok(tramite);
     }
@@ -215,6 +215,7 @@ public class TramiteController {
             @RequestParam("descripcion") String descripcion,
             @RequestParam("prioridadId") Long prioridadId,
             @RequestParam(value = "areaDestinoId", required = false) Long areaDestinoId,
+            @RequestParam(value = "correoReceptor", required = false) String correoReceptor,
             @RequestParam(value = "fechaVencimiento", required = false) String fechaVencimiento,
             @RequestParam(value = "documentos", required = false) List<MultipartFile> documentos,
             @RequestParam(value = "requiereFirmaDigital", required = false, defaultValue = "false") Boolean requiereFirmaDigital,
@@ -256,15 +257,16 @@ public class TramiteController {
         String rol = getRole(principal);
 
         TramiteRequest request = new TramiteRequest();
-        request.setTitulo(asuntoSanitizado);  
-        request.setDescripcion(descripcionSanitizada);  
-        
+        request.setTitulo(asuntoSanitizado);
+        request.setDescripcion(descripcionSanitizada);
+
         String tipoString = mapTipoTramiteIdToString(tipoTramiteId);
         String prioridadString = mapPrioridadIdToString(prioridadId);
-        
+
         request.setTipo(tipoString);
         request.setPrioridad(prioridadString);
         request.setAreaDestinoId(areaDestinoId);
+        request.setCorreoReceptor(correoReceptor);
         
         if (fechaVencimiento != null && !fechaVencimiento.isEmpty()) {
             try {
@@ -714,7 +716,7 @@ public class TramiteController {
     }
 
 
-    @PostMapping("/con-archivos")
+    @PostMapping("/p")
     @PreAuthorize("hasRole('USUARIO') || hasRole('ADMIN') || hasRole('ESTUDIANTE')")
     public ResponseEntity<?> crearTramiteConArchivos(
             @RequestBody TramiteConArchivosRequest request,

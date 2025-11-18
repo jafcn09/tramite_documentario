@@ -13,6 +13,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.dto.AdminResetPasswordRequest;
 import com.example.demo.dto.ChangePasswordRequest;
@@ -484,6 +485,7 @@ public class UsuarioService {
         return convertToResponse(savedUsuario);
     }
     
+    @Transactional
     public UsuarioResponse assignArea(Long userId, Long areaId) {
         Usuario usuario = usuarioRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado con id: " + userId));

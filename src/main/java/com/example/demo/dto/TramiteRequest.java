@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TramiteRequest {
-    
+
     private String titulo;
     private String asunto;
     private String descripcion;
@@ -30,13 +30,14 @@ public class TramiteRequest {
     private String motivoDerivacion;
     private String nuevoEstado;
     private LocalDateTime fechaVencimiento;
+    private String correoReceptor;
     @Builder.Default
     private Boolean requiereFirmaDigital = false;
-    private Long firmanteId; 
+    private Long firmanteId;
     private String tipoFirma;
     private String razonFirma;
     private DepartamentoPeru ubicacionFirma;
     @Builder.Default
     private Boolean consentimientoFirma = false;
-    private String firmaDigitalData; 
+    private String firmaDigitalData;
 }

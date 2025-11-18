@@ -2202,4 +2202,162 @@ public class EmailService {
         );
     }
 
+    @Async("emailExecutor")
+    public void enviarCorreoTramiteAutenticado(Tramite tramite, String correoReceptor, String nombreSolicitante, String apellidoSolicitante) {
+        if (correoReceptor == null || correoReceptor.trim().isEmpty()) {
+            log.warn("No se puede enviar correo al receptor: email vacío para tramite {}", tramite.getCodigo());
+            return;
+        }
+
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(fromEmail);
+            helper.setTo(correoReceptor);
+            helper.setSubject("📋 Nuevo Trámite Recibido - " + tramite.getCodigo());
+
+            String htmlContent = construirTemplateTramiteAutenticado(tramite, nombreSolicitante, apellidoSolicitante);
+            helper.setText(htmlContent, true);
+
+            adjuntarImagenQR(helper, tramite);
+
+            mailSender.send(message);
+            log.info("Correo de trámite autenticado enviado exitosamente al receptor: {}", correoReceptor);
+        } catch (Exception e) {
+            log.error("Error al enviar correo de trámite autenticado a {}: {}", correoReceptor, e.getMessage());
+            throw new RuntimeException("Error al enviar email al receptor del trámite", e);
+        }
+    }
+
+    private String construirTemplateTramiteAutenticado(Tramite tramite, String nombreSolicitante, String apellidoSolicitante) {
+        String qrSection = construirSeccionQR(tramite);
+        String prioridadFormateada = formatearPrioridad(tramite.getPrioridad());
+        String tipoFormateado = formatearTipoTramite(tramite.getTipo());
+
+        String solicitanteInfo = String.format("%s %s",
+            nombreSolicitante != null ? nombreSolicitante : "Usuario",
+            apellidoSolicitante != null ? apellidoSolicitante : ""
+        ).trim();
+
+        return String.format("""
+            <!DOCTYPE html>
+            <html lang='es'>
+            <head>
+                <meta charset='UTF-8'>
+                <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+                <style>
+                    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif; margin: 0; padding: 20px; background: #f3f4f6; }
+                    .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.1); }
+                    .header { background: linear-gradient(135deg, #3b82f6 0%%, #2563eb 100%%); padding: 40px 30px; text-align: center; }
+                    .header h1 { color: #ffffff; font-size: 28px; font-weight: 700; margin: 0; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+                    .header p { margin: 10px 0 0 0; color: #dbeafe; font-size: 16px; font-weight: 500; }
+                    .content { padding: 35px 30px; background: #ffffff; color: #1f2937; }
+                    .info-badge { background: #dbeafe; color: #1e40af; padding: 12px 24px; border-radius: 8px; display: inline-block; margin: 20px 0; font-weight: 600; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2); }
+                    .info-grid { background: #f9fafb; padding: 25px; border-radius: 12px; margin: 25px 0; border: 2px solid #e5e7eb; }
+                    .detail-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #e5e7eb; }
+                    .detail-row:last-child { border-bottom: none; }
+                    .detail-label { color: #6b7280; font-weight: 500; font-size: 14px; }
+                    .detail-value { color: #111827; font-weight: 600; text-align: right; }
+                    .priority-ALTA, .priority-HIGH { color: #dc2626; font-weight: 700; }
+                    .priority-MEDIA, .priority-MEDIUM { color: #f59e0b; font-weight: 700; }
+                    .priority-BAJA, .priority-LOW { color: #10b981; font-weight: 700; }
+                    .button { display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #3b82f6 0%%, #2563eb 100%%); color: #ffffff; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; transition: all 0.3s; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); }
+                    .button:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4); }
+                    .info-box { background: #f0f9ff; padding: 20px; border-radius: 8px; margin: 25px 0; border-left: 4px solid #3b82f6; }
+                    .info-box p { color: #1e40af; margin: 0 0 10px 0; font-weight: 600; }
+                    .info-box ul { margin: 10px 0 0 20px; color: #1e40af; }
+                    .footer { background: #f9fafb; padding: 30px; text-align: center; color: #6b7280; border-top: 2px solid #e5e7eb; }
+                    .footer strong { color: #111827; }
+                    .greeting { color: #1f2937; font-size: 16px; line-height: 1.6; }
+                    .greeting strong { color: #3b82f6; }
+                </style>
+            </head>
+            <body>
+                <div class='container'>
+                    <div class='header'>
+                        <h1>📋 Nuevo Trámite Recibido</h1>
+                        <p>Ha recibido un nuevo trámite en el sistema</p>
+                    </div>
+                    <div class='content'>
+                        <p class='greeting'>Estimado/a usuario/a,</p>
+
+                        <div class='info-badge'>
+                            ✓ Trámite registrado en el sistema
+                        </div>
+
+                        <p class='greeting'>Se ha creado un nuevo trámite en el sistema de documento del solicitante <strong>%s</strong>. A continuación encontrará los detalles:</p>
+
+                        <div class='info-grid'>
+                            <div class='detail-row'>
+                                <span class='detail-label'>Código de Trámite:</span>
+                                <span class='detail-value'><strong style='color: #3b82f6; font-size: 16px;'>%s</strong></span>
+                            </div>
+                            <div class='detail-row'>
+                                <span class='detail-label'>Solicitante:</span>
+                                <span class='detail-value'>%s</span>
+                            </div>
+                            <div class='detail-row'>
+                                <span class='detail-label'>Asunto:</span>
+                                <span class='detail-value'>%s</span>
+                            </div>
+                            <div class='detail-row'>
+                                <span class='detail-label'>Tipo de Trámite:</span>
+                                <span class='detail-value'>%s</span>
+                            </div>
+                            <div class='detail-row'>
+                                <span class='detail-label'>Prioridad:</span>
+                                <span class='detail-value priority-%s'>%s</span>
+                            </div>
+                            <div class='detail-row'>
+                                <span class='detail-label'>Estado:</span>
+                                <span class='detail-value'><strong style='color: #3b82f6;'>%s</strong></span>
+                            </div>
+                            <div class='detail-row'>
+                                <span class='detail-label'>Fecha de Registro:</span>
+                                <span class='detail-value'>%s</span>
+                            </div>
+                        </div>
+
+                        %s
+
+                        <div class='info-box'>
+                            <p><strong>💡 Información Importante:</strong></p>
+                            <ul>
+                                <li>Guarde el código de trámite <strong>%s</strong> para futuras referencias</li>
+                                <li>Puede verificar el estado escaneando el código QR adjunto</li>
+                                <li>Recibirá actualizaciones sobre el progreso de este trámite</li>
+                                <li>Por favor, procese este trámite dentro del plazo establecido</li>
+                            </ul>
+                        </div>
+
+                        <center>
+                            <a href='%s/buscar-tramite?codigo=%s' class='button'>🔍 Ver Trámite Completo</a>
+                        </center>
+                    </div>
+                    <div class='footer'>
+                        <p><strong>Sistema de Trámite Documentario</strong></p>
+                        <p>Universidad Nacional de Tumbes</p>
+                        <p style='margin-top: 15px; font-size: 12px;'>Este es un correo automático, por favor no responder</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """,
+            solicitanteInfo,
+            tramite.getCodigo(),
+            solicitanteInfo,
+            tramite.getAsunto() != null ? tramite.getAsunto() : "Sin asunto",
+            tipoFormateado,
+            tramite.getPrioridad() != null ? tramite.getPrioridad().name().toLowerCase() : "normal",
+            prioridadFormateada,
+            tramite.getEstado() != null ? tramite.getEstado().toString() : "PENDIENTE",
+            tramite.getFechaCreacion() != null ? tramite.getFechaCreacion().format(DATE_FORMATTER) : "N/A",
+            qrSection,
+            tramite.getCodigo(),
+            appUrl,
+            tramite.getCodigo()
+        );
+    }
+
 }

@@ -44,7 +44,15 @@ public class OrganigramaService {
 
     @Transactional
     public void inicializarEstructuraUniversidad() {
-        if (areaRepository.count() > 0) return;
+      
+        List<Area> areasExistentes = areaRepository.findAll();
+        for (Area area : areasExistentes) {
+            area.setActiva(false);
+        }
+        areaRepository.flush();
+
+        areaRepository.deleteAll();
+        areaRepository.flush();
 
         Area consejoUniversitario = crearArea("Consejo Universitario", "CU", 1, null, "Máximo órgano de gobierno universitario");
         Area rectorado = crearArea("Rectorado", "REC", 2, consejoUniversitario, "Autoridad ejecutiva de la universidad");
@@ -57,6 +65,7 @@ public class OrganigramaService {
         crearArea("Oficina de Planificación", "OPL", 4, rectorado, "Planificación estratégica");
         crearArea("Oficina de Control Institucional", "OCI", 4, rectorado, "Control interno");
         crearArea("Oficina de Asesoría Jurídica", "OAJ", 4, rectorado, "Asesoría legal");
+        Area oficinaTI = crearArea("Oficina de Tecnología de la Información", "OTI", 4, rectorado, "Gestión de tecnologías de información");
 
         crearArea("Dirección de Servicios Académicos", "DSA", 4, vicerrectoradoAcademico, "Servicios académicos");
         crearArea("Dirección de Evaluación Académica", "DEA", 4, vicerrectoradoAcademico, "Evaluación académica");
@@ -64,10 +73,15 @@ public class OrganigramaService {
         crearArea("Instituto de Investigación", "II", 4, vicerrectoradoInvestigacion, "Investigación institucional");
         crearArea("Escuela de Posgrado", "EPG", 4, vicerrectoradoInvestigacion, "Estudios de posgrado");
 
+        crearArea("Unidad de Gestión Documentaria", "UGD", 4, secretariaGeneral, "Gestión y control de documentos");
+        crearArea("Archivo", "ARCH", 4, secretariaGeneral, "Archivo general");
+
         crearArea("Oficina de Recursos Humanos", "RH", 4, oficinaGeneralAdmin, "Gestión del personal");
         crearArea("Oficina de Logística", "LOG", 4, oficinaGeneralAdmin, "Logística y compras");
         crearArea("Oficina de Tesorería", "TES", 4, oficinaGeneralAdmin, "Gestión financiera");
         crearArea("Oficina de Contabilidad", "CON", 4, oficinaGeneralAdmin, "Contabilidad");
+
+        crearArea("Soporte Técnico", "ST", 5, oficinaTI, "Soporte técnico y mantenimiento de equipos");
 
         crearFacultades();
     }

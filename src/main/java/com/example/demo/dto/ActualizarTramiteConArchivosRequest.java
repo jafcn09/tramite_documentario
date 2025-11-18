@@ -26,4 +26,10 @@ public class ActualizarTramiteConArchivosRequest {
     private Long areaDestinoId;
     private List<DocumentoBase64Request> documentos;
     private List<Long> documentosAEliminar;
+
+    // Campos para firma digital
+    private String tipoFirma;
+    private String razonFirma;
+    private String ubicacionFirma;
+    private String firmaDigitalData;
 }

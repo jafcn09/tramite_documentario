@@ -292,8 +292,10 @@ public class UsuarioController {
             UsuarioResponse usuario = usuarioService.assignArea(userId, areaId);
             return ResponseEntity.ok(usuario);
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Error al asignar área: " + e.getMessage()));
+                    .body(Map.of("error", "Error al asignar área: " + e.getMessage(),
+                                 "type", e.getClass().getSimpleName()));
         }
     }
     
