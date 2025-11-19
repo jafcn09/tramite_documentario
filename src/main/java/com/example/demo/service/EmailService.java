@@ -217,27 +217,40 @@ public class EmailService {
         );
     }
 
-    @Async
+    @Async("emailExecutor")
     public void notificarNuevoTramiteATrabajador(Long trabajadorId, Long tramiteId) {
-        usuarioRepository.findById(trabajadorId).ifPresent(trabajador -> {
-            tramiteRepository.findById(tramiteId).ifPresent(tramite -> {
-                try {
-                    MimeMessage message = mailSender.createMimeMessage();
-                    MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+        // Obtener trabajador - FALLA si no existe
+        Usuario trabajador = usuarioRepository.findById(trabajadorId)
+            .orElseThrow(() -> new RuntimeException("Trabajador con ID " + trabajadorId + " no encontrado"));
 
-                    helper.setFrom(fromEmail);
-                    helper.setTo(trabajador.getCorreo());
-                    helper.setSubject("📝 Nuevo Trámite Asignado - " + tramite.getCodigo());
+        // Obtener trámite - FALLA si no existe
+        Tramite tramite = tramiteRepository.findById(tramiteId)
+            .orElseThrow(() -> new RuntimeException("Trámite con ID " + tramiteId + " no encontrado"));
 
-                    String htmlContent = construirTemplateNuevoTramite(trabajador, tramite, tramiteId);
-                    helper.setText(htmlContent, true);
+        // Validar que el trabajador tenga correo - FALLA si no tiene
+        if (trabajador.getCorreo() == null || trabajador.getCorreo().trim().isEmpty()) {
+            throw new RuntimeException("El trabajador " + trabajador.getNombre() + " no tiene correo electrónico configurado");
+        }
 
-                    mailSender.send(message);
-                } catch (Exception e) {
-                    throw new RuntimeException("Error enviando email a trabajador", e);
-                }
-            });
-        });
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(fromEmail);
+            helper.setTo(trabajador.getCorreo());
+            helper.setSubject("📝 Nuevo Trámite Asignado - " + tramite.getCodigo());
+
+            String htmlContent = construirTemplateNuevoTramite(trabajador, tramite, tramiteId);
+            helper.setText(htmlContent, true);
+
+            mailSender.send(message);
+
+            System.out.println("✅ Correo enviado exitosamente a: " + trabajador.getCorreo() + " - Trámite: " + tramite.getCodigo());
+        } catch (Exception e) {
+            System.err.println("❌ ERROR al enviar correo a " + trabajador.getCorreo() + ": " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Error enviando email a trabajador " + trabajador.getNombre() + ": " + e.getMessage(), e);
+        }
     }
 
     private String construirTemplateNuevoTramite(Usuario trabajador, Tramite tramite, Long tramiteId) {
@@ -353,7 +366,7 @@ public class EmailService {
             "</html>";
     }
 
-    @Async
+    @Async("emailExecutor")
     public void notificarAutoasignacionATrabajador(Long trabajadorId, Long tramiteId) {
         usuarioRepository.findById(trabajadorId).ifPresent(trabajador -> {
             tramiteRepository.findById(tramiteId).ifPresent(tramite -> {
@@ -619,7 +632,6 @@ public class EmailService {
             .orElse("Usuario");
     }
 
-    @Async("emailExecutor")
     public void enviarCorreoRechazoTramite(Long solicitanteId, Long tramiteId, String motivoRechazo, String observaciones, String rechazadoPor) {
         usuarioRepository.findById(solicitanteId).ifPresent(solicitante -> {
             tramiteRepository.findById(tramiteId).ifPresent(tramite -> {
@@ -711,7 +723,6 @@ public class EmailService {
         });
     }
 
-    @Async
     public void notificarEdicionTramiteAUsuario(Long usuarioId, Long tramiteId, String tituloAnterior, String tituloNuevo) {
         usuarioRepository.findById(usuarioId).ifPresent(usuario -> {
             tramiteRepository.findById(tramiteId).ifPresent(tramite -> {
@@ -845,7 +856,7 @@ public class EmailService {
         });
     }
 
-    @Async
+    @Async("emailExecutor")
     public void notificarCreacionTramiteASolicitante(Long solicitanteId, Long tramiteId) {
         usuarioRepository.findById(solicitanteId).ifPresent(solicitante -> {
             tramiteRepository.findById(tramiteId).ifPresent(tramite -> {
@@ -978,7 +989,6 @@ public class EmailService {
         });
     }
 
-    @Async
     public void notificarDerivacionASolicitante(Long solicitanteId, Long tramiteId, String motivo, String areaDestino) {
         usuarioRepository.findById(solicitanteId).ifPresent(solicitante -> {
             tramiteRepository.findById(tramiteId).ifPresent(tramite -> {
@@ -1129,7 +1139,7 @@ public class EmailService {
         });
     }
 
-    @Async
+    @Async("emailExecutor")
     public void notificarDerivacionATrabajador(Long trabajadorId, Long tramiteId, String motivo) {
         usuarioRepository.findById(trabajadorId).ifPresent(trabajador -> {
             tramiteRepository.findById(tramiteId).ifPresent(tramite -> {
@@ -1201,7 +1211,7 @@ public class EmailService {
         });
     }
 
-    @Async
+    @Async("emailExecutor")
     public void notificarReasignacionASolicitante(Long solicitanteId, Long tramiteId, Long nuevoTrabajadorId) {
         usuarioRepository.findById(solicitanteId).ifPresent(solicitante -> {
             tramiteRepository.findById(tramiteId).ifPresent(tramite -> {
@@ -1261,7 +1271,6 @@ public class EmailService {
         });
     }
 
-    @Async
     public void notificarCambioEstado(Long solicitanteId, Long tramiteId, String estadoAnterior, String estadoNuevo) {
         usuarioRepository.findById(solicitanteId).ifPresent(solicitante -> {
             tramiteRepository.findById(tramiteId).ifPresent(tramite -> {
@@ -1320,7 +1329,6 @@ public class EmailService {
         });
     }
 
-    @Async("emailExecutor")
     public void enviarCorreoFinalizacionConArchivo(Long solicitanteId, Long tramiteId, String urlArchivo) {
         usuarioRepository.findById(solicitanteId).ifPresent(solicitante -> {
             tramiteRepository.findById(tramiteId).ifPresent(tramite -> {
@@ -1387,7 +1395,6 @@ public class EmailService {
         });
     }
 
-    @Async
     public void reenviarNotificacion(com.example.demo.model.Notificacion notificacion) {
         usuarioRepository.findById(notificacion.getUsuarioDestinatarioId()).ifPresent(usuario -> {
             try {
@@ -1819,7 +1826,6 @@ public class EmailService {
         };
     }
 
-    @Async("emailExecutor")
     public void enviarCorreoConfirmacionRemitente(Long remitenteId, Long tramiteId) {
 
         usuarioRepository.findById(remitenteId).ifPresent(remitente -> {
@@ -2055,7 +2061,6 @@ public class EmailService {
         return "Usuario";
     }
 
-    @Async("emailExecutor")
     public void enviarCorreoTramitePublico(Tramite tramite, String emailDestino, String nombreRemitente, String apellidoRemitente) {
         try {
             MimeMessage message = mailSender.createMimeMessage();
@@ -2202,7 +2207,6 @@ public class EmailService {
         );
     }
 
-    @Async("emailExecutor")
     public void enviarCorreoTramiteAutenticado(Tramite tramite, String correoReceptor, String nombreSolicitante, String apellidoSolicitante) {
         if (correoReceptor == null || correoReceptor.trim().isEmpty()) {
             log.warn("No se puede enviar correo al receptor: email vacío para tramite {}", tramite.getCodigo());

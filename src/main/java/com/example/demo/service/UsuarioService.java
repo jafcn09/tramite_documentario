@@ -99,10 +99,8 @@ public class UsuarioService {
             usuario.setArea(area);
         }
 
-        // Siempre forzar cambio de password en primer login (mejor práctica de seguridad)
-        // El usuario debe cambiar la contraseña generada aleatoria por una propia
         usuario.setMustChangePassword(true);
-        usuario.setPasswordExpiry(LocalDateTime.now().plusDays(2)); // Expira en 2 días si no cambia
+        usuario.setPasswordExpiry(LocalDateTime.now().plusDays(2)); 
         
         usuario.setAccountEnabled(true);
         usuario.setAccountLocked(false);
@@ -204,13 +202,12 @@ public class UsuarioService {
         sendPasswordChangeNotification(usuario);
     }
 
-    // ✅ NUEVO: Método que cambia password y devuelve el usuario actualizado
-    // Usado cuando el usuario accede desde el componente /cambiar-contrasena
+   
     public UsuarioResponse changePasswordAndReturnUser(Long userId, ChangePasswordRequest request) {
-        // Ejecutar la lógica de cambio de password
+  
         changePassword(userId, request);
 
-        // Obtener el usuario actualizado y devolverlo
+
         Usuario usuarioActualizado = usuarioRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado con ese id: " + userId));
 
@@ -489,7 +486,12 @@ public class UsuarioService {
     public UsuarioResponse assignArea(Long userId, Long areaId) {
         Usuario usuario = usuarioRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado con id: " + userId));
-        
+
+        if (usuario.getArea() != null && areaId != null && usuario.getArea().getId().equals(areaId)) {
+
+            return convertToResponse(usuario);
+        }
+
         com.example.demo.entity.Area area = null;
         if (areaId != null) {
             area = areaRepository.findById(areaId)
@@ -504,8 +506,7 @@ public class UsuarioService {
     public List<UsuarioResponse> getUsersByArea(Long areaId) {
         List<Usuario> users = usuarioRepository.findByAreaId(areaId);
 
-        // Si no hay usuarios en esa área específica, devolver todos los usuarios
-        // para asegurar que siempre haya opciones para derivar
+ 
         if (users.isEmpty()) {
             users = usuarioRepository.findAllUsuarios();
         }
@@ -592,9 +593,8 @@ public class UsuarioService {
     
     private void sendPasswordResetNotification(Usuario usuario, String newPassword, String reason) {
         try {
-            // Validar que el email del usuario no sea nulo o vacío
             if (usuario.getCorreo() == null || usuario.getCorreo().trim().isEmpty()) {
-                System.err.println("Advertencia: Usuario " + usuario.getId() + " no tiene email registrado. No se puede enviar notificación de restablecimiento de contraseña.");
+               
                 return;
             }
 
@@ -610,12 +610,11 @@ public class UsuarioService {
             mailSender.send(message);
             System.out.println("Notificación de restablecimiento de contraseña enviada a: " + usuario.getCorreo());
         } catch (MessagingException e) {
-            // Log del error pero no lanzar excepción para que el flujo continúe
-            System.err.println("Error al enviar notificación de restablecimiento de credencial a " + usuario.getCorreo() + ": " + e.getMessage());
+         
             e.printStackTrace();
         } catch (Exception e) {
-            // Capturar cualquier otra excepción (como NullPointerException)
-            System.err.println("Error inesperado al enviar notificación: " + e.getMessage());
+ 
+           
             e.printStackTrace();
         }
     }
@@ -635,13 +634,22 @@ public class UsuarioService {
     
 
     public List<Long> obtenerTrabajadoresDeArea(Long areaId) {
-        return usuarioRepository.findAll().stream()
-                .filter(user -> user.getArea() != null && user.getArea().getId().equals(areaId))
-                .filter(user -> user.getRole() != null && 
-                       ("ADMINISTRATIVO".equals(user.getRole().getName().toString()) || 
-                        "ADMIN".equals(user.getRole().getName().toString())))
+        List<Usuario> usuariosEnArea = usuarioRepository.findByAreaId(areaId);
+
+        List<Long> trabajadores = usuariosEnArea.stream()
+                .filter(user -> {
+                    if (user.getRole() == null) {
+                        return false;
+                    }
+
+                    String roleName = user.getRole().getName().toString();
+                   
+                    return "ADMINISTRATIVO".equalsIgnoreCase(roleName) || "ADMIN".equalsIgnoreCase(roleName);
+                })
                 .map(Usuario::getId)
                 .collect(Collectors.toList());
+
+        return trabajadores;
     }
     
     public String obtenerNombreCompleto(Long usuarioId) {
@@ -684,7 +692,7 @@ public class UsuarioService {
     public List<Map<String, Object>> getAdministrativosConWorkload(Long excludeUserId) {
         return usuarioRepository.findAll().stream()
                 .filter(user -> {
-                    // Excluir el usuario especificado si se proporciona
+                   
                     if (excludeUserId != null && user.getId().equals(excludeUserId)) {
                         return false;
                     }

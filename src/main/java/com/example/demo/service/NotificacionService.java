@@ -5,12 +5,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 import com.example.demo.dto.NotificacionRequest;
 import com.example.demo.dto.NotificacionResponse;
@@ -19,27 +23,86 @@ import com.example.demo.repository.NotificacionRepository;
 import com.example.demo.repository.TramiteRepository;
 import com.example.demo.repository.UsuarioRepository;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class NotificacionService {
-    
+
     private final NotificacionRepository notificacionRepository;
     private final TramiteRepository tramiteRepository;
     private final UsuarioRepository usuarioRepository;
     private final SimpMessagingTemplate messagingTemplate;
     private final EmailService emailService;
     private final UsuarioService usuarioService;
+    private final org.springframework.context.ApplicationEventPublisher eventPublisher;
 
     private static final int MAX_TRAMITES_POR_TRABAJADOR = 20;
 
-    @Async
+   
+
+    @Getter
+    public static class WebSocketNotificacionEvent {
+        private final NotificacionResponse notificacion;
+        private final Long usuarioId;
+
+        public WebSocketNotificacionEvent(NotificacionResponse notificacion, Long usuarioId) {
+            this.notificacion = notificacion;
+            this.usuarioId = usuarioId;
+        }
+    }
+
+    @Getter
+    public static class NuevoTramiteEvent {
+        private final Long tramiteId;
+        private final Long areaId;
+
+        public NuevoTramiteEvent(Long tramiteId, Long areaId) {
+            this.tramiteId = tramiteId;
+            this.areaId = areaId;
+        }
+    }
+
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    public void enviarWebSocketPostCommit(WebSocketNotificacionEvent event) {
+        try {
+            messagingTemplate.convertAndSendToUser(
+                event.getUsuarioId().toString(),
+                "/queue/notificaciones",
+                event.getNotificacion()
+            );
+        } catch (Exception e) {
+            System.err.println("❌ Error enviando WebSocket: " + e.getMessage());
+        }
+    }
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    public void procesarNotificacionesPostCommit(NuevoTramiteEvent event) {
+        try {
+            notificarNuevoTramite(event.getTramiteId(), event.getAreaId());
+        } catch (Exception e) {
+            System.err.println("❌ Error procesando notificaciones post-commit: " + e.getMessage());
+        }
+    }
+
     public void notificarNuevoTramite(Long tramiteId, Long areaId) {
+    
+
         List<Long> trabajadoresArea = usuarioService.obtenerTrabajadoresDeArea(areaId);
-        
+
+
+        if (trabajadoresArea.isEmpty()) {
+          
+            return;
+        }
+
         for (Long trabajadorId : trabajadoresArea) {
+        
             Notificacion notificacion = new Notificacion();
             notificacion.setUsuarioDestinatarioId(trabajadorId);
             notificacion.setTitulo("Nuevo trámite recibido");
@@ -57,7 +120,6 @@ public class NotificacionService {
         }
     }
 
-    @Async
     public void notificarAutoasignacionTramite(Long tramiteId, Long trabajadorId, Long solicitanteId) {
         tramiteRepository.findById(tramiteId).ifPresent(tramite -> {
             Notificacion notificacion = new Notificacion();
@@ -80,7 +142,6 @@ public class NotificacionService {
         });
     }
 
-    @Async
     public void notificarRecepcionTramite(Long tramiteId, Long trabajadorId, Long solicitanteId) {
         tramiteRepository.findById(tramiteId).ifPresent(tramite -> {
             Notificacion notificacion = new Notificacion();
@@ -110,7 +171,6 @@ public class NotificacionService {
         });
     }
 
-    @Async
     public boolean notificarRespuestaTramite(Long tramiteId, Long solicitanteId, Long administrativoId,
                                             String respuesta, String asunto, Integer cantidadDocumentos) {
         try {
@@ -167,8 +227,9 @@ public class NotificacionService {
         }
     }
 
-    @Async
-    public void notificarDerivacionTramite(Long tramiteId, Long trabajadorAnterior, 
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void notificarDerivacionTramite(Long tramiteId, Long trabajadorAnterior,
                                           Long trabajadorNuevo, String motivo) {
         tramiteRepository.findById(tramiteId).ifPresent(tramite -> {
             Notificacion notifNuevo = new Notificacion();
@@ -184,7 +245,7 @@ public class NotificacionService {
             notifNuevo.setUsuarioEmisorId(trabajadorAnterior);
             notifNuevo.setRutaDestino("/tramites/" + tramiteId);
 
-            // ✅ NUEVO: Incluir nombre y apellido del nuevo trabajador en metadatos
+           
             try {
                 com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
                 Map<String, Object> metadatos = new HashMap<>();
@@ -195,7 +256,7 @@ public class NotificacionService {
                 String metadatosJson = mapper.writeValueAsString(metadatos);
                 notifNuevo.setMetadatos(metadatosJson);
             } catch (Exception e) {
-                System.err.println("Error serializando metadatos: " + e.getMessage());
+               
             }
 
             Notificacion savedNuevo = notificacionRepository.save(notifNuevo);
@@ -225,7 +286,6 @@ public class NotificacionService {
         });
     }
 
-    @Async
     public void notificarCambioEstadoAutomatico(Long tramiteId, String estadoAnterior, 
                                                String estadoNuevo) {
         tramiteRepository.findById(tramiteId).ifPresent(tramite -> {
@@ -251,7 +311,6 @@ public class NotificacionService {
         });
     }
 
-    @Async
     public void notificarFinalizacionConArchivo(Long tramiteId, String urlArchivo) {
         tramiteRepository.findById(tramiteId).ifPresent(tramite -> {
             Notificacion notificacion = new Notificacion();
@@ -440,15 +499,13 @@ public class NotificacionService {
         );
     }
 
+
     private void enviarNotificacionWebSocket(Notificacion notificacion, Long usuarioId) {
         try {
             NotificacionResponse response = convertirAResponse(notificacion);
-            messagingTemplate.convertAndSendToUser(
-                usuarioId.toString(),
-                "/queue/notificaciones",
-                response
-            );
+            eventPublisher.publishEvent(new WebSocketNotificacionEvent(response, usuarioId));
         } catch (Exception e) {
+            System.err.println("❌ Error publicando evento WebSocket: " + e.getMessage());
         }
     }
     

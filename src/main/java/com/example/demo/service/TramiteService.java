@@ -31,6 +31,8 @@ import com.example.demo.exception.UnauthorizedException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 @Service
 @RequiredArgsConstructor
@@ -48,10 +50,14 @@ public class TramiteService {
     private final FirmaDigitalService firmaDigitalService;
     private final QRCodeService qrCodeService;
     private final EncryptionService encryptionService;
+    private final org.springframework.context.ApplicationEventPublisher eventPublisher;
+
+    @PersistenceContext
+    private EntityManager entityManager;
     
     private static final int MAX_TRAMITES_POR_TRABAJADOR = 20;
     private static final int DIAS_PROCESAMIENTO = 3;
-    private static final Long AREA_SECRETARIA_GENERAL_ID = 1L;
+    private static final Long AREA_SECRETARIA_GENERAL_ID = 85L; // Secretaría General
     
     @Transactional
     public TramiteResponse crearTramite(TramiteRequest request, Long usuarioSolicitanteId, String rol) {
@@ -119,10 +125,7 @@ public class TramiteService {
             throw new RuntimeException("Ya existe un trámite con el mismo contenido en los siguientes campos: " + campos);
         }
 
-        String codigo = generarCodigoTramite();
-        
         Tramite tramite = new Tramite();
-        tramite.setCodigo(codigo);
         tramite.setTitulo(request.getTitulo());
         tramite.setAsunto(request.getAsunto() != null ? request.getAsunto() : request.getTitulo());
         tramite.setDescripcion(request.getDescripcion());
@@ -133,8 +136,8 @@ public class TramiteService {
         tramite.setAreaActualId(AREA_SECRETARIA_GENERAL_ID);
 
         if ("estudiante".equals(rol)) {
-
-            tramite.setAreaOrigenId(AREA_SECRETARIA_GENERAL_ID);
+            // Los estudiantes NO tienen área de origen
+            tramite.setAreaOrigenId(null);
         } else if ("usuario".equals(rol)) {
             Long areaUsuario = obtenerAreaDelUsuario(usuarioSolicitanteId);
             tramite.setAreaOrigenId(areaUsuario != null ? areaUsuario : AREA_SECRETARIA_GENERAL_ID);
@@ -145,7 +148,7 @@ public class TramiteService {
         tramite.setNumeroExpediente(request.getNumeroExpediente());
         tramite.setObservaciones(request.getObservaciones());
         tramite.setFechaVencimiento(calcularFechaVencimientoEstandar(LocalDateTime.now()));
-        
+
         if (request.getDocumentosAdjuntos() != null) {
             tramite.setDocumentosAdjuntos(request.getDocumentosAdjuntos());
         }
@@ -153,7 +156,7 @@ public class TramiteService {
         if (request.getRequiereFirmaDigital() != null && request.getRequiereFirmaDigital()) {
             tramite.setFirmaDigitalActiva(true);
             tramite.setRequiereBiometria(false);
-            tramite.setFirmaValida(true); 
+            tramite.setFirmaValida(true);
             tramite.setFechaFirma(LocalDateTime.now());
             if (request.getTipoFirma() == null || request.getTipoFirma().trim().isEmpty()) {
                 throw new RuntimeException("El tipo de firma es obligatorio. Debe especificar un tipo de firma válido.");
@@ -162,9 +165,20 @@ public class TramiteService {
             tramite.setHashFirma(request.getFirmaDigitalData() != null ? request.getFirmaDigitalData() : "hash_autogenerado_" + System.currentTimeMillis());
         }
 
-        Tramite saved = tramiteRepository.save(tramite);
+        // Generar código y guardar el trámite
+        String codigo = generarCodigoTramite();
+        tramite.setCodigo(codigo);
 
-        // Crear registro de firma digital SIEMPRE, independientemente del flag requiereFirmaDigital
+        Tramite saved = tramiteRepository.save(tramite);
+        entityManager.flush();
+
+        log.info("Trámite guardado exitosamente. ID: {}, Código: {}", saved.getId(), saved.getCodigo());
+
+        if (saved == null || saved.getId() == null) {
+            log.error("ERROR CRÍTICO: El trámite guardado es null o no tiene ID");
+            throw new RuntimeException("No se pudo guardar el trámite. El trámite no tiene un identificador válido");
+        }
+
         try {
             persistirFirmaDigital(saved, request, usuarioSolicitanteId);
         } catch (Exception e) {
@@ -186,7 +200,7 @@ public class TramiteService {
                          null, "ENVIADO",
                          "Trámite creado y enviado");
 
-        notificacionService.notificarNuevoTramite(saved.getId(), AREA_SECRETARIA_GENERAL_ID);
+        eventPublisher.publishEvent(new NotificacionService.NuevoTramiteEvent(saved.getId(), AREA_SECRETARIA_GENERAL_ID));
         emailService.notificarCreacionTramiteASolicitante(usuarioSolicitanteId, saved.getId());
 
         

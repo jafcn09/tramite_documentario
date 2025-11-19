@@ -212,7 +212,7 @@ public class TramiteController {
     public ResponseEntity<?> crearTramite(
             @RequestParam("tipoTramiteId") Long tipoTramiteId,
             @RequestParam("asunto") String asunto,
-            @RequestParam("descripcion") String descripcion,
+            @RequestParam(value = "descripcion", required = false) String descripcion,
             @RequestParam("prioridadId") Long prioridadId,
             @RequestParam(value = "areaDestinoId", required = false) Long areaDestinoId,
             @RequestParam(value = "correoReceptor", required = false) String correoReceptor,
@@ -233,14 +233,19 @@ public class TramiteController {
             throw new RuntimeException("No se pudo obtener el ID del usuario del token");
         }
 
-  
+
         inputSanitizerService.validateNotEmpty("asunto", asunto);
-        inputSanitizerService.validateNotEmpty("descripcion", descripcion);
         inputSanitizerService.validateLength("asunto", asunto, 255);
-        inputSanitizerService.validateLength("descripcion", descripcion, 2000);
+
+        // Descripción es opcional
+        if (descripcion != null && !descripcion.trim().isEmpty()) {
+            inputSanitizerService.validateLength("descripcion", descripcion, 2000);
+        }
 
         String asuntoSanitizado = inputSanitizerService.sanitizeTextField(asunto);
-        String descripcionSanitizada = inputSanitizerService.sanitizeTextField(descripcion);
+        String descripcionSanitizada = (descripcion != null && !descripcion.trim().isEmpty())
+            ? inputSanitizerService.sanitizeTextField(descripcion)
+            : null;
 
    
         if (documentos != null && !documentos.isEmpty()) {
