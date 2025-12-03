@@ -1,13 +1,15 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../services/auth.service';
+import { ToastService } from '../services/toast.service';
+import { ToastComponent } from '../shared/components/toast/toast.component';
 
 @Component({
   selector: 'app-admin-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, ToastComponent],
   templateUrl: './admin-login.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -16,6 +18,7 @@ export class AdminLoginComponent implements OnInit {
   isLoading = false;
   showPassword = false;
   loginError = '';
+  errorType: 'credentials' | 'not_found' | 'disabled' | 'blocked' | 'network' | 'server' | 'general' = 'general';
   loginSuccess = false;
   mustChangePassword = false;
   currentYear = new Date().getFullYear();
@@ -25,7 +28,9 @@ export class AdminLoginComponent implements OnInit {
     private fb: FormBuilder,
     private router: Router,
     private route: ActivatedRoute,
-    private authService: AuthService
+    private authService: AuthService,
+    private cdr: ChangeDetectorRef,
+    private toastService: ToastService
   ) {
     this.loginForm = this.fb.group({
       usuario: ['', [Validators.required, Validators.minLength(3)]],
@@ -120,14 +125,57 @@ export class AdminLoginComponent implements OnInit {
         error: (error) => {
           this.isLoading = false;
 
+          if (error.status === 0 || (error.name === 'HttpErrorResponse' && !navigator.onLine)) {
+            this.errorType = 'network';
+            this.loginError = 'No hay conexión a internet. Verifica tu conexión e intenta nuevamente.';
+            this.toastService.warning('Sin conexión', this.loginError);
+            this.cdr.detectChanges();
+            return;
+          }
+
           if (error.status === 428) {
             this.mustChangePassword = true;
+            this.errorType = 'general';
             this.loginError = 'Debes cambiar tu contraseña temporal';
+            this.toastService.warning('Cambio requerido', this.loginError);
+          } else if (error.status === 401) {
+            // Credenciales incorrectas
+            this.errorType = 'credentials';
+            this.loginError = error.error?.message || 'Usuario o contraseña incorrectos';
+            this.toastService.error('Credenciales incorrectas', this.loginError);
+          } else if (error.status === 404) {
+            // Usuario no encontrado
+            this.errorType = 'not_found';
+            this.loginError = error.error?.message || 'El usuario no existe en el sistema';
+            this.toastService.error('Usuario no encontrado', this.loginError);
           } else if (error.status === 403) {
-            this.loginError = error.error?.message || 'Credenciales inválidas o cuenta bloqueada';
+            // Cuenta deshabilitada o bloqueada
+            const message = error.error?.message?.toLowerCase() || '';
+            if (message.includes('bloqueado') || message.includes('bloqueada')) {
+              this.errorType = 'blocked';
+              this.loginError = error.error?.message || 'Tu cuenta ha sido bloqueada temporalmente por múltiples intentos fallidos';
+              this.toastService.error('Cuenta bloqueada', this.loginError);
+            } else if (message.includes('deshabilitad') || message.includes('inactiv')) {
+              this.errorType = 'disabled';
+              this.loginError = error.error?.message || 'Tu cuenta se encuentra deshabilitada. Contacta al administrador';
+              this.toastService.warning('Cuenta deshabilitada', this.loginError);
+            } else {
+              this.errorType = 'credentials';
+              this.loginError = error.error?.message || 'Credenciales inválidas o cuenta bloqueada';
+              this.toastService.error('Error de acceso', this.loginError);
+            }
+          } else if (error.status >= 500) {
+            // Error del servidor
+            this.errorType = 'server';
+            this.loginError = 'Error en el servidor. Por favor, intenta más tarde.';
+            this.toastService.error('Error del servidor', this.loginError);
           } else {
-            this.loginError = 'Error al iniciar sesión. Intente nuevamente.';
+            this.errorType = 'general';
+            this.loginError = error.error?.message || 'Error al iniciar sesión. Intente nuevamente.';
+            this.toastService.error('Error de acceso', this.loginError);
           }
+
+          this.cdr.detectChanges();
         }
       });
     } else {

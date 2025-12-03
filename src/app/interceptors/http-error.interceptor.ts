@@ -28,13 +28,16 @@ export class HttpErrorInterceptor implements HttpInterceptor {
         } else if (error.status === 401) {
     
         } else if (error.status === 403) {
-          if (!error.url?.includes('/usuarios/recent') && !error.url?.includes('/usuarios/stats')) {
+          if (!error.url?.includes('/usuarios/recent') &&
+              !error.url?.includes('/usuarios/stats') &&
+              !error.url?.includes('/api/auth/login')) {
             this.toastService.error('No tienes permisos para realizar esta acción', 'Acceso Denegado');
             this.router.navigate(['/access-denied']);
           }
         } else if (error.status === 404) {
-
-          this.toastService.error('Recurso no encontrado', 'Error 404');
+          if (!error.url?.includes('/api/auth/login')) {
+            this.toastService.error('Recurso no encontrado', 'Error 404');
+          }
         } else if (error.status >= 500) {
         
           this.toastService.error('Error interno del servidor', 'Error del Servidor');
