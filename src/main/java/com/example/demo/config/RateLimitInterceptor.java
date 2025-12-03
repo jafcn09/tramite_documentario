@@ -27,7 +27,7 @@ public class RateLimitInterceptor implements HandlerInterceptor {
 
             String jsonResponse = String.format(
                 "{\"error\": \"Too Many Requests\", " +
-                "\"message\": \"Has excedido el límite de solicitudes. Por favor, intenta más tarde.\", " +
+                "\"message\": \"t\", " +
                 "\"status\": 429, " +
                 "\"limitType\": \"%s\"}",
                 limitType.name()

@@ -774,7 +774,7 @@ public class TramiteController {
 
         Long usuarioId = getUserIdFromToken(httpRequest);
         if (usuarioId == null) {
-            throw new RuntimeException("No se pudo obtener el ID del usuario del token");
+            throw new RuntimeException("No se pudo obtener yID del usuario del token");
         }
 
         EditarTramiteRequest editarRequest = EditarTramiteRequest.builder()
