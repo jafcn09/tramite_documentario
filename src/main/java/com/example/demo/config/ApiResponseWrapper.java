@@ -29,17 +29,25 @@ public class ApiResponseWrapper implements ResponseBodyAdvice<Object> {
                                   Class<? extends HttpMessageConverter<?>> selectedConverterType,
                                   ServerHttpRequest request, ServerHttpResponse response) {
 
-        // Si ya es ApiResponse, dejar como está
+        String path = request.getURI().getPath();
+
+        
+        if (path.startsWith("/v3/api-docs") ||
+            path.startsWith("/swagger") ||
+            path.startsWith("/actuator")) {
+            return body;
+        }
+
+
         if (body instanceof ApiResponse) {
             return body;
         }
 
-        // Si es nulo, retornar error
+
         if (body == null) {
             return ApiResponse.error("No hay datos disponibles");
         }
 
-        // Envolver en ApiResponse genérica
         return ApiResponse.success("Operación exitosa", body);
     }
 }

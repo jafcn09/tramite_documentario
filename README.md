@@ -12,6 +12,30 @@ Sistema integral de gestión de trámites documentarios con Spring Boot 3.5.5, a
 - **JavaMailSender** - Sistema de correos
 - **WebSocket + STOMP** - Notificaciones en tiempo real
 - **Gradle 8** - Build tool
+- **SpringDoc OpenAPI 2.7** - Documentación API (Swagger UI)
+- **Redis** - Cache y sesiones
+- **Flyway** - Migraciones de base de datos
+
+## Documentación API (Swagger)
+
+La API está documentada con OpenAPI 3.0 y disponible a través de Swagger UI.
+
+### Acceso
+- **Swagger UI**: `http://localhost:8081/swagger-ui/index.html`
+- **OpenAPI JSON**: `http://localhost:8081/v3/api-docs`
+
+### Características
+- Documentación interactiva de todos los endpoints
+- Pruebas de API directamente desde el navegador (Try it out)
+- Agrupación por tags (controllers)
+- Filtrado por etiquetas
+- Ordenamiento alfabético de tags y por método HTTP
+
+### Autenticación en Swagger
+Para probar endpoints protegidos:
+1. Ejecutar `POST /api/auth/login` con credenciales válidas
+2. Copiar el token JWT de la respuesta
+3. Usar el token en el header `Authorization: Bearer {token}`
 
 ## Características Principales
 

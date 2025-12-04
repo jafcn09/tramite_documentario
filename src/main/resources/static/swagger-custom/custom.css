@@ -1,0 +1,21 @@
+
+.servers-title,
+.servers,
+.scheme-container {
+    display: none !important;
+}
+
+
+.auth-wrapper,
+.authorize {
+    display: none !important;
+}
+
+
+.swagger-ui .topbar {
+    background-color: #1a365d;
+}
+
+.swagger-ui .info .title {
+    color: #1a365d;
+}
