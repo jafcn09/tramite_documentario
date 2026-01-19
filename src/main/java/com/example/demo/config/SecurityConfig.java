@@ -79,13 +79,15 @@ public class SecurityConfig {
                 .requestMatchers("/topic/**").permitAll()
                 .requestMatchers("/queue/**").permitAll()
 
-      
+
                 .requestMatchers("/swagger-ui/**").permitAll()
                 .requestMatchers("/swagger-ui.html").permitAll()
                 .requestMatchers("/v3/api-docs/**").permitAll()
                 .requestMatchers("/swagger-resources/**").permitAll()
                 .requestMatchers("/webjars/**").permitAll()
 
+                // Permitir acceso público a consulta de grados académicos
+                .requestMatchers("/api/grados/**").permitAll()
 
                 .requestMatchers("/api/roles/**").authenticated()
                 .requestMatchers("/api/usuarios/**").authenticated()
