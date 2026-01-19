@@ -4,6 +4,8 @@ export interface Module {
   subtitle: string;
   icon: string;
   gradient: string;
+  bgClass: string;
+  iconColor: string;
   delay: number;
   features: string[];
 }

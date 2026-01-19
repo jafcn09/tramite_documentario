@@ -60,16 +60,18 @@ import { Module, Stat } from '../shared/interfaces/module.interface';
           <p class="text-xl text-gray-600">Herramientas especializadas para la gestión académica y administrativa</p>
         </div>
         
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 max-w-4xl mx-auto">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 mx-auto">
           <div *ngFor="let module of modules; let i = index"
-               class="institutional-card rounded-xl p-6 lg:p-8 animate-fade-in cursor-pointer"
+               class="institutional-card rounded-xl p-6 lg:p-8 animate-fade-in cursor-pointer hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300"
                [class.delay-100]="i === 0"
                [class.delay-200]="i === 1"
                [class.delay-300]="i === 2"
+               [class.delay-400]="i === 3"
                (click)="handleModuleClick(module)">
-            
-            <div class="flex items-center justify-center w-16 h-16 mb-6 rounded-xl university-gradient">
-              <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+
+            <div class="flex items-center justify-center w-16 h-16 mb-6 rounded-xl shadow-lg bg-opacity-10"
+                 [ngClass]="module.bgClass">
+              <svg class="w-8 h-8" [ngClass]="module.iconColor" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="module.icon"></path>
               </svg>
             </div>
@@ -109,8 +111,10 @@ export class HomeComponent implements OnInit, AfterViewInit {
       id: 'internal',
       title: 'Servicios Administrativos',
       subtitle: 'Trámites institucionales y administrativos',
-      icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4',
+      icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01',
       gradient: 'from-university-700 to-university-800',
+      bgClass: 'bg-blue-100',
+      iconColor: 'text-blue-700',
       delay: 200,
       features: [
         'Autorizaciones oficiales',
@@ -123,14 +127,32 @@ export class HomeComponent implements OnInit, AfterViewInit {
       id: 'search',
       title: 'Consulta y Seguimiento',
       subtitle: 'Sistema de búsqueda y monitoreo de trámites',
-      icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
+      icon: 'M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z',
       gradient: 'from-university-500 to-university-600',
+      bgClass: 'bg-indigo-100',
+      iconColor: 'text-indigo-600',
       delay: 300,
       features: [
         'Estado de solicitudes',
         'Historial de trámites',
         'Notificaciones automáticas',
         'Reportes personalizados'
+      ]
+    },
+    {
+      id: 'grados',
+      title: 'Consulta de Grados',
+      subtitle: 'Verificación de diplomas y grados académicos',
+      icon: 'M12 14l9-5-9-5-9 5 9 5z M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222',
+      gradient: 'from-green-500 to-green-600',
+      bgClass: 'bg-green-100',
+      iconColor: 'text-green-600',
+      delay: 400,
+      features: [
+        'Búsqueda por DNI',
+        'Búsqueda por código diploma',
+        'Verificación de autenticidad',
+        'Constancia digital'
       ]
     }
   ];
@@ -183,6 +205,8 @@ export class HomeComponent implements OnInit, AfterViewInit {
       this.router.navigate(['/tramites-externos']);
     } else if (module.id === 'internal') {
       this.router.navigate(['/servicios-administrativos']);
+    } else if (module.id === 'grados') {
+      this.router.navigate(['/grados']);
     } else {
 
     }

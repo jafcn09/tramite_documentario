@@ -13,8 +13,12 @@ export const routes: Routes = [
   { path: 'servicios-administrativos', component: AdminLoginComponent },
   { path: 'manual', component: ManualComponent },
   { path: 'verificar', component: SearchComponent },
+  {
+    path: 'grados',
+    loadComponent: () => import('./grados/grados.component').then(m => m.GradosComponent)
+  },
 
- 
+
   {
     path: 'admin',
     canActivate: [AuthGuard, RoleGuard],
