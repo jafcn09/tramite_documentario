@@ -33,6 +33,11 @@ export class GradosComponent implements OnInit, OnDestroy {
   liveSuggestions: Grado[] = [];
   suggestionCount = 0;
   isLoadingSuggestions = false;
+  isLoadingMoreSuggestions = false;
+  currentPage = 0;
+  pageSize = 10;
+  hasMoreSuggestions = false;
+  allSuggestions: Grado[] = [];
   private searchSubject = new Subject<string>();
 
   stats = {
@@ -63,8 +68,11 @@ export class GradosComponent implements OnInit, OnDestroy {
 
         if (!term || term.length < minLength) {
           this.liveSuggestions = [];
+          this.allSuggestions = [];
           this.showSuggestions = false;
           this.isLoadingSuggestions = false;
+          this.currentPage = 0;
+          this.hasMoreSuggestions = false;
           return of(null);
         }
 
@@ -72,6 +80,8 @@ export class GradosComponent implements OnInit, OnDestroy {
         this.isLoadingSuggestions = true;
         this.showSuggestions = true;
         this.liveSuggestions = [];
+        this.allSuggestions = [];
+        this.currentPage = 0;
 
         const params: any = {};
         if (this.currentTab === 'dni') {
@@ -97,25 +107,31 @@ export class GradosComponent implements OnInit, OnDestroy {
         if (response.encontrado) {
 
           if (response.grados) {
-            this.liveSuggestions = response.grados;
+            this.allSuggestions = response.grados;
             this.suggestionCount = response.cantidad || response.grados.length;
           } else if (response.grado) {
-            this.liveSuggestions = [response.grado];
+            this.allSuggestions = [response.grado];
             this.suggestionCount = 1;
           }
-          this.showSuggestions = this.liveSuggestions.length > 0;
+
+          // Mostrar solo la primera página
+          this.currentPage = 0;
+          this.loadMoreSuggestionsPage();
+          this.showSuggestions = this.allSuggestions.length > 0;
 
         } else {
-         
+
           this.liveSuggestions = [];
+          this.allSuggestions = [];
           this.suggestionCount = 0;
-          this.showSuggestions = true; 
+          this.showSuggestions = true;
         }
       },
       error: (error) => {
         console.error('Error en búsqueda en tiempo real:', error);
         this.isLoadingSuggestions = false;
         this.liveSuggestions = [];
+        this.allSuggestions = [];
         this.showSuggestions = false;
       }
     });
@@ -250,5 +266,37 @@ export class GradosComponent implements OnInit, OnDestroy {
 
     console.log('Descargar constancia para:', grado);
     alert('Funcionalidad de descarga en desarrollo');
+  }
+
+  loadMoreSuggestionsPage(): void {
+    const startIndex = this.currentPage * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    const newSuggestions = this.allSuggestions.slice(startIndex, endIndex);
+
+    if (this.currentPage === 0) {
+      this.liveSuggestions = newSuggestions;
+    } else {
+      this.liveSuggestions = [...this.liveSuggestions, ...newSuggestions];
+    }
+
+    this.hasMoreSuggestions = endIndex < this.allSuggestions.length;
+  }
+
+  onSuggestionScroll(event: Event): void {
+    const element = event.target as HTMLElement;
+    const scrollPosition = element.scrollTop + element.clientHeight;
+    const scrollHeight = element.scrollHeight;
+
+    // Si estamos a 50px del fondo y hay más sugerencias
+    if (scrollHeight - scrollPosition < 50 && this.hasMoreSuggestions && !this.isLoadingMoreSuggestions) {
+      this.isLoadingMoreSuggestions = true;
+      this.currentPage++;
+
+      // Simular un pequeño delay para mostrar el preloader
+      setTimeout(() => {
+        this.loadMoreSuggestionsPage();
+        this.isLoadingMoreSuggestions = false;
+      }, 300);
+    }
   }
 }
