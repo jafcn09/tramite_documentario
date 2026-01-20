@@ -210,7 +210,8 @@ export class GradosComponent implements OnInit, OnDestroy {
     if (this.currentTab === 'dni') {
       return this.searchForm.dni.trim().length === 8;
     } else if (this.currentTab === 'codigo') {
-      return this.searchForm.codigo.trim().length >= 4;
+      const codigoLength = this.searchForm.codigo.trim().length;
+      return codigoLength >= 4 && codigoLength <= 12;
     }
     return false;
   }
