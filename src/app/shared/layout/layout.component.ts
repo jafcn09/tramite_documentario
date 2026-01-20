@@ -136,6 +136,12 @@ export class LayoutComponent implements OnInit {
       { label: 'Mis Trámites', route: '/estudiante/mis-tramites', icon: 'fas fa-folder-open' }
     ];
 
+    const gradosMenu = [
+      { label: 'Inicio', route: '/grados-admin/tablero', icon: 'fas fa-home' },
+      { label: 'Gestión de Reportes', route: '/grados-admin/reportes', icon: 'fas fa-exclamation-triangle' },
+      { label: 'Gestión de Grados', route: '/grados-admin/listado', icon: 'fas fa-graduation-cap' }
+    ];
+
     const roleMenus: { [key: string]: any[] } = {
       'ADMIN': adminMenu,
       'admin': adminMenu,
@@ -149,6 +155,12 @@ export class LayoutComponent implements OnInit {
       'ESTUDIANTE': estudianteMenu,
       'estudiante': estudianteMenu,
       'Estudiante': estudianteMenu,
+      'GRADOS': gradosMenu,
+      'grados': gradosMenu,
+      'Grados': gradosMenu,
+      'DIRECTOR': gradosMenu,
+      'director': gradosMenu,
+      'Director': gradosMenu,
     };
 
     this.menuItems = roleMenus[this.currentUser.role.name] || [];

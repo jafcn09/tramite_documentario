@@ -1,0 +1,135 @@
+<div class="grados-admin-container">
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon total">
+        <i class="fas fa-graduation-cap"></i>
+      </div>
+      <div class="stat-content">
+        <h3 [class.loading]="loadingEstadisticas">{{ loadingEstadisticas ? '...' : estadisticas.total }}</h3>
+        <p>Total de Reportes</p>
+      </div>
+    </div>
+
+    <div class="stat-card clickable" (click)="verReportesPendientes()">
+      <div class="stat-icon pendientes">
+        <i class="fas fa-exclamation-circle"></i>
+      </div>
+      <div class="stat-content">
+        <h3 [class.loading]="loadingEstadisticas">{{ loadingEstadisticas ? '...' : estadisticas.pendientes }}</h3>
+        <p>Reportes Pendientes</p>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon resueltos">
+        <i class="fas fa-check-circle"></i>
+      </div>
+      <div class="stat-content">
+        <h3 [class.loading]="loadingEstadisticas">{{ loadingEstadisticas ? '...' : estadisticas.resueltos }}</h3>
+        <p>Reportes Resueltos</p>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon rechazados">
+        <i class="fas fa-times-circle"></i>
+      </div>
+      <div class="stat-content">
+        <h3 [class.loading]="loadingEstadisticas">{{ loadingEstadisticas ? '...' : estadisticas.rechazados }}</h3>
+        <p>Reportes Rechazados</p>
+      </div>
+    </div>
+  </div>
+  <div class="content-grid">
+    <div class="card recent-reports">
+      <div class="card-header">
+        <h3>Reportes Recientes</h3>
+        <button class="btn-link" (click)="verTodosReportes()">Ver todos</button>
+      </div>
+      <div class="card-content">
+        <div class="reports-list-container">
+          <div class="reports-list">
+         
+            <div *ngIf="loadingReportes" class="report-item loading-item">
+              <div class="report-icon loading">
+                <i class="fas fa-spinner fa-spin"></i>
+              </div>
+              <div class="report-content">
+                <p>Cargando reportes...</p>
+              </div>
+            </div>
+
+            <div *ngFor="let reporte of reportesRecientes; trackBy: trackByReporte" class="report-item">
+              <div class="report-icon" [class]="getEstadoClass(reporte.estado)">
+                <i class="fas fa-file-alt"></i>
+              </div>
+              <div class="report-content">
+                <div class="report-header">
+                  <h4>{{ reporte.tipoError }}</h4>
+                  <span class="report-badge" [class]="getEstadoClass(reporte.estado)">
+                    {{ getEstadoLabel(reporte.estado) }}
+                  </span>
+                </div>
+                <p class="report-description">{{ reporte.descripcion }}</p>
+                <div class="report-meta">
+                  <span *ngIf="reporte.alumnoNombre" class="report-alumno">
+                    <i class="fas fa-user"></i> {{ reporte.alumnoNombre }}
+                  </span>
+                  <span *ngIf="reporte.codigoDiploma" class="report-codigo">
+                    <i class="fas fa-certificate"></i> {{ reporte.codigoDiploma }}
+                  </span>
+                  <span class="report-time">
+                    <i class="fas fa-clock"></i> {{ formatTimeAgo(reporte.fechaCreacion) }}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div *ngIf="reportesRecientes.length === 0 && !loadingReportes" class="report-item empty-state">
+              <div class="report-icon empty">
+                <i class="fas fa-inbox"></i>
+              </div>
+              <div class="report-content">
+                <p>No hay reportes recientes</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="sidebar">
+
+      <div class="card reports-by-type">
+        <div class="card-header">
+          <h3>Reportes por Tipo</h3>
+        </div>
+        <div class="card-content">
+
+          <div *ngIf="loadingTipos" class="tipo-loading">
+            <i class="fas fa-spinner fa-spin"></i>
+            <span>Cargando...</span>
+          </div>
+
+          <div *ngIf="!loadingTipos" class="tipos-list">
+            <div *ngFor="let tipo of reportesPorTipo; trackBy: trackByTipo" class="tipo-item">
+              <div class="tipo-info">
+                <span class="tipo-nombre">{{ tipo.tipoError }}</span>
+                <span class="tipo-badge">{{ tipo.cantidad }}</span>
+              </div>
+              <div class="tipo-bar">
+                <div class="tipo-bar-fill"
+                     [style.width.%]="(tipo.cantidad / estadisticas.total) * 100">
+                </div>
+              </div>
+            </div>
+            <div *ngIf="reportesPorTipo.length === 0" class="tipo-empty">
+              <i class="fas fa-chart-bar"></i>
+              <p>No hay datos disponibles</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

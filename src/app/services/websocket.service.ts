@@ -6,7 +6,7 @@ import { NotificacionService } from './notificacion.service';
 import { Notificacion } from '../shared/interfaces/notificacion.interface';
 import { ToastService } from './toast.service';
 
-// Access SockJS and Stomp from global window object (loaded from CDN in index.html)
+
 declare global {
   interface Window {
     SockJS: any;
@@ -119,6 +119,14 @@ export class WebSocketService implements OnDestroy {
       }
     );
 
+   
+    this.stompClient.subscribe(
+      `/topic/reportes`,
+      (message: any) => {
+        this.manejarNotificacionReporte(JSON.parse(message.body));
+      }
+    );
+
   }
 
   private manejarNuevaNotificacion(notificacion: Notificacion): void {
@@ -140,6 +148,25 @@ export class WebSocketService implements OnDestroy {
   private manejarTodasLeidas(): void {
 
     this.notificacionService.actualizarContadorNoLeidas();
+  }
+
+  private manejarNotificacionReporte(data: any): void {
+
+    if (data.tipo === 'NUEVO_REPORTE') {
+      this.toastService.show({
+        title: 'Nuevo Reporte de Grado',
+        message: `${data.tipoError} - ${data.gradoCodigo}`,
+        type: 'info',
+        duration: 6000
+      });
+    } else if (data.tipo === 'REPORTE_ACTUALIZADO') {
+      this.toastService.show({
+        title: 'Reporte Actualizado',
+        message: data.mensaje || `Reporte #${data.reporteId} actualizado`,
+        type: 'success',
+        duration: 5000
+      });
+    }
   }
 
   private mostrarToastNotificacion(notificacion: Notificacion): void {

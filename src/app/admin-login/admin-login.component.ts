@@ -78,11 +78,10 @@ export class AdminLoginComponent implements OnInit {
 
           this.isLoading = false;
 
-          // Extract data from ApiResponse wrapper
+
           const loginData = response?.data || response;
 
-          // ✅ NUEVO: Verificar si usuario debe cambiar password
-          // Puede estar indicado en changePasswordRequired o en usuario.mustChangePassword
+      
           const changePasswordRequired = loginData?.changePasswordRequired === true;
           const usuario_response = loginData?.usuario;
           const mustChangePassword = usuario_response?.mustChangePassword === true;
@@ -90,8 +89,7 @@ export class AdminLoginComponent implements OnInit {
           if (changePasswordRequired || mustChangePassword) {
             console.log('Usuario requiere cambiar contraseña. Redirigiendo a /cambiar-contrasena');
             this.mustChangePassword = true;
-            // No hacer logout - ya tenemos un token válido para cambiar contraseña
-            // Redirigir a componente de cambio de contraseña
+           
             this.router.navigate(['/cambiar-contrasena'], {
               queryParams: {
                 reason: 'first-login',
@@ -101,21 +99,23 @@ export class AdminLoginComponent implements OnInit {
             return;
           }
 
-          // Extract redirectUrl from response
+
           const redirectUrl = loginData?.redirectUrl;
 
-          // Use redirectUrl from backend - it's always provided
+     
           if (redirectUrl && redirectUrl !== '/cambiar-contrasena') {
-            console.log('Redirecting to:', redirectUrl);
+          
             this.router.navigate([redirectUrl]);
           } else {
-            // Fallback: shouldn't happen but just in case
+         
             console.warn('No redirectUrl in response, using role-based fallback');
             const roleRoutes: { [key: string]: string } = {
               'admin': '/admin/tablero',
               'administrativo': '/administrativo/tablero',
               'usuario': '/usuario/tablero',
-              'estudiante': '/estudiante/tablero'
+              'estudiante': '/estudiante/tablero',
+              'grados': '/grados-admin/tablero',
+              'director': '/grados-admin/tablero'
             };
             const userRole = usuario_response?.role?.name?.toLowerCase() || '';
             const route = roleRoutes[userRole] || '/';
@@ -194,7 +194,7 @@ export class AdminLoginComponent implements OnInit {
     try {
       localStorage.setItem('adminCredentials', JSON.stringify({ usuario }));
     } catch (e) {
-      // localStorage no disponible
+
     }
   }
 

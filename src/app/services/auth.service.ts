@@ -58,7 +58,7 @@ export class AuthService {
     return this.http.post<LoginResponse>(`${environment.apiUrl}/api/auth/login`, credentials)
       .pipe(
         tap(response => {
-          // Handle ApiResponse wrapper - data can be in response.data or response directly
+
           const loginData = response?.data || response;
           const token = loginData?.token;
           const refreshToken = loginData?.refreshToken;
@@ -74,20 +74,16 @@ export class AuthService {
 
               this.currentUserSubject.next(usuario);
 
-              // ✅ NUEVO: Detectar si usuario requiere cambiar password en primer login
-              // El flag 'mustChangePassword' indica que el usuario debe cambiar su contraseña temporal
+           
               if (usuario.mustChangePassword === true) {
-                console.log('Usuario requiere cambiar password en primer login');
-                // La redirección será manejada por el componente de login (admin-login.component.ts)
-                // No iniciar timer de inactividad hasta que cambie password
+            
               } else {
                 this.startInactivityTimer();
                 this.setupUserActivityListeners();
               }
             }
 
-            // Log redirectUrl for debugging
-            console.log('Login successful. RedirectUrl from backend:', loginData?.redirectUrl);
+       
           }
         }),
         catchError(error => {
@@ -172,7 +168,7 @@ export class AuthService {
       }
     }).pipe(
       tap(response => {
-        // Handle ApiResponse wrapper - data can be in response.data or response directly
+ 
         const loginData = response?.data || response;
         const token = loginData?.token;
         const newRefreshToken = loginData?.refreshToken;
@@ -233,8 +229,6 @@ export class AuthService {
       });
     }
 
-    // Hacer una solicitud al backend para validar el token
-    // Usamos un endpoint que existe y requiere autenticación
     return this.http.get<any>(`${environment.apiUrl}/api/usuarios/perfil`, {
       headers: {
         'Authorization': `Bearer ${token}`

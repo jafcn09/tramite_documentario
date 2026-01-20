@@ -1,0 +1,216 @@
+<div class="grados-crud-container">
+ 
+  <div class="page-header">
+    <h2><i class="fas fa-graduation-cap"></i> Gestión de Grados Académicos</h2>
+    <p class="subtitle">Administra los registros de grados y títulos académicos</p>
+  </div>
+
+  <div class="filters-section">
+    <div class="filters-row">
+      <div class="filter-group">
+        <label><i class="fas fa-building"></i> Facultad</label>
+        <select [(ngModel)]="filtroFacultad" (change)="onFiltroChange()" class="filter-select" [disabled]="loadingFiltros">
+          <option value="TODAS">Todas las Facultades</option>
+          <option *ngFor="let facultad of facultades" [value]="facultad">{{ facultad }}</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label><i class="fas fa-graduation-cap"></i> Tipo de Grado</label>
+        <select [(ngModel)]="filtroGradoAcademico" (change)="onFiltroChange()" class="filter-select" [disabled]="loadingFiltros">
+          <option value="TODOS">Todos los Grados</option>
+          <option *ngFor="let tipo of tiposGrado" [value]="tipo">{{ tipo }}</option>
+        </select>
+      </div>
+
+      <div class="filter-group search-group">
+        <label><i class="fas fa-search"></i> Buscar</label>
+        <input type="text" [(ngModel)]="filtroBusqueda" (input)="onBusquedaChange()" placeholder="Buscar por alumno, DNI, código..." class="filter-input">
+      </div>
+    </div>
+
+    <div class="results-info">
+      <span class="results-count"><i class="fas fa-list"></i> Mostrando {{ gradosFiltrados.length }} de {{ totalElements }} registros</span>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="table-section">
+    <div *ngIf="loading" class="loading-state">
+      <i class="fas fa-spinner fa-spin"></i>
+      <p>Cargando grados...</p>
+    </div>
+
+    <div *ngIf="!loading" class="table-container">
+      <table class="grados-table">
+        <thead>
+          <tr>
+            <th (click)="changeSort('id')" class="sortable">ID <i class="fas" [class.fa-sort]="sortBy !== 'id'" [class.fa-sort-up]="sortBy === 'id' && sortDirection === 'ASC'" [class.fa-sort-down]="sortBy === 'id' && sortDirection === 'DESC'"></i></th>
+            <th (click)="changeSort('alumno')" class="sortable">Alumno <i class="fas" [class.fa-sort]="sortBy !== 'alumno'" [class.fa-sort-up]="sortBy === 'alumno' && sortDirection === 'ASC'" [class.fa-sort-down]="sortBy === 'alumno' && sortDirection === 'DESC'"></i></th>
+            <th>DNI</th>
+            <th (click)="changeSort('codigoDiploma')" class="sortable">Código Diploma <i class="fas" [class.fa-sort]="sortBy !== 'codigoDiploma'" [class.fa-sort-up]="sortBy === 'codigoDiploma' && sortDirection === 'ASC'" [class.fa-sort-down]="sortBy === 'codigoDiploma' && sortDirection === 'DESC'"></i></th>
+            <th (click)="changeSort('gradoAcademico')" class="sortable">Grado Académico <i class="fas" [class.fa-sort]="sortBy !== 'gradoAcademico'" [class.fa-sort-up]="sortBy === 'gradoAcademico' && sortDirection === 'ASC'" [class.fa-sort-down]="sortBy === 'gradoAcademico' && sortDirection === 'DESC'"></i></th>
+            <th (click)="changeSort('facultad')" class="sortable">Facultad <i class="fas" [class.fa-sort]="sortBy !== 'facultad'" [class.fa-sort-up]="sortBy === 'facultad' && sortDirection === 'ASC'" [class.fa-sort-down]="sortBy === 'facultad' && sortDirection === 'DESC'"></i></th>
+            <th>Programa</th>
+            <th class="actions-col">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="gradosFiltrados.length === 0" class="empty-row">
+            <td colspan="8">
+              <div class="empty-state">
+                <i class="fas fa-inbox"></i>
+                <p>No se encontraron grados</p>
+              </div>
+            </td>
+          </tr>
+
+          <tr *ngFor="let grado of gradosFiltrados; trackBy: trackByGrado" class="data-row">
+            <td class="id-col">{{ grado.id }}</td>
+            <td class="alumno-col">{{ grado.alumno }}</td>
+            <td class="dni-col">{{ grado.dni }}</td>
+            <td class="codigo-col"><span class="codigo-badge">{{ grado.codigoDiploma }}</span></td>
+            <td class="grado-col"><span class="grado-badge">{{ grado.gradoAcademico }}</span></td>
+            <td class="facultad-col">{{ grado.facultad }}</td>
+            <td class="programa-col">{{ grado.programaAcademico }}</td>
+            <td class="actions-col">
+              <div class="action-buttons">
+                <button class="btn-icon btn-edit" (click)="abrirModalEditar(grado)" [disabled]="loadingAction" title="Editar">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn-icon btn-delete" (click)="eliminarGrado(grado)" [disabled]="loadingAction" title="Eliminar">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+
+    <div *ngIf="!loading && totalPages > 1" class="pagination-section">
+      <div class="pagination-info">Mostrando {{ paginaInicio }} - {{ paginaFin }} de {{ totalElements }}</div>
+      <div class="pagination-controls">
+        <button class="btn-page" (click)="changePage(0)" [disabled]="currentPage === 0"><i class="fas fa-angle-double-left"></i></button>
+        <button class="btn-page" (click)="changePage(currentPage - 1)" [disabled]="currentPage === 0"><i class="fas fa-angle-left"></i></button>
+        <span class="page-indicator">Página {{ currentPage + 1 }} de {{ totalPages }}</span>
+        <button class="btn-page" (click)="changePage(currentPage + 1)" [disabled]="currentPage >= totalPages - 1"><i class="fas fa-angle-right"></i></button>
+        <button class="btn-page" (click)="changePage(totalPages - 1)" [disabled]="currentPage >= totalPages - 1"><i class="fas fa-angle-double-right"></i></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div *ngIf="showModal" class="modal-overlay" (click)="cerrarModal()">
+  <div class="modal-content modal-large" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3><i class="fas fa-edit"></i> Editar Grado Académico</h3>
+      <button class="btn-close" (click)="cerrarModal()"><i class="fas fa-times"></i></button>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Alumno <span class="required">*</span></label>
+          <input type="text" [(ngModel)]="gradoForm.alumno" class="form-input" required>
+        </div>
+
+        <div class="form-group">
+          <label>DNI <span class="required">*</span></label>
+          <input type="text" [(ngModel)]="gradoForm.dni" class="form-input" required>
+        </div>
+
+        <div class="form-group">
+          <label>Código Diploma <span class="required">*</span></label>
+          <input type="text" [(ngModel)]="gradoForm.codigoDiploma" class="form-input" required>
+        </div>
+
+        <div class="form-group">
+          <label>Número Registro <span class="required">*</span></label>
+          <input type="text" [(ngModel)]="gradoForm.numeroRegistro" class="form-input" required>
+        </div>
+
+        <div class="form-group">
+          <label>Número Libro</label>
+          <input type="text" [(ngModel)]="gradoForm.numeroLibro" class="form-input">
+        </div>
+
+        <div class="form-group">
+          <label>Grado Académico <span class="required">*</span></label>
+          <input type="text" [(ngModel)]="gradoForm.gradoAcademico" class="form-input" required>
+        </div>
+
+        <div class="form-group full-width">
+          <label>Facultad <span class="required">*</span></label>
+          <input type="text" [(ngModel)]="gradoForm.facultad" class="form-input" required>
+        </div>
+
+        <div class="form-group full-width">
+          <label>Programa Académico</label>
+          <input type="text" [(ngModel)]="gradoForm.programaAcademico" class="form-input">
+        </div>
+
+        <div class="form-group">
+          <label>Especialidad</label>
+          <input type="text" [(ngModel)]="gradoForm.especialidad" class="form-input">
+        </div>
+
+        <div class="form-group">
+          <label>Número Inscripción</label>
+          <input type="text" [(ngModel)]="gradoForm.numeroInscripcion" class="form-input">
+        </div>
+
+        <div class="form-group">
+          <label>Resolución</label>
+          <input type="text" [(ngModel)]="gradoForm.resolucion" class="form-input">
+        </div>
+
+        <div class="form-group">
+          <label>Fecha Sesión Resolución</label>
+          <input type="text" [(ngModel)]="gradoForm.fechaSesionResolucion" class="form-input">
+        </div>
+
+        <div class="form-group">
+          <label>Fecha Expedición Grado</label>
+          <input type="text" [(ngModel)]="gradoForm.fechaExpedicionGrado" class="form-input">
+        </div>
+
+        <div class="form-group">
+          <label>Fecha Expedición Diploma</label>
+          <input type="text" [(ngModel)]="gradoForm.fechaExpedicionDiploma" class="form-input">
+        </div>
+
+        <div class="form-group">
+          <label>Rector</label>
+          <input type="text" [(ngModel)]="gradoForm.rector" class="form-input">
+        </div>
+
+        <div class="form-group">
+          <label>Coordinador Académico</label>
+          <input type="text" [(ngModel)]="gradoForm.coordinadorAcademico" class="form-input">
+        </div>
+
+        <div class="form-group">
+          <label>Secretario General</label>
+          <input type="text" [(ngModel)]="gradoForm.secretarioGeneral" class="form-input">
+        </div>
+
+        <div class="form-group">
+          <label>Condición</label>
+          <input type="text" [(ngModel)]="gradoForm.condicion" class="form-input">
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="cerrarModal()" [disabled]="loadingAction">Cancelar</button>
+      <button class="btn btn-primary" (click)="guardarGrado()" [disabled]="loadingAction">
+        <i *ngIf="loadingAction" class="fas fa-spinner fa-spin"></i>
+        <i *ngIf="!loadingAction" class="fas fa-save"></i>
+        {{ loadingAction ? 'Guardando...' : 'Guardar Cambios' }}
+      </button>
+    </div>
+  </div>
+</div>

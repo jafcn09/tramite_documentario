@@ -1,0 +1,260 @@
+<div class="reportes-management-container">
+
+  <div class="page-header">
+    <div class="header-content">
+      <h2><i class="fas fa-clipboard-list"></i> Gestión de Reportes de Grados</h2>
+      <p class="subtitle">Administra y da seguimiento a los reportes de errores en grados académicos</p>
+    </div>
+  </div>
+
+
+  <div class="filters-section">
+    <div class="filters-row">
+
+      <div class="filter-group">
+        <label for="filtroEstado">
+          <i class="fas fa-filter"></i> Estado
+        </label>
+        <select
+          id="filtroEstado"
+          [(ngModel)]="filtroEstado"
+          (change)="onFiltroEstadoChange()"
+          class="filter-select">
+          <option value="TODOS">Todos los Estados</option>
+          <option value="PENDIENTE">Pendiente</option>
+          <option value="EN_REVISION">En Revisión</option>
+          <option value="RESUELTO">Resuelto</option>
+          <option value="RECHAZADO">Rechazado</option>
+        </select>
+      </div>
+
+  
+      <div class="filter-group search-group">
+        <label for="filtroBusqueda">
+          <i class="fas fa-search"></i> Buscar
+        </label>
+        <input
+          id="filtroBusqueda"
+          type="text"
+          [(ngModel)]="filtroBusqueda"
+          (input)="onBusquedaChange()"
+          placeholder="Buscar por tipo, descripción, alumno, código..."
+          class="filter-input">
+      </div>
+    </div>
+
+   
+    <div class="results-info">
+      <span class="results-count">
+        <i class="fas fa-list"></i>
+        Mostrando {{ reportesFiltrados.length }} de {{ totalElements }} reportes
+      </span>
+      <span *ngIf="filtroEstado !== 'TODOS'" class="filter-badge">
+        Filtrado por: {{ getEstadoLabel(filtroEstado) }}
+      </span>
+    </div>
+  </div>
+  <div class="table-section">
+
+    <div *ngIf="loading" class="loading-state">
+      <i class="fas fa-spinner fa-spin"></i>
+      <p>Cargando reportes...</p>
+    </div>
+
+ 
+    <div *ngIf="!loading" class="table-container">
+      <table class="reportes-table">
+        <thead>
+          <tr>
+            <th (click)="changeSort('id')" class="sortable">
+              ID
+              <i class="fas"
+                 [class.fa-sort]="sortBy !== 'id'"
+                 [class.fa-sort-up]="sortBy === 'id' && sortDirection === 'ASC'"
+                 [class.fa-sort-down]="sortBy === 'id' && sortDirection === 'DESC'"></i>
+            </th>
+            <th (click)="changeSort('tipoError')" class="sortable">
+              Tipo de Error
+              <i class="fas"
+                 [class.fa-sort]="sortBy !== 'tipoError'"
+                 [class.fa-sort-up]="sortBy === 'tipoError' && sortDirection === 'ASC'"
+                 [class.fa-sort-down]="sortBy === 'tipoError' && sortDirection === 'DESC'"></i>
+            </th>
+            <th>Descripción</th>
+            <th>Alumno</th>
+            <th>Código Diploma</th>
+            <th (click)="changeSort('estado')" class="sortable">
+              Estado
+              <i class="fas"
+                 [class.fa-sort]="sortBy !== 'estado'"
+                 [class.fa-sort-up]="sortBy === 'estado' && sortDirection === 'ASC'"
+                 [class.fa-sort-down]="sortBy === 'estado' && sortDirection === 'DESC'"></i>
+            </th>
+            <th (click)="changeSort('fechaCreacion')" class="sortable">
+              Fecha Creación
+              <i class="fas"
+                 [class.fa-sort]="sortBy !== 'fechaCreacion'"
+                 [class.fa-sort-up]="sortBy === 'fechaCreacion' && sortDirection === 'ASC'"
+                 [class.fa-sort-down]="sortBy === 'fechaCreacion' && sortDirection === 'DESC'"></i>
+            </th>
+            <th class="actions-col">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Empty State -->
+          <tr *ngIf="reportesFiltrados.length === 0" class="empty-row">
+            <td colspan="8">
+              <div class="empty-state">
+                <i class="fas fa-inbox"></i>
+                <p>No se encontraron reportes</p>
+              </div>
+            </td>
+          </tr>
+
+
+          <tr *ngFor="let reporte of reportesFiltrados; trackBy: trackByReporte" class="data-row">
+            <td class="id-col">{{ reporte.id }}</td>
+            <td class="tipo-col">
+              <span class="tipo-badge">{{ reporte.tipoError }}</span>
+            </td>
+            <td class="descripcion-col">
+              <div class="descripcion-text" [title]="reporte.descripcion">
+                {{ reporte.descripcion }}
+              </div>
+            </td>
+            <td class="alumno-col">{{ reporte.alumnoNombre || 'N/A' }}</td>
+            <td class="codigo-col">
+              <span *ngIf="reporte.codigoDiploma" class="codigo-badge">
+                {{ reporte.codigoDiploma }}
+              </span>
+              <span *ngIf="!reporte.codigoDiploma" class="text-muted">N/A</span>
+            </td>
+            <td class="estado-col">
+              <span class="estado-badge" [class]="getEstadoClass(reporte.estado)">
+                {{ getEstadoLabel(reporte.estado) }}
+              </span>
+            </td>
+            <td class="fecha-col">{{ formatDate(reporte.fechaCreacion) }}</td>
+            <td class="actions-col">
+              <div class="action-buttons">
+                <button
+                  class="btn-icon btn-edit"
+                  (click)="abrirModalActualizar(reporte)"
+                  [disabled]="loadingAction"
+                  title="Actualizar estado">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button
+                  class="btn-icon btn-delete"
+                  (click)="eliminarReporte(reporte)"
+                  [disabled]="loadingAction"
+                  title="Eliminar reporte">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+
+    <div *ngIf="!loading && totalPages > 1" class="pagination-section">
+      <div class="pagination-info">
+        Mostrando {{ paginaInicio }} - {{ paginaFin }} de {{ totalElements }}
+      </div>
+      <div class="pagination-controls">
+        <button
+          class="btn-page"
+          (click)="changePage(0)"
+          [disabled]="currentPage === 0">
+          <i class="fas fa-angle-double-left"></i>
+        </button>
+        <button
+          class="btn-page"
+          (click)="changePage(currentPage - 1)"
+          [disabled]="currentPage === 0">
+          <i class="fas fa-angle-left"></i>
+        </button>
+        <span class="page-indicator">
+          Página {{ currentPage + 1 }} de {{ totalPages }}
+        </span>
+        <button
+          class="btn-page"
+          (click)="changePage(currentPage + 1)"
+          [disabled]="currentPage >= totalPages - 1">
+          <i class="fas fa-angle-right"></i>
+        </button>
+        <button
+          class="btn-page"
+          (click)="changePage(totalPages - 1)"
+          [disabled]="currentPage >= totalPages - 1">
+          <i class="fas fa-angle-double-right"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div *ngIf="showModal" class="modal-overlay" (click)="cerrarModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>
+        <i class="fas fa-edit"></i>
+        Actualizar Estado del Reporte
+      </h3>
+      <button class="btn-close" (click)="cerrarModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div *ngIf="reporteSeleccionado" class="reporte-info">
+        <div class="info-row">
+          <strong>Tipo de Error:</strong> {{ reporteSeleccionado.tipoError }}
+        </div>
+        <div class="info-row">
+          <strong>Descripción:</strong> {{ reporteSeleccionado.descripcion }}
+        </div>
+        <div class="info-row" *ngIf="reporteSeleccionado.alumnoNombre">
+          <strong>Alumno:</strong> {{ reporteSeleccionado.alumnoNombre }}
+        </div>
+        <div class="info-row" *ngIf="reporteSeleccionado.codigoDiploma">
+          <strong>Código Diploma:</strong> {{ reporteSeleccionado.codigoDiploma }}
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="nuevoEstado">Nuevo Estado <span class="required">*</span></label>
+        <select id="nuevoEstado" [(ngModel)]="nuevoEstado" class="form-select">
+          <option value="PENDIENTE">Pendiente</option>
+          <option value="EN_REVISION">En Revisión</option>
+          <option value="RESUELTO">Resuelto</option>
+          <option value="RECHAZADO">Rechazado</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="comentarioAdmin">Comentario del Administrador</label>
+        <textarea
+          id="comentarioAdmin"
+          [(ngModel)]="comentarioAdmin"
+          rows="4"
+          placeholder="Añade un comentario sobre la actualización del estado..."
+          class="form-textarea"></textarea>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="cerrarModal()" [disabled]="loadingAction">
+        Cancelar
+      </button>
+      <button class="btn btn-primary" (click)="actualizarReporte()" [disabled]="loadingAction">
+        <i *ngIf="loadingAction" class="fas fa-spinner fa-spin"></i>
+        <i *ngIf="!loadingAction" class="fas fa-save"></i>
+        {{ loadingAction ? 'Guardando...' : 'Guardar Cambios' }}
+      </button>
+    </div>
+  </div>
+</div>

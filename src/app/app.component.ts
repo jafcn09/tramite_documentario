@@ -34,7 +34,7 @@ export class AppComponent implements OnInit {
 
   private initializeRoute(): void {
     const currentUrl = this.router.url;
-    const adminRoutes = ['/servicios-administrativos', '/admin', '/administrativo', '/usuario', '/alumno', '/externo', '/estudiante'];
+    const adminRoutes = ['/servicios-administrativos', '/admin', '/administrativo', '/usuario', '/alumno', '/externo', '/estudiante', '/grados-admin'];
     const loginRoutes = ['/admin-login', '/usuario-login', '/alumno-login', '/externo-login'];
     const userRoutes = ['/perfil', '/cambiar-contrasena'];
 

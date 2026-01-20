@@ -1,0 +1,501 @@
+.grados-admin-container {
+  padding: 20px;
+  height: 100%;
+  overflow-y: auto;
+}
+
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 25px;
+  margin-bottom: 30px;
+}
+
+.stat-card {
+  background: white;
+  border-radius: 16px;
+  padding: 35px 30px;
+  display: flex;
+  align-items: center;
+  gap: 25px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  min-height: 130px;
+}
+
+.stat-card.clickable {
+  cursor: pointer;
+}
+
+.stat-card.clickable:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.12);
+}
+
+.stat-icon {
+  width: 75px;
+  height: 75px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  color: white;
+  flex-shrink: 0;
+}
+
+.stat-icon.total { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+.stat-icon.pendientes { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+.stat-icon.revision { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+.stat-icon.resueltos { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+.stat-icon.rechazados { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+
+.stat-content {
+  flex: 1;
+}
+
+.stat-content h3 {
+  font-size: 42px;
+  font-weight: 700;
+  margin: 0;
+  color: #2c3e50;
+  line-height: 1;
+}
+
+.stat-content h3.loading {
+  opacity: 0.6;
+}
+
+.stat-content p {
+  font-size: 15px;
+  color: #7f8c8d;
+  margin: 8px 0 0 0;
+  font-weight: 500;
+}
+
+.content-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+
+.card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.card-header {
+  padding: 20px 25px;
+  border-bottom: 1px solid #f1f2f6;
+  background: #fafbfc;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  color: #667eea;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.btn-link:hover {
+  color: #764ba2;
+  text-decoration: underline;
+}
+
+.card-content {
+  padding: 25px;
+}
+
+/* Reports List */
+.reports-list-container {
+  position: relative;
+}
+
+.reports-list {
+  max-height: 500px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e0 #f7fafc;
+}
+
+.reports-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.reports-list::-webkit-scrollbar-track {
+  background: #f7fafc;
+  border-radius: 3px;
+}
+
+.reports-list::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 3px;
+}
+
+.reports-list::-webkit-scrollbar-thumb:hover {
+  background: #a0aec0;
+}
+
+.report-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #f1f2f6;
+}
+
+.report-item:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.report-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: white;
+  flex-shrink: 0;
+}
+
+.report-icon.estado-pendiente { background: #f5576c; }
+.report-icon.estado-revision { background: #4facfe; }
+.report-icon.estado-resuelto { background: #43e97b; }
+.report-icon.estado-rechazado { background: #fa709a; }
+.report-icon.loading { background: #f0f0f0; color: #999; }
+.report-icon.empty { background: #e2e8f0; color: #a0aec0; }
+
+.report-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.report-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  gap: 10px;
+}
+
+.report-header h4 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: #2c3e50;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.report-badge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+}
+
+.report-badge.estado-pendiente {
+  background: #fee;
+  color: #f5576c;
+}
+
+.report-badge.estado-revision {
+  background: #e3f2fd;
+  color: #4facfe;
+}
+
+.report-badge.estado-resuelto {
+  background: #e8f5e9;
+  color: #43e97b;
+}
+
+.report-badge.estado-rechazado {
+  background: #fff3e0;
+  color: #fa709a;
+}
+
+.report-description {
+  margin: 0 0 10px 0;
+  font-size: 14px;
+  color: #5a6c7d;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.report-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 12px;
+  color: #7f8c8d;
+}
+
+.report-meta span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.report-meta i {
+  font-size: 11px;
+  color: #a0aec0;
+}
+
+.loading-item .report-content p {
+  color: #999;
+}
+
+.empty-state .report-content p {
+  color: #a0aec0;
+  font-style: italic;
+}
+
+/* Reports by Type */
+.tipo-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 20px;
+  color: #999;
+}
+
+.tipos-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.tipo-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tipo-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tipo-nombre {
+  font-size: 13px;
+  font-weight: 500;
+  color: #2c3e50;
+}
+
+.tipo-badge {
+  background: #667eea;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.tipo-bar {
+  width: 100%;
+  height: 6px;
+  background: #f1f2f6;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.tipo-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.tipo-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+  color: #a0aec0;
+  text-align: center;
+}
+
+.tipo-empty i {
+  font-size: 32px;
+  margin-bottom: 10px;
+}
+
+.tipo-empty p {
+  margin: 0;
+  font-size: 13px;
+  font-style: italic;
+}
+
+/* Quick Actions */
+.actions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.action-btn {
+  background: #f8f9fa;
+  border: 2px solid #e9ecef;
+  border-radius: 10px;
+  padding: 15px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  width: 100%;
+}
+
+.action-btn:hover {
+  background: #667eea;
+  border-color: #667eea;
+  color: white;
+  transform: translateX(5px);
+}
+
+.action-btn i {
+  font-size: 18px;
+  color: #667eea;
+  transition: color 0.3s ease;
+  width: 20px;
+  text-align: center;
+}
+
+.action-btn:hover i {
+  color: white;
+}
+
+.action-btn span {
+  font-size: 14px;
+  font-weight: 600;
+  color: #2c3e50;
+  transition: color 0.3s ease;
+}
+
+.action-btn:hover span {
+  color: white;
+}
+
+
+@media (max-width: 1200px) {
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    flex-direction: row;
+  }
+
+  .sidebar .card {
+    flex: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .grados-admin-container {
+    padding: 15px;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 15px;
+  }
+
+  .stat-card {
+    padding: 20px;
+  }
+
+  .stat-icon {
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
+  }
+
+  .stat-content h3 {
+    font-size: 28px;
+  }
+
+  .sidebar {
+    flex-direction: column;
+  }
+
+  .content-grid {
+    gap: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .grados-admin-container {
+    padding: 10px;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .stat-card {
+    padding: 15px;
+  }
+
+  .report-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .report-badge {
+    align-self: flex-start;
+  }
+
+  .report-meta {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .card-header {
+    padding: 15px;
+  }
+
+  .card-content {
+    padding: 15px;
+  }
+}

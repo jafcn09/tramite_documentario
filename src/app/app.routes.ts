@@ -66,6 +66,18 @@ export const routes: Routes = [
         loadComponent: () => import('./features/organigrama/organigrama.component').then(m => m.OrganigramaComponent)
       },
       {
+        path: 'grados',
+        loadComponent: () => import('./admin/grados-admin/grados-admin.component').then(m => m.GradosAdminComponent)
+      },
+      {
+        path: 'grados/reportes',
+        loadComponent: () => import('./admin/grados-admin/reportes-management.component').then(m => m.ReportesManagementComponent)
+      },
+      {
+        path: 'grados/listado',
+        loadComponent: () => import('./admin/grados-admin/grados-crud.component').then(m => m.GradosCrudComponent)
+      },
+      {
         path: 'mis-tramites',
         loadComponent: () => import('./features/mis-tramites/mis-tramites.component').then(m => m.MisTramitesComponent)
       },
@@ -206,6 +218,44 @@ export const routes: Routes = [
     ]
   },
 
+
+  {
+    path: 'grados-admin',
+    canActivate: [AuthGuard, RoleGuard],
+    data: { roles: ['grados', 'director'] },
+    loadComponent: () => import('./shared/layout/layout.component').then(m => m.LayoutComponent),
+    children: [
+      {
+        path: 'tablero',
+        loadComponent: () => import('./admin/grados-admin/grados-admin.component').then(m => m.GradosAdminComponent)
+      },
+      {
+        path: 'reportes',
+        loadComponent: () => import('./admin/grados-admin/reportes-management.component').then(m => m.ReportesManagementComponent)
+      },
+      {
+        path: 'listado',
+        loadComponent: () => import('./admin/grados-admin/grados-crud.component').then(m => m.GradosCrudComponent)
+      },
+      {
+        path: 'perfil',
+        loadComponent: () => import('./shared/user-profile/user-profile.component').then(m => m.UserProfileComponent)
+      },
+      {
+        path: 'notificaciones',
+        loadComponent: () => import('./components/notificaciones/notificaciones.component').then(m => m.NotificacionesComponent)
+      },
+      {
+        path: 'notificaciones/:id',
+        loadComponent: () => import('./components/notificaciones/notificacion-detalle/notificacion-detalle.component').then(m => m.NotificacionDetalleComponent)
+      },
+      {
+        path: '',
+        redirectTo: 'tablero',
+        pathMatch: 'full'
+      }
+    ]
+  },
 
   {
     path: 'perfil',

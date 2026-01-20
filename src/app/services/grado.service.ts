@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Grado, GradoResponse, GradoStats } from '../shared/interfaces/grado.interface';
+import { Grado, GradoResponse, GradoStats, GradoRequest } from '../shared/interfaces/grado.interface';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -52,5 +52,41 @@ export class GradoService {
 
   obtenerEstadisticas(): Observable<GradoStats> {
     return this.http.get<GradoStats>(`${this.apiUrl}/estadisticas`);
+  }
+
+
+
+  listarTodosPaginado(page: number = 0, size: number = 20, sortBy: string = 'id', direction: string = 'DESC', facultad?: string, gradoAcademico?: string, busqueda?: string): Observable<any> {
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString())
+      .set('sortBy', sortBy)
+      .set('direction', direction);
+
+    if (facultad && facultad !== 'TODAS') {
+      params = params.set('facultad', facultad);
+    }
+
+    if (gradoAcademico && gradoAcademico !== 'TODOS') {
+      params = params.set('gradoAcademico', gradoAcademico);
+    }
+
+    if (busqueda && busqueda.trim()) {
+      params = params.set('busqueda', busqueda.trim());
+    }
+
+    return this.http.get<any>(`${this.apiUrl}/admin/listartodos`, { params });
+  }
+
+  obtenerPorId(id: number): Observable<Grado> {
+    return this.http.get<Grado>(`${this.apiUrl}/admin/${id}`);
+  }
+
+  actualizar(id: number, request: GradoRequest): Observable<Grado> {
+    return this.http.put<Grado>(`${this.apiUrl}/admin/${id}`, request);
+  }
+
+  eliminar(id: number): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/admin/${id}`);
   }
 }
