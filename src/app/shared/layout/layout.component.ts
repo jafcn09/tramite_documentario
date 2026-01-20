@@ -167,22 +167,57 @@ export class LayoutComponent implements OnInit {
   }
 
   viewProfile(event: Event) {
-    event.preventDefault();
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
     this.showUserDropdown = false;
+
     const profileRoute = this.getProfileRoute();
+    console.log('Navigating to profile:', profileRoute);
+
     if (profileRoute) {
-      window.location.href = profileRoute;
+      setTimeout(() => {
+        this.router.navigate([profileRoute]).catch(err => {
+          console.error('Navigation error:', err);
+        });
+      }, 100);
     }
   }
 
   getProfileRoute(): string {
+    if (!this.currentUser || !this.currentUser.role) return '/perfil';
+
+    const roleName = this.currentUser.role.name.toUpperCase();
+
+    if (roleName === 'ADMIN') {
+      return '/admin/perfil';
+    } else if (roleName === 'ADMINISTRATIVO') {
+      return '/administrativo/perfil';
+    } else if (roleName === 'USUARIO') {
+      return '/usuario/perfil';
+    } else if (roleName === 'ESTUDIANTE') {
+      return '/estudiante/perfil';
+    } else if (roleName === 'GRADOS' || roleName === 'DIRECTOR') {
+      return '/grados-admin/perfil';
+    }
+
     return '/perfil';
   }
 
   changePassword(event: Event) {
-    event.preventDefault();
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
     this.showUserDropdown = false;
-    this.router.navigate(['/cambiar-contrasena']);
+
+    console.log('Navigating to change password');
+    setTimeout(() => {
+      this.router.navigate(['/cambiar-contrasena']).catch(err => {
+        console.error('Navigation error:', err);
+      });
+    }, 100);
   }
 
   logout(event?: Event) {
@@ -199,9 +234,18 @@ export class LayoutComponent implements OnInit {
   }
 
   viewStudentNotifications(event: Event) {
-    event.preventDefault();
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
     this.showUserDropdown = false;
-    this.router.navigate(['/estudiante/notificaciones']);
+
+    console.log('Navigating to student notifications');
+    setTimeout(() => {
+      this.router.navigate(['/estudiante/notificaciones']).catch(err => {
+        console.error('Navigation error:', err);
+      });
+    }, 100);
   }
 
   @HostListener('document:click', ['$event'])

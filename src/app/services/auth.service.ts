@@ -215,10 +215,6 @@ export class AuthService {
     }
   }
 
-  /**
-   * Valida el token contra el servidor backend
-   * Si el token es inválido, limpia el localStorage y retorna false
-   */
   validateTokenWithBackend(): Observable<boolean> {
     const token = this.getToken();
 

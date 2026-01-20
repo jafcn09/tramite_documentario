@@ -306,6 +306,8 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
           baseRoute = '/usuario';
         } else if (roleName === 'ESTUDIANTE') {
           baseRoute = '/estudiante';
+        } else if (roleName === 'GRADOS' || roleName === 'DIRECTOR') {
+          baseRoute = '/grados-admin';
         }
       }
 
