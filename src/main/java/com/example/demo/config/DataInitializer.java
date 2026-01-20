@@ -55,6 +55,14 @@ public class DataInitializer {
                     return roleRepository.save(role);
                 });
 
+            Role gradosRole = roleRepository.findByName("GRADOS")
+                .orElseGet(() -> {
+                    Role role = new Role();
+                    role.setName("GRADOS");
+                    role.setDescription("Degrees and Titles management role");
+                    return roleRepository.save(role);
+                });
+
             String defaultUsername = "admin";
             String defaultPassword = "admin123";
             String defaultEmail = "admin@example.com";

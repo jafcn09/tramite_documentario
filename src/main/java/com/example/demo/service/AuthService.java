@@ -216,6 +216,8 @@ public class AuthService {
         roleRoutes.put("USUARIO", "/usuario/tablero");
         roleRoutes.put("ADMINISTRATIVO", "/administrativo/tablero");
         roleRoutes.put("ESTUDIANTE", "/estudiante/tablero");
+        roleRoutes.put("GRADOS", "/grados-admin/tablero");
+        roleRoutes.put("DIRECTOR", "/grados-admin/tablero");
         return roleRoutes.getOrDefault(role.getName().toUpperCase(), "/tablero");
     }
     
