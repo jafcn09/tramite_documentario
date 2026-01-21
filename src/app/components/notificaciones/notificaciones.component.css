@@ -775,3 +775,555 @@
     height: 32px;
   }
 }
+
+
+:host-context(html.dark-theme) .min-h-screen {
+  background: #0f0f23 !important;
+}
+
+:host-context(html.dark-theme) .bg-gray-50 {
+  background: #0f0f23 !important;
+}
+
+:host-context(html.dark-theme) .bg-white {
+  background: #1a1a2e !important;
+}
+
+:host-context(html.dark-theme) .bg-gray-100 {
+  background: #0f0f23 !important;
+}
+
+:host-context(html.dark-theme) .bg-gray-200 {
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+:host-context(html.dark-theme) .bg-blue-100 {
+  background: rgba(59, 130, 246, 0.2) !important;
+}
+
+:host-context(html.dark-theme) .bg-orange-100 {
+  background: rgba(251, 146, 60, 0.2) !important;
+}
+
+:host-context(html.dark-theme) .bg-green-100 {
+  background: rgba(34, 197, 94, 0.2) !important;
+}
+
+:host-context(html.dark-theme) .bg-purple-100 {
+  background: rgba(168, 85, 247, 0.2) !important;
+}
+
+:host-context(html.dark-theme) .bg-red-100 {
+  background: rgba(239, 68, 68, 0.2) !important;
+}
+
+:host-context(html.dark-theme) .bg-yellow-50 {
+  background: rgba(245, 158, 11, 0.15) !important;
+}
+
+:host-context(html.dark-theme) .bg-blue-50 {
+  background: rgba(59, 130, 246, 0.15) !important;
+}
+
+:host-context(html.dark-theme) .bg-red-50 {
+  background: rgba(239, 68, 68, 0.15) !important;
+}
+
+:host-context(html.dark-theme) .bg-orange-50 {
+  background: rgba(251, 146, 60, 0.15) !important;
+}
+
+:host-context(html.dark-theme) .bg-purple-50 {
+  background: rgba(168, 85, 247, 0.15) !important;
+}
+
+:host-context(html.dark-theme) .bg-green-50 {
+  background: rgba(34, 197, 94, 0.15) !important;
+}
+
+:host-context(html.dark-theme) .bg-gray-600 {
+  background: rgba(0, 0, 0, 0.8) !important;
+}
+
+/* Text colors */
+:host-context(html.dark-theme) .text-gray-900 {
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+:host-context(html.dark-theme) .text-gray-800 {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+:host-context(html.dark-theme) .text-gray-700 {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+:host-context(html.dark-theme) .text-gray-600 {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+:host-context(html.dark-theme) .text-gray-500 {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+:host-context(html.dark-theme) .text-gray-400 {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+:host-context(html.dark-theme) .text-blue-600 {
+  color: #60a5fa !important;
+}
+
+:host-context(html.dark-theme) .text-blue-700 {
+  color: #3b82f6 !important;
+}
+
+:host-context(html.dark-theme) .text-blue-800 {
+  color: #60a5fa !important;
+}
+
+:host-context(html.dark-theme) .text-orange-600 {
+  color: #fb923c !important;
+}
+
+:host-context(html.dark-theme) .text-orange-700 {
+  color: #fbbf24 !important;
+}
+
+:host-context(html.dark-theme) .text-orange-800 {
+  color: #fb923c !important;
+}
+
+:host-context(html.dark-theme) .text-green-600 {
+  color: #6ee7b7 !important;
+}
+
+:host-context(html.dark-theme) .text-green-800 {
+  color: #6ee7b7 !important;
+}
+
+:host-context(html.dark-theme) .text-red-600 {
+  color: #fca5a5 !important;
+}
+
+:host-context(html.dark-theme) .text-red-700 {
+  color: #fca5a5 !important;
+}
+
+:host-context(html.dark-theme) .text-red-800 {
+  color: #fca5a5 !important;
+}
+
+:host-context(html.dark-theme) .text-yellow-700 {
+  color: #fbbf24 !important;
+}
+
+:host-context(html.dark-theme) .text-yellow-800 {
+  color: #fbbf24 !important;
+}
+
+:host-context(html.dark-theme) .text-purple-600 {
+  color: #c084fc !important;
+}
+
+:host-context(html.dark-theme) .border-gray-200 {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+:host-context(html.dark-theme) .border-gray-300 {
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+:host-context(html.dark-theme) .border-red-300 {
+  border-color: rgba(239, 68, 68, 0.4) !important;
+}
+
+:host-context(html.dark-theme) .border-orange-200 {
+  border-color: rgba(251, 146, 60, 0.4) !important;
+}
+
+:host-context(html.dark-theme) .border-yellow-200 {
+  border-color: rgba(245, 158, 11, 0.4) !important;
+}
+
+:host-context(html.dark-theme) .border-blue-200 {
+  border-color: rgba(59, 130, 246, 0.4) !important;
+}
+
+:host-context(html.dark-theme) .ring-blue-100 {
+  --tw-ring-color: rgba(59, 130, 246, 0.3) !important;
+}
+
+
+:host-context(html.dark-theme) .bg-blue-600 {
+  background: #667eea !important;
+}
+
+:host-context(html.dark-theme) .hover\:bg-blue-700:hover {
+  background: #5a67d8 !important;
+}
+
+:host-context(html.dark-theme) .hover\:bg-gray-50:hover {
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+:host-context(html.dark-theme) .hover\:bg-red-50:hover {
+  background: rgba(239, 68, 68, 0.2) !important;
+}
+
+:host-context(html.dark-theme) .hover\:bg-orange-50:hover {
+  background: rgba(251, 146, 60, 0.2) !important;
+}
+
+:host-context(html.dark-theme) .hover\:bg-purple-50:hover {
+  background: rgba(168, 85, 247, 0.2) !important;
+}
+
+:host-context(html.dark-theme) .hover\:bg-green-50:hover {
+  background: rgba(34, 197, 94, 0.2) !important;
+}
+
+:host-context(html.dark-theme) .modern-notifications-container {
+  background: #0f0f23 !important;
+}
+
+:host-context(html.dark-theme) .header-content {
+  border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+:host-context(html.dark-theme) .header-icon {
+  background: #667eea !important;
+}
+
+:host-context(html.dark-theme) .header-info h1 {
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+:host-context(html.dark-theme) .header-info p {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+:host-context(html.dark-theme) .connection-badge {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+:host-context(html.dark-theme) .connection-badge.online {
+  background: rgba(34, 197, 94, 0.2) !important;
+  color: #6ee7b7 !important;
+}
+
+:host-context(html.dark-theme) .connection-badge.offline {
+  background: rgba(239, 68, 68, 0.2) !important;
+  color: #fca5a5 !important;
+}
+
+:host-context(html.dark-theme) .modern-btn {
+  background: #1a1a2e !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+:host-context(html.dark-theme) .modern-btn:hover {
+  background: rgba(102, 126, 234, 0.2) !important;
+  border-color: rgba(102, 126, 234, 0.4) !important;
+}
+
+:host-context(html.dark-theme) .modern-btn.primary {
+  background: #667eea !important;
+  color: white !important;
+  border-color: #667eea !important;
+}
+
+:host-context(html.dark-theme) .modern-btn.primary:hover {
+  background: #5a67d8 !important;
+}
+
+:host-context(html.dark-theme) .stat-card {
+  background: #1a1a2e !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+:host-context(html.dark-theme) .stat-card .stat-icon {
+  background: #0f0f23 !important;
+  color: #60a5fa !important;
+}
+
+:host-context(html.dark-theme) .stat-number {
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+:host-context(html.dark-theme) .stat-label {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+:host-context(html.dark-theme) .search-container input {
+  background: #0f0f23 !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+:host-context(html.dark-theme) .search-container input::placeholder {
+  color: rgba(255, 255, 255, 0.4) !important;
+}
+
+:host-context(html.dark-theme) .search-container input:focus {
+  border-color: #667eea !important;
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.3) !important;
+}
+
+:host-context(html.dark-theme) .quick-filter-btn {
+  background: #1a1a2e !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+:host-context(html.dark-theme) .quick-filter-btn:hover {
+  background: rgba(102, 126, 234, 0.2) !important;
+  border-color: rgba(102, 126, 234, 0.4) !important;
+}
+
+:host-context(html.dark-theme) .quick-filter-btn.active {
+  background: rgba(102, 126, 234, 0.3) !important;
+  border-color: #667eea !important;
+  color: #a5b4fc !important;
+}
+
+:host-context(html.dark-theme) .modern-loading {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+:host-context(html.dark-theme) .loading-spinner {
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  border-top-color: #60a5fa !important;
+}
+
+:host-context(html.dark-theme) .loading-content h3 {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+:host-context(html.dark-theme) .modern-notifications-list {
+  background: #1a1a2e !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+:host-context(html.dark-theme) .group-header {
+  background: #0f0f23 !important;
+  border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+:host-context(html.dark-theme) .group-date {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+:host-context(html.dark-theme) .group-date i {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+:host-context(html.dark-theme) .group-count {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+:host-context(html.dark-theme) .modern-notification {
+  background: #1a1a2e !important;
+  border-bottom-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+:host-context(html.dark-theme) .modern-notification:hover {
+  background: rgba(102, 126, 234, 0.1) !important;
+}
+
+:host-context(html.dark-theme) .modern-notification.unread {
+  background: rgba(59, 130, 246, 0.1) !important;
+  border-left-color: #60a5fa !important;
+}
+
+:host-context(html.dark-theme) .notification-title {
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+:host-context(html.dark-theme) .notification-time {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+:host-context(html.dark-theme) .notification-message {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+:host-context(html.dark-theme) .meta-tag {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+:host-context(html.dark-theme) .meta-tag.type {
+  background: rgba(59, 130, 246, 0.2) !important;
+  color: #a5b4fc !important;
+}
+
+:host-context(html.dark-theme) .meta-tag.priority {
+  background: rgba(245, 158, 11, 0.2) !important;
+  color: #fbbf24 !important;
+}
+
+/* Action buttons - CRITICAL FOR DARK MODE */
+:host-context(html.dark-theme) .action-btn {
+  background: #0f0f23 !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+:host-context(html.dark-theme) .action-btn:hover {
+  background: rgba(102, 126, 234, 0.2) !important;
+  border-color: rgba(102, 126, 234, 0.4) !important;
+}
+
+:host-context(html.dark-theme) .action-btn.mark-read {
+  color: #6ee7b7 !important;
+}
+
+:host-context(html.dark-theme) .action-btn.mark-read:hover {
+  background: rgba(34, 197, 94, 0.2) !important;
+  border-color: rgba(34, 197, 94, 0.4) !important;
+}
+
+:host-context(html.dark-theme) .action-btn.resend {
+  color: #60a5fa !important;
+}
+
+:host-context(html.dark-theme) .action-btn.resend:hover {
+  background: rgba(59, 130, 246, 0.2) !important;
+  border-color: rgba(59, 130, 246, 0.4) !important;
+}
+
+/* Notification action buttons with specific colors */
+:host-context(html.dark-theme) .hover\:text-green-600:hover {
+  color: #6ee7b7 !important;
+}
+
+:host-context(html.dark-theme) .text-purple-600 {
+  color: #c084fc !important;
+}
+
+:host-context(html.dark-theme) .text-blue-600 {
+  color: #60a5fa !important;
+}
+
+:host-context(html.dark-theme) .text-orange-600 {
+  color: #fb923c !important;
+}
+
+:host-context(html.dark-theme) .modern-empty-state {
+  background: #1a1a2e !important;
+}
+
+:host-context(html.dark-theme) .empty-icon {
+  color: rgba(255, 255, 255, 0.2) !important;
+}
+
+:host-context(html.dark-theme) .empty-content h3 {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+:host-context(html.dark-theme) .empty-content p {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+:host-context(html.dark-theme) .load-more-btn {
+  background: #1a1a2e !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+:host-context(html.dark-theme) .load-more-btn:hover {
+  background: rgba(102, 126, 234, 0.2) !important;
+  border-color: rgba(102, 126, 234, 0.4) !important;
+}
+
+:host-context(html.dark-theme) .modern-admin-panel {
+  background: rgba(245, 158, 11, 0.15) !important;
+  border-color: rgba(245, 158, 11, 0.4) !important;
+}
+
+:host-context(html.dark-theme) .admin-header h3 {
+  color: #fbbf24 !important;
+}
+
+:host-context(html.dark-theme) .admin-btn {
+  background: rgba(245, 158, 11, 0.1) !important;
+  border-color: rgba(245, 158, 11, 0.3) !important;
+  color: #fbbf24 !important;
+}
+
+:host-context(html.dark-theme) .admin-btn:hover {
+  background: rgba(245, 158, 11, 0.2) !important;
+}
+
+:host-context(html.dark-theme) .admin-btn.danger {
+  background: rgba(239, 68, 68, 0.15) !important;
+  border-color: rgba(239, 68, 68, 0.4) !important;
+  color: #fca5a5 !important;
+}
+
+:host-context(html.dark-theme) .admin-btn.danger:hover {
+  background: rgba(239, 68, 68, 0.25) !important;
+}
+
+
+:host-context(html.dark-theme) .rounded-xl,
+:host-context(html.dark-theme) .rounded-lg {
+  background: #1a1a2e !important;
+}
+
+:host-context(html.dark-theme) .bg-red-600 {
+  background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%) !important;
+}
+
+:host-context(html.dark-theme) .hover\:bg-red-700:hover {
+  background: linear-gradient(135deg, #991b1b 0%, #7f1d1d 100%) !important;
+}
+
+:host-context(html.dark-theme) .bg-orange-600 {
+  background: #fb923c !important;
+}
+
+:host-context(html.dark-theme) .hover\:bg-orange-700:hover {
+  background: #f97316 !important;
+}
+
+:host-context(html.dark-theme) .hover\:text-gray-600:hover {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+
+:host-context(html.dark-theme) input[type="text"],
+:host-context(html.dark-theme) input[type="number"],
+:host-context(html.dark-theme) textarea,
+:host-context(html.dark-theme) select {
+  background: #0f0f23 !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+:host-context(html.dark-theme) input[type="text"]::placeholder,
+:host-context(html.dark-theme) textarea::placeholder {
+  color: rgba(255, 255, 255, 0.4) !important;
+}
+
+:host-context(html.dark-theme) input[type="text"]:focus,
+:host-context(html.dark-theme) input[type="number"]:focus,
+:host-context(html.dark-theme) textarea:focus,
+:host-context(html.dark-theme) select:focus {
+  border-color: #667eea !important;
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.3) !important;
+}
+
+
+:host-context(html.dark-theme) input[type="radio"] {
+  background: #0f0f23 !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+:host-context(html.dark-theme) input[type="radio"]:checked {
+  background: #667eea !important;
+  border-color: #667eea !important;
+}

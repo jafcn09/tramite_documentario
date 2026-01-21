@@ -9,13 +9,15 @@ import { environment } from '../../environments/environment';
 import { ApiSearchResponse, SearchResult, TramiteResponse } from '../shared/interfaces/search.interface';
 import { AuthService } from '../services/auth.service';
 import { TramiteService } from '../services/tramite.service';
+import { ThemeService } from '../services/theme.service';
+import { ThemeToggleComponent } from '../shared/components/theme-toggle/theme-toggle.component';
 
 
 
 @Component({
   selector: 'app-search',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ThemeToggleComponent],
   templateUrl: './search.component.html'
 })
 export class SearchComponent implements OnInit, OnDestroy {
@@ -85,10 +87,16 @@ export class SearchComponent implements OnInit, OnDestroy {
     private sanitizer: DomSanitizer,
     private http: HttpClient,
     private authService: AuthService,
-    private tramiteService: TramiteService
+    private tramiteService: TramiteService,
+    private themeService: ThemeService
   ) {}
 
   ngOnInit(): void {
+    // Sincronizar con el tema actual
+    this.themeSubscription = this.themeService.theme$.subscribe(theme => {
+      this.isDarkMode = theme === 'dark';
+    });
+
     this.searchSubject.pipe(
       debounceTime(300),
       distinctUntilChanged()
@@ -106,6 +114,9 @@ export class SearchComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.searchSubject.complete();
+    if (this.themeSubscription) {
+      this.themeSubscription.unsubscribe();
+    }
   }
 
   onSearchChange(): void {

@@ -1,28 +1,41 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { AuthService } from './services/auth.service';
+import { ThemeService } from './services/theme.service';
+import { ThemeToggleComponent } from './shared/components/theme-toggle/theme-toggle.component';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet],
+  imports: [CommonModule, RouterOutlet, ThemeToggleComponent],
   templateUrl: './app.component.html'
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, OnDestroy {
   isLoading = true;
   showContent = false;
   showHomeButton = false;
   showHeader = true;
   showFooter = true;
   currentYear = new Date().getFullYear();
+  isDarkMode = false;
+  private themeSubscription?: Subscription;
 
   constructor(
     private router: Router,
-    private authService: AuthService
-  ) {}
+    private authService: AuthService,
+    private themeService: ThemeService
+  ) {
+    console.log('🎨 Theme service initialized');
+  }
 
   ngOnInit(): void {
+    
+    this.themeSubscription = this.themeService.theme$.subscribe(theme => {
+      this.isDarkMode = theme === 'dark';
+    });
+
     this.initializeRoute();
 
     this.router.events.subscribe(event => {
@@ -30,6 +43,12 @@ export class AppComponent implements OnInit {
         this.initializeRoute();
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    if (this.themeSubscription) {
+      this.themeSubscription.unsubscribe();
+    }
   }
 
   private initializeRoute(): void {

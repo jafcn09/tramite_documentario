@@ -459,3 +459,71 @@
 .modal-body::-webkit-scrollbar-thumb:hover {
   background: #a1a1a1;
 }
+
+/* ===========================
+   DARK MODE OVERRIDES
+   =========================== */
+
+html.dark-theme .modal-container {
+  background: #1a1a2e !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+html.dark-theme .modal-header {
+  background: #0f0f23 !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+html.dark-theme .modal-title {
+  color: rgba(255, 255, 255, 0.95) !important;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.85) 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+}
+
+html.dark-theme .modal-body {
+  background: #1a1a2e !important;
+  color: #e5e7eb !important;
+}
+
+html.dark-theme .modal-footer {
+  background: #0f0f23 !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+html.dark-theme .modal-close-btn {
+  background: rgba(15, 15, 35, 0.8) !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+html.dark-theme .modal-close-btn:hover {
+  background: rgba(239, 68, 68, 0.15) !important;
+  color: #fca5a5 !important;
+  border-color: rgba(239, 68, 68, 0.3) !important;
+}
+
+html.dark-theme .btn-outline {
+  background: rgba(15, 15, 35, 0.9) !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+html.dark-theme .btn-outline:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+}
+
+html.dark-theme .modal-body::-webkit-scrollbar-track {
+  background: #0f0f23 !important;
+}
+
+html.dark-theme .modal-body::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2) !important;
+}
+
+html.dark-theme .modal-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3) !important;
+}

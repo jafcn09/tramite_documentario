@@ -40,6 +40,10 @@ export class UserManagementComponent implements OnInit {
   resetPasswordForm: FormGroup;
   resettingPassword = false;
 
+  showDeleteModal = false;
+  selectedUserForDelete: User | null = null;
+  deletingUser = false;
+
   constructor(
     private http: HttpClient,
     private fb: FormBuilder
@@ -225,21 +229,39 @@ export class UserManagementComponent implements OnInit {
     });
   }
 
+  openDeleteModal(user: User) {
+    this.selectedUserForDelete = user;
+    this.showDeleteModal = true;
+  }
+
+  closeDeleteModal() {
+    this.showDeleteModal = false;
+    this.selectedUserForDelete = null;
+    this.deletingUser = false;
+  }
+
+  confirmDeleteUser() {
+    if (!this.selectedUserForDelete) return;
+
+    this.deletingUser = true;
+    const token = localStorage.getItem('auth_token');
+    this.http.delete(`${environment.apiUrl}/api/usuarios/${this.selectedUserForDelete.id}`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    }).subscribe({
+      next: () => {
+        this.showSuccess('Usuario eliminado correctamente');
+        this.loadUsers();
+        this.closeDeleteModal();
+      },
+      error: () => {
+        this.showError('Error al eliminar el usuario');
+        this.deletingUser = false;
+      }
+    });
+  }
+
   deleteUser(user: User) {
-    if (confirm(`¿Está seguro de que desea eliminar al usuario "${user.nombre} ${user.apellidos}"?`)) {
-      const token = localStorage.getItem('auth_token');
-      this.http.delete(`${environment.apiUrl}/api/usuarios/${user.id}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      }).subscribe({
-        next: () => {
-          this.showSuccess('Usuario eliminado correctamente');
-          this.loadUsers();
-        },
-        error: () => {
-          this.showError('Error al eliminar el usuario');
-        }
-      });
-    }
+    this.openDeleteModal(user);
   }
 
   openAreaAssignModal(user: User) {

@@ -660,3 +660,250 @@
     font-size: 7px;
   }
 }
+
+html.dark-theme .reportes-container {
+  background: #0f0f23 !important;
+}
+
+
+html.dark-theme .encabezado {
+  background: #1a1a2e !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3) !important;
+}
+
+html.dark-theme .encabezado h1 {
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+html.dark-theme .encabezado h1 i {
+  color: #60a5fa !important;
+}
+
+
+html.dark-theme .btn-excel {
+  background: #4a7c5e !important;
+  color: white !important;
+}
+
+html.dark-theme .btn-excel:hover {
+  background: #5a8f6d !important;
+}
+
+html.dark-theme .btn-imprimir {
+  background: #4b5563 !important;
+  color: white !important;
+}
+
+html.dark-theme .btn-imprimir:hover {
+  background: #6c757d !important;
+}
+
+
+html.dark-theme .seccion {
+  background: #1a1a2e !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3) !important;
+}
+
+html.dark-theme .seccion h2 {
+  color: rgba(255, 255, 255, 0.95) !important;
+  border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+
+html.dark-theme .tarjeta.total {
+  background: linear-gradient(135deg, #2d3748 0%, #374151 100%) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+html.dark-theme .tarjeta.completado {
+  background: linear-gradient(135deg, #4a7c5e 0%, #5a8f6d 100%) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+html.dark-theme .tarjeta.proceso {
+  background: linear-gradient(135deg, #6b8060 0%, #7a8f6d 100%) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+html.dark-theme .tarjeta.vencido {
+  background: linear-gradient(135deg, #7a5c54 0%, #8b6e63 100%) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+
+html.dark-theme .tabla thead {
+  background: #0f0f23 !important;
+}
+
+html.dark-theme .tabla th {
+  color: rgba(255, 255, 255, 0.85) !important;
+  border-bottom-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+html.dark-theme .tabla td {
+  color: rgba(255, 255, 255, 0.8) !important;
+  border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+html.dark-theme .tabla tbody tr:hover {
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+
+html.dark-theme .total-fila {
+  background: #0f0f23 !important;
+}
+
+html.dark-theme .total-fila td {
+  border-top-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+
+html.dark-theme .seccion.alerta {
+  background: rgba(168, 153, 104, 0.1) !important;
+  border-left-color: #a89968 !important;
+}
+
+html.dark-theme .seccion.alerta h2 {
+  color: #fbbf24 !important;
+  border-bottom-color: rgba(168, 153, 104, 0.3) !important;
+}
+
+html.dark-theme .seccion.alerta h2 i {
+  color: #f59e0b !important;
+}
+
+html.dark-theme .tabla-urgente thead {
+  background: #8b7355 !important;
+}
+
+html.dark-theme .tabla-urgente th {
+  color: white !important;
+}
+
+
+html.dark-theme .codigo {
+  color: #60a5fa !important;
+}
+
+
+html.dark-theme .estado.vencido {
+  background: #7a5c54 !important;
+  color: white !important;
+}
+
+html.dark-theme .estado.hoy {
+  background: #8b7355 !important;
+  color: white !important;
+}
+
+html.dark-theme .estado.pronto {
+  background: #6b7280 !important;
+  color: white !important;
+}
+
+
+html.dark-theme .fila-vencida {
+  background: rgba(122, 92, 84, 0.15) !important;
+}
+
+html.dark-theme .fila-hoy {
+  background: rgba(168, 153, 104, 0.15) !important;
+}
+
+html.dark-theme .fila-pronto {
+  background: rgba(156, 163, 175, 0.1) !important;
+}
+
+
+html.dark-theme .punto.azul {
+  background: #60a5fa !important;
+}
+
+html.dark-theme .punto.verde {
+  background: #5a8f6d !important;
+}
+
+html.dark-theme .punto.morado {
+  background: #7a8f6d !important;
+}
+
+html.dark-theme .punto.gris {
+  background: #6b7280 !important;
+}
+
+
+html.dark-theme .verde {
+  color: #6ee7b7 !important;
+}
+
+html.dark-theme .naranja {
+  color: #fbbf24 !important;
+}
+
+html.dark-theme .rojo {
+  color: #fca5a5 !important;
+}
+
+html.dark-theme .pie {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+html.dark-theme .pie .linea {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+html.dark-theme .pie p {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+html.dark-theme .pie strong {
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+
+html.dark-theme .encabezado p,
+html.dark-theme .seccion p,
+html.dark-theme p {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+
+html.dark-theme .encabezado span,
+html.dark-theme .seccion span,
+html.dark-theme .pie span {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+/* Mensajes de cargando y sin datos */
+html.dark-theme .cargando {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+/* Todas las celdas de tabla - override específico */
+html.dark-theme .tabla tbody td {
+  color: rgba(255, 255, 255, 0.8) !important;
+  background: transparent !important;
+}
+
+/* Números y texto fuerte en tablas */
+html.dark-theme .tabla .numero {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+html.dark-theme .tabla strong {
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+/* Override para colores específicos de las celdas */
+html.dark-theme .tabla .verde {
+  color: #6ee7b7 !important;
+}
+
+html.dark-theme .tabla .naranja {
+  color: #fbbf24 !important;
+}
+
+html.dark-theme .tabla .rojo {
+  color: #fca5a5 !important;
+}

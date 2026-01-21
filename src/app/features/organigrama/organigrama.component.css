@@ -473,3 +473,163 @@
   .org-box h5 { font-size: 0.85rem; }
   .org-box h6 { font-size: 0.8rem; }
 }
+
+
+:host-context(html.dark-theme) .org-container {
+  background: #0f0f23 !important;
+}
+
+
+:host-context(html.dark-theme) .header {
+  background: #1a1a2e !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+}
+
+:host-context(html.dark-theme) .header-text h1 {
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+:host-context(html.dark-theme) .header-text p {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+
+:host-context(html.dark-theme) .search-box input {
+  background: #0f0f23 !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+:host-context(html.dark-theme) .search-box input:focus {
+  border-color: #667eea !important;
+  background: #0f0f23 !important;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3) !important;
+}
+
+:host-context(html.dark-theme) .search-box input::placeholder {
+  color: rgba(255, 255, 255, 0.4) !important;
+}
+
+:host-context(html.dark-theme) .search-icon {
+  color: #60a5fa !important;
+}
+
+:host-context(html.dark-theme) .clear-btn {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+:host-context(html.dark-theme) .clear-btn:hover {
+  background: rgba(102, 126, 234, 0.2) !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+:host-context(html.dark-theme) .expand-btn {
+  background: #0f0f23 !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+:host-context(html.dark-theme) .expand-btn:hover {
+  background: rgba(102, 126, 234, 0.2) !important;
+  border-color: #667eea !important;
+  color: #a5b4fc !important;
+}
+
+/* Loading */
+:host-context(html.dark-theme) .spinner {
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  border-top-color: #60a5fa !important;
+}
+
+:host-context(html.dark-theme) .loading p {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+
+:host-context(html.dark-theme) .empty {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+:host-context(html.dark-theme) .empty p {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+
+:host-context(html.dark-theme) .org-box {
+  background: #1a1a2e !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+:host-context(html.dark-theme) .org-box:hover {
+  border-color: #667eea !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) !important;
+}
+
+:host-context(html.dark-theme) .org-box h3,
+:host-context(html.dark-theme) .org-box h4,
+:host-context(html.dark-theme) .org-box h5,
+:host-context(html.dark-theme) .org-box h6 {
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+:host-context(html.dark-theme) .org-box .code {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+:host-context(html.dark-theme) .org-box .toggle {
+  background: rgba(102, 126, 234, 0.2) !important;
+  color: #a5b4fc !important;
+}
+
+
+:host-context(html.dark-theme) .org-box.child {
+  border-color: #60a5fa !important;
+}
+
+:host-context(html.dark-theme) .org-box.child:hover {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3) !important;
+}
+
+:host-context(html.dark-theme) .org-box.grandchild {
+  border-color: #6ee7b7 !important;
+}
+
+:host-context(html.dark-theme) .org-box.grandchild:hover {
+  border-color: #34d399 !important;
+  box-shadow: 0 2px 8px rgba(52, 211, 153, 0.3) !important;
+}
+
+:host-context(html.dark-theme) .org-box.greatgrandchild {
+  border-color: #fbbf24 !important;
+}
+
+:host-context(html.dark-theme) .org-box.greatgrandchild:hover {
+  border-color: #f59e0b !important;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3) !important;
+}
+
+/* Connectors */
+:host-context(html.dark-theme) .connector-line {
+  background: rgba(255, 255, 255, 0.3) !important;
+}
+
+:host-context(html.dark-theme) .connector-line-sm {
+  background: rgba(255, 255, 255, 0.25) !important;
+}
+
+:host-context(html.dark-theme) .connector-line-xs {
+  background: rgba(255, 255, 255, 0.2) !important;
+}
+
+:host-context(html.dark-theme) .connector-v {
+  background: rgba(255, 255, 255, 0.3) !important;
+}
+
+:host-context(html.dark-theme) .connector-v-sm {
+  background: rgba(255, 255, 255, 0.25) !important;
+}
+
+:host-context(html.dark-theme) .connector-v-xs {
+  background: rgba(255, 255, 255, 0.2) !important;
+}

@@ -233,3 +233,82 @@
 .bg-dark-700 {
   background-color: #111827;
 }
+/* ===========================
+   DARK MODE - SEARCH
+   =========================== */
+
+html.dark-theme .bg-gradient-to-br {
+  background: linear-gradient(to bottom right, #0f0f23, #1a1a2e) !important;
+}
+
+html.dark-theme .bg-white {
+  background: #1a1a2e !important;
+}
+
+html.dark-theme .bg-gray-50 {
+  background: #0f0f23 !important;
+}
+
+html.dark-theme .bg-gray-100 {
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+html.dark-theme .text-gray-900,
+html.dark-theme .text-gray-800,
+html.dark-theme .text-university-800 {
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+html.dark-theme .text-gray-700 {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+html.dark-theme .text-gray-600 {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+html.dark-theme .text-gray-500,
+html.dark-theme .text-gray-400 {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+html.dark-theme .text-university-600 {
+  color: #a5b4fc !important;
+}
+
+html.dark-theme .border-gray-200,
+html.dark-theme .border-gray-300 {
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+html.dark-theme .btn-university {
+  background: linear-gradient(135deg, #667eea 0%, #5a67d8 100%) !important;
+}
+
+html.dark-theme .btn-outline-university {
+  border-color: #667eea !important;
+  color: #a5b4fc !important;
+}
+
+html.dark-theme .btn-outline-university:hover {
+  background-color: #667eea !important;
+  color: white !important;
+}
+
+html.dark-theme input,
+html.dark-theme select,
+html.dark-theme textarea {
+  background: #0f0f23 !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+html.dark-theme input::placeholder {
+  color: rgba(255, 255, 255, 0.4) !important;
+}
+
+html.dark-theme input:focus,
+html.dark-theme select:focus {
+  border-color: #667eea !important;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3) !important;
+}

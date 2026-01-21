@@ -1,10 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { MisTramitesService } from '../../services/mis-tramites.service';
+import { ThemeService } from '../../services/theme.service';
 import { User } from '../../shared/interfaces/auth.interface';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-usuario-dashboard',
@@ -13,8 +15,10 @@ import { User } from '../../shared/interfaces/auth.interface';
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css']
 })
-export class UsuarioDashboardComponent implements OnInit {
+export class UsuarioDashboardComponent implements OnInit, OnDestroy {
   currentUser: User | null = null;
+  isDarkMode = false;
+  private themeSubscription?: Subscription;
 
   stats = {
     enRevision: 0,
@@ -30,14 +34,25 @@ export class UsuarioDashboardComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private misTramitesService: MisTramitesService,
-    private router: Router
+    private router: Router,
+    private themeService: ThemeService
   ) {}
 
   ngOnInit() {
+    this.themeSubscription = this.themeService.theme$.subscribe(theme => {
+      this.isDarkMode = theme === 'dark';
+    });
+
     this.currentUser = this.authService.currentUserValue;
     this.loadUserStats();
     this.loadRecentActivities();
     this.loadMyRecentTramites();
+  }
+
+  ngOnDestroy(): void {
+    if (this.themeSubscription) {
+      this.themeSubscription.unsubscribe();
+    }
   }
 
   loadUserStats() {

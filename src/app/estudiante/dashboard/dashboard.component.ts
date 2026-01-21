@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -8,6 +8,8 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { StudentDashboardLayoutComponent } from './student-dashboard-layout.component';
 import { User } from '../../shared/interfaces/auth.interface';
+import { ThemeService } from '../../services/theme.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-estudiante-dashboard',
@@ -16,8 +18,10 @@ import { User } from '../../shared/interfaces/auth.interface';
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css']
 })
-export class EstudianteDashboardComponent implements OnInit {
+export class EstudianteDashboardComponent implements OnInit, OnDestroy {
   currentUser: User | null = null;
+  isDarkMode = false;
+  private themeSubscription?: Subscription;
 
   stats = {
     enviados: 0,
@@ -34,14 +38,25 @@ export class EstudianteDashboardComponent implements OnInit {
     private authService: AuthService,
     private misTramitesService: MisTramitesService,
     private http: HttpClient,
-    private router: Router
+    private router: Router,
+    private themeService: ThemeService
   ) {}
 
   ngOnInit() {
+    this.themeSubscription = this.themeService.theme$.subscribe(theme => {
+      this.isDarkMode = theme === 'dark';
+    });
+
     this.currentUser = this.authService.currentUserValue;
     this.loadStudentStats();
     this.loadRecentActivities();
     this.loadMyRecentTramites();
+  }
+
+  ngOnDestroy(): void {
+    if (this.themeSubscription) {
+      this.themeSubscription.unsubscribe();
+    }
   }
 
   loadStudentStats() {

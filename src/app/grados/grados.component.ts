@@ -3,17 +3,21 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Grado, GradoResponse } from '../shared/interfaces/grado.interface';
 import { GradoService } from '../services/grado.service';
-import { Subject, of } from 'rxjs';
+import { ThemeService } from '../services/theme.service';
+import { ThemeToggleComponent } from '../shared/components/theme-toggle/theme-toggle.component';
+import { Subject, of, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-grados',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ThemeToggleComponent],
   templateUrl: './grados.component.html',
   styleUrls: ['./grados.component.css']
 })
 export class GradosComponent implements OnInit, OnDestroy {
+  isDarkMode = false;
+  private themeSubscription?: Subscription;
 
   currentTab: 'dni' | 'codigo' = 'dni';
 
@@ -46,15 +50,26 @@ export class GradosComponent implements OnInit, OnDestroy {
     tipos: [] as string[]
   };
 
-  constructor(private gradoService: GradoService) {}
+  constructor(
+    private gradoService: GradoService,
+    private themeService: ThemeService
+  ) {}
 
   ngOnInit(): void {
+    // Sincronizar con el tema actual
+    this.themeSubscription = this.themeService.theme$.subscribe(theme => {
+      this.isDarkMode = theme === 'dark';
+    });
+
     this.loadStats();
     this.setupLiveSearch();
   }
 
   ngOnDestroy(): void {
     this.searchSubject.complete();
+    if (this.themeSubscription) {
+      this.themeSubscription.unsubscribe();
+    }
   }
 
   setupLiveSearch(): void {

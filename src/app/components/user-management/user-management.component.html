@@ -441,6 +441,56 @@
     <i class="fas fa-exclamation-circle"></i>
     {{ errorMessage }}
   </div>
+
+
+  <div class="modal-overlay" *ngIf="showDeleteModal" (click)="closeDeleteModal()">
+    <div class="modal delete-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>
+          <i class="fas fa-exclamation-triangle"></i>
+          Confirmar eliminación
+        </h2>
+      </div>
+
+      <div class="modal-content">
+        <div class="warning-box-delete">
+          <i class="fas fa-exclamation-circle"></i>
+          <p><strong>¡Atención!</strong> Esta acción es permanente y no se puede deshacer.</p>
+        </div>
+
+        <p class="delete-message">
+          ¿Está seguro de que desea eliminar al usuario
+          <strong *ngIf="selectedUserForDelete">
+            "{{ selectedUserForDelete.nombre }} {{ selectedUserForDelete.apellidos }}"
+          </strong>?
+        </p>
+
+        <div class="user-info-delete" *ngIf="selectedUserForDelete">
+          <p><i class="fas fa-user"></i> <strong>Usuario:</strong> {{ selectedUserForDelete.usuario }}</p>
+          <p><i class="fas fa-envelope"></i> <strong>Correo:</strong> {{ selectedUserForDelete.correo }}</p>
+          <p><i class="fas fa-user-tag"></i> <strong>Rol:</strong> {{ selectedUserForDelete.role.name }}</p>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button"
+                class="btn-secondary"
+                (click)="closeDeleteModal()"
+                [disabled]="deletingUser">
+          <i class="fas fa-times"></i>
+          Cancelar
+        </button>
+        <button type="button"
+                class="btn-danger"
+                (click)="confirmDeleteUser()"
+                [disabled]="deletingUser">
+          <i class="fas fa-trash-alt" *ngIf="!deletingUser"></i>
+          <i class="fas fa-spinner fa-spin" *ngIf="deletingUser"></i>
+          {{ deletingUser ? 'Eliminando...' : 'Eliminar Usuario' }}
+        </button>
+      </div>
+    </div>
+  </div>
 </div>
 <div class="modal-overlay" *ngIf="showResetPasswordModal" (click)="closeResetPasswordModal()">
   <div class="modal reset-password-modal" (click)="$event.stopPropagation()">

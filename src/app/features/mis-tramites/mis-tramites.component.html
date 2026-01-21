@@ -1,4 +1,4 @@
-<div class="mis-tramites-container">
+<div class="mis-tramites-container" [ngClass]="{'dark-mode': isDarkMode}">
   <div class="header-section">
     <div class="title-area">
       <h1>
@@ -16,7 +16,7 @@
 
   <div class="stats-cards" *ngIf="estadisticas">
     <ng-container *ngIf="isAdministrativo">
-      <div class="stat-card total">
+      <div class="stat-card total" [ngClass]="{'stat-card-dark': isDarkMode}">
         <div class="stat-icon">
           <i class="fas fa-file-alt"></i>
         </div>
@@ -26,7 +26,7 @@
         </div>
       </div>
       
-      <div class="stat-card revision">
+      <div class="stat-card revision" [ngClass]="{'stat-card-dark': isDarkMode}">
         <div class="stat-icon">
           <i class="fas fa-clock"></i>
         </div>
@@ -35,8 +35,8 @@
           <div class="stat-label">Por Procesar</div>
         </div>
       </div>
-      
-      <div class="stat-card finalizado">
+
+      <div class="stat-card finalizado" [ngClass]="{'stat-card-dark': isDarkMode}">
         <div class="stat-icon">
           <i class="fas fa-check-circle"></i>
         </div>
@@ -48,7 +48,7 @@
       
     </ng-container>
     <ng-container *ngIf="isUsuario">
-      <div class="stat-card total">
+      <div class="stat-card total" [ngClass]="{'stat-card-dark': isDarkMode}">
         <div class="stat-icon">
           <i class="fas fa-file-alt"></i>
         </div>
@@ -57,8 +57,8 @@
           <div class="stat-label">Mis Trámites</div>
         </div>
       </div>
-      
-      <div class="stat-card revision">
+
+      <div class="stat-card revision" [ngClass]="{'stat-card-dark': isDarkMode}">
         <div class="stat-icon">
           <i class="fas fa-clock"></i>
         </div>
@@ -67,8 +67,8 @@
           <div class="stat-label">En Proceso</div>
         </div>
       </div>
-      
-      <div class="stat-card finalizado">
+
+      <div class="stat-card finalizado" [ngClass]="{'stat-card-dark': isDarkMode}">
         <div class="stat-icon">
           <i class="fas fa-check-circle"></i>
         </div>
@@ -77,8 +77,8 @@
           <div class="stat-label">Completados</div>
         </div>
       </div>
-      
-      <div class="stat-card observado">
+
+      <div class="stat-card observado" [ngClass]="{'stat-card-dark': isDarkMode}">
         <div class="stat-icon">
           <i class="fas fa-exclamation-triangle"></i>
         </div>
@@ -178,9 +178,10 @@
 
 
     <div *ngIf="!(loading$ | async) && filteredTramites.length > 0 && vistaActual === 'tarjetas'" class="tramites-grid">
-      <div 
-        *ngFor="let tramite of filteredTramites; trackBy: trackByTramiteId" 
+      <div
+        *ngFor="let tramite of filteredTramites; trackBy: trackByTramiteId"
         class="tramite-card"
+        [ngClass]="{'tramite-card-dark': isDarkMode}"
         (click)="verDetalle(tramite)"
       >
         <div class="card-header">

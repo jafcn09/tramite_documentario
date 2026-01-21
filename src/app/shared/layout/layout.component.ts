@@ -5,13 +5,14 @@ import { AuthService } from '../../services/auth.service';
 import { ModalComponent } from '../modal/modal.component';
 import { ToastComponent } from '../components/toast/toast.component';
 import { NotificationBellComponent } from '../components/notification-bell/notification-bell.component';
+import { ThemeToggleComponent } from '../components/theme-toggle/theme-toggle.component';
 import { MisTramitesService } from '../../services/mis-tramites.service';
 import { User } from '../interfaces/auth.interface';
 
 @Component({
   selector: 'app-layout',
   standalone: true,
-  imports: [CommonModule, RouterModule, ModalComponent, ToastComponent, NotificationBellComponent],
+  imports: [CommonModule, RouterModule, ModalComponent, ToastComponent, NotificationBellComponent, ThemeToggleComponent],
   templateUrl: './layout.component.html',
   styleUrls: ['./layout.component.css']
 })

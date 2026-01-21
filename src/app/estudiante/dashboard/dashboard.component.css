@@ -3,9 +3,14 @@
   height: 100%;
   overflow-y: auto;
   background: #f8f9fc;
+  transition: background-color 0.3s ease;
 }
 
-/* Remove welcome banner since it's now in the header */
+.dashboard-container.dark-mode {
+  background: #0f172a;
+}
+
+
 .welcome-banner {
   display: none;
 }
@@ -42,12 +47,22 @@
   font-weight: 600;
   color: #1f2937;
   margin: 0 0 0.5rem 0;
+  transition: color 0.3s ease;
+}
+
+.section-header h2.text-dark {
+  color: #f1f5f9;
 }
 
 .section-header p {
   font-size: 0.875rem;
   color: #6b7280;
   margin: 0;
+  transition: color 0.3s ease;
+}
+
+.section-header p.text-dark-secondary {
+  color: #94a3b8;
 }
 
 .stats-grid {
@@ -70,10 +85,29 @@
   transition: all 0.3s ease;
 }
 
+.stat-card.stat-card-dark {
+  background: #1e293b;
+  border-color: #334155;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
 .stat-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   border-color: rgba(102, 126, 234, 0.2);
+}
+
+.stat-card-dark:hover {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  border-color: rgba(96, 165, 250, 0.4);
+}
+
+.stat-card-dark .stat-content h3 {
+  color: #f1f5f9;
+}
+
+.stat-card-dark .stat-content p {
+  color: #94a3b8;
 }
 
 .stat-icon {
@@ -132,9 +166,20 @@
   transition: all 0.3s ease;
 }
 
+.card.card-dark {
+  background: #1e293b;
+  border-color: #334155;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
 .card:hover {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   border-color: rgba(102, 126, 234, 0.2);
+}
+
+.card-dark:hover {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  border-color: rgba(96, 165, 250, 0.4);
 }
 
 .card-header {
@@ -144,6 +189,12 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  transition: all 0.3s ease;
+}
+
+.card-header.card-header-dark {
+  background: linear-gradient(to right, #0f172a, #1e293b);
+  border-bottom-color: #334155;
 }
 
 .card-header h3 {
@@ -154,6 +205,11 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  transition: color 0.3s ease;
+}
+
+.card-header h3.text-dark {
+  color: #f1f5f9;
 }
 
 .card-header h3 i {
@@ -257,6 +313,11 @@
   font-size: 14px;
   color: #2c3e50;
   line-height: 1.4;
+  transition: color 0.3s ease;
+}
+
+.card-content-dark .activity-content p {
+  color: #f1f5f9;
 }
 
 .activity-meta {
@@ -293,6 +354,11 @@
 .activity-time {
   font-size: 12px;
   color: #7f8c8d;
+  transition: color 0.3s ease;
+}
+
+.card-content-dark .activity-time {
+  color: #94a3b8;
 }
 
 .actions-grid {
@@ -363,6 +429,11 @@
   transition: all 0.3s ease;
 }
 
+.card-content-dark .tramite-item {
+  background: linear-gradient(to right, #1e293b, #0f172a);
+  border-left-color: #3b82f6;
+}
+
 .tramite-item:hover {
   transform: translateX(4px);
   box-shadow: 0 4px 15px rgba(102, 126, 234, 0.15);
@@ -417,6 +488,11 @@
   color: #2c3e50;
   margin-bottom: 10px;
   font-size: 15px;
+  transition: color 0.3s ease;
+}
+
+.card-content-dark .tramite-title {
+  color: #f1f5f9;
 }
 
 .tramite-meta {
@@ -425,11 +501,21 @@
   font-size: 12px;
   color: #7f8c8d;
   margin-bottom: 12px;
+  transition: color 0.3s ease;
+}
+
+.card-content-dark .tramite-meta {
+  color: #94a3b8;
 }
 
 .tramite-meta i {
   margin-right: 5px;
   color: #a0aec0;
+  transition: color 0.3s ease;
+}
+
+.card-content-dark .tramite-meta i {
+  color: #64748b;
 }
 
 .tramite-progress {
@@ -465,6 +551,11 @@
   text-align: center;
   padding: 40px 20px;
   color: #a0aec0;
+  transition: color 0.3s ease;
+}
+
+.card-content-dark .empty-tramites {
+  color: #64748b;
 }
 
 .empty-tramites i {

@@ -1,33 +1,41 @@
-<section class="relative py-12 px-4 min-h-[70vh] bg-gray-50">
+<section class="relative py-12 px-4 min-h-[70vh] transition-colors duration-300" [ngClass]="{'bg-gray-50': !isDarkMode, 'bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900': isDarkMode}">
   <div class="max-w-4xl mx-auto">
 
 
     <div class="text-center mb-12 animate-fade-in">
-      <h1 class="text-3xl md:text-4xl font-light text-gray-900 mb-3 tracking-tight">
+      <h1 class="text-3xl md:text-4xl font-light mb-3 tracking-tight transition-colors" [ngClass]="{'text-gray-900': !isDarkMode, 'text-slate-50': isDarkMode}">
         Consulta de Grados Académicos
       </h1>
-      <p class="text-gray-500 text-base mb-6">
+      <p class="text-base mb-6 transition-colors" [ngClass]="{'text-gray-500': !isDarkMode, 'text-slate-300': isDarkMode}">
         Verifica la autenticidad de diplomas y grados académicos
       </p>
-      <div class="inline-flex items-center gap-3 px-5 py-2.5 bg-university-50 border border-university-200 rounded-xl">
-        <svg class="w-5 h-5 text-university-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div class="inline-flex items-center gap-3 px-5 py-2.5 rounded-xl backdrop-blur-sm transition-all"
+           [ngClass]="{'bg-university-50 border border-university-200': !isDarkMode, 'bg-blue-500/10 border border-blue-400/30': isDarkMode}">
+        <svg class="w-5 h-5 transition-colors" [ngClass]="{'text-university-600': !isDarkMode, 'text-blue-400': isDarkMode}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
         </svg>
-        <span class="text-sm flex items-center gap-2"><span class="font-semibold text-university-700">{{stats.total}}</span> <span class="text-gray-600">grados registrados</span></span>
+        <span class="text-sm flex items-center gap-2">
+          <span class="font-semibold transition-colors" [ngClass]="{'text-university-700': !isDarkMode, 'text-blue-300': isDarkMode}">{{stats.total}}</span>
+          <span class="transition-colors" [ngClass]="{'text-gray-600': !isDarkMode, 'text-slate-300': isDarkMode}">grados registrados</span>
+        </span>
       </div>
     </div>
 
-    <div class="rounded-2xl shadow-lg p-8 md:p-10 bg-white animate-slide-up border border-gray-200">
+    <div class="rounded-2xl shadow-lg p-8 md:p-10 animate-slide-up border backdrop-blur-sm transition-all"
+         [ngClass]="{'bg-white border-gray-200': !isDarkMode, 'bg-slate-800/90 border-slate-600/50 shadow-slate-900/50': isDarkMode}">
 
 
       <div class="mb-8">
-        <div class="inline-flex p-1 bg-gray-100 rounded-xl gap-1">
+        <div class="inline-flex p-1 rounded-xl gap-1 transition-colors"
+             [ngClass]="{'bg-gray-100': !isDarkMode, 'bg-slate-700/50': isDarkMode}">
           <button
             (click)="changeTab('dni')"
-            [class.bg-white]="currentTab === 'dni'"
-            [class.shadow-sm]="currentTab === 'dni'"
-            [class.text-gray-900]="currentTab === 'dni'"
-            [class.text-gray-600]="currentTab !== 'dni'"
+            [ngClass]="{
+              'bg-white text-gray-900 shadow-sm': currentTab === 'dni' && !isDarkMode,
+              'bg-blue-500 text-white shadow-lg shadow-blue-500/30': currentTab === 'dni' && isDarkMode,
+              'text-gray-600 hover:text-gray-900': currentTab !== 'dni' && !isDarkMode,
+              'text-slate-300 hover:text-white': currentTab !== 'dni' && isDarkMode
+            }"
             class="px-6 py-2.5 rounded-lg font-medium transition-all duration-200 flex items-center gap-2">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"></path>
@@ -37,10 +45,12 @@
 
           <button
             (click)="changeTab('codigo')"
-            [class.bg-white]="currentTab === 'codigo'"
-            [class.shadow-sm]="currentTab === 'codigo'"
-            [class.text-gray-900]="currentTab === 'codigo'"
-            [class.text-gray-600]="currentTab !== 'codigo'"
+            [ngClass]="{
+              'bg-white text-gray-900 shadow-sm': currentTab === 'codigo' && !isDarkMode,
+              'bg-blue-500 text-white shadow-lg shadow-blue-500/30': currentTab === 'codigo' && isDarkMode,
+              'text-gray-600 hover:text-gray-900': currentTab !== 'codigo' && !isDarkMode,
+              'text-slate-300 hover:text-white': currentTab !== 'codigo' && isDarkMode
+            }"
             class="px-6 py-2.5 rounded-lg font-medium transition-all duration-200 flex items-center gap-2">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"></path>
@@ -53,15 +63,20 @@
 
       <div *ngIf="currentTab === 'dni'" class="space-y-6 animate-fade-in">
         <div class="relative">
-          <label class="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-            <svg class="w-5 h-5 text-university-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <label class="block text-sm font-semibold mb-3 flex items-center gap-2 transition-colors"
+                 [ngClass]="{'text-gray-700': !isDarkMode, 'text-slate-200': isDarkMode}">
+            <svg class="w-5 h-5 transition-colors"
+                 [ngClass]="{'text-university-600': !isDarkMode, 'text-blue-400': isDarkMode}"
+                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"></path>
             </svg>
             Número de DNI
           </label>
           <div class="relative group">
             <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <svg class="w-5 h-5 text-gray-400 group-focus-within:text-university-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-5 h-5 transition-colors"
+                   [ngClass]="{'text-gray-400 group-focus-within:text-university-600': !isDarkMode, 'text-slate-400 group-focus-within:text-blue-400': isDarkMode}"
+                   fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
               </svg>
             </div>
@@ -74,13 +89,19 @@
               placeholder="Ingresa 8 dígitos del DNI"
               maxlength="8"
               pattern="[0-9]*"
-              class="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-university-500 focus:ring-4 focus:ring-university-100 transition-all text-lg bg-gray-50 focus:bg-white"
+              class="w-full pl-12 pr-4 py-4 border-2 rounded-xl focus:outline-none transition-all text-lg"
+              [ngClass]="{
+                'border-gray-200 bg-gray-50 focus:bg-white text-gray-900 focus:border-university-500 focus:ring-4 focus:ring-university-100 placeholder-gray-400': !isDarkMode,
+                'border-slate-600 bg-slate-700/50 focus:bg-slate-700 text-white focus:border-blue-400 focus:ring-4 focus:ring-blue-500/20 placeholder-slate-400': isDarkMode
+              }"
             />
             <div *ngIf="isSearching" class="absolute right-4 top-1/2 -translate-y-1/2">
-              <div class="w-5 h-5 border-2 border-university-500 border-t-transparent rounded-full animate-spin"></div>
+              <div class="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin"
+                   [ngClass]="{'border-university-500': !isDarkMode, 'border-blue-400': isDarkMode}"></div>
             </div>
           </div>
-          <p class="text-xs text-gray-500 mt-2 flex items-center gap-1.5">
+          <p class="text-xs mt-2 flex items-center gap-1.5 transition-colors"
+             [ngClass]="{'text-gray-500': !isDarkMode, 'text-slate-400': isDarkMode}">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
@@ -90,48 +111,71 @@
 
           <div *ngIf="showSuggestions"
                (scroll)="onSuggestionScroll($event)"
-               class="absolute z-50 w-full mt-1 bg-white border-2 border-university-200 rounded-lg shadow-xl max-h-96 overflow-y-auto animate-slide-up">
+               class="absolute z-50 w-full mt-1 border-2 rounded-lg shadow-xl max-h-96 overflow-y-auto animate-slide-up backdrop-blur-sm"
+               [ngClass]="{'bg-white border-university-200': !isDarkMode, 'bg-slate-800 border-slate-600': isDarkMode}">
 
 
-            <div *ngIf="!isLoadingSuggestions && liveSuggestions.length > 0" class="p-3 bg-university-50 border-b border-university-100 sticky top-0">
-              <p class="text-sm font-medium text-university-800">
+            <div *ngIf="!isLoadingSuggestions && liveSuggestions.length > 0"
+                 class="p-3 border-b sticky top-0 backdrop-blur-sm"
+                 [ngClass]="{'bg-university-50 border-university-100': !isDarkMode, 'bg-slate-700/90 border-slate-600': isDarkMode}">
+              <p class="text-sm font-medium transition-colors"
+                 [ngClass]="{'text-university-800': !isDarkMode, 'text-blue-300': isDarkMode}">
                 {{ suggestionCount }} resultado{{ suggestionCount !== 1 ? 's' : '' }} encontrado{{ suggestionCount !== 1 ? 's' : '' }}
               </p>
             </div>
 
 
             <div *ngIf="isLoadingSuggestions" class="p-8 flex flex-col items-center justify-center">
-              <div class="w-12 h-12 border-4 border-university-200 border-t-university-600 rounded-full animate-rotate mb-3"></div>
-              <p class="text-sm text-gray-600 animate-pulse">Buscando coincidencias...</p>
+              <div class="w-12 h-12 border-4 rounded-full animate-rotate mb-3"
+                   [ngClass]="{'border-university-200 border-t-university-600': !isDarkMode, 'border-slate-600 border-t-blue-400': isDarkMode}"></div>
+              <p class="text-sm animate-pulse transition-colors"
+                 [ngClass]="{'text-gray-600': !isDarkMode, 'text-slate-300': isDarkMode}">Buscando coincidencias...</p>
             </div>
 
 
-            <div *ngIf="!isLoadingSuggestions && liveSuggestions.length > 0" class="divide-y divide-gray-100">
+            <div *ngIf="!isLoadingSuggestions && liveSuggestions.length > 0"
+                 class="divide-y"
+                 [ngClass]="{'divide-gray-100': !isDarkMode, 'divide-slate-700': isDarkMode}">
               <div *ngFor="let suggestion of liveSuggestions"
                    (mousedown)="selectSuggestion(suggestion)"
-                   class="p-4 hover:bg-university-50 cursor-pointer transition-colors">
+                   class="p-4 cursor-pointer transition-colors"
+                   [ngClass]="{'hover:bg-university-50': !isDarkMode, 'hover:bg-slate-700/50': isDarkMode}">
                 <div class="flex items-start justify-between">
                   <div class="flex-1">
-                    <h4 class="font-semibold text-gray-900">{{ suggestion.alumno }}</h4>
-                    <p class="text-sm text-gray-600 mt-1">DNI: {{ suggestion.dni }}</p>
-                    <p class="text-sm text-university-600 mt-1">{{ suggestion.gradoAcademico }}</p>
+                    <h4 class="font-semibold transition-colors"
+                        [ngClass]="{'text-gray-900': !isDarkMode, 'text-slate-50': isDarkMode}">{{ suggestion.alumno }}</h4>
+                    <p class="text-sm mt-1 transition-colors"
+                       [ngClass]="{'text-gray-600': !isDarkMode, 'text-slate-400': isDarkMode}">DNI: {{ suggestion.dni }}</p>
+                    <p class="text-sm mt-1 transition-colors"
+                       [ngClass]="{'text-university-600': !isDarkMode, 'text-blue-400': isDarkMode}">{{ suggestion.gradoAcademico }}</p>
                   </div>
-                  <svg class="w-5 h-5 text-university-500 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="w-5 h-5 flex-shrink-0 mt-1 transition-colors"
+                       [ngClass]="{'text-university-500': !isDarkMode, 'text-blue-400': isDarkMode}"
+                       fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                   </svg>
                 </div>
               </div>
 
               <!-- Preloader para más resultados -->
-              <div *ngIf="isLoadingMoreSuggestions" class="p-4 flex flex-col items-center justify-center bg-gray-50">
-                <div class="w-8 h-8 border-3 border-university-200 border-t-university-600 rounded-full animate-spin mb-2"></div>
-                <p class="text-xs text-gray-600 animate-pulse">Cargando más resultados...</p>
+              <div *ngIf="isLoadingMoreSuggestions"
+                   class="p-4 flex flex-col items-center justify-center transition-colors"
+                   [ngClass]="{'bg-gray-50': !isDarkMode, 'bg-slate-700/30': isDarkMode}">
+                <div class="w-8 h-8 border-3 rounded-full animate-spin mb-2"
+                     [ngClass]="{'border-university-200 border-t-university-600': !isDarkMode, 'border-slate-600 border-t-blue-400': isDarkMode}"></div>
+                <p class="text-xs animate-pulse transition-colors"
+                   [ngClass]="{'text-gray-600': !isDarkMode, 'text-slate-300': isDarkMode}">Cargando más resultados...</p>
               </div>
 
               <!-- Indicador de scroll cuando hay más resultados -->
-              <div *ngIf="!isLoadingMoreSuggestions && hasMoreSuggestions" class="p-3 bg-gray-50 text-center border-t border-gray-200">
-                <p class="text-xs text-gray-600 flex items-center justify-center gap-1.5">
-                  <svg class="w-4 h-4 text-university-500 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div *ngIf="!isLoadingMoreSuggestions && hasMoreSuggestions"
+                   class="p-3 text-center border-t transition-colors"
+                   [ngClass]="{'bg-gray-50 border-gray-200': !isDarkMode, 'bg-slate-700/30 border-slate-600': isDarkMode}">
+                <p class="text-xs flex items-center justify-center gap-1.5 transition-colors"
+                   [ngClass]="{'text-gray-600': !isDarkMode, 'text-slate-400': isDarkMode}">
+                  <svg class="w-4 h-4 animate-bounce transition-colors"
+                       [ngClass]="{'text-university-500': !isDarkMode, 'text-blue-400': isDarkMode}"
+                       fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                   </svg>
                   Desplázate para ver más resultados
@@ -141,11 +185,15 @@
 
 
             <div *ngIf="!isLoadingSuggestions && liveSuggestions.length === 0" class="p-6 text-center">
-              <svg class="w-12 h-12 text-university-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-12 h-12 mx-auto mb-3 transition-colors"
+                   [ngClass]="{'text-university-300': !isDarkMode, 'text-slate-600': isDarkMode}"
+                   fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
               </svg>
-              <p class="text-sm text-gray-600 font-medium mb-1">Continúa escribiendo</p>
-              <p class="text-xs text-gray-500">Completa más dígitos para encontrar coincidencias</p>
+              <p class="text-sm font-medium mb-1 transition-colors"
+                 [ngClass]="{'text-gray-600': !isDarkMode, 'text-slate-300': isDarkMode}">Continúa escribiendo</p>
+              <p class="text-xs transition-colors"
+                 [ngClass]="{'text-gray-500': !isDarkMode, 'text-slate-400': isDarkMode}">Completa más dígitos para encontrar coincidencias</p>
             </div>
           </div>
         </div>
@@ -153,7 +201,11 @@
         <button
           (click)="buscar()"
           [disabled]="!isValidSearch() || isSearching"
-          class="w-full py-4 bg-gradient-to-r from-university-600 to-university-700 text-white font-semibold rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2">
+          class="w-full py-4 text-white font-semibold rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
+          [ngClass]="{
+            'bg-gradient-to-r from-university-600 to-university-700': !isDarkMode,
+            'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700': isDarkMode
+          }">
           <svg *ngIf="!isSearching" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
           </svg>
@@ -164,15 +216,20 @@
 
       <div *ngIf="currentTab === 'codigo'" class="space-y-6 animate-fade-in">
         <div class="relative">
-          <label class="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-            <svg class="w-5 h-5 text-university-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <label class="block text-sm font-semibold mb-3 flex items-center gap-2 transition-colors"
+                 [ngClass]="{'text-gray-700': !isDarkMode, 'text-slate-200': isDarkMode}">
+            <svg class="w-5 h-5 transition-colors"
+                 [ngClass]="{'text-university-600': !isDarkMode, 'text-blue-400': isDarkMode}"
+                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"></path>
             </svg>
             Código de Diploma o Resolución
           </label>
           <div class="relative group">
             <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <svg class="w-5 h-5 text-gray-400 group-focus-within:text-university-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-5 h-5 transition-colors"
+                   [ngClass]="{'text-gray-400 group-focus-within:text-university-600': !isDarkMode, 'text-slate-400 group-focus-within:text-blue-400': isDarkMode}"
+                   fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"></path>
               </svg>
             </div>
@@ -184,13 +241,19 @@
               (keyup.enter)="buscar()"
               placeholder="Ej: UNT01234 o N° 2021-UNTUMBES"
               maxlength="12"
-              class="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-university-500 focus:ring-4 focus:ring-university-100 transition-all text-lg bg-gray-50 focus:bg-white uppercase"
+              class="w-full pl-12 pr-4 py-4 border-2 rounded-xl focus:outline-none transition-all text-lg uppercase"
+              [ngClass]="{
+                'border-gray-200 bg-gray-50 focus:bg-white text-gray-900 focus:border-university-500 focus:ring-4 focus:ring-university-100 placeholder-gray-400': !isDarkMode,
+                'border-slate-600 bg-slate-700/50 focus:bg-slate-700 text-white focus:border-blue-400 focus:ring-4 focus:ring-blue-500/20 placeholder-slate-400': isDarkMode
+              }"
             />
             <div *ngIf="isSearching" class="absolute right-4 top-1/2 -translate-y-1/2">
-              <div class="w-5 h-5 border-2 border-university-500 border-t-transparent rounded-full animate-spin"></div>
+              <div class="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin"
+                   [ngClass]="{'border-university-500': !isDarkMode, 'border-blue-400': isDarkMode}"></div>
             </div>
           </div>
-          <p class="text-xs text-gray-500 mt-2 flex items-center gap-1.5">
+          <p class="text-xs mt-2 flex items-center gap-1.5 transition-colors"
+             [ngClass]="{'text-gray-500': !isDarkMode, 'text-slate-400': isDarkMode}">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
@@ -200,45 +263,68 @@
 
           <div *ngIf="showSuggestions"
                (scroll)="onSuggestionScroll($event)"
-               class="absolute z-50 w-full mt-1 bg-white border-2 border-university-200 rounded-lg shadow-xl max-h-96 overflow-y-auto animate-slide-up">
+               class="absolute z-50 w-full mt-1 border-2 rounded-lg shadow-xl max-h-96 overflow-y-auto animate-slide-up backdrop-blur-sm"
+               [ngClass]="{'bg-white border-university-200': !isDarkMode, 'bg-slate-800 border-slate-600': isDarkMode}">
 
-            <div *ngIf="!isLoadingSuggestions && liveSuggestions.length > 0" class="p-3 bg-university-50 border-b border-university-100 sticky top-0">
-              <p class="text-sm font-medium text-university-800">
+            <div *ngIf="!isLoadingSuggestions && liveSuggestions.length > 0"
+                 class="p-3 border-b sticky top-0 backdrop-blur-sm"
+                 [ngClass]="{'bg-university-50 border-university-100': !isDarkMode, 'bg-slate-700/90 border-slate-600': isDarkMode}">
+              <p class="text-sm font-medium transition-colors"
+                 [ngClass]="{'text-university-800': !isDarkMode, 'text-blue-300': isDarkMode}">
                 {{ suggestionCount }} resultado{{ suggestionCount !== 1 ? 's' : '' }} encontrado{{ suggestionCount !== 1 ? 's' : '' }}
               </p>
             </div>
 
             <div *ngIf="isLoadingSuggestions" class="p-8 flex flex-col items-center justify-center">
-              <div class="w-12 h-12 border-4 border-university-200 border-t-university-600 rounded-full animate-rotate mb-3"></div>
-              <p class="text-sm text-gray-600 animate-pulse">Buscando coincidencias...</p>
+              <div class="w-12 h-12 border-4 rounded-full animate-rotate mb-3"
+                   [ngClass]="{'border-university-200 border-t-university-600': !isDarkMode, 'border-slate-600 border-t-blue-400': isDarkMode}"></div>
+              <p class="text-sm animate-pulse transition-colors"
+                 [ngClass]="{'text-gray-600': !isDarkMode, 'text-slate-300': isDarkMode}">Buscando coincidencias...</p>
             </div>
 
-            <div *ngIf="!isLoadingSuggestions && liveSuggestions.length > 0" class="divide-y divide-gray-100">
+            <div *ngIf="!isLoadingSuggestions && liveSuggestions.length > 0"
+                 class="divide-y"
+                 [ngClass]="{'divide-gray-100': !isDarkMode, 'divide-slate-700': isDarkMode}">
               <div *ngFor="let suggestion of liveSuggestions"
                    (mousedown)="selectSuggestion(suggestion)"
-                   class="p-4 hover:bg-university-50 cursor-pointer transition-colors">
+                   class="p-4 cursor-pointer transition-colors"
+                   [ngClass]="{'hover:bg-university-50': !isDarkMode, 'hover:bg-slate-700/50': isDarkMode}">
                 <div class="flex items-start justify-between">
                   <div class="flex-1">
-                    <h4 class="font-semibold text-gray-900">{{ suggestion.alumno }}</h4>
-                    <p class="text-sm text-gray-600 mt-1">Código: {{ suggestion.codigoDiploma }}</p>
-                    <p class="text-sm text-university-600 mt-1">{{ suggestion.gradoAcademico }}</p>
+                    <h4 class="font-semibold transition-colors"
+                        [ngClass]="{'text-gray-900': !isDarkMode, 'text-slate-50': isDarkMode}">{{ suggestion.alumno }}</h4>
+                    <p class="text-sm mt-1 transition-colors"
+                       [ngClass]="{'text-gray-600': !isDarkMode, 'text-slate-400': isDarkMode}">Código: {{ suggestion.codigoDiploma }}</p>
+                    <p class="text-sm mt-1 transition-colors"
+                       [ngClass]="{'text-university-600': !isDarkMode, 'text-blue-400': isDarkMode}">{{ suggestion.gradoAcademico }}</p>
                   </div>
-                  <svg class="w-5 h-5 text-university-500 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="w-5 h-5 flex-shrink-0 mt-1 transition-colors"
+                       [ngClass]="{'text-university-500': !isDarkMode, 'text-blue-400': isDarkMode}"
+                       fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                   </svg>
                 </div>
               </div>
 
               <!-- Preloader para más resultados -->
-              <div *ngIf="isLoadingMoreSuggestions" class="p-4 flex flex-col items-center justify-center bg-gray-50">
-                <div class="w-8 h-8 border-3 border-university-200 border-t-university-600 rounded-full animate-spin mb-2"></div>
-                <p class="text-xs text-gray-600 animate-pulse">Cargando más resultados...</p>
+              <div *ngIf="isLoadingMoreSuggestions"
+                   class="p-4 flex flex-col items-center justify-center transition-colors"
+                   [ngClass]="{'bg-gray-50': !isDarkMode, 'bg-slate-700/30': isDarkMode}">
+                <div class="w-8 h-8 border-3 rounded-full animate-spin mb-2"
+                     [ngClass]="{'border-university-200 border-t-university-600': !isDarkMode, 'border-slate-600 border-t-blue-400': isDarkMode}"></div>
+                <p class="text-xs animate-pulse transition-colors"
+                   [ngClass]="{'text-gray-600': !isDarkMode, 'text-slate-300': isDarkMode}">Cargando más resultados...</p>
               </div>
 
               <!-- Indicador de scroll cuando hay más resultados -->
-              <div *ngIf="!isLoadingMoreSuggestions && hasMoreSuggestions" class="p-3 bg-gray-50 text-center border-t border-gray-200">
-                <p class="text-xs text-gray-600 flex items-center justify-center gap-1.5">
-                  <svg class="w-4 h-4 text-university-500 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div *ngIf="!isLoadingMoreSuggestions && hasMoreSuggestions"
+                   class="p-3 text-center border-t transition-colors"
+                   [ngClass]="{'bg-gray-50 border-gray-200': !isDarkMode, 'bg-slate-700/30 border-slate-600': isDarkMode}">
+                <p class="text-xs flex items-center justify-center gap-1.5 transition-colors"
+                   [ngClass]="{'text-gray-600': !isDarkMode, 'text-slate-400': isDarkMode}">
+                  <svg class="w-4 h-4 animate-bounce transition-colors"
+                       [ngClass]="{'text-university-500': !isDarkMode, 'text-blue-400': isDarkMode}"
+                       fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                   </svg>
                   Desplázate para ver más resultados
@@ -247,11 +333,15 @@
             </div>
 
             <div *ngIf="!isLoadingSuggestions && liveSuggestions.length === 0" class="p-6 text-center">
-              <svg class="w-12 h-12 text-university-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-12 h-12 mx-auto mb-3 transition-colors"
+                   [ngClass]="{'text-university-300': !isDarkMode, 'text-slate-600': isDarkMode}"
+                   fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
               </svg>
-              <p class="text-sm text-gray-600 font-medium mb-1">Continúa escribiendo</p>
-              <p class="text-xs text-gray-500">Completa más dígitos para encontrar coincidencias</p>
+              <p class="text-sm font-medium mb-1 transition-colors"
+                 [ngClass]="{'text-gray-600': !isDarkMode, 'text-slate-300': isDarkMode}">Continúa escribiendo</p>
+              <p class="text-xs transition-colors"
+                 [ngClass]="{'text-gray-500': !isDarkMode, 'text-slate-400': isDarkMode}">Completa más dígitos para encontrar coincidencias</p>
             </div>
           </div>
         </div>
@@ -259,7 +349,11 @@
         <button
           (click)="buscar()"
           [disabled]="!isValidSearch() || isSearching"
-          class="w-full py-4 bg-gradient-to-r from-university-600 to-university-700 text-white font-semibold rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2">
+          class="w-full py-4 text-white font-semibold rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
+          [ngClass]="{
+            'bg-gradient-to-r from-university-600 to-university-700': !isDarkMode,
+            'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700': isDarkMode
+          }">
           <svg *ngIf="!isSearching" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
           </svg>

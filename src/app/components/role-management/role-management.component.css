@@ -737,3 +737,533 @@ textarea {
     width: 100%;
   }
 }
+
+/* ===========================
+   DARK MODE - ROLE MANAGEMENT
+   =========================== */
+
+/* Container y fondo */
+:host-context(html.dark-theme) .container {
+  background: #0f0f23 !important;
+}
+
+/* Header */
+:host-context(html.dark-theme) .header {
+  background: linear-gradient(135deg, #1a1a2e 0%, #0f0f23 100%) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+}
+
+:host-context(html.dark-theme) .header h1 {
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+:host-context(html.dark-theme) .header h1 i {
+  color: #fbbf24 !important;
+}
+
+/* Botón primario del header */
+:host-context(html.dark-theme) .header .btn-primary {
+  background: #667eea !important;
+  color: white !important;
+  border-color: #667eea !important;
+}
+
+:host-context(html.dark-theme) .header .btn-primary:hover:not(:disabled) {
+  background: #5a67d8 !important;
+  border-color: #5a67d8 !important;
+}
+
+/* Search box */
+:host-context(html.dark-theme) .search-box {
+  background: #1a1a2e !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+}
+
+:host-context(html.dark-theme) .search-input-wrapper {
+  background: #0f0f23 !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+:host-context(html.dark-theme) .search-input-wrapper:focus-within {
+  border-color: #667eea !important;
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.3) !important;
+}
+
+:host-context(html.dark-theme) .search-input-wrapper i {
+  color: #60a5fa !important;
+}
+
+:host-context(html.dark-theme) .search-input-wrapper input {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+:host-context(html.dark-theme) .search-input-wrapper input::placeholder {
+  color: rgba(255, 255, 255, 0.4) !important;
+}
+
+
+:host-context(html.dark-theme) .table-wrapper {
+  background: #1a1a2e !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+}
+
+:host-context(html.dark-theme) .table-info {
+  background: #0f0f23 !important;
+  border-bottom-color: rgba(102, 126, 234, 0.5) !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+:host-context(html.dark-theme) .data-table {
+  background: #1a1a2e !important;
+}
+
+:host-context(html.dark-theme) .data-table th {
+  background: #0f0f23 !important;
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+:host-context(html.dark-theme) .data-table td {
+  color: rgba(255, 255, 255, 0.85) !important;
+  border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+:host-context(html.dark-theme) .data-table tr:hover {
+  background: rgba(102, 126, 234, 0.1) !important;
+}
+
+:host-context(html.dark-theme) .data-table tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.02) !important;
+}
+
+:host-context(html.dark-theme) .role-cell strong {
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+:host-context(html.dark-theme) .desc-cell {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+:host-context(html.dark-theme) .count-badge {
+  background: #0f0f23 !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+:host-context(html.dark-theme) .btn-icon {
+  background: #0f0f23 !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+:host-context(html.dark-theme) .btn-icon:hover:not(:disabled) {
+  background: rgba(102, 126, 234, 0.2) !important;
+  border-color: rgba(102, 126, 234, 0.4) !important;
+}
+
+:host-context(html.dark-theme) .btn-icon.edit {
+  color: #60a5fa !important;
+}
+
+:host-context(html.dark-theme) .btn-icon.edit:hover:not(:disabled) {
+  background: rgba(59, 130, 246, 0.2) !important;
+  border-color: rgba(59, 130, 246, 0.4) !important;
+}
+
+:host-context(html.dark-theme) .btn-icon.delete {
+  color: #fca5a5 !important;
+}
+
+:host-context(html.dark-theme) .btn-icon.delete:hover:not(:disabled) {
+  background: rgba(229, 62, 62, 0.2) !important;
+  border-color: rgba(229, 62, 62, 0.4) !important;
+}
+
+/* Cards (mobile) */
+:host-context(html.dark-theme) .role-card {
+  background: #1a1a2e !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+}
+
+:host-context(html.dark-theme) .role-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+}
+
+:host-context(html.dark-theme) .card-header {
+  background: #0f0f23 !important;
+  border-bottom-color: rgba(102, 126, 234, 0.5) !important;
+}
+
+:host-context(html.dark-theme) .card-info h3 {
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+:host-context(html.dark-theme) .card-info p {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+:host-context(html.dark-theme) .card-stats {
+  background: #1a1a2e !important;
+}
+
+:host-context(html.dark-theme) .stat {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+:host-context(html.dark-theme) .info-label {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+:host-context(html.dark-theme) .stat strong {
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+/* Badge colors */
+:host-context(html.dark-theme) .badge-admin {
+  background: rgba(245, 158, 11, 0.2) !important;
+  color: #fbbf24 !important;
+  border-color: rgba(245, 158, 11, 0.4) !important;
+}
+
+:host-context(html.dark-theme) .badge-administrativo {
+  background: rgba(59, 130, 246, 0.2) !important;
+  color: #60a5fa !important;
+  border-color: rgba(59, 130, 246, 0.4) !important;
+}
+
+:host-context(html.dark-theme) .badge-usuario {
+  background: rgba(34, 197, 94, 0.2) !important;
+  color: #6ee7b7 !important;
+  border-color: rgba(34, 197, 94, 0.4) !important;
+}
+
+:host-context(html.dark-theme) .clear-btn {
+  background: #0f0f23 !important;
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+:host-context(html.dark-theme) .clear-btn:hover {
+  background: rgba(102, 126, 234, 0.3) !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+:host-context(html.dark-theme) .results-count {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+:host-context(html.dark-theme) .results-count.no-results {
+  color: #fca5a5 !important;
+}
+
+/* Card actions */
+:host-context(html.dark-theme) .card-actions {
+  background: #0f0f23 !important;
+  border-top-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+:host-context(html.dark-theme) .btn-action {
+  background: #1a1a2e !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+:host-context(html.dark-theme) .btn-action:hover:not(:disabled) {
+  background: #667eea !important;
+  border-color: #667eea !important;
+  color: white !important;
+}
+
+:host-context(html.dark-theme) .btn-action.edit {
+  background: rgba(59, 130, 246, 0.15) !important;
+  color: #60a5fa !important;
+  border-color: rgba(59, 130, 246, 0.3) !important;
+}
+
+:host-context(html.dark-theme) .btn-action.edit:hover:not(:disabled) {
+  background: rgba(59, 130, 246, 0.3) !important;
+  border-color: rgba(59, 130, 246, 0.5) !important;
+}
+
+:host-context(html.dark-theme) .btn-action.delete {
+  background: rgba(229, 62, 62, 0.15) !important;
+  color: #fca5a5 !important;
+  border-color: rgba(229, 62, 62, 0.3) !important;
+}
+
+:host-context(html.dark-theme) .btn-action.delete:hover:not(:disabled) {
+  background: rgba(229, 62, 62, 0.3) !important;
+  border-color: rgba(229, 62, 62, 0.5) !important;
+}
+
+/* Modal */
+:host-context(html.dark-theme) .modal-overlay {
+  background: rgba(0, 0, 0, 0.8) !important;
+}
+
+:host-context(html.dark-theme) .modal {
+  background: #1a1a2e !important;
+}
+
+:host-context(html.dark-theme) .modal-header {
+  background: #0f0f23 !important;
+  border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+:host-context(html.dark-theme) .modal-header h2 {
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+:host-context(html.dark-theme) .modal-body {
+  background: #1a1a2e !important;
+}
+
+:host-context(html.dark-theme) .modal-body p {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+:host-context(html.dark-theme) .modal-body p strong {
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+:host-context(html.dark-theme) .form-field label {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+:host-context(html.dark-theme) .form-field input,
+:host-context(html.dark-theme) .form-field textarea {
+  background: #0f0f23 !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+:host-context(html.dark-theme) .form-field input:focus,
+:host-context(html.dark-theme) .form-field textarea:focus {
+  border-color: #667eea !important;
+  background: #0f0f23 !important;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3) !important;
+}
+
+:host-context(html.dark-theme) .form-field input::placeholder,
+:host-context(html.dark-theme) .form-field textarea::placeholder {
+  color: rgba(255, 255, 255, 0.4) !important;
+}
+
+:host-context(html.dark-theme) .form-field input.error,
+:host-context(html.dark-theme) .form-field textarea.error {
+  border-color: #fca5a5 !important;
+  box-shadow: 0 0 0 3px rgba(252, 165, 165, 0.3) !important;
+}
+
+:host-context(html.dark-theme) .error-msg {
+  color: #fca5a5 !important;
+}
+
+
+:host-context(html.dark-theme) .permissions-group {
+  background: #0f0f23 !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+:host-context(html.dark-theme) .permissions-group h4 {
+  color: rgba(255, 255, 255, 0.85) !important;
+  border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+:host-context(html.dark-theme) .permission-item {
+  border-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+:host-context(html.dark-theme) .permission-item:hover {
+  background: rgba(255, 255, 255, 0.03) !important;
+}
+
+:host-context(html.dark-theme) .permission-item label {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+:host-context(html.dark-theme) .permission-item input[type="checkbox"] {
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+:host-context(html.dark-theme) .permission-item input[type="checkbox"]:checked {
+  background: #667eea !important;
+  border-color: #667eea !important;
+}
+
+:host-context(html.dark-theme) .permission-description {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+
+:host-context(html.dark-theme) .modal-footer {
+  background: #0f0f23 !important;
+  border-top-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+:host-context(html.dark-theme) .btn-secondary {
+  background: #1a1a2e !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+:host-context(html.dark-theme) .btn-secondary:hover {
+  background: #0f0f23 !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+}
+
+:host-context(html.dark-theme) .btn-primary:not(.header .btn-primary) {
+  background: #667eea !important;
+  color: white !important;
+  border-color: #667eea !important;
+}
+
+:host-context(html.dark-theme) .btn-primary:not(.header .btn-primary):hover:not(:disabled) {
+  background: #5a67d8 !important;
+  border-color: #5a67d8 !important;
+}
+
+:host-context(html.dark-theme) .btn-danger {
+  background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%) !important;
+  color: white !important;
+  border-color: #dc2626 !important;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4) !important;
+}
+
+:host-context(html.dark-theme) .btn-danger:hover:not(:disabled) {
+  background: linear-gradient(135deg, #991b1b 0%, #7f1d1d 100%) !important;
+  box-shadow: 0 6px 16px rgba(220, 38, 38, 0.5) !important;
+}
+
+:host-context(html.dark-theme) .warning {
+  background: rgba(245, 158, 11, 0.15) !important;
+  border-color: rgba(245, 158, 11, 0.4) !important;
+  color: #fbbf24 !important;
+}
+
+:host-context(html.dark-theme) .warning i {
+  color: #fbbf24 !important;
+}
+
+:host-context(html.dark-theme) .warning span {
+  color: #fbbf24 !important;
+}
+
+:host-context(html.dark-theme) .text-muted {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+:host-context(html.dark-theme) .modal-actions {
+  border-top-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+:host-context(html.dark-theme) .empty-state .btn-primary {
+  background: #667eea !important;
+  color: white !important;
+  border-color: #667eea !important;
+}
+
+:host-context(html.dark-theme) .empty-state .btn-primary:hover {
+  background: #5a67d8 !important;
+  border-color: #5a67d8 !important;
+}
+
+:host-context(html.dark-theme) .empty-state h3 {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+
+:host-context(html.dark-theme) .toast {
+  background: #1a1a2e !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4) !important;
+}
+
+:host-context(html.dark-theme) .toast.success {
+  background: rgba(56, 161, 105, 0.2) !important;
+  color: #6ee7b7 !important;
+  border-color: rgba(56, 161, 105, 0.4) !important;
+}
+
+:host-context(html.dark-theme) .toast.success i {
+  color: #6ee7b7 !important;
+}
+
+:host-context(html.dark-theme) .toast.error {
+  background: rgba(229, 62, 62, 0.2) !important;
+  color: #fca5a5 !important;
+  border-color: rgba(229, 62, 62, 0.4) !important;
+}
+
+:host-context(html.dark-theme) .toast.error i {
+  color: #fca5a5 !important;
+}
+
+:host-context(html.dark-theme) .toast.warning {
+  background: rgba(245, 158, 11, 0.2) !important;
+  color: #fbbf24 !important;
+  border-color: rgba(245, 158, 11, 0.4) !important;
+}
+
+:host-context(html.dark-theme) .toast.warning i {
+  color: #fbbf24 !important;
+}
+
+:host-context(html.dark-theme) .toast.info {
+  background: rgba(59, 130, 246, 0.2) !important;
+  color: #60a5fa !important;
+  border-color: rgba(59, 130, 246, 0.4) !important;
+}
+
+:host-context(html.dark-theme) .toast.info i {
+  color: #60a5fa !important;
+}
+
+/* Empty state */
+:host-context(html.dark-theme) .empty-state {
+  background: #1a1a2e !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+:host-context(html.dark-theme) .empty-state i {
+  color: rgba(255, 255, 255, 0.3) !important;
+}
+
+:host-context(html.dark-theme) .empty-state p {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+/* Loading state */
+:host-context(html.dark-theme) .loading {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+/* Help text */
+:host-context(html.dark-theme) .help-text {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+/* Error message */
+:host-context(html.dark-theme) .error-message {
+  color: #fca5a5 !important;
+}
+
+/* Required indicator */
+:host-context(html.dark-theme) .required {
+  color: #fca5a5 !important;
+}
+
+/* Stats/Counters si existen */
+:host-context(html.dark-theme) .stats-card {
+  background: #1a1a2e !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+:host-context(html.dark-theme) .stats-card .number {
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+:host-context(html.dark-theme) .stats-card .label {
+  color: rgba(255, 255, 255, 0.6) !important;
+}

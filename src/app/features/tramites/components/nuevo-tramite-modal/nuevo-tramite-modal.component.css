@@ -2,11 +2,18 @@
   max-height: 70vh;
   overflow-y: auto;
   padding: 1.5rem;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+html.dark-theme .modal-content {
+  background: #1a1a2e !important;
+  color: #e5e7eb !important;
 }
 
 .form-section {
   margin-bottom: 2rem;
-  border-bottom: 1px solid #e9ecef;
+  border-bottom: 1px solid var(--border-primary);
   padding-bottom: 1.5rem;
 }
 
@@ -18,11 +25,19 @@
 .section-title {
   font-size: 1.1rem;
   font-weight: 600;
-  color: #2c3e50;
+  color: var(--text-primary);
   margin-bottom: 1rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
+}
+
+html.dark-theme .section-title {
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+html.dark-theme .section-title i {
+  color: #60a5fa !important;
 }
 
 .section-title i {
@@ -45,9 +60,13 @@
 
 .form-label {
   font-weight: 500;
-  color: #495057;
+  color: var(--text-secondary);
   margin-bottom: 0.5rem;
   display: block;
+}
+
+html.dark-theme .form-label {
+  color: rgba(255, 255, 255, 0.85) !important;
 }
 
 .form-label.required::after {
@@ -58,10 +77,26 @@
 .form-control {
   width: 100%;
   padding: 0.75rem;
-  border: 1px solid #ced4da;
+  border: 1px solid var(--border-primary);
   border-radius: 0.375rem;
   font-size: 0.875rem;
+  background: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+html.dark-theme .form-control {
+  background: #0f0f23 !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  color: #e5e7eb !important;
+}
+
+.form-control::placeholder {
+  color: var(--text-tertiary);
+}
+
+html.dark-theme .form-control::placeholder {
+  color: rgba(255, 255, 255, 0.4) !important;
 }
 
 .form-control:focus {
@@ -81,10 +116,18 @@
   margin-top: 0.25rem;
 }
 
+html.dark-theme .invalid-feedback {
+  color: #fca5a5 !important;
+}
+
 .form-text {
   font-size: 0.75rem;
-  color: #6c757d;
+  color: var(--text-secondary);
   margin-top: 0.25rem;
+}
+
+html.dark-theme .form-text {
+  color: rgba(255, 255, 255, 0.5) !important;
 }
 
 
@@ -107,9 +150,9 @@
   align-items: center;
   justify-content: center;
   padding: 2rem;
-  border: 2px dashed #ced4da;
+  border: 2px dashed var(--border-primary);
   border-radius: 0.375rem;
-  background-color: #f8f9fa;
+  background-color: var(--bg-secondary);
   cursor: pointer;
   transition: all 0.3s ease;
   text-align: center;
@@ -120,36 +163,52 @@
   background-color: #e3f2fd;
 }
 
+html.dark-theme .file-upload-label {
+  background-color: #0f0f23 !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+html.dark-theme .file-upload-label:hover {
+  background-color: rgba(52, 152, 219, 0.1) !important;
+  border-color: #3498db !important;
+}
+
+html.dark-theme .file-upload-label i,
+html.dark-theme .file-upload-label span,
+html.dark-theme .file-upload-label small {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
 .file-upload-label i {
   font-size: 2rem;
-  color: #6c757d;
+  color: var(--text-secondary);
   margin-bottom: 0.5rem;
 }
 
 .file-upload-label span {
   font-weight: 500;
-  color: #495057;
+  color: var(--text-secondary);
   margin-bottom: 0.25rem;
 }
 
 .file-upload-label small {
-  color: #6c757d;
+  color: var(--text-secondary);
 }
 
 
 .selected-files {
-  border: 1px solid #dee2e6;
+  border: 1px solid var(--border-primary);
   border-radius: 0.375rem;
   padding: 1rem;
-  background-color: #f8f9fa;
+  background-color: var(--bg-secondary);
 }
 
 .files-title {
   font-size: 1rem;
   font-weight: 600;
-  color: #495057;
+  color: var(--text-secondary);
   margin-bottom: 1rem;
-  border-bottom: 1px solid #dee2e6;
+  border-bottom: 1px solid var(--border-primary);
   padding-bottom: 0.5rem;
 }
 
@@ -164,14 +223,14 @@
   align-items: center;
   justify-content: space-between;
   padding: 0.75rem;
-  background-color: white;
-  border: 1px solid #dee2e6;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-primary);
   border-radius: 0.25rem;
   transition: box-shadow 0.2s ease;
 }
 
 .file-item:hover {
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-sm);
 }
 
 .file-info {
@@ -198,12 +257,12 @@
 
 .file-name {
   font-weight: 500;
-  color: #495057;
+  color: var(--text-secondary);
   font-size: 0.875rem;
 }
 
 .file-size {
-  color: #6c757d;
+  color: var(--text-secondary);
   font-size: 0.75rem;
 }
 
@@ -236,8 +295,8 @@
   justify-content: flex-end;
   gap: 0.75rem;
   padding: 1rem 1.5rem;
-  border-top: 1px solid #dee2e6;
-  background-color: #f8f9fa;
+  border-top: 1px solid var(--border-primary);
+  background-color: var(--bg-secondary);
 }
 
 .btn {
@@ -277,9 +336,9 @@
   cursor: not-allowed;
 }
 
-/* Estilos para Firma Digital */
+
 .signature-section {
-  background: linear-gradient(135deg, #f8f9ff 0%, #f0f4ff 100%);
+
   border: 2px solid #e0e7ff;
   border-radius: 12px;
   padding: 20px;
@@ -292,7 +351,7 @@
   justify-content: space-between;
   margin-bottom: 16px;
   padding-bottom: 12px;
-  border-bottom: 1px solid #e0e7ff;
+  border-bottom: 1px solid var(--border-primary);
 }
 
 .signature-toggle {
@@ -303,7 +362,7 @@
 
 .toggle-label {
   font-weight: 500;
-  color: #374151;
+  color: var(--text-primary);
   cursor: pointer;
   user-select: none;
 }
@@ -344,17 +403,17 @@
   position: relative;
   border: 2px dashed #667eea;
   border-radius: 8px;
-  background: white;
+  background: var(--bg-primary);
   padding: 16px;
 }
 
 .signature-canvas {
   width: 100%;
   height: 200px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border-primary);
   border-radius: 6px;
   cursor: crosshair;
-  background: white;
+  background: var(--bg-primary);
   touch-action: none;
 }
 
@@ -372,10 +431,10 @@
 
 .btn-canvas {
   padding: 8px 16px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-primary);
   border-radius: 6px;
-  background: white;
-  color: #374151;
+  background: var(--bg-primary);
+  color: var(--text-primary);
   cursor: pointer;
   font-size: 0.875rem;
   font-weight: 500;
@@ -386,8 +445,8 @@
 }
 
 .btn-canvas:hover:not(:disabled) {
-  background: #f9fafb;
-  border-color: #9ca3af;
+  background: var(--bg-secondary);
+  border-color: var(--text-tertiary);
 }
 
 .btn-canvas:disabled {
@@ -418,8 +477,8 @@
 .signature-preview {
   margin-top: 16px;
   padding: 16px;
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
   border-radius: 8px;
 }
 
@@ -614,9 +673,9 @@
 }
 
 .confirmation-modal-container {
-  background: white;
+  background: var(--bg-primary);
   border-radius: 12px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-md);
   max-width: 600px;
   width: 90%;
   max-height: 80vh;
@@ -681,8 +740,8 @@
 }
 
 .declaration-box {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-primary);
   border-radius: 8px;
   padding: 1.25rem;
   margin-bottom: 1.5rem;
@@ -690,7 +749,7 @@
 
 .declaration-box h3 {
   margin: 0 0 1rem 0;
-  color: #1e293b;
+  color: var(--text-primary);
   font-size: 1.1rem;
   font-weight: 600;
   display: flex;
@@ -704,7 +763,7 @@
 
 .declaration-text p {
   margin: 0 0 0.75rem 0;
-  color: #475569;
+  color: var(--text-secondary);
   font-weight: 500;
 }
 
@@ -716,7 +775,7 @@
 
 .declaration-text li {
   margin-bottom: 0.5rem;
-  color: #64748b;
+  color: var(--text-secondary);
   line-height: 1.5;
 }
 
@@ -765,16 +824,16 @@
 
 .confirmation-modal-footer {
   padding: 1.5rem;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid var(--border-primary);
   display: flex;
   gap: 1rem;
   justify-content: flex-end;
 }
 
 .btn-cancel {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  color: #64748b;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-primary);
+  color: var(--text-secondary);
   padding: 0.75rem 1.5rem;
   border-radius: 6px;
   font-weight: 500;
@@ -786,8 +845,8 @@
 }
 
 .btn-cancel:hover {
-  background: #f1f5f9;
-  border-color: #cbd5e1;
+  background: var(--bg-secondary);
+  border-color: var(--text-tertiary);
 }
 
 .btn-proceed {
@@ -836,4 +895,278 @@
     width: 100%;
     justify-content: center;
   }
+}
+
+/* ===========================
+   DARK MODE - SIGNATURE SECTION
+   =========================== */
+
+/* Signature section background */
+html.dark-theme .signature-section {
+  background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%) !important;
+  border-color: rgba(102, 126, 234, 0.3) !important;
+}
+
+html.dark-theme .signature-header {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+html.dark-theme .signature-header .section-title {
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+html.dark-theme .signature-header .section-title i {
+  color: #60a5fa !important;
+}
+
+html.dark-theme .toggle-label {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+/* Form sections */
+html.dark-theme .form-section {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Signature fields labels */
+html.dark-theme .signature-field .form-label {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+html.dark-theme .signature-field .form-label i {
+  color: #60a5fa !important;
+}
+
+/* Canvas wrapper */
+html.dark-theme .canvas-wrapper {
+  background: #0f0f23 !important;
+  border-color: rgba(102, 126, 234, 0.5) !important;
+}
+
+html.dark-theme .signature-canvas {
+  background: #1a1a2e !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+html.dark-theme .signature-canvas.has-signature {
+  border-color: #10b981 !important;
+}
+
+html.dark-theme .signature-canvas.is-invalid {
+  border-color: #fca5a5 !important;
+}
+
+/* Canvas label */
+html.dark-theme .signature-canvas-container .form-label {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+html.dark-theme .signature-canvas-container .form-label i {
+  color: #60a5fa !important;
+}
+
+/* Canvas buttons */
+html.dark-theme .btn-canvas {
+  background: #1a1a2e !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+html.dark-theme .btn-canvas:hover:not(:disabled) {
+  background: #0f0f23 !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+html.dark-theme .btn-canvas.clear {
+  background: rgba(239, 68, 68, 0.15) !important;
+  border-color: rgba(239, 68, 68, 0.4) !important;
+  color: #fca5a5 !important;
+}
+
+html.dark-theme .btn-canvas.clear:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.25) !important;
+  border-color: rgba(239, 68, 68, 0.6) !important;
+}
+
+html.dark-theme .btn-canvas.capture {
+  background: rgba(16, 185, 129, 0.15) !important;
+  border-color: rgba(16, 185, 129, 0.4) !important;
+  color: #6ee7b7 !important;
+}
+
+html.dark-theme .btn-canvas.capture:hover:not(:disabled) {
+  background: rgba(16, 185, 129, 0.25) !important;
+  border-color: rgba(16, 185, 129, 0.6) !important;
+}
+
+/* CRITICAL: Signature consent area (yellow box) */
+html.dark-theme .signature-consent {
+  background: rgba(245, 158, 11, 0.15) !important;
+  border-color: rgba(245, 158, 11, 0.4) !important;
+}
+
+html.dark-theme .consent-label {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+html.dark-theme .consent-text {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+html.dark-theme .consent-text i {
+  color: #fbbf24 !important;
+}
+
+/* Signature info box (blue box) */
+html.dark-theme .info-box {
+  background: rgba(59, 130, 246, 0.15) !important;
+  border-color: rgba(59, 130, 246, 0.4) !important;
+}
+
+html.dark-theme .info-box i {
+  color: #60a5fa !important;
+}
+
+html.dark-theme .info-content {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+html.dark-theme .info-content strong {
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+/* Signature preview */
+html.dark-theme .signature-preview {
+  background: #0f0f23 !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+html.dark-theme .signature-preview .form-label {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+html.dark-theme .signature-preview .form-label i {
+  color: #60a5fa !important;
+}
+
+html.dark-theme .preview-container {
+  background: #1a1a2e !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+html.dark-theme .signature-image {
+  background: white !important;
+  padding: 8px;
+  border-radius: 4px;
+}
+
+/* Confirmation modal - Dark mode */
+html.dark-theme .confirmation-modal-container {
+  background: #1a1a2e !important;
+}
+
+html.dark-theme .confirmation-modal-body {
+  background: #1a1a2e !important;
+}
+
+html.dark-theme .declaration-box {
+  background: #0f0f23 !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+html.dark-theme .declaration-box h3 {
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+html.dark-theme .declaration-text p,
+html.dark-theme .declaration-text li {
+  color: rgba(255, 255, 255, 0.75) !important;
+}
+
+html.dark-theme .terms-box {
+  background: rgba(245, 158, 11, 0.15) !important;
+  border-color: rgba(245, 158, 11, 0.4) !important;
+}
+
+html.dark-theme .terms-box h4 {
+  color: #fbbf24 !important;
+}
+
+html.dark-theme .terms-content p {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+html.dark-theme .warning-box {
+  background: rgba(239, 68, 68, 0.15) !important;
+  border-color: rgba(239, 68, 68, 0.4) !important;
+  color: #fca5a5 !important;
+}
+
+html.dark-theme .warning-box i {
+  color: #fca5a5 !important;
+}
+
+html.dark-theme .confirmation-modal-footer {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+html.dark-theme .btn-cancel {
+  background: #0f0f23 !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+html.dark-theme .btn-cancel:hover {
+  background: #1a1a2e !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+
+html.dark-theme .selected-files {
+  background: #0f0f23 !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+html.dark-theme .files-title {
+  color: rgba(255, 255, 255, 0.85) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+html.dark-theme .file-item {
+  background: #1a1a2e !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+html.dark-theme .file-item:hover {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5) !important;
+}
+
+html.dark-theme .file-name {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+html.dark-theme .file-size {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+html.dark-theme .btn-secondary {
+  background-color: #4b5563 !important;
+  border-color: #4b5563 !important;
+  color: white !important;
+}
+
+html.dark-theme .btn-secondary:hover:not(:disabled) {
+  background-color: #374151 !important;
+  border-color: #374151 !important;
+}
+
+html.dark-theme .btn-primary {
+  background-color: #3498db !important;
+  border-color: #3498db !important;
+  color: white !important;
+}
+
+html.dark-theme .btn-primary:hover:not(:disabled) {
+  background-color: #2980b9 !important;
+  border-color: #2574a9 !important;
 }

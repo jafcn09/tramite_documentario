@@ -326,3 +326,214 @@
   content: '';
   @apply absolute bottom-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900 z-50;
 }
+
+html.dark-theme .bg-gray-50,
+html.dark-theme .form-section {
+  background-color: #0f0f23 !important;
+}
+
+
+html.dark-theme .form-section h3,
+html.dark-theme h3.text-gray-900 {
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+
+html.dark-theme .form-input,
+html.dark-theme .form-select,
+html.dark-theme .form-textarea,
+html.dark-theme input[type="text"],
+html.dark-theme input[type="datetime-local"],
+html.dark-theme select,
+html.dark-theme textarea {
+  background-color: #0f0f23 !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  color: #e5e7eb !important;
+}
+
+html.dark-theme .form-input:focus,
+html.dark-theme .form-select:focus,
+html.dark-theme .form-textarea:focus {
+  background-color: #0f0f23 !important;
+  border-color: #3b82f6 !important;
+  color: #e5e7eb !important;
+}
+
+/* Placeholders */
+html.dark-theme .form-input::placeholder,
+html.dark-theme .form-textarea::placeholder,
+html.dark-theme input::placeholder,
+html.dark-theme textarea::placeholder {
+  color: rgba(255, 255, 255, 0.4) !important;
+}
+
+/* Labels - más específico para anular text-gray-700 */
+html.dark-theme label.text-gray-700.text-sm,
+html.dark-theme label.text-gray-700,
+html.dark-theme .field-label,
+html.dark-theme label.block,
+html.dark-theme label {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+/* Asegurar que los span dentro de labels también sean claros */
+html.dark-theme label span {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+/* Hints and help text */
+html.dark-theme .field-hint,
+html.dark-theme .field-help,
+html.dark-theme .text-gray-500,
+html.dark-theme .text-gray-600,
+html.dark-theme p.text-sm {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+/* File upload area */
+html.dark-theme .upload-area {
+  background-color: #0f0f23 !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+html.dark-theme .upload-area:hover {
+  border-color: #3b82f6 !important;
+  background-color: rgba(59, 130, 246, 0.05) !important;
+}
+
+html.dark-theme .upload-icon,
+html.dark-theme i.text-gray-400 {
+  color: rgba(255, 255, 255, 0.4) !important;
+}
+
+html.dark-theme .upload-text {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+html.dark-theme .upload-hint {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+html.dark-theme .upload-button {
+  background-color: #0f0f23 !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+html.dark-theme .upload-button:hover {
+  background-color: rgba(59, 130, 246, 0.1) !important;
+  border-color: #3b82f6 !important;
+}
+
+/* File items */
+html.dark-theme .file-item {
+  background-color: #0f0f23 !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+html.dark-theme .file-name {
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+html.dark-theme .file-size {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+html.dark-theme .file-icon {
+  color: rgba(255, 255, 255, 0.4) !important;
+}
+
+/* Border top for footer */
+html.dark-theme .border-t {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Buttons */
+html.dark-theme .btn-secondary,
+html.dark-theme button.bg-white {
+  background-color: #0f0f23 !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+html.dark-theme .btn-secondary:hover,
+html.dark-theme button.bg-white:hover {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Checkbox */
+html.dark-theme .form-checkbox {
+  background-color: #0f0f23 !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+html.dark-theme .form-checkbox:checked {
+  background-color: #3b82f6 !important;
+  border-color: #3b82f6 !important;
+}
+
+/* Modal header and footer borders */
+html.dark-theme .modal-header,
+html.dark-theme .modal-footer {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* File upload border-dashed */
+html.dark-theme .border-dashed {
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+html.dark-theme .border-dashed:hover {
+  border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+/* Error text - keep red but adjust for dark mode */
+html.dark-theme .field-error,
+html.dark-theme .text-red-600 {
+  color: #fca5a5 !important;
+}
+
+/* Error borders */
+html.dark-theme .border-red-300,
+html.dark-theme .field-invalid {
+  border-color: rgba(239, 68, 68, 0.5) !important;
+}
+
+/* File items list background */
+html.dark-theme .bg-white {
+  background-color: #0f0f23 !important;
+}
+
+html.dark-theme .border-gray-200 {
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+html.dark-theme .border-gray-300 {
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+/* Override Tailwind text-gray-* classes in dark mode */
+html.dark-theme .text-gray-50,
+html.dark-theme .text-gray-100,
+html.dark-theme .text-gray-200,
+html.dark-theme .text-gray-300 {
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+html.dark-theme .text-gray-500,
+html.dark-theme .text-gray-600 {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+html.dark-theme .text-gray-400 {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+html.dark-theme .text-gray-700,
+html.dark-theme .text-gray-800 {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+html.dark-theme .text-gray-900 {
+  color: rgba(255, 255, 255, 0.95) !important;
+}

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -6,7 +6,9 @@ import { AuthService } from '../../services/auth.service';
 import { BandejaTramitesService } from '../../services/bandeja-tramites.service';
 import { MisTramitesService } from '../../services/mis-tramites.service';
 import { ReportesService } from '../../services/reportes.service';
+import { ThemeService } from '../../services/theme.service';
 import { User } from '../../shared/interfaces/auth.interface';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-administrativo-dashboard',
@@ -16,8 +18,10 @@ import { User } from '../../shared/interfaces/auth.interface';
   styleUrls: ['./dashboard.component.css']
 })
 
-export class DashboardComponent implements OnInit {
+export class DashboardComponent implements OnInit, OnDestroy {
   currentUser: User | null = null;
+  isDarkMode = false;
+  private themeSubscription?: Subscription;
 
 
   get userRole(): string {
@@ -72,10 +76,15 @@ export class DashboardComponent implements OnInit {
     private bandejaTramitesService: BandejaTramitesService,
     private misTramitesService: MisTramitesService,
     private reportesService: ReportesService,
-    private router: Router
+    private router: Router,
+    private themeService: ThemeService
   ) {}
 
   ngOnInit() {
+    this.themeSubscription = this.themeService.theme$.subscribe(theme => {
+      this.isDarkMode = theme === 'dark';
+    });
+
     this.currentUser = this.authService.currentUserValue;
 
     if (this.isAdministrativo) {
@@ -84,6 +93,12 @@ export class DashboardComponent implements OnInit {
       this.loadUserStats();
       this.loadUserTramites();
       this.loadDocumentStatus();
+    }
+  }
+
+  ngOnDestroy() {
+    if (this.themeSubscription) {
+      this.themeSubscription.unsubscribe();
     }
   }
 

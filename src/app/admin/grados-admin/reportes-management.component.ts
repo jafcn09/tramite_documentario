@@ -44,6 +44,9 @@ export class ReportesManagementComponent implements OnInit, OnDestroy {
   nuevoEstado: 'PENDIENTE' | 'EN_REVISION' | 'RESUELTO' | 'RECHAZADO' = 'PENDIENTE';
   comentarioAdmin: string = '';
 
+  showDeleteModal = false;
+  reporteAEliminar: ReporteGrado | null = null;
+
   private wsSubscription?: Subscription;
 
   constructor(
@@ -212,14 +215,21 @@ export class ReportesManagementComponent implements OnInit, OnDestroy {
 
   eliminarReporte(reporte: ReporteGrado) {
     if (!reporte.id) return;
+    this.reporteAEliminar = reporte;
+    this.showDeleteModal = true;
+  }
 
-    if (!confirm(`¿Está seguro de eliminar el reporte de tipo "${reporte.tipoError}"?`)) {
-      return;
-    }
+  cerrarModalEliminar() {
+    this.showDeleteModal = false;
+    this.reporteAEliminar = null;
+  }
+
+  confirmarEliminar() {
+    if (!this.reporteAEliminar || !this.reporteAEliminar.id) return;
 
     this.loadingAction = true;
 
-    this.reporteService.eliminar(reporte.id).subscribe({
+    this.reporteService.eliminar(this.reporteAEliminar.id).subscribe({
       next: () => {
         this.toastService.show({
           title: 'Eliminado',
@@ -227,6 +237,7 @@ export class ReportesManagementComponent implements OnInit, OnDestroy {
           type: 'success'
         });
         this.loadingAction = false;
+        this.cerrarModalEliminar();
         this.cargarReportes();
       },
       error: (error) => {

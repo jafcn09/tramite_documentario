@@ -105,3 +105,50 @@ p {
     justify-content: center;
   }
 }
+
+/* ===========================
+   DARK MODE - ACCESS DENIED
+   =========================== */
+
+html.dark-theme {
+  background: #0f0f23 !important;
+}
+
+html.dark-theme .bg-gradient-to-br {
+  background: linear-gradient(to bottom right, #0f0f23, #1a1a2e) !important;
+}
+
+html.dark-theme .bg-white {
+  background: #1a1a2e !important;
+}
+
+html.dark-theme .text-gray-900,
+html.dark-theme .text-gray-800 {
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+html.dark-theme .text-gray-700,
+html.dark-theme .text-gray-600 {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+html.dark-theme .text-red-600 {
+  color: #fca5a5 !important;
+}
+
+html.dark-theme .bg-red-100 {
+  background: rgba(239, 68, 68, 0.2) !important;
+}
+
+html.dark-theme .border-red-200 {
+  border-color: rgba(239, 68, 68, 0.4) !important;
+}
+
+html.dark-theme .btn-primary {
+  background: #667eea !important;
+  color: white !important;
+}
+
+html.dark-theme .btn-primary:hover {
+  background: #5a67d8 !important;
+}

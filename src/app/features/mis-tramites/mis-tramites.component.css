@@ -771,7 +771,7 @@
 }
 
 .tramites-table {
-  background: white;
+
   border-radius: 16px;
   overflow: hidden;
   border: 1px solid #e5e7eb;
@@ -790,7 +790,7 @@
 }
 
 .tramites-table th {
-  background: #f8fafc;
+
   padding: 12px 8px;
   text-align: left;
   font-weight: 500;
@@ -1847,7 +1847,6 @@
     padding: 0.25rem 0.5rem;
   }
 
-  /* Firma digital mobile improvements */
   .firma-digital-section {
     padding: 1rem;
     margin: 1rem 0;
@@ -4585,4 +4584,1865 @@
   .btn-delete-confirm {
     width: 100%;
   }
+}
+
+/* ===========================
+   DARK MODE - SIGNATURE SECTION
+   =========================== */
+
+/* Canvas wrapper */
+html.dark-theme .canvas-wrapper {
+  background: #0f0f23 !important;
+  border-color: #667eea !important;
+}
+
+html.dark-theme .signature-canvas {
+  background: #0f0f23 !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+html.dark-theme .signature-canvas.has-signature {
+  border-color: #10b981 !important;
+}
+
+html.dark-theme .btn-canvas.clear {
+  background: rgba(239, 68, 68, 0.15) !important;
+  color: #fca5a5 !important;
+}
+
+html.dark-theme .btn-canvas.clear:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.25) !important;
+}
+
+html.dark-theme .btn-canvas.capture {
+  background: rgba(16, 185, 129, 0.15) !important;
+  color: #6ee7b7 !important;
+}
+
+html.dark-theme .btn-canvas.capture:hover:not(:disabled) {
+  background: rgba(16, 185, 129, 0.25) !important;
+}
+
+/* CRITICAL: Signature consent area (yellow box) */
+html.dark-theme .signature-consent {
+  background: rgba(245, 158, 11, 0.1) !important;
+  border-color: rgba(245, 158, 11, 0.3) !important;
+}
+
+html.dark-theme .consent-text {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+html.dark-theme .consent-text i {
+  color: #fbbf24 !important;
+}
+
+/* Signature info box (blue box) */
+html.dark-theme .info-box {
+  background: rgba(59, 130, 246, 0.1) !important;
+  border-color: rgba(59, 130, 246, 0.3) !important;
+}
+
+html.dark-theme .info-box i {
+  color: #60a5fa !important;
+}
+
+html.dark-theme .info-content {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+html.dark-theme .info-content strong {
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+/* Signature preview */
+html.dark-theme .signature-preview {
+  background: #0f0f23 !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+html.dark-theme .preview-container {
+  background: #1a1a2e !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+/* Firma Digital Section */
+html.dark-theme .firma-digital-section {
+  background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+html.dark-theme .firma-digital-section h3,
+html.dark-theme .firma-digital-section h4 {
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+html.dark-theme .firma-digital-section h3 i,
+html.dark-theme .firma-digital-section h4 i {
+  color: #6ee7b7 !important;
+}
+
+html.dark-theme .status-badge.success {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.2) 100%) !important;
+  color: #6ee7b7 !important;
+  border-color: rgba(16, 185, 129, 0.3) !important;
+}
+
+html.dark-theme .status-badge.success i {
+  color: #6ee7b7 !important;
+}
+
+html.dark-theme .status-badge-large.success {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.2) 100%) !important;
+  color: #6ee7b7 !important;
+  border-color: rgba(16, 185, 129, 0.3) !important;
+}
+
+html.dark-theme .status-badge-large.success i {
+  color: #6ee7b7 !important;
+}
+
+html.dark-theme .fecha-firma-large,
+html.dark-theme .validez-legal-large {
+  background: rgba(15, 15, 35, 0.6) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+html.dark-theme .fecha-firma-large i {
+  color: #60a5fa !important;
+}
+
+html.dark-theme .validez-legal-large i {
+  color: #fbbf24 !important;
+}
+
+html.dark-theme .fecha-label,
+html.dark-theme .validez-label {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+html.dark-theme .fecha-value,
+html.dark-theme .validez-value {
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+html.dark-theme .detail-item {
+  background: rgba(15, 15, 35, 0.5) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+html.dark-theme .detail-item i {
+  color: #60a5fa !important;
+}
+
+html.dark-theme .detail-label {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+html.dark-theme .detail-value {
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+html.dark-theme .firma-legal-clean {
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+
+.mis-tramites-container.dark-mode {
+  background: #0f172a;
+  color: #f1f5f9;
+}
+
+.mis-tramites-container.dark-mode .title-area h1 {
+  color: #f1f5f9;
+}
+
+.mis-tramites-container.dark-mode .title-area h1 i {
+  color: #60a5fa;
+}
+
+.mis-tramites-container.dark-mode .title-area p {
+  color: #94a3b8;
+}
+
+
+.stat-card.stat-card-dark {
+  background: #1e293b;
+  border-color: #334155;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.stat-card.stat-card-dark .stat-number {
+  color: #f1f5f9;
+}
+
+.stat-card.stat-card-dark .stat-label {
+  color: #94a3b8;
+}
+
+.stat-card.stat-card-dark:hover {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  transform: translateY(-2px);
+}
+
+/* Dark Mode Tramite Cards */
+.tramite-card.tramite-card-dark {
+  background: #1e293b;
+  border-color: #334155;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.tramite-card.tramite-card-dark:hover {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  border-color: rgba(96, 165, 250, 0.4);
+}
+
+.tramite-card.tramite-card-dark .card-header {
+  background: linear-gradient(to right, #1e293b, #0f172a);
+  border-bottom: 1px solid #334155;
+}
+
+.tramite-card.tramite-card-dark .tramite-codigo {
+  color: #60a5fa;
+}
+
+.tramite-card.tramite-card-dark .tramite-asunto {
+  color: #f1f5f9;
+}
+
+.tramite-card.tramite-card-dark .tramite-tipo {
+  color: #94a3b8;
+}
+
+.tramite-card.tramite-card-dark .card-content {
+  background: #1e293b;
+}
+
+.tramite-card.tramite-card-dark .progress-bar {
+  background: #334155;
+}
+
+.tramite-card.tramite-card-dark .progress-text {
+  color: #94a3b8;
+}
+
+/* Dark Mode Toolbar */
+.mis-tramites-container.dark-mode .toolbar {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+.mis-tramites-container.dark-mode .search-input {
+  background: #0f172a;
+  border-color: #334155;
+  color: #f1f5f9;
+}
+
+.mis-tramites-container.dark-mode .search-input::placeholder {
+  color: #64748b;
+}
+
+.mis-tramites-container.dark-mode .search-input:focus {
+  border-color: #60a5fa;
+  background: #1e293b;
+}
+
+.mis-tramites-container.dark-mode .search-box i {
+  color: #94a3b8;
+}
+
+.mis-tramites-container.dark-mode .clear-search {
+  color: #94a3b8;
+}
+
+.mis-tramites-container.dark-mode .clear-search:hover {
+  color: #f1f5f9;
+}
+
+/* Dark Mode Search Dropdown */
+.mis-tramites-container.dark-mode .search-dropdown {
+  background: #1e293b;
+  border-color: #334155;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.mis-tramites-container.dark-mode .search-result-item {
+  border-color: #334155;
+}
+
+.mis-tramites-container.dark-mode .search-result-item:hover,
+.mis-tramites-container.dark-mode .search-result-item.selected {
+  background: #0f172a;
+}
+
+.mis-tramites-container.dark-mode .result-asunto {
+  color: #f1f5f9;
+}
+
+.mis-tramites-container.dark-mode .result-codigo {
+  background: rgba(96, 165, 250, 0.1);
+  color: #60a5fa;
+}
+
+.mis-tramites-container.dark-mode .result-tipo {
+  background: #334155;
+  color: #94a3b8;
+}
+
+/* Dark Mode Buttons */
+.mis-tramites-container.dark-mode .btn-filter,
+.mis-tramites-container.dark-mode .btn-view {
+  background: #0f172a;
+  border-color: #334155;
+  color: #94a3b8;
+}
+
+.mis-tramites-container.dark-mode .btn-filter:hover,
+.mis-tramites-container.dark-mode .btn-view:hover {
+  background: #1e293b;
+  border-color: #60a5fa;
+  color: #f1f5f9;
+}
+
+.mis-tramites-container.dark-mode .btn-filter.active {
+  background: #60a5fa;
+  color: white;
+  border-color: #60a5fa;
+}
+
+.mis-tramites-container.dark-mode .loading-state,
+.mis-tramites-container.dark-mode .empty-state {
+  color: #94a3b8;
+}
+
+.mis-tramites-container.dark-mode .empty-state i {
+  color: #334155;
+}
+
+.mis-tramites-container.dark-mode .empty-state h3 {
+  color: #f1f5f9;
+}
+
+
+.mis-tramites-container.dark-mode .tramites-table {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+.mis-tramites-container.dark-mode table {
+  background: #1e293b;
+}
+
+.mis-tramites-container.dark-mode thead {
+  background: linear-gradient(to right, #0f172a, #1e293b);
+  border-bottom-color: #334155;
+}
+
+.mis-tramites-container.dark-mode th {
+  color: #f1f5f9;
+  border-color: #334155;
+}
+
+.mis-tramites-container.dark-mode tbody tr {
+  border-color: #334155;
+}
+
+.mis-tramites-container.dark-mode tbody tr:hover {
+  background: #0f172a;
+}
+
+.mis-tramites-container.dark-mode td {
+  color: #f1f5f9;
+  border-color: #334155;
+}
+
+.mis-tramites-container.dark-mode .codigo {
+  color: #60a5fa;
+}
+
+.mis-tramites-container.dark-mode .asunto-cell strong {
+  color: #f1f5f9;
+}
+
+.mis-tramites-container.dark-mode .asunto-cell small {
+  color: #94a3b8;
+}
+
+/* Dark Mode Pagination */
+.mis-tramites-container.dark-mode .pagination {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+.mis-tramites-container.dark-mode .page-btn {
+  background: #0f172a;
+  border-color: #334155;
+  color: #94a3b8;
+}
+
+.mis-tramites-container.dark-mode .page-btn:hover:not(:disabled) {
+  background: #334155;
+  color: #f1f5f9;
+}
+
+.mis-tramites-container.dark-mode .page-btn:disabled {
+  background: #1e293b;
+  color: #475569;
+}
+
+.mis-tramites-container.dark-mode .page-info {
+  color: #f1f5f9;
+}
+
+/* Dark Mode Modal Overlays */
+.mis-tramites-container.dark-mode .modal-overlay {
+  background: rgba(0, 0, 0, 0.8);
+}
+
+.mis-tramites-container.dark-mode .modal-content,
+.mis-tramites-container.dark-mode .modal-content-large {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+.mis-tramites-container.dark-mode .modal-header {
+  background: linear-gradient(to right, #0f172a, #1e293b);
+  border-bottom-color: #334155;
+}
+
+.mis-tramites-container.dark-mode .modal-header h2,
+.mis-tramites-container.dark-mode .modal-header h3 {
+  color: #f1f5f9;
+}
+
+.mis-tramites-container.dark-mode .modal-body {
+  background: #1e293b;
+  color: #f1f5f9;
+}
+
+.mis-tramites-container.dark-mode .info-item label,
+.mis-tramites-container.dark-mode .dato-item label {
+  color: #94a3b8;
+}
+
+.mis-tramites-container.dark-mode .info-item span,
+.mis-tramites-container.dark-mode .dato-item span {
+  color: #f1f5f9;
+}
+
+/* Dark Mode Respuesta Preview */
+.mis-tramites-container.dark-mode .respuesta-preview {
+  background: linear-gradient(to right, rgba(15, 23, 42, 0.8), rgba(30, 41, 59, 0.8));
+  border-color: #334155;
+}
+
+.mis-tramites-container.dark-mode .respuesta-header {
+  color: #60a5fa;
+}
+
+.mis-tramites-container.dark-mode .respuesta-texto {
+  color: #f1f5f9;
+}
+
+.mis-tramites-container.dark-mode .respuesta-fecha {
+  color: #94a3b8;
+}
+
+/* Dark Mode Forms */
+.mis-tramites-container.dark-mode .form-control,
+.mis-tramites-container.dark-mode .form-textarea,
+.mis-tramites-container.dark-mode select {
+  background: #0f172a;
+  border-color: #334155;
+  color: #f1f5f9;
+}
+
+.mis-tramites-container.dark-mode .form-control:focus,
+.mis-tramites-container.dark-mode .form-textarea:focus {
+  border-color: #60a5fa;
+  background: #1e293b;
+}
+
+.mis-tramites-container.dark-mode .form-hint,
+.mis-tramites-container.dark-mode .char-counter {
+  color: #94a3b8;
+}
+
+
+.mis-tramites-container.dark-mode .upload-area {
+  background: #0f172a;
+  border-color: #334155;
+}
+
+.mis-tramites-container.dark-mode .upload-area:hover {
+  border-color: #60a5fa;
+  background: #1e293b;
+}
+
+.mis-tramites-container.dark-mode .upload-text {
+  color: #f1f5f9;
+}
+
+.mis-tramites-container.dark-mode .upload-hint {
+  color: #94a3b8;
+}
+
+
+.mis-tramites-container.dark-mode .info-message {
+  background: rgba(96, 165, 250, 0.1);
+  border-color: rgba(96, 165, 250, 0.3);
+}
+
+.mis-tramites-container.dark-mode .info-message strong {
+  color: #f1f5f9;
+}
+
+.mis-tramites-container.dark-mode .info-message p {
+  color: #94a3b8;
+}
+
+
+.mis-tramites-container.dark-mode .warning-message {
+  background: rgba(251, 191, 36, 0.1);
+  border-color: rgba(251, 191, 36, 0.3);
+}
+
+.mis-tramites-container.dark-mode .warning-message p {
+  color: #fbbf24;
+}
+
+
+.mis-tramites-container.dark-mode .trabajador-card {
+  background: #0f172a;
+  border-color: #334155;
+}
+
+.mis-tramites-container.dark-mode .trabajador-card:hover {
+  border-color: #60a5fa;
+  background: #1e293b;
+}
+
+.mis-tramites-container.dark-mode .trabajador-card.selected {
+  background: rgba(96, 165, 250, 0.1);
+  border-color: #60a5fa;
+}
+
+.mis-tramites-container.dark-mode .trabajador-info h4 {
+  color: #f1f5f9;
+}
+
+.mis-tramites-container.dark-mode .trabajador-info .area {
+  color: #94a3b8;
+}
+
+/* Dark Mode Documentos Section */
+.mis-tramites-container.dark-mode .documentos-section,
+.mis-tramites-container.dark-mode .asignacion-section,
+.mis-tramites-container.dark-mode .progreso-section {
+  background: rgba(15, 23, 42, 0.5);
+  border-color: #334155;
+}
+
+.mis-tramites-container.dark-mode .documentos-section h4,
+.mis-tramites-container.dark-mode .asignacion-section h4,
+.mis-tramites-container.dark-mode .progreso-section h4 {
+  color: #f1f5f9;
+}
+
+.mis-tramites-container.dark-mode .documento-item {
+  background: #0f172a;
+  border-color: #334155;
+}
+
+.mis-tramites-container.dark-mode .documento-item:hover {
+  background: #1e293b;
+  border-color: #60a5fa;
+}
+
+.mis-tramites-container.dark-mode .documento-nombre {
+  color: #f1f5f9;
+}
+
+
+.mis-tramites-container.dark-mode .btn-action {
+  background: #0f172a;
+  border-color: #334155;
+  color: #94a3b8;
+}
+
+.mis-tramites-container.dark-mode .btn-action:hover:not(:disabled) {
+  background: #1e293b;
+  border-color: #60a5fa;
+  color: #f1f5f9;
+}
+
+.mis-tramites-container.dark-mode .btn-action.disabled {
+  background: #1e293b;
+  border-color: #334155;
+  color: #475569;
+  opacity: 0.5;
+}
+
+
+.mis-tramites-container.dark-mode .filters-panel {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+.mis-tramites-container.dark-mode .filter-select {
+  background: #0f172a;
+  border-color: #334155;
+  color: #f1f5f9;
+}
+
+.mis-tramites-container.dark-mode .filter-select:focus {
+  border-color: #60a5fa;
+  background: #1e293b;
+}
+
+.mis-tramites-container.dark-mode .filter-select option {
+  background: #0f172a;
+  color: #f1f5f9;
+}
+
+.mis-tramites-container.dark-mode .filter-error-state {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+
+.mis-tramites-container.dark-mode .action-checkbox {
+  background: #0f172a;
+  border-color: #334155;
+}
+
+.mis-tramites-container.dark-mode .action-checkbox:checked {
+  background: #60a5fa;
+  border-color: #60a5fa;
+}
+
+
+.mis-tramites-container.dark-mode .pagination-controls {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+
+.mis-tramites-container.dark-mode .tramites-table tr {
+  background: #1e293b;
+}
+
+.mis-tramites-container.dark-mode .tramites-table tbody tr {
+  background: #1e293b;
+}
+
+.mis-tramites-container.dark-mode .tramites-table tbody tr:hover {
+  background: #0f172a !important;
+}
+
+
+.mis-tramites-container.dark-mode .modal-delete-content {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+
+.mis-tramites-container.dark-mode .terms-modal-content {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+
+.mis-tramites-container.dark-mode .signature-canvas-wrapper {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+.mis-tramites-container.dark-mode .signature-canvas {
+  background: #0f172a;
+  border-color: #334155;
+}
+
+.mis-tramites-container.dark-mode .signature-canvas.has-signature {
+  border-color: #60a5fa;
+  background: #0f172a;
+}
+
+/* Dark Mode Upload Section */
+.mis-tramites-container.dark-mode .upload-section {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+/* Dark Mode All Input Elements */
+.mis-tramites-container.dark-mode input[type="text"],
+.mis-tramites-container.dark-mode input[type="email"],
+.mis-tramites-container.dark-mode input[type="number"],
+.mis-tramites-container.dark-mode input[type="date"],
+.mis-tramites-container.dark-mode textarea,
+.mis-tramites-container.dark-mode select {
+  background: #0f172a !important;
+  border-color: #334155 !important;
+  color: #f1f5f9 !important;
+}
+
+.mis-tramites-container.dark-mode input[type="text"]:focus,
+.mis-tramites-container.dark-mode input[type="email"]:focus,
+.mis-tramites-container.dark-mode input[type="number"]:focus,
+.mis-tramites-container.dark-mode input[type="date"]:focus,
+.mis-tramites-container.dark-mode textarea:focus,
+.mis-tramites-container.dark-mode select:focus {
+  border-color: #60a5fa !important;
+  background: #1e293b !important;
+}
+
+/* Dark Mode Labels */
+.mis-tramites-container.dark-mode label {
+  color: #94a3b8;
+}
+
+/* Dark Mode Modal Footer */
+.mis-tramites-container.dark-mode .modal-footer {
+  background: #1e293b;
+  border-top-color: #334155;
+}
+
+/* Dark Mode Card Actions */
+.mis-tramites-container.dark-mode .card-actions {
+  background: transparent;
+}
+
+/* Dark Mode Tramite Item */
+.mis-tramites-container.dark-mode .tramite-item {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+/* Dark Mode Trabajador Grid */
+.mis-tramites-container.dark-mode .trabajadores-grid {
+  background: transparent;
+}
+
+/* Dark Mode Badge Elements */
+.mis-tramites-container.dark-mode .badge,
+.mis-tramites-container.dark-mode .estado-badge {
+  background: #334155;
+  color: #94a3b8;
+}
+
+/* Dark Mode Priority Badges */
+.mis-tramites-container.dark-mode .prioridad {
+  background: #334155;
+  color: #94a3b8;
+}
+
+/* Dark Mode Area Badges */
+.mis-tramites-container.dark-mode .area {
+  background: #334155;
+  color: #94a3b8;
+}
+
+/* Dark Mode Date Display */
+.mis-tramites-container.dark-mode .fecha-display,
+.mis-tramites-container.dark-mode .date-display {
+  color: #94a3b8;
+}
+
+/* Dark Mode Card Body and Content */
+.mis-tramites-container.dark-mode .card-body,
+.mis-tramites-container.dark-mode .card-content {
+  background: #1e293b;
+  color: #f1f5f9;
+}
+
+/* Dark Mode All White Backgrounds Override */
+.mis-tramites-container.dark-mode [style*="background: white"],
+.mis-tramites-container.dark-mode [style*="background: #fff"],
+.mis-tramites-container.dark-mode [style*="background:#fff"],
+.mis-tramites-container.dark-mode [style*="background-color: white"],
+.mis-tramites-container.dark-mode [style*="background-color: #fff"] {
+  background: #1e293b !important;
+}
+
+/* Dark Mode Specific Overrides for Modal Content */
+.mis-tramites-container.dark-mode .modal-content-large .modal-body,
+.mis-tramites-container.dark-mode .modal-content-large .modal-header,
+.mis-tramites-container.dark-mode .modal-content-large .modal-footer {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+}
+
+/* Dark Mode Search Results */
+.mis-tramites-container.dark-mode .search-results {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+/* Dark Mode Download Count */
+.mis-tramites-container.dark-mode .download-count {
+  background: #60a5fa;
+  color: white;
+}
+
+/* Dark Mode Counter Display */
+.mis-tramites-container.dark-mode .counter-display {
+  background: #334155;
+  color: #94a3b8;
+}
+
+/* Dark Mode File Item */
+.mis-tramites-container.dark-mode .file-item {
+  background: #0f172a;
+  border-color: #334155;
+}
+
+.mis-tramites-container.dark-mode .file-item:hover {
+  background: #1e293b;
+  border-color: #60a5fa;
+}
+
+/* Dark Mode Signature Preview */
+.mis-tramites-container.dark-mode .signature-preview {
+  background: #0f172a;
+  border-color: #334155;
+}
+
+/* Dark Mode Section Headers */
+.mis-tramites-container.dark-mode .section-header {
+  color: #f1f5f9;
+}
+
+/* Dark Mode Form Groups */
+.mis-tramites-container.dark-mode .form-group {
+  background: transparent;
+}
+
+/* Dark Mode Detail Items */
+.mis-tramites-container.dark-mode .detail-item {
+  background: rgba(15, 23, 42, 0.5);
+  border-color: #334155;
+}
+
+/* Dark Mode Alert Boxes */
+.mis-tramites-container.dark-mode .alert-info {
+  background: rgba(96, 165, 250, 0.1);
+  border-color: rgba(96, 165, 250, 0.3);
+  color: #60a5fa;
+}
+
+.mis-tramites-container.dark-mode .alert-warning {
+  background: rgba(251, 191, 36, 0.1);
+  border-color: rgba(251, 191, 36, 0.3);
+  color: #fbbf24;
+}
+
+.mis-tramites-container.dark-mode .alert-danger {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+}
+
+.mis-tramites-container.dark-mode .alert-success {
+  background: rgba(34, 197, 94, 0.1);
+  border-color: rgba(34, 197, 94, 0.3);
+  color: #22c55e;
+}
+
+
+.mis-tramites-container.dark-mode .stat-card {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+}
+
+
+.mis-tramites-container.dark-mode .toolbar {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+}
+
+
+.mis-tramites-container.dark-mode .search-input {
+  background: #0f172a !important;
+  color: #f1f5f9 !important;
+  border-color: #334155 !important;
+}
+
+.mis-tramites-container.dark-mode .search-input:focus {
+  background: #0f172a !important;
+  border-color: #60a5fa !important;
+}
+
+
+.mis-tramites-container.dark-mode .search-dropdown {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+}
+
+.mis-tramites-container.dark-mode .search-result-item {
+  background: #0f172a !important;
+  border-color: #334155 !important;
+}
+
+.mis-tramites-container.dark-mode .search-result-item:hover,
+.mis-tramites-container.dark-mode .search-result-item.selected {
+  background: #334155 !important;
+}
+
+.mis-tramites-container.dark-mode .search-result-item .result-main,
+.mis-tramites-container.dark-mode .search-result-item .result-asunto,
+.mis-tramites-container.dark-mode .search-result-item .result-codigo {
+  color: #f1f5f9 !important;
+}
+
+.mis-tramites-container.dark-mode .search-result-item .result-tipo {
+  color: #94a3b8 !important;
+}
+
+
+.mis-tramites-container.dark-mode .tramite-card {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+}
+
+.mis-tramites-container.dark-mode .tramite-card .card-header {
+  background: linear-gradient(to right, #0f172a, #1e293b) !important;
+  border-bottom-color: #334155 !important;
+}
+
+.mis-tramites-container.dark-mode .tramite-card .card-content {
+  background: transparent !important;
+}
+
+.mis-tramites-container.dark-mode .tramite-card .tramite-asunto {
+  color: #f1f5f9 !important;
+}
+
+.mis-tramites-container.dark-mode .tramite-card .tramite-tipo {
+  color: #94a3b8 !important;
+}
+
+
+.mis-tramites-container.dark-mode .modal-content,
+.mis-tramites-container.dark-mode .modal-content-large {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+}
+
+.mis-tramites-container.dark-mode .modal-header {
+  background: linear-gradient(to right, #0f172a, #1e293b) !important;
+  border-bottom-color: #334155 !important;
+  color: #f1f5f9 !important;
+}
+
+.mis-tramites-container.dark-mode .modal-header h2,
+.mis-tramites-container.dark-mode .modal-header h3,
+.mis-tramites-container.dark-mode .modal-header h4 {
+  color: #f1f5f9 !important;
+}
+
+.mis-tramites-container.dark-mode .modal-body {
+  background: #1e293b !important;
+  color: #f1f5f9 !important;
+}
+
+.mis-tramites-container.dark-mode .modal-footer {
+  background: linear-gradient(to right, #1e293b, #0f172a) !important;
+  border-top-color: #334155 !important;
+}
+
+/* Override tramite-info-card white background in modals */
+.mis-tramites-container.dark-mode .tramite-info-card {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
+  border-color: #334155 !important;
+}
+
+.mis-tramites-container.dark-mode .tramite-info-card h3 {
+  color: #f1f5f9 !important;
+}
+
+.mis-tramites-container.dark-mode .tramite-info-card p {
+  color: #94a3b8 !important;
+}
+
+.mis-tramites-container.dark-mode .trabajador-card {
+  background: #0f172a !important;
+  border-color: #334155 !important;
+}
+
+.mis-tramites-container.dark-mode .trabajador-card.selected {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;
+  border-color: #60a5fa !important;
+}
+
+.mis-tramites-container.dark-mode .trabajador-card h4 {
+  color: #f1f5f9 !important;
+}
+
+.mis-tramites-container.dark-mode .trabajador-card .area,
+.mis-tramites-container.dark-mode .trabajador-card .tramites-count {
+  color: #94a3b8 !important;
+}
+
+
+.mis-tramites-container.dark-mode .firma-digital-section {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
+  border-color: #334155 !important;
+}
+
+.mis-tramites-container.dark-mode .firma-digital-section h3,
+.mis-tramites-container.dark-mode .firma-digital-section h4 {
+  color: #f1f5f9 !important;
+}
+
+.mis-tramites-container.dark-mode .firma-digital-section h4 i {
+  color: #22c55e !important;
+}
+
+.mis-tramites-container.dark-mode .firma-digital-header {
+  background: transparent !important;
+}
+
+.mis-tramites-container.dark-mode .firma-status-badge {
+  background: rgba(34, 197, 94, 0.1) !important;
+  color: #22c55e !important;
+  border-color: rgba(34, 197, 94, 0.3) !important;
+}
+
+.mis-tramites-container.dark-mode .firma-actual {
+  background: rgba(15, 23, 42, 0.5) !important;
+  border-color: #334155 !important;
+}
+
+.mis-tramites-container.dark-mode .firma-details .detail-row {
+  color: #94a3b8 !important;
+}
+
+.mis-tramites-container.dark-mode .firma-details .detail-row .label {
+  color: #64748b !important;
+}
+
+.mis-tramites-container.dark-mode .firma-details .detail-row .value {
+  color: #f1f5f9 !important;
+}
+
+.mis-tramites-container.dark-mode .firma-edit-form {
+  background: rgba(15, 23, 42, 0.3) !important;
+}
+
+.mis-tramites-container.dark-mode .firma-digital-info-large {
+  background: rgba(15, 23, 42, 0.5) !important;
+  border-color: #334155 !important;
+}
+
+.mis-tramites-container.dark-mode .status-badge-large.success {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(34, 197, 94, 0.15) 100%) !important;
+  color: #22c55e !important;
+  border-color: rgba(34, 197, 94, 0.3) !important;
+}
+
+.mis-tramites-container.dark-mode .fecha-firma-large,
+.mis-tramites-container.dark-mode .validez-legal-large {
+  background: rgba(15, 23, 42, 0.5) !important;
+  border-color: #334155 !important;
+}
+
+.mis-tramites-container.dark-mode .fecha-firma-large .fecha-label,
+.mis-tramites-container.dark-mode .validez-legal-large .validez-label {
+  color: #64748b !important;
+}
+
+.mis-tramites-container.dark-mode .fecha-firma-large .fecha-value,
+.mis-tramites-container.dark-mode .validez-legal-large .validez-value {
+  color: #f1f5f9 !important;
+}
+
+/* Override detail-item white backgrounds */
+.mis-tramites-container.dark-mode .detail-item {
+  background: rgba(15, 23, 42, 0.5) !important;
+  border-color: #334155 !important;
+}
+
+.mis-tramites-container.dark-mode .detail-item i {
+  color: #60a5fa !important;
+}
+
+.mis-tramites-container.dark-mode .detail-label {
+  color: #94a3b8 !important;
+}
+
+.mis-tramites-container.dark-mode .detail-value {
+  color: #f1f5f9 !important;
+}
+
+
+.mis-tramites-container.dark-mode .status-badge.success {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(34, 197, 94, 0.15) 100%) !important;
+  color: #22c55e !important;
+  border-color: rgba(34, 197, 94, 0.3) !important;
+}
+
+
+.mis-tramites-container.dark-mode .legal-content {
+  background: rgba(59, 130, 246, 0.05) !important;
+  border-color: rgba(59, 130, 246, 0.2) !important;
+}
+
+.mis-tramites-container.dark-mode .legal-text strong {
+  color: #f1f5f9 !important;
+}
+
+.mis-tramites-container.dark-mode .legal-text p {
+  color: #94a3b8 !important;
+}
+
+/* Override confirmation modal white backgrounds */
+.mis-tramites-container.dark-mode .confirmation-modal-container {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+}
+
+.mis-tramites-container.dark-mode .confirmation-modal-header {
+  background: linear-gradient(to bottom, #0f172a, #1e293b) !important;
+  color: #f1f5f9 !important;
+}
+
+.mis-tramites-container.dark-mode .confirmation-modal-header h2,
+.mis-tramites-container.dark-mode .confirmation-modal-header p {
+  color: #f1f5f9 !important;
+}
+
+.mis-tramites-container.dark-mode .confirmation-modal-body {
+  background: #1e293b !important;
+}
+
+.mis-tramites-container.dark-mode .declaration-box {
+  background: rgba(15, 23, 42, 0.5) !important;
+  border-color: #334155 !important;
+}
+
+.mis-tramites-container.dark-mode .declaration-box h3 {
+  color: #f1f5f9 !important;
+}
+
+.mis-tramites-container.dark-mode .declaration-content {
+  background: rgba(15, 23, 42, 0.3) !important;
+}
+
+.mis-tramites-container.dark-mode .declaration-list li {
+  color: #94a3b8 !important;
+}
+
+.mis-tramites-container.dark-mode .declaration-list li i {
+  color: #22c55e !important;
+}
+
+.mis-tramites-container.dark-mode .terms-box {
+  background: rgba(15, 23, 42, 0.5) !important;
+  border-color: #334155 !important;
+}
+
+.mis-tramites-container.dark-mode .terms-box h4 {
+  color: #f1f5f9 !important;
+}
+
+.mis-tramites-container.dark-mode .terms-content {
+  background: rgba(15, 23, 42, 0.3) !important;
+}
+
+.mis-tramites-container.dark-mode .term-item {
+  background: rgba(15, 23, 42, 0.5) !important;
+  border-color: #334155 !important;
+}
+
+.mis-tramites-container.dark-mode .term-item strong {
+  color: #f1f5f9 !important;
+}
+
+.mis-tramites-container.dark-mode .term-item span {
+  color: #94a3b8 !important;
+}
+
+.mis-tramites-container.dark-mode .warning-box {
+  background: rgba(239, 68, 68, 0.05) !important;
+  border-color: rgba(239, 68, 68, 0.2) !important;
+}
+
+.mis-tramites-container.dark-mode .warning-header h4 {
+  color: #ef4444 !important;
+}
+
+.mis-tramites-container.dark-mode .warning-content {
+  color: #94a3b8 !important;
+}
+
+.mis-tramites-container.dark-mode .warning-content strong {
+  color: #f1f5f9 !important;
+}
+
+.mis-tramites-container.dark-mode .legal-notice {
+  background: rgba(59, 130, 246, 0.1) !important;
+  color: #60a5fa !important;
+}
+
+.mis-tramites-container.dark-mode .signature-summary {
+  background: rgba(15, 23, 42, 0.5) !important;
+  border-color: #334155 !important;
+}
+
+.mis-tramites-container.dark-mode .signature-summary h4 {
+  color: #f1f5f9 !important;
+}
+
+.mis-tramites-container.dark-mode .summary-content {
+  background: rgba(15, 23, 42, 0.3) !important;
+}
+
+.mis-tramites-container.dark-mode .summary-label {
+  color: #64748b !important;
+}
+
+.mis-tramites-container.dark-mode .summary-value {
+  color: #f1f5f9 !important;
+}
+
+.mis-tramites-container.dark-mode .confirmation-modal-footer {
+  background: linear-gradient(to top, #0f172a, #1e293b) !important;
+  border-top-color: #334155 !important;
+}
+
+/* Override delete modal white backgrounds */
+.mis-tramites-container.dark-mode .modal-delete-content {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+}
+
+.mis-tramites-container.dark-mode .modal-delete-header {
+  background: linear-gradient(to right, #0f172a, #1e293b) !important;
+}
+
+.mis-tramites-container.dark-mode .modal-delete-header h3 {
+  color: #f1f5f9 !important;
+}
+
+.mis-tramites-container.dark-mode .modal-delete-body {
+  color: #94a3b8 !important;
+}
+
+.mis-tramites-container.dark-mode .modal-delete-body strong {
+  color: #f1f5f9 !important;
+}
+
+.mis-tramites-container.dark-mode .modal-delete-footer {
+  background: linear-gradient(to right, #1e293b, #0f172a) !important;
+  border-top-color: #334155 !important;
+}
+
+/* Override edit form white backgrounds */
+.mis-tramites-container.dark-mode .edit-form {
+  background: transparent !important;
+}
+
+.mis-tramites-container.dark-mode .upload-area {
+  background: rgba(15, 23, 42, 0.5) !important;
+  border-color: #334155 !important;
+}
+
+.mis-tramites-container.dark-mode .upload-area:hover {
+  background: rgba(15, 23, 42, 0.7) !important;
+  border-color: #60a5fa !important;
+}
+
+.mis-tramites-container.dark-mode .upload-text,
+.mis-tramites-container.dark-mode .upload-hint {
+  color: #94a3b8 !important;
+}
+
+.mis-tramites-container.dark-mode .documentos-list-edit {
+  background: transparent !important;
+}
+
+.mis-tramites-container.dark-mode .documento-item-edit {
+  background: rgba(15, 23, 42, 0.5) !important;
+  border-color: #334155 !important;
+}
+
+.mis-tramites-container.dark-mode .documento-item-edit .documento-nombre {
+  color: #f1f5f9 !important;
+}
+
+.mis-tramites-container.dark-mode .documento-item-edit .documento-size {
+  color: #64748b !important;
+}
+
+.mis-tramites-container.dark-mode .archivos-nuevos-list {
+  background: rgba(15, 23, 42, 0.3) !important;
+  border-color: #334155 !important;
+}
+
+.mis-tramites-container.dark-mode .archivos-nuevos-list h5 {
+  color: #f1f5f9 !important;
+}
+
+.mis-tramites-container.dark-mode .archivo-nuevo-item {
+  background: rgba(15, 23, 42, 0.5) !important;
+  border-color: #334155 !important;
+}
+
+.mis-tramites-container.dark-mode .archivo-nuevo-item .archivo-nombre {
+  color: #f1f5f9 !important;
+}
+
+.mis-tramites-container.dark-mode .archivo-nuevo-item .archivo-size {
+  color: #64748b !important;
+}
+
+/* Override signature canvas white backgrounds */
+.mis-tramites-container.dark-mode .signature-canvas-section {
+  background: transparent !important;
+}
+
+.mis-tramites-container.dark-mode .signature-canvas-wrapper {
+  background: rgba(15, 23, 42, 0.3) !important;
+  border-color: #334155 !important;
+}
+
+.mis-tramites-container.dark-mode .canvas-container {
+  background: rgba(15, 23, 42, 0.5) !important;
+  border-color: #334155 !important;
+}
+
+.mis-tramites-container.dark-mode .signature-canvas {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-color: #334155 !important;
+}
+
+.mis-tramites-container.dark-mode .canvas-placeholder {
+  color: #64748b !important;
+}
+
+.mis-tramites-container.dark-mode .canvas-placeholder i {
+  color: #475569 !important;
+}
+
+.mis-tramites-container.dark-mode .canvas-label {
+  color: #f1f5f9 !important;
+}
+
+.mis-tramites-container.dark-mode .signature-preview-container {
+  background: rgba(15, 23, 42, 0.5) !important;
+  border-color: #334155 !important;
+}
+
+.mis-tramites-container.dark-mode .signature-info {
+  background: rgba(15, 23, 42, 0.3) !important;
+}
+
+.mis-tramites-container.dark-mode .signature-info p {
+  color: #94a3b8 !important;
+}
+
+.mis-tramites-container.dark-mode .signature-info strong {
+  color: #f1f5f9 !important;
+}
+
+.mis-tramites-container.dark-mode .signature-consent {
+  background: rgba(15, 23, 42, 0.3) !important;
+  border-color: #334155 !important;
+}
+
+.mis-tramites-container.dark-mode .consent-text {
+  color: #94a3b8 !important;
+}
+
+.mis-tramites-container.dark-mode .no-firma-message {
+  background: rgba(59, 130, 246, 0.05) !important;
+  border-color: rgba(59, 130, 246, 0.2) !important;
+}
+
+.mis-tramites-container.dark-mode .no-firma-message .message-content {
+  color: #94a3b8 !important;
+}
+
+.mis-tramites-container.dark-mode .no-firma-message .message-content i {
+  color: #60a5fa !important;
+}
+
+/* Override info-message white background */
+.mis-tramites-container.dark-mode .info-message {
+  background: rgba(59, 130, 246, 0.05) !important;
+  border-color: rgba(59, 130, 246, 0.2) !important;
+}
+
+.mis-tramites-container.dark-mode .info-content {
+  color: #94a3b8 !important;
+}
+
+.mis-tramites-container.dark-mode .info-content strong {
+  color: #f1f5f9 !important;
+}
+
+/* Override progreso section white backgrounds */
+.mis-tramites-container.dark-mode .progreso-section {
+  background: transparent !important;
+}
+
+.mis-tramites-container.dark-mode .progreso-section h4 {
+  color: #f1f5f9 !important;
+}
+
+.mis-tramites-container.dark-mode .progress-container {
+  background: rgba(15, 23, 42, 0.3) !important;
+  border-color: #334155 !important;
+}
+
+.mis-tramites-container.dark-mode .progress-text-detail {
+  color: #f1f5f9 !important;
+}
+
+.mis-tramites-container.dark-mode .progress-status {
+  color: #94a3b8 !important;
+}
+
+.mis-tramites-container.dark-mode .progress-description {
+  color: #94a3b8 !important;
+}
+
+.mis-tramites-container.dark-mode .progress-time-remaining {
+  color: #94a3b8 !important;
+}
+
+/* Override descripcion section white backgrounds */
+.mis-tramites-container.dark-mode .descripcion-section {
+  background: transparent !important;
+}
+
+.mis-tramites-container.dark-mode .descripcion-section h4 {
+  color: #f1f5f9 !important;
+}
+
+.mis-tramites-container.dark-mode .descripcion-text {
+  color: #94a3b8 !important;
+}
+
+/* Override documentos section white backgrounds */
+.mis-tramites-container.dark-mode .documentos-section {
+  background: transparent !important;
+}
+
+.mis-tramites-container.dark-mode .documentos-section h4 {
+  color: #f1f5f9 !important;
+}
+
+.mis-tramites-container.dark-mode .documentos-list {
+  background: transparent !important;
+}
+
+.mis-tramites-container.dark-mode .documento-item {
+  background: rgba(15, 23, 42, 0.5) !important;
+  border-color: #334155 !important;
+}
+
+.mis-tramites-container.dark-mode .documento-item:hover {
+  background: rgba(15, 23, 42, 0.7) !important;
+  border-color: #60a5fa !important;
+}
+
+.mis-tramites-container.dark-mode .documento-nombre {
+  color: #f1f5f9 !important;
+}
+
+/* Override asignacion section white backgrounds */
+.mis-tramites-container.dark-mode .asignacion-section {
+  background: transparent !important;
+}
+
+.mis-tramites-container.dark-mode .asignacion-section h4 {
+  color: #f1f5f9 !important;
+}
+
+/* Override fechas section white backgrounds */
+.mis-tramites-container.dark-mode .fechas-section {
+  background: transparent !important;
+}
+
+.mis-tramites-container.dark-mode .fechas-section h4 {
+  color: #f1f5f9 !important;
+}
+
+/* Override info-section white backgrounds */
+.mis-tramites-container.dark-mode .info-section {
+  background: transparent !important;
+}
+
+.mis-tramites-container.dark-mode .info-section h4 {
+  color: #f1f5f9 !important;
+}
+
+.mis-tramites-container.dark-mode .info-item {
+  background: transparent !important;
+  color: #94a3b8 !important;
+}
+
+.mis-tramites-container.dark-mode .info-item label {
+  color: #64748b !important;
+}
+
+.mis-tramites-container.dark-mode .info-item span {
+  color: #f1f5f9 !important;
+}
+
+/* Override detalle-grid white background */
+.mis-tramites-container.dark-mode .detalle-grid {
+  background: transparent !important;
+}
+
+/* Override observaciones section white backgrounds */
+.mis-tramites-container.dark-mode .observaciones-section {
+  background: transparent !important;
+}
+
+.mis-tramites-container.dark-mode .observaciones-section h3 {
+  color: #f1f5f9 !important;
+}
+
+/* Override trabajadores section white backgrounds */
+.mis-tramites-container.dark-mode .trabajadores-section {
+  background: transparent !important;
+}
+
+.mis-tramites-container.dark-mode .trabajadores-section h3 {
+  color: #f1f5f9 !important;
+}
+
+.mis-tramites-container.dark-mode .instruction-text {
+  color: #94a3b8 !important;
+}
+
+.mis-tramites-container.dark-mode .trabajadores-grid {
+  background: transparent !important;
+}
+
+/* Override aprobar modal specific elements */
+.mis-tramites-container.dark-mode .aprobar-modal {
+  background: #1e293b !important;
+}
+
+.mis-tramites-container.dark-mode .aprobar-content {
+  background: transparent !important;
+}
+
+.mis-tramites-container.dark-mode .tramite-datos {
+  background: transparent !important;
+}
+
+.mis-tramites-container.dark-mode .dato-item {
+  color: #94a3b8 !important;
+}
+
+.mis-tramites-container.dark-mode .dato-item label {
+  color: #64748b !important;
+}
+
+.mis-tramites-container.dark-mode .dato-item span {
+  color: #f1f5f9 !important;
+}
+
+.mis-tramites-container.dark-mode .codigo-destacado {
+  background: rgba(96, 165, 250, 0.1) !important;
+  color: #60a5fa !important;
+  border-color: rgba(96, 165, 250, 0.3) !important;
+}
+
+.mis-tramites-container.dark-mode .responsable-info {
+  background: transparent !important;
+}
+
+.mis-tramites-container.dark-mode .responsable-card {
+  background: rgba(15, 23, 42, 0.5) !important;
+  border-color: #334155 !important;
+}
+
+.mis-tramites-container.dark-mode .responsable-header h5 {
+  color: #f1f5f9 !important;
+}
+
+.mis-tramites-container.dark-mode .responsable-datos {
+  background: transparent !important;
+}
+
+.mis-tramites-container.dark-mode .warning-message {
+  background: rgba(59, 130, 246, 0.05) !important;
+  border-color: rgba(59, 130, 246, 0.2) !important;
+  color: #60a5fa !important;
+}
+
+.mis-tramites-container.dark-mode .warning-message p {
+  color: #94a3b8 !important;
+}
+
+/* Override detalle modal specific elements */
+.mis-tramites-container.dark-mode .detalle-modal {
+  background: #1e293b !important;
+}
+
+/* Override derivacion modal specific elements */
+.mis-tramites-container.dark-mode .trabajador-avatar {
+  background: rgba(15, 23, 42, 0.5) !important;
+  border-color: #334155 !important;
+}
+
+.mis-tramites-container.dark-mode .carga-trabajo {
+  background: transparent !important;
+}
+
+.mis-tramites-container.dark-mode .progress-bar {
+  background: rgba(15, 23, 42, 0.5) !important;
+}
+
+.mis-tramites-container.dark-mode .error-message {
+  background: rgba(239, 68, 68, 0.1) !important;
+  color: #ef4444 !important;
+}
+
+.mis-tramites-container.dark-mode .status-available {
+  background: rgba(34, 197, 94, 0.1) !important;
+  color: #22c55e !important;
+}
+
+/* Override table white backgrounds */
+.mis-tramites-container.dark-mode .tramites-table {
+  background: transparent !important;
+}
+
+.mis-tramites-container.dark-mode .table-responsive-wrapper {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+}
+
+.mis-tramites-container.dark-mode table {
+  background: #1e293b !important;
+}
+
+.mis-tramites-container.dark-mode thead {
+  background: linear-gradient(to right, #0f172a, #1e293b) !important;
+}
+
+.mis-tramites-container.dark-mode thead th {
+  color: #f1f5f9 !important;
+  border-bottom-color: #334155 !important;
+}
+
+.mis-tramites-container.dark-mode tbody tr {
+  background: #1e293b !important;
+  border-bottom-color: #334155 !important;
+}
+
+.mis-tramites-container.dark-mode tbody tr:hover {
+  background: rgba(15, 23, 42, 0.7) !important;
+}
+
+.mis-tramites-container.dark-mode tbody td {
+  color: #94a3b8 !important;
+  border-bottom-color: #334155 !important;
+}
+
+.mis-tramites-container.dark-mode .asunto-cell strong {
+  color: #f1f5f9 !important;
+}
+
+.mis-tramites-container.dark-mode .asunto-cell small {
+  color: #64748b !important;
+}
+
+.mis-tramites-container.dark-mode .codigo {
+  color: #60a5fa !important;
+}
+
+/* Final catch-all for any remaining white backgrounds */
+.mis-tramites-container.dark-mode div[style*="background: white"],
+.mis-tramites-container.dark-mode div[style*="background: #fff"],
+.mis-tramites-container.dark-mode div[style*="background:#fff"],
+.mis-tramites-container.dark-mode div[style*="background-color: white"],
+.mis-tramites-container.dark-mode div[style*="background-color: #fff"],
+.mis-tramites-container.dark-mode div[style*="background-color:#fff"] {
+  background: #1e293b !important;
+}
+
+
+.mis-tramites-container.dark-mode .tramites-grid .tramite-card {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5) !important;
+}
+
+.mis-tramites-container.dark-mode .tramites-grid .tramite-card:hover {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6) !important;
+  border-color: #60a5fa !important;
+}
+
+
+.mis-tramites-container.dark-mode .tramites-grid .tramite-card .card-header {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;
+  border-bottom: 1px solid #334155 !important;
+}
+
+
+.mis-tramites-container.dark-mode .tramites-grid .tramite-card .card-content {
+  background: #1e293b !important;
+}
+
+/* Force card-progress to be dark */
+.mis-tramites-container.dark-mode .tramites-grid .tramite-card .card-progress {
+  background: transparent !important;
+}
+
+.mis-tramites-container.dark-mode .tramites-grid .tramite-card .progress-bar {
+  background: #334155 !important;
+}
+
+/* Force card-actions to be dark - THIS IS KEY */
+.mis-tramites-container.dark-mode .tramites-grid .tramite-card .card-actions {
+  background: #0f172a !important;
+  border-top: 1px solid #334155 !important;
+}
+
+/* Card text colors */
+.mis-tramites-container.dark-mode .tramites-grid .tramite-card .tramite-codigo {
+  color: #60a5fa !important;
+  background: rgba(96, 165, 250, 0.1) !important;
+}
+
+.mis-tramites-container.dark-mode .tramites-grid .tramite-card .tramite-asunto {
+  color: #f1f5f9 !important;
+}
+
+.mis-tramites-container.dark-mode .tramites-grid .tramite-card .tramite-tipo {
+  color: #94a3b8 !important;
+}
+
+.mis-tramites-container.dark-mode .tramites-grid .tramite-card .progress-text {
+  color: #94a3b8 !important;
+}
+
+/* Respuesta preview in cards */
+.mis-tramites-container.dark-mode .tramites-grid .tramite-card .respuesta-preview {
+  background: linear-gradient(135deg, rgba(96, 165, 250, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%) !important;
+  border-color: rgba(96, 165, 250, 0.3) !important;
+}
+
+.mis-tramites-container.dark-mode .tramites-grid .tramite-card .respuesta-header {
+  color: #60a5fa !important;
+}
+
+.mis-tramites-container.dark-mode .tramites-grid .tramite-card .respuesta-texto {
+  color: #f1f5f9 !important;
+}
+
+.mis-tramites-container.dark-mode .tramites-grid .tramite-card .respuesta-fecha {
+  color: #94a3b8 !important;
+}
+
+/* Card meta elements */
+.mis-tramites-container.dark-mode .tramites-grid .tramite-card .tramite-meta {
+  background: transparent !important;
+}
+
+.mis-tramites-container.dark-mode .tramites-grid .tramite-card .prioridad {
+  background: rgba(51, 65, 85, 0.6) !important;
+  color: #94a3b8 !important;
+}
+
+.mis-tramites-container.dark-mode .tramites-grid .tramite-card .area {
+  background: rgba(51, 65, 85, 0.6) !important;
+  color: #94a3b8 !important;
+}
+
+/* Vencimiento indicator */
+.mis-tramites-container.dark-mode .tramites-grid .tramite-card .vencimiento-indicator {
+  background: rgba(251, 191, 36, 0.2) !important;
+  color: #fbbf24 !important;
+}
+
+.mis-tramites-container.dark-mode .tramites-grid .tramite-card .vencimiento-indicator.urgente {
+  background: rgba(251, 146, 60, 0.3) !important;
+  color: #fb923c !important;
+}
+
+.mis-tramites-container.dark-mode .tramites-grid .tramite-card .vencimiento-indicator.vencido {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.3) 0%, rgba(220, 38, 38, 0.3) 100%) !important;
+  color: #fca5a5 !important;
+}
+
+/* Counter display in cards */
+.mis-tramites-container.dark-mode .tramites-grid .tramite-card .counter-display {
+  background: #0f172a !important;
+  border-color: #334155 !important;
+  color: #94a3b8 !important;
+}
+
+/* Buttons in card actions */
+.mis-tramites-container.dark-mode .tramites-grid .tramite-card .card-actions .btn-action {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+}
+
+.mis-tramites-container.dark-mode .tramites-grid .tramite-card .card-actions .btn-action:hover:not(:disabled) {
+  background: #334155 !important;
+  border-color: #60a5fa !important;
+}
+
+/* Specific button colors for actions */
+.mis-tramites-container.dark-mode .tramites-grid .tramite-card .card-actions .btn-action.view-detail {
+  background: rgba(96, 165, 250, 0.1) !important;
+  color: #60a5fa !important;
+  border: none !important;
+}
+
+.mis-tramites-container.dark-mode .tramites-grid .tramite-card .card-actions .btn-action.edit {
+  background: rgba(96, 165, 250, 0.1) !important;
+  color: #60a5fa !important;
+  border: none !important;
+}
+
+.mis-tramites-container.dark-mode .tramites-grid .tramite-card .card-actions .btn-action.download,
+.mis-tramites-container.dark-mode .tramites-grid .tramite-card .card-actions .btn-action.approve {
+  background: rgba(34, 197, 94, 0.1) !important;
+  color: #22c55e !important;
+  border: none !important;
+}
+
+.mis-tramites-container.dark-mode .tramites-grid .tramite-card .card-actions .btn-action.rate {
+  background: rgba(251, 191, 36, 0.1) !important;
+  color: #fbbf24 !important;
+  border: none !important;
+}
+
+.mis-tramites-container.dark-mode .tramites-grid .tramite-card .card-actions .btn-action.reject {
+  background: rgba(239, 68, 68, 0.1) !important;
+  color: #ef4444 !important;
+  border: none !important;
+}
+
+.mis-tramites-container.dark-mode .tramites-grid .tramite-card .card-actions .btn-action.forward {
+  background: rgba(139, 92, 246, 0.1) !important;
+  color: #a78bfa !important;
+  border: none !important;
+}
+
+.mis-tramites-container.dark-mode .tramites-grid .tramite-card .card-actions .btn-action.respond {
+  background: rgba(249, 115, 22, 0.1) !important;
+  color: #fb923c !important;
+  border: none !important;
+}
+
+/* Rating display in cards */
+.mis-tramites-container.dark-mode .tramites-grid .tramite-card .rating-display {
+  background: rgba(251, 191, 36, 0.2) !important;
+  color: #fbbf24 !important;
+}
+
+/* Tramite fecha badge */
+.mis-tramites-container.dark-mode .tramites-grid .tramite-card .tramite-fecha {
+  background: rgba(251, 191, 36, 0.2) !important;
+  color: #fbbf24 !important;
 }

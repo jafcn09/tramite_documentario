@@ -258,3 +258,57 @@
     </div>
   </div>
 </div>
+
+<!-- Modal de Confirmación para Eliminar -->
+<div *ngIf="showDeleteModal" class="modal-overlay" (click)="cerrarModalEliminar()">
+  <div class="modal-content modal-delete" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>
+        <i class="fas fa-exclamation-triangle"></i>
+        Confirmar Eliminación
+      </h3>
+      <button class="btn-close" (click)="cerrarModalEliminar()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div *ngIf="reporteAEliminar" class="delete-confirmation">
+        <p class="delete-message">
+          ¿Está seguro de que desea eliminar el reporte de tipo
+          <strong>"{{ reporteAEliminar.tipoError }}"</strong>?
+        </p>
+        <div class="reporte-details">
+          <div class="detail-row">
+            <i class="fas fa-file-alt"></i>
+            <span>{{ reporteAEliminar.descripcion }}</span>
+          </div>
+          <div class="detail-row" *ngIf="reporteAEliminar.alumnoNombre">
+            <i class="fas fa-user"></i>
+            <span>{{ reporteAEliminar.alumnoNombre }}</span>
+          </div>
+          <div class="detail-row" *ngIf="reporteAEliminar.codigoDiploma">
+            <i class="fas fa-certificate"></i>
+            <span>{{ reporteAEliminar.codigoDiploma }}</span>
+          </div>
+        </div>
+        <p class="delete-warning">
+          <i class="fas fa-info-circle"></i>
+          Esta acción no se puede deshacer.
+        </p>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="cerrarModalEliminar()" [disabled]="loadingAction">
+        <i class="fas fa-times"></i>
+        Cancelar
+      </button>
+      <button class="btn btn-danger" (click)="confirmarEliminar()" [disabled]="loadingAction">
+        <i *ngIf="loadingAction" class="fas fa-spinner fa-spin"></i>
+        <i *ngIf="!loadingAction" class="fas fa-trash"></i>
+        {{ loadingAction ? 'Eliminando...' : 'Eliminar' }}
+      </button>
+    </div>
+  </div>
+</div>

@@ -13,13 +13,13 @@
 }
 
 .stat-card {
-  background: white;
+  background: var(--bg-primary);
   border-radius: 16px;
   padding: 35px 30px;
   display: flex;
   align-items: center;
   gap: 25px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-md);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   min-height: 130px;
 }
@@ -30,7 +30,7 @@
 
 .stat-card.clickable:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.12);
+  box-shadow: var(--shadow-lg);
 }
 
 .stat-icon {
@@ -59,7 +59,7 @@
   font-size: 42px;
   font-weight: 700;
   margin: 0;
-  color: #2c3e50;
+  color: var(--text-primary);
   line-height: 1;
 }
 
@@ -69,7 +69,7 @@
 
 .stat-content p {
   font-size: 15px;
-  color: #7f8c8d;
+  color: var(--text-secondary);
   margin: 8px 0 0 0;
   font-weight: 500;
 }
@@ -88,16 +88,16 @@
 
 
 .card {
-  background: white;
+  background: var(--bg-primary);
   border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-md);
   overflow: hidden;
 }
 
 .card-header {
   padding: 20px 25px;
-  border-bottom: 1px solid #f1f2f6;
-  background: #fafbfc;
+  border-bottom: 1px solid var(--border-primary);
+  background: var(--bg-secondary);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -107,13 +107,13 @@
   margin: 0;
   font-size: 18px;
   font-weight: 600;
-  color: #2c3e50;
+  color: var(--text-primary);
 }
 
 .btn-link {
   background: none;
   border: none;
-  color: #667eea;
+  color: var(--university-primary);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -121,7 +121,7 @@
 }
 
 .btn-link:hover {
-  color: #764ba2;
+  color: var(--university-primary-dark);
   text-decoration: underline;
 }
 
@@ -138,7 +138,7 @@
   max-height: 500px;
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: #cbd5e0 #f7fafc;
+  scrollbar-color: var(--border-primary) var(--bg-secondary);
 }
 
 .reports-list::-webkit-scrollbar {
@@ -146,17 +146,17 @@
 }
 
 .reports-list::-webkit-scrollbar-track {
-  background: #f7fafc;
+  background: var(--bg-secondary);
   border-radius: 3px;
 }
 
 .reports-list::-webkit-scrollbar-thumb {
-  background: #cbd5e0;
+  background: var(--border-primary);
   border-radius: 3px;
 }
 
 .reports-list::-webkit-scrollbar-thumb:hover {
-  background: #a0aec0;
+  background: var(--text-tertiary);
 }
 
 .report-item {
@@ -165,7 +165,7 @@
   gap: 15px;
   margin-bottom: 20px;
   padding-bottom: 20px;
-  border-bottom: 1px solid #f1f2f6;
+  border-bottom: 1px solid var(--border-primary);
 }
 
 .report-item:last-child {
@@ -210,7 +210,7 @@
   margin: 0;
   font-size: 15px;
   font-weight: 600;
-  color: #2c3e50;
+  color: var(--text-primary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -249,7 +249,7 @@
 .report-description {
   margin: 0 0 10px 0;
   font-size: 14px;
-  color: #5a6c7d;
+  color: var(--text-secondary);
   line-height: 1.5;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -262,7 +262,7 @@
   flex-wrap: wrap;
   gap: 12px;
   font-size: 12px;
-  color: #7f8c8d;
+  color: var(--text-secondary);
 }
 
 .report-meta span {
@@ -316,11 +316,11 @@
 .tipo-nombre {
   font-size: 13px;
   font-weight: 500;
-  color: #2c3e50;
+  color: var(--text-primary);
 }
 
 .tipo-badge {
-  background: #667eea;
+  background: var(--university-primary);
   color: white;
   padding: 2px 8px;
   border-radius: 10px;
@@ -331,7 +331,7 @@
 .tipo-bar {
   width: 100%;
   height: 6px;
-  background: #f1f2f6;
+  background: var(--bg-tertiary);
   border-radius: 3px;
   overflow: hidden;
 }
@@ -372,8 +372,8 @@
 }
 
 .action-btn {
-  background: #f8f9fa;
-  border: 2px solid #e9ecef;
+  background: var(--bg-secondary);
+  border: 2px solid var(--border-primary);
   border-radius: 10px;
   padding: 15px;
   display: flex;
@@ -386,15 +386,15 @@
 }
 
 .action-btn:hover {
-  background: #667eea;
-  border-color: #667eea;
+  background: var(--university-primary);
+  border-color: var(--university-primary);
   color: white;
   transform: translateX(5px);
 }
 
 .action-btn i {
   font-size: 18px;
-  color: #667eea;
+  color: var(--university-primary);
   transition: color 0.3s ease;
   width: 20px;
   text-align: center;
@@ -407,7 +407,7 @@
 .action-btn span {
   font-size: 14px;
   font-weight: 600;
-  color: #2c3e50;
+  color: var(--text-primary);
   transition: color 0.3s ease;
 }
 

@@ -11,6 +11,7 @@ import { BandejaTramitesService } from '../../services/bandeja-tramites.service'
 import { TramiteService } from '../../services/tramite.service';
 import { ToastService } from '../../services/toast.service';
 import { AuthService } from '../../services/auth.service';
+import { ThemeService } from '../../services/theme.service';
 import {
   MiTramite,
   EstadisticasMisTramites,
@@ -35,6 +36,8 @@ export class MisTramitesComponent implements OnInit, OnDestroy, AfterViewInit {
   misTramites: MiTramite[] = [];
   estadisticas: EstadisticasMisTramites | null = null;
   loading$ = this.misTramitesService.loading$;
+  isDarkMode = false;
+  private themeSubscription?: Subscription;
 
 
   tramitePermisos: Map<number, {
@@ -87,6 +90,7 @@ export class MisTramitesComponent implements OnInit, OnDestroy, AfterViewInit {
     private authService: AuthService,
     private firmaDigitalService: FirmaDigitalService,
     private route: ActivatedRoute,
+    private themeService: ThemeService,
     cdr: ChangeDetectorRef
   ) {
     this.cdr = cdr;
@@ -124,6 +128,10 @@ export class MisTramitesComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngOnInit() {
+    this.themeSubscription = this.themeService.theme$.subscribe(theme => {
+      this.isDarkMode = theme === 'dark';
+    });
+
     this.setupSearch();
     this.cargarMisTramites();
     this.cargarEstadisticas();
@@ -147,6 +155,9 @@ export class MisTramitesComponent implements OnInit, OnDestroy, AfterViewInit {
 
   ngOnDestroy() {
     this.subscriptions.unsubscribe();
+    if (this.themeSubscription) {
+      this.themeSubscription.unsubscribe();
+    }
   }
 
   private setupSearch() {
