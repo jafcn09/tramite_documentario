@@ -2364,4 +2364,268 @@ public class EmailService {
         );
     }
 
+   
+    @Async("emailExecutor")
+    public boolean enviarEncuestaSatisfaccion(
+            Long encuestaId,
+            String emailDestino,
+            String tramiteCodigo,
+            String tramiteTitulo,
+            String nombreTrabajador,
+            String token
+    ) {
+        try {
+            log.info("📧 Enviando encuesta de satisfacción a: {}", emailDestino);
+
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(fromEmail);
+            helper.setTo(emailDestino);
+            helper.setSubject("🌟 Califique su experiencia - Trámite " + tramiteCodigo);
+
+            String urlEncuesta = appUrl + "/encuesta/" + token;
+            String htmlContent = construirTemplateEncuesta(tramiteCodigo, tramiteTitulo, nombreTrabajador, urlEncuesta);
+            helper.setText(htmlContent, true);
+
+            mailSender.send(message);
+            log.info("✅ Encuesta de satisfacción enviada exitosamente a {}", emailDestino);
+            return true;
+
+        } catch (Exception e) {
+            log.error("❌ Error al enviar encuesta de satisfacción: {}", e.getMessage(), e);
+            return false;
+        }
+    }
+
+    private String construirTemplateEncuesta(String tramiteCodigo, String tramiteTitulo, String nombreTrabajador, String urlEncuesta) {
+        return String.format("""
+            <!DOCTYPE html>
+            <html lang='es'>
+            <head>
+                <meta charset='UTF-8'>
+                <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+                <style>
+                    body {
+                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+                        margin: 0;
+                        padding: 20px;
+                        background: linear-gradient(135deg, #667eea 0%%, #764ba2 100%%);
+                    }
+                    .container {
+                        max-width: 600px;
+                        margin: 0 auto;
+                        background: white;
+                        border-radius: 20px;
+                        overflow: hidden;
+                        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                    }
+                    .header {
+                        background: linear-gradient(135deg, #f59e0b 0%%, #d97706 100%%);
+                        color: white;
+                        padding: 50px 30px;
+                        text-align: center;
+                    }
+                    .header h1 {
+                        color: white;
+                        font-size: 32px;
+                        font-weight: 700;
+                        margin: 0 0 10px 0;
+                    }
+                    .stars {
+                        font-size: 40px;
+                        margin: 20px 0;
+                        animation: pulse 2s ease-in-out infinite;
+                    }
+                    @keyframes pulse {
+                        0%%, 100%% { transform: scale(1); }
+                        50%% { transform: scale(1.1); }
+                    }
+                    .content {
+                        padding: 40px 30px;
+                    }
+                    .message {
+                        font-size: 18px;
+                        color: #374151;
+                        line-height: 1.8;
+                        margin-bottom: 30px;
+                    }
+                    .highlight-box {
+                        background: linear-gradient(135deg, #fef3c7 0%%, #fde68a 100%%);
+                        border-left: 5px solid #f59e0b;
+                        padding: 25px;
+                        margin: 30px 0;
+                        border-radius: 12px;
+                    }
+                    .highlight-box h3 {
+                        color: #92400e;
+                        margin: 0 0 15px 0;
+                        font-size: 20px;
+                    }
+                    .detail-item {
+                        display: flex;
+                        justify-content: space-between;
+                        padding: 10px 0;
+                        border-bottom: 1px solid #fbbf24;
+                    }
+                    .detail-item:last-child {
+                        border-bottom: none;
+                    }
+                    .detail-label {
+                        font-weight: 600;
+                        color: #78350f;
+                    }
+                    .detail-value {
+                        color: #92400e;
+                        font-weight: 500;
+                    }
+                    .cta-button {
+                        display: block;
+                        text-align: center;
+                        background: linear-gradient(135deg, #10b981 0%%, #059669 100%%);
+                        color: white !important;
+                        text-decoration: none;
+                        padding: 18px 40px;
+                        border-radius: 50px;
+                        font-weight: 700;
+                        font-size: 18px;
+                        margin: 35px 0;
+                        box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
+                        transition: all 0.3s ease;
+                    }
+                    .cta-button:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 15px 35px rgba(16, 185, 129, 0.5);
+                    }
+                    .criteria-list {
+                        background: #f9fafb;
+                        border-radius: 12px;
+                        padding: 25px;
+                        margin: 25px 0;
+                    }
+                    .criteria-list h3 {
+                        color: #1f2937;
+                        margin: 0 0 20px 0;
+                        font-size: 18px;
+                    }
+                    .criteria-item {
+                        display: flex;
+                        align-items: center;
+                        padding: 12px 0;
+                        color: #4b5563;
+                    }
+                    .criteria-item::before {
+                        content: '⭐';
+                        font-size: 20px;
+                        margin-right: 12px;
+                    }
+                    .info-box {
+                        background: #e0f2fe;
+                        border: 2px solid #0ea5e9;
+                        border-radius: 12px;
+                        padding: 20px;
+                        margin: 25px 0;
+                        text-align: center;
+                    }
+                    .info-box p {
+                        margin: 0;
+                        color: #075985;
+                        font-size: 14px;
+                        line-height: 1.6;
+                    }
+                    .footer {
+                        background: #1f2937;
+                        color: white;
+                        padding: 30px;
+                        text-align: center;
+                    }
+                    .footer p {
+                        margin: 5px 0;
+                        opacity: 0.9;
+                        font-size: 14px;
+                    }
+                    .footer a {
+                        color: #60a5fa;
+                        text-decoration: none;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class='container'>
+                    <div class='header'>
+                        <div class='stars'>⭐⭐⭐⭐⭐</div>
+                        <h1>¡Su opinión es muy importante!</h1>
+                        <p style='margin: 0; opacity: 0.95; font-size: 16px;'>Ayúdenos a mejorar nuestro servicio</p>
+                    </div>
+
+                    <div class='content'>
+                        <p class='message'>
+                            Estimado usuario,<br><br>
+                            Su trámite <strong>%s</strong> ha sido completado.
+                            Nos gustaría conocer su experiencia con nuestro servicio para seguir mejorando.
+                        </p>
+
+                        <div class='highlight-box'>
+                            <h3>📋 Detalles del Trámite</h3>
+                            <div class='detail-item'>
+                                <span class='detail-label'>Código:</span>
+                                <span class='detail-value'>%s</span>
+                            </div>
+                            <div class='detail-item'>
+                                <span class='detail-label'>Título:</span>
+                                <span class='detail-value'>%s</span>
+                            </div>
+                            <div class='detail-item'>
+                                <span class='detail-label'>Atendido por:</span>
+                                <span class='detail-value'>%s</span>
+                            </div>
+                        </div>
+
+                        <div class='criteria-list'>
+                            <h3>📊 Califique los siguientes aspectos (1-5 estrellas):</h3>
+                            <div class='criteria-item'>Tiempo de respuesta</div>
+                            <div class='criteria-item'>Calidad de la respuesta</div>
+                            <div class='criteria-item'>Claridad en la comunicación</div>
+                            <div class='criteria-item'>Amabilidad y trato</div>
+                            <div class='criteria-item'>Resolución efectiva</div>
+                        </div>
+
+                        <a href='%s' class='cta-button'>
+                            🌟 Responder Encuesta Ahora
+                        </a>
+
+                        <div class='info-box'>
+                            <p>
+                                <strong>⏱️ Esta encuesta estará disponible por 10 días</strong><br>
+                                Solo tomará 2 minutos completarla y nos ayudará enormemente a mejorar nuestro servicio.
+                            </p>
+                        </div>
+
+                        <p style='color: #6b7280; font-size: 14px; text-align: center; margin-top: 30px;'>
+                            Si el botón no funciona, copie y pegue este enlace en su navegador:<br>
+                            <a href='%s' style='color: #3b82f6; word-break: break-all;'>%s</a>
+                        </p>
+                    </div>
+
+                    <div class='footer'>
+                        <p><strong>Sistema de Trámite Documentario</strong></p>
+                        <p>Universidad Nacional de Tumbes</p>
+                        <p style='margin-top: 15px; font-size: 13px;'>
+                            Este es un correo automático, por favor no responder.
+                        </p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """,
+            tramiteCodigo,
+            tramiteCodigo,
+            tramiteTitulo,
+            nombreTrabajador,
+            urlEncuesta,
+            urlEncuesta,
+            urlEncuesta
+        );
+    }
+
 }

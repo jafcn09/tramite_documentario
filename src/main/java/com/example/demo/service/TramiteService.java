@@ -50,6 +50,7 @@ public class TramiteService {
     private final FirmaDigitalService firmaDigitalService;
     private final QRCodeService qrCodeService;
     private final EncryptionService encryptionService;
+    private final EncuestaSatisfaccionService encuestaSatisfaccionService;
     private final org.springframework.context.ApplicationEventPublisher eventPublisher;
 
     @PersistenceContext
@@ -1654,6 +1655,25 @@ public class TramiteService {
             request.getAsunto() != null ? request.getAsunto() : "Respuesta a su trámite " + tramite.getCodigo(),
             cantidadDocumentosRespuesta
         );
+
+        final Tramite tramiteFinal = tramite;
+        try {
+            usuarioService.getUsuarioById(tramiteFinal.getUsuarioSolicitanteId()).ifPresent(solicitante -> {
+                String nombreTrabajador = responsableInfo.getNombre() + " " + responsableInfo.getApellidos();
+
+                encuestaSatisfaccionService.crearYEnviarEncuesta(
+                    tramiteId,
+                    tramiteFinal.getUsuarioSolicitanteId(),
+                    administrativoId,
+                    solicitante.getCorreo(),
+                    tramiteFinal.getCodigo(),
+                    tramiteFinal.getTitulo() != null ? tramiteFinal.getTitulo() : tramiteFinal.getAsunto(),
+                    nombreTrabajador
+                );
+            });
+        } catch (Exception e) {
+            log.warn("Error al crear encuesta de satisfacción para trámite {}: {}", tramiteId, e.getMessage());
+        }
 
         return com.example.demo.dto.ResponderTramiteResponse.builder()
             .success(true)
