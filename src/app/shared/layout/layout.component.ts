@@ -102,6 +102,7 @@ export class LayoutComponent implements OnInit {
       { label: 'Inicio', route: '/admin/tablero', icon: 'fas fa-home' },
       { label: 'Gestión de Trámites', route: '/admin/tramites', icon: 'fas fa-file-alt' },
       { label: 'Reportes', route: '/admin/reportes', icon: 'fas fa-chart-bar' },
+      { label: 'Métricas de Encuestas', route: '/admin/encuestas', icon: 'fas fa-poll' },
       {
         label: 'Configuración',
         icon: 'fas fa-cog',

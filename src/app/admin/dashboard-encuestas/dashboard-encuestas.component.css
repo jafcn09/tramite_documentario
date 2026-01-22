@@ -1,0 +1,151 @@
+
+.shadow-lg {
+  transition: all 0.3s ease;
+}
+
+.shadow-lg:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.fa-star {
+  transition: color 0.2s ease;
+}
+
+
+table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+
+canvas {
+  max-width: 100%;
+  height: auto !important;
+}
+
+
+@media (max-width: 768px) {
+  .container-fluid {
+    padding: 1rem;
+  }
+
+  .grid {
+    gap: 1rem;
+  }
+}
+
+
+@media (prefers-color-scheme: dark) {
+  .bg-gradient-to-br {
+    filter: brightness(0.9);
+  }
+}
+
+
+.overflow-x-auto {
+  -webkit-overflow-scrolling: touch;
+}
+
+.border-l-4 {
+  transition: border-color 0.3s ease;
+}
+
+
+.bg-gradient-to-br {
+  background-size: 200% 200%;
+  animation: gradientShift 3s ease infinite;
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+
+input[type="date"] {
+  color-scheme: light;
+}
+
+
+.dark input[type="date"] {
+  color-scheme: dark;
+  background-color: rgb(55, 65, 81) !important;
+  color: rgb(229, 231, 235) !important;
+}
+
+.dark input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: brightness(0) invert(0.7);
+  opacity: 0.8;
+  cursor: pointer;
+}
+
+.dark input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+
+.dark input[type="date"]::-webkit-datetime-edit,
+.dark input[type="date"]::-webkit-datetime-edit-fields-wrapper,
+.dark input[type="date"]::-webkit-datetime-edit-text,
+.dark input[type="date"]::-webkit-datetime-edit-month-field,
+.dark input[type="date"]::-webkit-datetime-edit-day-field,
+.dark input[type="date"]::-webkit-datetime-edit-year-field {
+  color: rgb(229, 231, 235);
+}
+
+
+.dark input[type="date"]:focus {
+  background-color: rgb(55, 65, 81) !important;
+  border-color: rgb(59, 130, 246) !important;
+  outline: 2px solid rgba(59, 130, 246, 0.5);
+  outline-offset: 2px;
+}
+
+
+.dark input[type="date"]::placeholder {
+  color: rgb(156, 163, 175);
+  opacity: 1;
+}
+
+
+.dark select {
+  background-color: rgb(55, 65, 81) !important;
+  color: rgb(229, 231, 235) !important;
+}
+
+.dark select option {
+  background-color: rgb(55, 65, 81);
+  color: rgb(229, 231, 235);
+}
+
+
+.dark select:hover {
+  background-color: rgb(75, 85, 99) !important;
+}
+
+.dark select:focus {
+  background-color: rgb(55, 65, 81) !important;
+  border-color: rgb(59, 130, 246) !important;
+}

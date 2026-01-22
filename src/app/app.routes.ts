@@ -62,6 +62,10 @@ export const routes: Routes = [
         loadComponent: () => import('./features/reportes/reportes.component').then(m => m.ReportesComponent)
       },
       {
+        path: 'encuestas',
+        loadComponent: () => import('./admin/dashboard-encuestas/dashboard-encuestas.component').then(m => m.DashboardEncuestasComponent)
+      },
+      {
         path: 'organigrama',
         loadComponent: () => import('./features/organigrama/organigrama.component').then(m => m.OrganigramaComponent)
       },
