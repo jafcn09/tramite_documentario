@@ -13,18 +13,22 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.example.demo.annotation.DailyRateLimit;
 import com.example.demo.annotation.RateLimit;
+import com.example.demo.config.RateLimitConfig;
 import com.example.demo.exception.RateLimitExceededException;
 import com.example.demo.service.RateLimitService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Aspect
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class RateLimitAspect {
 
     private final RateLimitService rateLimitService;
+    private final RateLimitConfig rateLimitConfig;
 
     @Around("@annotation(rateLimit)")
     public Object rateLimit(ProceedingJoinPoint joinPoint, RateLimit rateLimit) throws Throwable {
@@ -42,7 +46,7 @@ public class RateLimitAspect {
             boolean allowed = rateLimitService.isAllowed(identifier, rateLimit.maxRequests(), rateLimit.timeWindowMs());
 
             if (!allowed) {
-             
+                log.warn("Rate limit exceeded for IP {} on endpoint {}", clientIp, endpoint);
                 throw new RateLimitExceededException("Has excedido el límite de solicitudes. Por favor, intenta en " + (rateLimit.timeWindowMs() / 1000) + " segundos.");
             }
 
@@ -50,7 +54,7 @@ public class RateLimitAspect {
         } catch (RateLimitExceededException e) {
             throw e;
         } catch (Throwable e) {
-            
+            log.error("Error in rate limit aspect: ", e);
             return joinPoint.proceed();
         }
     }
@@ -62,18 +66,34 @@ public class RateLimitAspect {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             String userId = auth != null && auth.isAuthenticated() ? auth.getName() : "anonymous";
 
+
+            ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+            String endpoint = "unknown";
+            if (attributes != null) {
+                HttpServletRequest request = attributes.getRequest();
+                endpoint = request.getRequestURI();
+            }
+
+       
             boolean allowed = rateLimitService.isDailyUserLimitAllowed(userId);
 
             if (!allowed) {
-        
-                throw new RateLimitExceededException("Has excedido el límite diario de solicitudes (100 por usuario, 1000 total por día). Intenta mañana.");
+                int remaining = rateLimitService.getRemainingDailyRequests(userId);
+                log.warn("Daily rate limit exceeded for user {} on endpoint {}. Remaining: {}", userId, endpoint, remaining);
+
+                String message = String.format(
+                    "Has excedido el límite diario de solicitudes (%d por usuario). Solicitudes restantes: %d. Intenta mañana.",
+                    dailyRateLimit.maxRequestsPerUser(),
+                    remaining
+                );
+                throw new RateLimitExceededException(message);
             }
 
             return joinPoint.proceed();
         } catch (RateLimitExceededException e) {
             throw e;
         } catch (Throwable e) {
-            // If anything goes wrong with rate limiting, allow the request to proceed
+            log.error("Error in daily rate limit aspect: ", e);
             return joinPoint.proceed();
         }
     }
