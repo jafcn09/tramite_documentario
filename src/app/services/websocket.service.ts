@@ -6,13 +6,9 @@ import { NotificacionService } from './notificacion.service';
 import { Notificacion } from '../shared/interfaces/notificacion.interface';
 import { ToastService } from './toast.service';
 
-
-declare global {
-  interface Window {
-    SockJS: any;
-    Stomp: any;
-  }
-}
+// Declarar las variables globales del CDN
+declare const SockJS: any;
+declare const StompJs: any;
 
 @Injectable({
   providedIn: 'root'
@@ -20,7 +16,7 @@ declare global {
 export class WebSocketService implements OnDestroy {
   private stompClient: any = null;
   private connectionSubject = new BehaviorSubject<boolean>(false);
-  
+
   public connected$ = this.connectionSubject.asObservable();
   
   constructor(
@@ -48,43 +44,43 @@ export class WebSocketService implements OnDestroy {
     }
 
     const serverUrl = (environment as any).wsUrl || 'http://localhost:8081/ws';
-    const socket = new (window.SockJS as any)(serverUrl);
-    this.stompClient = (window.Stomp as any).over(socket);
-    
-   
     const token = this.authService.getToken();
-    const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
-    
-    this.stompClient.connect(
-      headers,
-      (frame: any) => {
+    const headers = token ? { 'Authorization': `Bearer ${token}` } : undefined;
 
+    this.stompClient = new StompJs.Client({
+      webSocketFactory: () => new SockJS(serverUrl),
+      connectHeaders: headers,
+      debug: (str: string) => {
+        if (!environment.production) {
+          console.log(str);
+        }
+      },
+      reconnectDelay: 5000,
+      heartbeatIncoming: 4000,
+      heartbeatOutgoing: 4000,
+      onConnect: () => {
         this.connectionSubject.next(true);
         this.suscribirseANotificaciones();
       },
-      (error: any) => {
+      onStompError: (frame: any) => {
+        console.error('STOMP error:', frame);
+        this.connectionSubject.next(false);
+      },
+      onWebSocketClose: () => {
         this.connectionSubject.next(false);
         this.intentarReconectar();
       }
-    );
+    });
 
-    if (!environment.production) {
-      this.stompClient.debug = (str: string) => {
-
-      };
-    } else {
-      this.stompClient.debug = null;
-    }
+    this.stompClient.activate();
   }
 
   private desconectar(): void {
-    if (this.stompClient && this.stompClient.connected) {
-      this.stompClient.disconnect(() => {
-
-        this.connectionSubject.next(false);
-      });
+    if (this.stompClient) {
+      this.stompClient.deactivate();
+      this.connectionSubject.next(false);
+      this.stompClient = null;
     }
-    this.stompClient = null;
   }
 
   private suscribirseANotificaciones(): void {
@@ -104,7 +100,6 @@ export class WebSocketService implements OnDestroy {
       }
     );
 
-
     this.stompClient.subscribe(
       `/user/queue/notificaciones/leida`,
       (message: any) => {
@@ -119,14 +114,12 @@ export class WebSocketService implements OnDestroy {
       }
     );
 
-   
     this.stompClient.subscribe(
       `/topic/reportes`,
       (message: any) => {
         this.manejarNotificacionReporte(JSON.parse(message.body));
       }
     );
-
   }
 
   private manejarNuevaNotificacion(notificacion: Notificacion): void {
@@ -262,18 +255,18 @@ export class WebSocketService implements OnDestroy {
 
   public enviarMensaje(destino: string, mensaje: any): void {
     if (this.stompClient && this.stompClient.connected) {
-      this.stompClient.send(destino, {}, JSON.stringify(mensaje));
-    } else {
+      this.stompClient.publish({
+        destination: destino,
+        body: JSON.stringify(mensaje)
+      });
     }
   }
 
-  
   public suscribirse(canal: string, callback: (mensaje: any) => void): void {
     if (this.stompClient && this.stompClient.connected) {
       this.stompClient.subscribe(canal, (message: any) => {
         callback(JSON.parse(message.body));
       });
-    } else {
     }
   }
 
@@ -286,8 +279,8 @@ export class WebSocketService implements OnDestroy {
     }
   }
 
-  
+
   public estaConectado(): boolean {
-    return this.stompClient && this.stompClient.connected;
+    return !!(this.stompClient && this.stompClient.connected);
   }
 }
