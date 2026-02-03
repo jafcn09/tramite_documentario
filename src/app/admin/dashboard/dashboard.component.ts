@@ -11,11 +11,10 @@ import { environment } from '../../../environments/environment';
 import { User } from '../../shared/interfaces/auth.interface';
 
 @Component({
-  selector: 'app-admin-dashboard',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
-  templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.css']
+    selector: 'app-admin-dashboard',
+    imports: [CommonModule, FormsModule],
+    templateUrl: './dashboard.component.html',
+    styleUrls: ['./dashboard.component.css']
 })
 export class DashboardComponent implements OnInit {
   currentUser: User | null = null;

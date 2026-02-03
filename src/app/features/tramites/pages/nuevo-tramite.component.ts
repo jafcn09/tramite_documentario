@@ -6,10 +6,9 @@ import { NuevoTramiteModalComponent } from '../components/nuevo-tramite-modal/nu
 import { Tramite } from '../../../shared/interfaces/tramite.interface';
 
 @Component({
-  selector: 'app-nuevo-tramite-page',
-  standalone: true,
-  imports: [CommonModule, NuevoTramiteModalComponent],
-  template: `
+    selector: 'app-nuevo-tramite-page',
+    imports: [CommonModule, NuevoTramiteModalComponent],
+    template: `
     <div class="nuevo-tramite-page">
       <div class="page-header">
         <h1>
@@ -29,7 +28,7 @@ import { Tramite } from '../../../shared/interfaces/tramite.interface';
       </app-nuevo-tramite-modal>
     </div>
   `,
-  styles: [`
+    styles: [`
     .nuevo-tramite-page {
       padding: 20px;
       min-height: 100vh;

@@ -25,12 +25,10 @@ import { RechazarTramiteModalComponent } from '../bandeja-tramites/components/re
 import { AdministrativeUser } from '../../shared/interfaces/auth.interface';
 
 @Component({
-  selector: 'app-mis-tramites',
-  standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, ResponderTramiteModalComponent, NuevoTramiteModalComponent, RechazarTramiteModalComponent],
-
-  templateUrl: './mis-tramites.component.html',
-  styleUrl: './mis-tramites.component.css'
+    selector: 'app-mis-tramites',
+    imports: [CommonModule, FormsModule, RouterModule, ResponderTramiteModalComponent, NuevoTramiteModalComponent, RechazarTramiteModalComponent],
+    templateUrl: './mis-tramites.component.html',
+    styleUrl: './mis-tramites.component.css'
 })
 export class MisTramitesComponent implements OnInit, OnDestroy, AfterViewInit {
   misTramites: MiTramite[] = [];

@@ -7,11 +7,10 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 
 @Component({
-  selector: 'app-change-password',
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './change-password.component.html',
-  styleUrls: ['./change-password.component.css']
+    selector: 'app-change-password',
+    imports: [CommonModule, ReactiveFormsModule],
+    templateUrl: './change-password.component.html',
+    styleUrls: ['./change-password.component.css']
 })
 export class ChangePasswordComponent implements OnInit {
   changePasswordForm: FormGroup;

@@ -6,11 +6,10 @@ import { environment } from '../../../environments/environment';
 import { Area, Role, User } from '../../shared/interfaces/user.interface';
 
 @Component({
-  selector: 'app-user-management',
-  standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
-  templateUrl: './user-management.component.html',
-  styleUrls: ['./user-management.component.css']
+    selector: 'app-user-management',
+    imports: [CommonModule, FormsModule, ReactiveFormsModule],
+    templateUrl: './user-management.component.html',
+    styleUrls: ['./user-management.component.css']
 })
 export class UserManagementComponent implements OnInit {
   users: User[] = [];

@@ -22,11 +22,10 @@ import {
 
 
 @Component({
-  selector: 'app-nuevo-tramite-modal',
-  standalone: true,
-  imports: [CommonModule, FormsModule, ModalBaseComponent, BusinessDaysOnlyDirective],
-  templateUrl: './nuevo-tramite-modal.component.html',
-  styleUrl: './nuevo-tramite-modal.component.css'
+    selector: 'app-nuevo-tramite-modal',
+    imports: [CommonModule, FormsModule, ModalBaseComponent, BusinessDaysOnlyDirective],
+    templateUrl: './nuevo-tramite-modal.component.html',
+    styleUrl: './nuevo-tramite-modal.component.css'
 })
 
 export class NuevoTramiteModalComponent implements OnInit, OnDestroy, AfterViewInit {

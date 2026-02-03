@@ -6,22 +6,21 @@ import { ToastService } from '../../../services/toast.service';
 import { ToastMessage } from '../../interfaces/toast.interface';
 
 @Component({
-  selector: 'app-toast',
-  standalone: true,
-  imports: [CommonModule],
-  templateUrl: './toast.component.html',
-  styleUrl: './toast.component.css',
-  animations: [
-    trigger('toastAnimation', [
-      transition(':enter', [
-        style({ opacity: 0, transform: 'translateX(100%)' }),
-        animate('300ms ease-in', style({ opacity: 1, transform: 'translateX(0)' }))
-      ]),
-      transition(':leave', [
-        animate('300ms ease-out', style({ opacity: 0, transform: 'translateX(100%)' }))
-      ])
-    ])
-  ]
+    selector: 'app-toast',
+    imports: [CommonModule],
+    templateUrl: './toast.component.html',
+    styleUrl: './toast.component.css',
+    animations: [
+        trigger('toastAnimation', [
+            transition(':enter', [
+                style({ opacity: 0, transform: 'translateX(100%)' }),
+                animate('300ms ease-in', style({ opacity: 1, transform: 'translateX(0)' }))
+            ]),
+            transition(':leave', [
+                animate('300ms ease-out', style({ opacity: 0, transform: 'translateX(100%)' }))
+            ])
+        ])
+    ]
 })
 export class ToastComponent implements OnInit, OnDestroy {
   toasts: ToastMessage[] = [];

@@ -7,12 +7,11 @@ import { ToastService } from '../services/toast.service';
 import { ToastComponent } from '../shared/components/toast/toast.component';
 
 @Component({
-  selector: 'app-admin-login',
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ToastComponent],
-  templateUrl: './admin-login.component.html',
-  styleUrls: ['./admin-login.component.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+    selector: 'app-admin-login',
+    imports: [CommonModule, ReactiveFormsModule, ToastComponent],
+    templateUrl: './admin-login.component.html',
+    styleUrls: ['./admin-login.component.css'],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AdminLoginComponent implements OnInit {
   loginForm: FormGroup;

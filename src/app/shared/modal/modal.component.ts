@@ -4,11 +4,10 @@ import { Subscription } from 'rxjs';
 import { ModalService, ModalState } from '../../services/modal.service';
 
 @Component({
-  selector: 'app-modal',
-  standalone: true,
-  imports: [CommonModule],
-  templateUrl: './modal.component.html',
-  styleUrls: ['./modal.component.css']
+    selector: 'app-modal',
+    imports: [CommonModule],
+    templateUrl: './modal.component.html',
+    styleUrls: ['./modal.component.css']
 })
 export class ModalComponent implements OnInit, OnDestroy {
   modalState: ModalState = {

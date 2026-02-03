@@ -10,35 +10,34 @@ import { Notificacion } from '../../interfaces/notificacion.interface';
 import { NotificationDetailModalComponent } from '../notification-detail-modal/notification-detail-modal.component';
 
 @Component({
-  selector: 'app-notification-bell',
-  standalone: true,
-  imports: [CommonModule, NotificationDetailModalComponent],
-  templateUrl: './notification-bell.component.html',
-  styleUrls: ['./notification-bell.component.css'],
-  encapsulation: ViewEncapsulation.None,
-  animations: [
-    trigger('fadeIn', [
-      transition(':enter', [
-        style({ opacity: 0, transform: 'scale(0)' }),
-        animate('200ms ease-out', style({ opacity: 1, transform: 'scale(1)' }))
-      ])
-    ]),
-    trigger('slideDown', [
-      transition(':enter', [
-        style({ opacity: 0, transform: 'translateY(-10px)' }),
-        animate('300ms ease-out', style({ opacity: 1, transform: 'translateY(0)' }))
-      ]),
-      transition(':leave', [
-        animate('200ms ease-in', style({ opacity: 0, transform: 'translateY(-10px)' }))
-      ])
-    ]),
-    trigger('slideIn', [
-      transition(':enter', [
-        style({ opacity: 0, transform: 'translateX(-20px)' }),
-        animate('200ms ease-out', style({ opacity: 1, transform: 'translateX(0)' }))
-      ])
-    ])
-  ]
+    selector: 'app-notification-bell',
+    imports: [CommonModule, NotificationDetailModalComponent],
+    templateUrl: './notification-bell.component.html',
+    styleUrls: ['./notification-bell.component.css'],
+    encapsulation: ViewEncapsulation.None,
+    animations: [
+        trigger('fadeIn', [
+            transition(':enter', [
+                style({ opacity: 0, transform: 'scale(0)' }),
+                animate('200ms ease-out', style({ opacity: 1, transform: 'scale(1)' }))
+            ])
+        ]),
+        trigger('slideDown', [
+            transition(':enter', [
+                style({ opacity: 0, transform: 'translateY(-10px)' }),
+                animate('300ms ease-out', style({ opacity: 1, transform: 'translateY(0)' }))
+            ]),
+            transition(':leave', [
+                animate('200ms ease-in', style({ opacity: 0, transform: 'translateY(-10px)' }))
+            ])
+        ]),
+        trigger('slideIn', [
+            transition(':enter', [
+                style({ opacity: 0, transform: 'translateX(-20px)' }),
+                animate('200ms ease-out', style({ opacity: 1, transform: 'translateX(0)' }))
+            ])
+        ])
+    ]
 })
 export class NotificationBellComponent implements OnInit, OnDestroy {
   usuarioAutenticado = false;

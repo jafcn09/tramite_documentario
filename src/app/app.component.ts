@@ -7,10 +7,9 @@ import { ThemeToggleComponent } from './shared/components/theme-toggle/theme-tog
 import { Subscription } from 'rxjs';
 
 @Component({
-  selector: 'app-root',
-  standalone: true,
-  imports: [CommonModule, RouterOutlet, ThemeToggleComponent],
-  templateUrl: './app.component.html'
+    selector: 'app-root',
+    imports: [CommonModule, RouterOutlet, ThemeToggleComponent],
+    templateUrl: './app.component.html'
 })
 export class AppComponent implements OnInit, OnDestroy {
   isLoading = true;

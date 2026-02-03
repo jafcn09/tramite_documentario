@@ -5,11 +5,10 @@ import { MisTramitesService } from '../../../../services/mis-tramites.service';
 import { ToastService } from '../../../../services/toast.service';
 
 @Component({
-  selector: 'app-rechazar-tramite-modal',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
-  templateUrl: './rechazar-tramite-modal.component.html',
-  styleUrl: './rechazar-tramite-modal.component.css'
+    selector: 'app-rechazar-tramite-modal',
+    imports: [CommonModule, FormsModule],
+    templateUrl: './rechazar-tramite-modal.component.html',
+    styleUrl: './rechazar-tramite-modal.component.css'
 })
 export class RechazarTramiteModalComponent implements OnInit {
   @Input() show = false;

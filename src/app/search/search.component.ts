@@ -15,10 +15,9 @@ import { ThemeToggleComponent } from '../shared/components/theme-toggle/theme-to
 
 
 @Component({
-  selector: 'app-search',
-  standalone: true,
-  imports: [CommonModule, FormsModule, ThemeToggleComponent],
-  templateUrl: './search.component.html'
+    selector: 'app-search',
+    imports: [CommonModule, FormsModule, ThemeToggleComponent],
+    templateUrl: './search.component.html'
 })
 export class SearchComponent implements OnInit, OnDestroy {
   currentView: 'landing' | 'search' | 'create' = 'landing';

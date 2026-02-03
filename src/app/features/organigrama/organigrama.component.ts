@@ -5,11 +5,10 @@ import { OrganigramaService } from '../../services/organigrama.service';
 import { AreaJerarquica } from '../../shared/interfaces/organigrama.interface';
 
 @Component({
-  selector: 'app-organigrama',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
-  templateUrl: './organigrama.component.html',
-  styleUrl: './organigrama.component.css'
+    selector: 'app-organigrama',
+    imports: [CommonModule, FormsModule],
+    templateUrl: './organigrama.component.html',
+    styleUrl: './organigrama.component.css'
 })
 export class OrganigramaComponent implements OnInit {
   organigrama: AreaJerarquica[] = [];

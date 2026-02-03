@@ -12,11 +12,10 @@ import {
 import { Subscription } from 'rxjs';
 
 @Component({
-  selector: 'app-reportes-management',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
-  templateUrl: './reportes-management.component.html',
-  styleUrls: ['./reportes-management.component.css']
+    selector: 'app-reportes-management',
+    imports: [CommonModule, FormsModule],
+    templateUrl: './reportes-management.component.html',
+    styleUrls: ['./reportes-management.component.css']
 })
 export class ReportesManagementComponent implements OnInit, OnDestroy {
 

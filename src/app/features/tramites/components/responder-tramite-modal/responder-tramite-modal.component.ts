@@ -9,11 +9,10 @@ import { AuthService } from '../../../../services/auth.service';
 import { TipoFirma } from '../../../../shared/interfaces/firma-digital.interface';
 
 @Component({
-  selector: 'app-responder-tramite-modal',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
-  templateUrl: './responder-tramite-modal.component.html',
-  styleUrl: './responder-tramite-modal.component.css'
+    selector: 'app-responder-tramite-modal',
+    imports: [CommonModule, FormsModule],
+    templateUrl: './responder-tramite-modal.component.html',
+    styleUrl: './responder-tramite-modal.component.css'
 })
 export class ResponderTramiteModalComponent implements OnInit, AfterViewInit {
   @Input() tramite: any;

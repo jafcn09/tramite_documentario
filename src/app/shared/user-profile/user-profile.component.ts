@@ -8,11 +8,10 @@ import { environment } from '../../../environments/environment';
 import { User } from '../interfaces/auth.interface';
 
 @Component({
-  selector: 'app-user-profile',
-  standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, ReactiveFormsModule],
-  templateUrl: './user-profile.component.html',
-  styleUrls: ['./user-profile.component.css']
+    selector: 'app-user-profile',
+    imports: [CommonModule, RouterModule, FormsModule, ReactiveFormsModule],
+    templateUrl: './user-profile.component.html',
+    styleUrls: ['./user-profile.component.css']
 })
 export class UserProfileComponent implements OnInit {
   currentUser: User | null = null;

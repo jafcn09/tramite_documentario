@@ -12,11 +12,10 @@ import {
 import { Subscription } from 'rxjs';
 
 @Component({
-  selector: 'app-grados-admin',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
-  templateUrl: './grados-admin.component.html',
-  styleUrls: ['./grados-admin.component.css']
+    selector: 'app-grados-admin',
+    imports: [CommonModule, FormsModule],
+    templateUrl: './grados-admin.component.html',
+    styleUrls: ['./grados-admin.component.css']
 })
 export class GradosAdminComponent implements OnInit, OnDestroy {
 

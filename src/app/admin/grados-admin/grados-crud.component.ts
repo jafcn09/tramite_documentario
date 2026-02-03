@@ -6,11 +6,10 @@ import { ToastService } from '../../services/toast.service';
 import { Grado, GradoRequest } from '../../shared/interfaces/grado.interface';
 
 @Component({
-  selector: 'app-grados-crud',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
-  templateUrl: './grados-crud.component.html',
-  styleUrls: ['./grados-crud.component.css']
+    selector: 'app-grados-crud',
+    imports: [CommonModule, FormsModule],
+    templateUrl: './grados-crud.component.html',
+    styleUrls: ['./grados-crud.component.css']
 })
 export class GradosCrudComponent implements OnInit {
 

@@ -8,10 +8,9 @@ import { Subscription } from 'rxjs';
 
 
 @Component({
-  selector: 'app-home',
-  standalone: true,
-  imports: [CommonModule, ThemeToggleComponent],
-  template: `
+    selector: 'app-home',
+    imports: [CommonModule, ThemeToggleComponent],
+    template: `
     <section class="relative py-20 px-4 transition-colors duration-300"
              [ngClass]="{'bg-gradient-to-br from-university-50 to-university-100': !isDarkMode, 'bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900': isDarkMode}">
       <div class="max-w-6xl mx-auto">

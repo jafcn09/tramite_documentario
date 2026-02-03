@@ -17,11 +17,10 @@ import { EstadisticasTramites } from '../../../../shared/interfaces/estadistca_i
 
 
 @Component({
-  selector: 'app-lista-tramites',
-  standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, NuevoTramiteModalComponent, DetalleTramiteModalComponent],
-  templateUrl: './lista-tramites.component.html',
-  styleUrl: './lista-tramites.component.css'
+    selector: 'app-lista-tramites',
+    imports: [CommonModule, FormsModule, RouterModule, NuevoTramiteModalComponent, DetalleTramiteModalComponent],
+    templateUrl: './lista-tramites.component.html',
+    styleUrl: './lista-tramites.component.css'
 })
 
 export class ListaTramitesComponent implements OnInit, OnDestroy {

@@ -6,10 +6,9 @@ import { AuthService } from '../../../services/auth.service';
 import { Notificacion } from '../../../shared/interfaces/notificacion.interface';
 
 @Component({
-  selector: 'app-notificacion-detalle',
-  standalone: true,
-  imports: [CommonModule],
-  template: `
+    selector: 'app-notificacion-detalle',
+    imports: [CommonModule],
+    template: `
     <div class="notificacion-detalle-container">
       <div class="header">
         <button class="btn-back" (click)="volver()">
@@ -118,7 +117,7 @@ import { Notificacion } from '../../../shared/interfaces/notificacion.interface'
       </div>
     </div>
   `,
-  styles: [`
+    styles: [`
     .notificacion-detalle-container {
       max-width: 900px;
       margin: 0 auto;

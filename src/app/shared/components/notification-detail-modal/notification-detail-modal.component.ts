@@ -6,11 +6,10 @@ import { AuthService } from '../../../services/auth.service';
 import { Notificacion } from '../../interfaces/notificacion.interface';
 
 @Component({
-  selector: 'app-notification-detail-modal',
-  standalone: true,
-  imports: [CommonModule],
-  templateUrl: './notification-detail-modal.component.html',
-  styleUrls: ['./notification-detail-modal.component.css']
+    selector: 'app-notification-detail-modal',
+    imports: [CommonModule],
+    templateUrl: './notification-detail-modal.component.html',
+    styleUrls: ['./notification-detail-modal.component.css']
 })
 export class NotificationDetailModalComponent implements OnChanges {
   @Input() isVisible = false;

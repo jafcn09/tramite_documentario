@@ -12,11 +12,10 @@ import { ThemeService } from '../../services/theme.service';
 import { Subscription } from 'rxjs';
 
 @Component({
-  selector: 'app-estudiante-dashboard',
-  standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, StudentDashboardLayoutComponent],
-  templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.css']
+    selector: 'app-estudiante-dashboard',
+    imports: [CommonModule, FormsModule, RouterModule, StudentDashboardLayoutComponent],
+    templateUrl: './dashboard.component.html',
+    styleUrls: ['./dashboard.component.css']
 })
 export class EstudianteDashboardComponent implements OnInit, OnDestroy {
   currentUser: User | null = null;

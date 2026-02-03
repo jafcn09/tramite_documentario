@@ -26,11 +26,10 @@ import {
 } from '../../shared/interfaces/bandeja-tramites.interface';
 
 @Component({
-  selector: 'app-bandeja-tramites',
-  standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, ResponderTramiteModalComponent, RechazarTramiteModalComponent], 
-  templateUrl: './bandeja-tramites.component.html',
-  styleUrl: './bandeja-tramites.component.css'
+    selector: 'app-bandeja-tramites',
+    imports: [CommonModule, FormsModule, RouterModule, ResponderTramiteModalComponent, RechazarTramiteModalComponent],
+    templateUrl: './bandeja-tramites.component.html',
+    styleUrl: './bandeja-tramites.component.css'
 })
 export class BandejaTramitesComponent implements OnInit, OnDestroy {
   tramites: TramiteBandeja[] = [];

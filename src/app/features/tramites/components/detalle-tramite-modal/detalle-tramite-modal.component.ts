@@ -20,11 +20,10 @@ import {
 import { MisTramitesService } from '../../../../services/mis-tramites.service';
 
 @Component({
-  selector: 'app-detalle-tramite-modal',
-  standalone: true,
-  imports: [CommonModule, ModalBaseComponent],
-  templateUrl: './detalle-tramite-modal.component.html',
-  styleUrl: './detalle-tramite-modal.component.css'
+    selector: 'app-detalle-tramite-modal',
+    imports: [CommonModule, ModalBaseComponent],
+    templateUrl: './detalle-tramite-modal.component.html',
+    styleUrl: './detalle-tramite-modal.component.css'
 })
 export class DetalleTramiteModalComponent implements OnInit, OnDestroy, OnChanges {
   @Input() show = false;

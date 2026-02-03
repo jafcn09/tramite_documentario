@@ -23,28 +23,27 @@ import { BandejaTramitesService } from '../../services/bandeja-tramites.service'
 import { ToastService } from '../../services/toast.service';
 
 @Component({
-  selector: 'app-notificaciones',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
-  templateUrl: './notificaciones.component.html',
-  styleUrls: ['./notificaciones.component.css'],
-  animations: [
-    trigger('slideDown', [
-      transition(':enter', [
-        style({ height: '0', opacity: 0 }),
-        animate('300ms ease-out', style({ height: '*', opacity: 1 }))
-      ]),
-      transition(':leave', [
-        animate('300ms ease-in', style({ height: '0', opacity: 0 }))
-      ])
-    ]),
-    trigger('slideIn', [
-      transition(':enter', [
-        style({ opacity: 0, transform: 'translateX(-20px)' }),
-        animate('200ms ease-out', style({ opacity: 1, transform: 'translateX(0)' }))
-      ])
-    ])
-  ]
+    selector: 'app-notificaciones',
+    imports: [CommonModule, FormsModule],
+    templateUrl: './notificaciones.component.html',
+    styleUrls: ['./notificaciones.component.css'],
+    animations: [
+        trigger('slideDown', [
+            transition(':enter', [
+                style({ height: '0', opacity: 0 }),
+                animate('300ms ease-out', style({ height: '*', opacity: 1 }))
+            ]),
+            transition(':leave', [
+                animate('300ms ease-in', style({ height: '0', opacity: 0 }))
+            ])
+        ]),
+        trigger('slideIn', [
+            transition(':enter', [
+                style({ opacity: 0, transform: 'translateX(-20px)' }),
+                animate('200ms ease-out', style({ opacity: 1, transform: 'translateX(0)' }))
+            ])
+        ])
+    ]
 })
 export class NotificacionesComponent implements OnInit, OnDestroy {
   notificaciones: Notificacion[] = [];

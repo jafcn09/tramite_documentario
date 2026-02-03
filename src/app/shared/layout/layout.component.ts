@@ -10,11 +10,10 @@ import { MisTramitesService } from '../../services/mis-tramites.service';
 import { User } from '../interfaces/auth.interface';
 
 @Component({
-  selector: 'app-layout',
-  standalone: true,
-  imports: [CommonModule, RouterModule, ModalComponent, ToastComponent, NotificationBellComponent, ThemeToggleComponent],
-  templateUrl: './layout.component.html',
-  styleUrls: ['./layout.component.css']
+    selector: 'app-layout',
+    imports: [CommonModule, RouterModule, ModalComponent, ToastComponent, NotificationBellComponent, ThemeToggleComponent],
+    templateUrl: './layout.component.html',
+    styleUrls: ['./layout.component.css']
 })
 export class LayoutComponent implements OnInit {
   currentUser: User| null = null;

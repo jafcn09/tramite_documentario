@@ -8,11 +8,10 @@ import { Usuario } from '../../shared/interfaces/areas.interface';
 
 
 @Component({
-  selector: 'app-areas',
-  standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
-  templateUrl: './areas.component.html',
-  styleUrls: ['./areas.component.css']
+    selector: 'app-areas',
+    imports: [CommonModule, FormsModule, ReactiveFormsModule],
+    templateUrl: './areas.component.html',
+    styleUrls: ['./areas.component.css']
 })
 export class AreasComponent implements OnInit {
   areas: Areas[] = [];

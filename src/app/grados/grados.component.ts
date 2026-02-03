@@ -9,11 +9,10 @@ import { Subject, of, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 
 @Component({
-  selector: 'app-grados',
-  standalone: true,
-  imports: [CommonModule, FormsModule, ThemeToggleComponent],
-  templateUrl: './grados.component.html',
-  styleUrls: ['./grados.component.css']
+    selector: 'app-grados',
+    imports: [CommonModule, FormsModule, ThemeToggleComponent],
+    templateUrl: './grados.component.html',
+    styleUrls: ['./grados.component.css']
 })
 export class GradosComponent implements OnInit, OnDestroy {
   isDarkMode = false;

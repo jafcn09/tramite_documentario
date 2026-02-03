@@ -3,11 +3,10 @@ import { CommonModule } from '@angular/common';
 import { ReportesService } from '../../services/reportes.service';
 
 @Component({
-  selector: 'app-reportes',
-  standalone: true,
-  imports: [CommonModule],
-  templateUrl: './reportes.component.html',
-  styleUrl: './reportes.component.css'
+    selector: 'app-reportes',
+    imports: [CommonModule],
+    templateUrl: './reportes.component.html',
+    styleUrl: './reportes.component.css'
 })
 export class ReportesComponent implements OnInit {
   fechaGeneracion: Date = new Date();

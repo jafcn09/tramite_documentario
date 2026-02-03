@@ -11,11 +11,10 @@ import { User } from '../../shared/interfaces/auth.interface';
 import { Subscription } from 'rxjs';
 
 @Component({
-  selector: 'app-administrativo-dashboard',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
-  templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.css']
+    selector: 'app-administrativo-dashboard',
+    imports: [CommonModule, FormsModule],
+    templateUrl: './dashboard.component.html',
+    styleUrls: ['./dashboard.component.css']
 })
 
 export class DashboardComponent implements OnInit, OnDestroy {

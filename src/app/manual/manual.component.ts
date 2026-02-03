@@ -7,10 +7,9 @@ import { AuthService } from '../services/auth.service';
 
 
 @Component({
-  selector: 'app-manual',
-  standalone: true,
-  imports: [CommonModule],
-  templateUrl: './manual.component.html'
+    selector: 'app-manual',
+    imports: [CommonModule],
+    templateUrl: './manual.component.html'
 })
 export class ManualComponent {
 

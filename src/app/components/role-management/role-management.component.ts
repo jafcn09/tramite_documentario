@@ -7,11 +7,10 @@ import { Role, RoleRequest } from '../../shared/interfaces/role.interface';
 import { catchError, finalize, of } from 'rxjs';
 
 @Component({
-  selector: 'app-role-management',
-  standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
-  templateUrl: './role-management.component.html',
-  styleUrls: ['./role-management.component.css']
+    selector: 'app-role-management',
+    imports: [CommonModule, FormsModule, ReactiveFormsModule],
+    templateUrl: './role-management.component.html',
+    styleUrls: ['./role-management.component.css']
 })
 export class RoleManagementComponent implements OnInit {
   private readonly http = inject(HttpClient);

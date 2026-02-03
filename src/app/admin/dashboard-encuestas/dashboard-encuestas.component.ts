@@ -8,11 +8,10 @@ import { ThemeService } from '../../services/theme.service';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
-  selector: 'app-dashboard-encuestas',
-  standalone: true,
-  imports: [CommonModule, FormsModule, NgChartsModule],
-  templateUrl: './dashboard-encuestas.component.html',
-  styleUrls: ['./dashboard-encuestas.component.css']
+    selector: 'app-dashboard-encuestas',
+    imports: [CommonModule, FormsModule, NgChartsModule],
+    templateUrl: './dashboard-encuestas.component.html',
+    styleUrls: ['./dashboard-encuestas.component.css']
 })
 export class DashboardEncuestasComponent implements OnInit, OnDestroy {
   private encuestaService = inject(EncuestaSatisfaccionService);

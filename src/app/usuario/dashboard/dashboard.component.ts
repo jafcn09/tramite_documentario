@@ -9,11 +9,10 @@ import { User } from '../../shared/interfaces/auth.interface';
 import { Subscription } from 'rxjs';
 
 @Component({
-  selector: 'app-usuario-dashboard',
-  standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
-  templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.css']
+    selector: 'app-usuario-dashboard',
+    imports: [CommonModule, FormsModule, RouterModule],
+    templateUrl: './dashboard.component.html',
+    styleUrls: ['./dashboard.component.css']
 })
 export class UsuarioDashboardComponent implements OnInit, OnDestroy {
   currentUser: User | null = null;

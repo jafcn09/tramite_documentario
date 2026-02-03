@@ -5,10 +5,9 @@ import { ThemeService } from '../../services/theme.service';
 import { Subscription } from 'rxjs';
 
 @Component({
-  selector: 'app-student-dashboard-layout',
-  standalone: true,
-  imports: [CommonModule],
-  template: `
+    selector: 'app-student-dashboard-layout',
+    imports: [CommonModule],
+    template: `
     <div class="dashboard-layout" [ngClass]="{'dark-mode': isDarkMode}">
       <section class="quick-actions-section">
         <div class="section-header">
@@ -42,7 +41,7 @@ import { Subscription } from 'rxjs';
       <ng-content></ng-content>
     </div>
   `,
-  styles: [`
+    styles: [`
     .dashboard-layout {
       width: 100%;
       margin: 0;
